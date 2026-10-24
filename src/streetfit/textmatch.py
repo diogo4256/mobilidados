@@ -21,7 +21,9 @@ def normalize(text: str) -> str:
 
 
 def contains(haystack: str, needle: str) -> bool:
-    return normalize(needle) in normalize(haystack)
+    """Verbatim match up to case, accents and whitespace (PDF text layers often split or join words)."""
+    h, n = normalize(haystack), normalize(needle)
+    return n in h or n.replace(" ", "") in h.replace(" ", "")
 
 
 def numbers(text: str) -> list[float]:

@@ -44,10 +44,17 @@ Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação t
 | id | origem | obtido | licença | sha256 |
 | --- | --- | --- | --- | --- |
 | area_axes | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79> | 2026-10-24 | not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified) | `3096da389677…` area_axes.json |
-| area_cartography | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53> | 2026-10-24 | CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated) | `6d49fe735c72…` area_cartography.json |
+| area_cartography | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53> | 2026-10-24 | CC-BY-4.0 | `6d49fe735c72…` area_cartography.json |
 | area_network_identify | <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify> | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `0f584f1874ef…` area_network_identify.json |
 | carris_gtfs | <https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip> | 2026-10-24 | not stated at the download endpoint (not redistributed) | `c7550ea2d2f0…` carris_gtfs.zip |
-| cartography | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53> | 2026-10-24 | CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated) | `87c633260730…` cartography.json |
-| na_minha_rua |  | 2026-10-22 | CC-BY (dados.gov.pt record 'Ocorrências "Na Minha Rua Lx"') | `5be40828a57b…` na_minha_rua/2017.csv<br>`ef31c04e2e67…` na_minha_rua/2018.csv<br>`dd1283b12cc5…` na_minha_rua/2019.csv<br>+7 |
+| cartography | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53> | 2026-10-24 | CC-BY-4.0 | `87c633260730…` cartography.json |
+| na_minha_rua |  | 2026-10-22 | CC-BY-4.0 | `5be40828a57b…` na_minha_rua/2017.csv<br>`ef31c04e2e67…` na_minha_rua/2018.csv<br>`dd1283b12cc5…` na_minha_rua/2019.csv<br>+7 |
 | network_identify | <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify> | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `71a5fe259fc7…` network_identify.json |
 | street_axes | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79> | 2026-10-24 | not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified) | `902bbeda01db…` street_axes.json |
+
+## Atribuição
+
+- © Câmara Municipal de Lisboa, <https://dados.gov.pt/datasets/cartografia-numerica-vetorial>, CC-BY-4.0 (<https://creativecommons.org/licenses/by/4.0/>).
+- © Câmara Municipal de Lisboa, <https://dados.gov.pt/datasets/ocorrencias-na-minha-rua-lx>, CC-BY-4.0 (<https://creativecommons.org/licenses/by/4.0/>).
+
+Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo streetfit; não são publicações da entidade de origem, que não as subscreve.

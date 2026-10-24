@@ -27,6 +27,15 @@ document_sha256 = "89da5cda9d621a40906f971b94d876806ded2d272097087a67282d4b0d3f5
 nature = "Official parliamentary answer citing the German RASt 06 guideline"
 url_checked = "2026-10-24: downloaded file matches document_sha256"
 
+[documents.bayern_rast_2009]
+title = "Einführung der Richtlinien für die Anlage von Stadtstraßen (RASt 06), Az. IID2-43411-001/06, 11.02.2009"
+publisher = "Oberste Baubehörde im Bayerischen Staatsministerium des Innern"
+year = 2009
+url = "https://www.mobilitaet.bayern.de/assets/stmi/vum/strasse/planung/49_einfuehrung_rast_20110209.pdf"
+document_sha256 = "144618918c798610985492d388965a91e6aa93abbde80c08f2b8bcecdcfeb425"
+nature = "Ministerial letter introducing RASt 06 for federal and state roads in Bavaria"
+url_checked = "2026-10-24: downloaded file matches document_sha256"
+
 [[references]]
 id = "cml_manual_two_way_profile"
 label_pt = "Rua de dois sentidos, duas vias, estacionamento longitudinal dos dois lados: largura entre as faixas de estacionamento"
@@ -90,3 +99,18 @@ label = "Carriageway for two scheduled buses meeting (RASt 06, as cited)"
 derivation = "Clear space 7.50 m (7.00 m when constrained) including safety distances, giving a 6.50 m standard carriageway; 6.00 m is mentioned as the RASt 06 minimum"
 scope = "German urban street guideline (RASt 06) as quoted by the Berlin Senate; not Portuguese law"
 quote = "Daraus resultiert ein Verkehrsraum von 6,50 m als Regelmaß bei Linienbusverkehr."
+
+[[references]]
+id = "rast06_bayern_bus_bus"
+label_pt = "Faixa de rodagem para o cruzamento de dois autocarros de carreira ou dois pesados (introdução da RASt 06 na Baviera)"
+scope_pt = "Travessias de localidades em estradas federais e estaduais sob responsabilidade da Baviera; não é lei portuguesa"
+derivation_pt = "«em regra» 6,50 m; faixa mais estreita só em ruas com tráfego muito reduzido"
+document = "bayern_rast_2009"
+page = 2
+pdf_page = 2
+kind = "secondary_citation"
+value_m = 6.50
+label = "Carriageway for two scheduled buses or two lorries meeting (Bavarian introduction of RASt 06)"
+derivation = "As a rule 6.50 m; a narrower carriageway only on streets with very low traffic"
+scope = "Through-roads in towns on federal and state roads under Bavarian responsibility; not Portuguese law"
+quote = "für die Begegnungsfälle zweier Linienbusse bzw. zweier Lkw eine Fahrbahnbreite von 6,50 m erforderlich ist"

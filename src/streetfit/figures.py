@@ -30,14 +30,27 @@ def make_all(run) -> None:
     out = run.case.results_dir / "figures"
     out.mkdir(parents=True, exist_ok=True)
     lang = run.case.lang
-    width_budget(run, lang).savefig(out / "width_budget.png", dpi=160)
-    trips_per_hour(run, lang).savefig(out / "trips_per_hour.png", dpi=160)
-    profile(run, lang).savefig(out / "free_width_profile.png", dpi=160)
+    figs = {"width_budget": width_budget(run, lang), "trips_per_hour": trips_per_hour(run, lang), "free_width_profile": profile(run, lang)}
     if "area_streets" in run.tables or (run.tables_dir / "area_streets.csv").exists():
-        f = area(run, lang)
-        if f:
-            f.savefig(out / "area_streets.png", dpi=160)
+        figs["area_streets"] = area(run, lang)
+    note = credit(run.case)
+    for name, f in figs.items():
+        if f is None:
+            continue
+        f.text(0.995, 0.005, note, ha="right", va="bottom", fontsize=6.5, color=MUTED)
+        f.savefig(out / f"{name}.png", dpi=160)
     plt.close("all")
+
+
+def credit(case) -> str:
+    """Data credit printed on every figure (attribution required by the inputs' licences)."""
+    parts = []
+    for sid in case.source_ids():
+        s = case.source(sid)
+        item = f"{s['attribution']} ({s['licence']})" if s.get("licence_url") else s.get("attribution")
+        if item and item not in parts:
+            parts.append(item)
+    return t("data_credit", case.lang, sources="; ".join(parts))
 
 
 def width_budget(run, lang):

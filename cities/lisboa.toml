@@ -35,7 +35,10 @@ kind = "arcgis_query"
 url = "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53"
 envelope_sr = 4326
 out_sr = 3763
-licence = "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)"
+licence = "CC-BY-4.0"
+licence_url = "https://creativecommons.org/licenses/by/4.0/"
+licence_evidence = "https://dados.gov.pt/datasets/cartografia-numerica-vetorial (licence id cc-by, defined by dados.gov.pt as CC BY 4.0; checked 2026-10-24)"
+dataset_page = "https://dados.gov.pt/datasets/cartografia-numerica-vetorial"
 attribution = "© Câmara Municipal de Lisboa"
 redistributable = true
 
@@ -58,6 +61,7 @@ note = "The site name embeds a backup date (22Set26) and may be renamed; list cu
 
 [source_templates.carris_gtfs]
 kind = "http_file"
+attribution = "Carris (GTFS)"
 url = "https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS"
 suffix = ".zip"
 licence = "not stated at the download endpoint (not redistributed)"
@@ -65,7 +69,10 @@ note = "Always serves the current feed; a case pins the feed it used with sha256
 
 [source_templates.cml_na_minha_rua]
 kind = "http_files"
-licence = "CC-BY (dados.gov.pt record 'Ocorrências \"Na Minha Rua Lx\"')"
+licence = "CC-BY-4.0"
+licence_url = "https://creativecommons.org/licenses/by/4.0/"
+licence_evidence = "https://dados.gov.pt/datasets/ocorrencias-na-minha-rua-lx (licence id cc-by, defined by dados.gov.pt as CC BY 4.0; checked 2026-10-24)"
+dataset_page = "https://dados.gov.pt/datasets/ocorrencias-na-minha-rua-lx"
 attribution = "© Câmara Municipal de Lisboa"
 redistributable = true
 columns = { lat = "latitude", lon = "longitude", date = "dt_registo", category = "tipologia" }

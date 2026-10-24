@@ -24,6 +24,7 @@ T = {
     "median_free": {"en": "median free width (m)", "pt": "faixa livre mediana (m)"},
     "parking_both": {"en": "parking on both sides", "pt": "estacionamento dos dois lados"},
     "free_width_short": {"en": "Free width", "pt": "Faixa livre"},
+    "data_credit": {"en": "Data: {sources}; adapted. Analysis: streetfit.", "pt": "Dados: {sources}; adaptados. Análise: streetfit."},
     "bus": {"en": "bus", "pt": "autocarro"},
     "car": {"en": "car", "pt": "ligeiro"},
     "pattern_two_way": {"en": "two-way, parking both sides, narrow", "pt": "dois sentidos, estacionamento dos dois lados, estreita"},

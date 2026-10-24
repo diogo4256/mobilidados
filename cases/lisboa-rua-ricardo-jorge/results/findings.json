@@ -341,7 +341,7 @@
       ],
       "envelope_sr": 4326,
       "kind": "arcgis_query",
-      "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
+      "licence": "CC-BY-4.0",
       "n_features": 1457,
       "retrieved_utc": "2026-10-24T15:46:48+00:00",
       "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
@@ -388,7 +388,7 @@
       ],
       "envelope_sr": 4326,
       "kind": "arcgis_query",
-      "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
+      "licence": "CC-BY-4.0",
       "n_features": 911,
       "retrieved_utc": "2026-10-24T15:50:29+00:00",
       "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
@@ -402,7 +402,7 @@
     },
     "na_minha_rua": {
       "kind": "http_files",
-      "licence": "CC-BY (dados.gov.pt record 'Ocorrências \"Na Minha Rua Lx\"')",
+      "licence": "CC-BY-4.0",
       "retrieved_utc": "2026-10-22 (file times)",
       "files": {
         "na_minha_rua/2017.csv": {

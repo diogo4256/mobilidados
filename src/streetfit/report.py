@@ -491,5 +491,32 @@ def markdown(c, findings: list[Finding], lock: Lock) -> str:
         more = len(e.get("files", {})) - 3
         if more > 0:
             shas += f"<br>+{more}"
-        src.append(f"| {sid} | {origin} | {e.get('retrieved_utc', '')[:10]} | {e.get('licence', '')} | {shas} |")
-    return "\n".join(head + body + src) + "\n"
+        licence = c.source(sid).get("licence", e.get("licence", "")) if sid in c.cfg["sources"] else e.get("licence", "")
+        src.append(f"| {sid} | {origin} | {e.get('retrieved_utc', '')[:10]} | {licence} | {shas} |")
+    return "\n".join(head + body + src + attribution(c)) + "\n"
+
+
+def attribution(c) -> list[str]:
+    """Attribution and modification notice for openly licensed inputs (as CC BY 4.0, section 3(a), requires)."""
+    pt = c.lang == "pt"
+    seen, lines = set(), []
+    for sid in c.source_ids():
+        s = c.source(sid)
+        if not s.get("licence_url") or (s.get("attribution"), s.get("dataset_page")) in seen:
+            continue
+        seen.add((s.get("attribution"), s.get("dataset_page")))
+        lines.append(f"- {s.get('attribution', '')}, <{s.get('dataset_page', s.get('url', ''))}>, {s['licence']} (<{s['licence_url']}>).")
+    if not lines:
+        return []
+    note = (
+        (
+            "Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo streetfit; "
+            "não são publicações da entidade de origem, que não as subscreve."
+        )
+        if pt
+        else (
+            "The data were transformed: tables and figures are measurements, counts and aggregations derived by streetfit; "
+            "they are not publications of the originating body, which does not endorse them."
+        )
+    )
+    return ["", "## " + ("Atribuição" if pt else "Attribution"), "", *lines, "", note]
