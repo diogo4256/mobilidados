@@ -102,5 +102,6 @@ It cannot:
   (privacy, those who enforce parking rules).
 * Downloads are cached and locked; a failed or unchanged download does not leave the repository changed
   (publishers, maintainers).
-* The option without parking states what it removes, in metres of mapped parking and in places counted at an
-  assumed length per space, in the ledger and on the figure (EMEL, residents who park).
+* The option without parking states what it removes, in metres of mapped parking and as a range of places
+  over assumed space lengths, with the mapped parking along the whole street, in the ledger and on the figure
+  (EMEL, residents who park).

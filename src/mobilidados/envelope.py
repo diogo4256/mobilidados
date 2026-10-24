@@ -55,14 +55,14 @@ def width_budget(free: dict[str, float], vehicles: dict[str, Vehicle], scenarios
     return pd.DataFrame(rows)
 
 
-def without_parking(profiles: pd.DataFrame, two_strips_m: float, space_m: float) -> pd.DataFrame:
+def without_parking(profiles: pd.DataFrame, two_strips_m: float, space_m: list[float]) -> pd.DataFrame:
     """Free width at the two-strip stations if the strip on side L, on side R or on both became carriageway, and
     the parking that removes.
 
     Per station, the free width plus the strip(s) on that station; the quantiles are over the same stations as the
     measured free width, so the two can be compared directly. ``two_strips_m`` is the length of street with parking
     on both sides (the same stretches), so one side removes that length of parking and both sides twice it;
-    ``space_m`` turns it into whole places.
+    the space lengths ``space_m`` turn it into a range of whole places (fewest at the longest space).
     """
     d = profiles[profiles["class"] == TWO_STRIPS]
     options = {"L": d.free_width + d.strip_L, "R": d.free_width + d.strip_R, "both": d.free_width + d.strip_L + d.strip_R}
@@ -76,7 +76,8 @@ def without_parking(profiles: pd.DataFrame, two_strips_m: float, space_m: float)
                 "free_median": round(w.median(), 2),
                 "free_max": round(w.max(), 2),
                 "parking_removed_m": round(removed, 1),
-                "places": int(removed // space_m),
+                "places_min": int(removed // max(space_m)),
+                "places_max": int(removed // min(space_m)),
             }
         )
     return pd.DataFrame(rows)

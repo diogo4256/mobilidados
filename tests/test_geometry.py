@@ -57,7 +57,7 @@ def test_classify_summary_and_sections():
     assert (two.s.min(), two.s.max()) == (20, 80)
     assert summarize_blocks(df, blocks).set_index("block").loc["all", "free_median"] == pytest.approx(4.90)
     assert [b for _, _, b in narrow_sections(df, 1.0)] == ["A", "B"]
-    assert strip_lengths(df, blocks, 1.0).set_index("block").loc["all", "strip_L_length_m"] == pytest.approx(61.0)
+    assert strip_lengths(df, blocks, 1.0, (5.0,)).set_index("block").loc["all", "strip_L_length_m"] == pytest.approx(61.0)
 
 
 def axis_feature(name, *paths):

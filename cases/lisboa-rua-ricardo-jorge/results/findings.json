@@ -207,19 +207,33 @@
     {
       "id": "parking_removed",
       "grade": "I",
-      "statement": "Retirar o estacionamento de um lado, nos troços com estacionamento dos dois lados, retiraria 116 m de estacionamento cartografado (cerca de 23 lugares); dos dois lados, 232 m (cerca de 46 lugares). Lugares contados a 5,00 m cada (pressuposto).",
+      "statement": "Retirar o estacionamento de um lado, nos troços com estacionamento dos dois lados, retiraria 116 m de estacionamento cartografado (cerca de 19 a 23 lugares); dos dois lados, 232 m (cerca de 38 a 46 lugares). Lugares contados a 5,00–6,00 m cada (pressuposto). Em toda a rua, o estacionamento cartografado mede 122,5 m do lado NO e 137,0 m do lado SE.",
       "values": {
         "removed_one_side_m": 116.0,
-        "places_one_side": 23,
+        "places_one_side": [
+          19,
+          23
+        ],
         "removed_both_sides_m": 232.0,
-        "places_both_sides": 46,
-        "parking_space_m": 5.0
+        "places_both_sides": [
+          38,
+          46
+        ],
+        "parking_space_m": [
+          5.0,
+          5.5,
+          6.0
+        ],
+        "whole_street_parking_m": {
+          "left": 122.5,
+          "right": 137.0
+        }
       },
       "sources": [
         "free_width",
         "parking_strips"
       ],
-      "method": "Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the length of one space.",
+      "method": "Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the longest and the shortest space length; the whole-street lengths are parking_strip_lengths.csv.",
       "caveat": "Mapped parking area, not counted spaces: entrances and other gaps inside the strips are not subtracted. The length of a space is an assumption."
     },
     {

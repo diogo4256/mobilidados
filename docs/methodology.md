@@ -95,8 +95,11 @@ references, because a reference's scope may assume the parking that the scenario
 
 What it removes is stated next to it: one side removes, along the same stretches, as much mapped parking as the
 length of street with parking on both sides (the length the free-width finding gives), and both sides twice that.
-Places are that length divided by the length of one space (`envelope.parking_space_m`, an assumption to be set
-from the municipality's standard where one is known), rounded down. The strips are mapped areas, not counted
+Places are that length divided by the longest and by the shortest length of one space (`profiles.parking_space_m`,
+a range and an assumption, to be set from the municipality's standard where one is known), rounded down: a range,
+not a count. The same lengths give the stall counts of `parking_strip_lengths.csv`, which also gives the mapped
+parking along the whole street on each side; the finding states those lengths too, since removing a whole side
+would remove more than the stretches with parking on both sides. The strips are mapped areas, not counted
 spaces: entrances and other gaps inside them are not subtracted.
 
 ## Citizen reports (`occurrences.py`)

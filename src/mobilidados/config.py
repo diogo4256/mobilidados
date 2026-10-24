@@ -274,6 +274,12 @@ class Profiles(Model):
     step_m: float = Field(0.5, gt=0)
     half_width_m: float = Field(25, gt=0)
     narrow_max_m: float = 7.0
+    parking_space_m: list[Annotated[float, Field(gt=0)]] = Field(
+        [5.0, 5.5, 6.0],
+        min_length=1,
+        description="Lengths of one longitudinal parking space, to turn metres of mapped parking into places: an "
+        "assumption (grade P), given as a range; set it from the municipality's own standard where one is known",
+    )
     check_points_s: list[float] = []
 
     @model_validator(mode="after")
@@ -310,12 +316,6 @@ class Envelope(Model):
     bus: str
     car: str
     scenarios: list[Annotated[list[str], Field(min_length=1, max_length=2)]] = Field(min_length=1)
-    parking_space_m: float = Field(
-        5.0,
-        gt=0,
-        description="Length of one longitudinal parking space, to turn metres of parking into places: an assumption "
-        "(grade P); set it from the municipality's own standard where one is known",
-    )
 
 
 class Occurrences(Model):

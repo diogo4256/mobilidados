@@ -112,7 +112,7 @@ def stage_profiles(r: Run) -> None:
     r.save("street", pd.DataFrame([{"name": r.cfg.street.name, "length_m": length}]))
     r.save("profiles", df)
     r.save("summary_by_block", geometry.summarize_blocks(df, r.cfg.street.blocks))
-    r.save("parking_strip_lengths", geometry.strip_lengths(df, r.cfg.street.blocks, p.step_m))
+    r.save("parking_strip_lengths", geometry.strip_lengths(df, r.cfg.street.blocks, p.step_m, tuple(p.parking_space_m)))
     r.save("narrow_sections", pd.DataFrame(geometry.narrow_sections(df, p.step_m), columns=["s_from", "s_to", "block"]))
     tr = Transformer.from_crs(c.crs, 4326, always_xy=True)
     pts = []
@@ -188,7 +188,7 @@ def stage_envelope(r: Run) -> None:
     r.save("overhang_sensitivity", envelope.overhang_sensitivity(free["median"], vehicles, e.scenarios))
     narrow = r.table("narrow_sections")
     two_strips_m = round(float((narrow.s_to - narrow.s_from).sum()), 1)  # as the free_width finding states it
-    r.save("without_parking", envelope.without_parking(r.table("profiles"), two_strips_m, e.parking_space_m))
+    r.save("without_parking", envelope.without_parking(r.table("profiles"), two_strips_m, r.cfg.profiles.parking_space_m))
 
 
 def stage_encounters(r: Run) -> None:

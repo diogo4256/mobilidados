@@ -86,6 +86,9 @@ columns = { lat = "latitude", lon = "longitude", date = "dt_registo", category =
 step_m = 0.5
 half_width_m = 25
 narrow_max_m = 7.0
+# parking_space_m (the length of one longitudinal space, to count places) is left at the default range in
+# config.py, an assumption: set Lisbon's own bay length here once a municipal source states it (the public-space
+# manual, parking regulations or EMEL's bay specification).
 
 [direction]
 source = "network_identify"

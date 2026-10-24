@@ -76,7 +76,8 @@ def width_budget(run: Run, lang: Lang) -> Figure:
 
     wp = run.table("without_parking").set_index("without")
     one_side = float(wp.loc[["L", "R"], "free_median"].min())
-    places = i18n.t("ledger.places", lang, count=int(wp.loc["L", "places"]), n=int(wp.loc["L", "places"]))
+    lo, hi = int(wp.loc["L", "places_min"]), int(wp.loc["L", "places_max"])
+    places = i18n.t("ledger.places", lang, count=hi, n=hi) if lo == hi else i18n.t("ledger.places_range", lang, lo=lo, hi=hi)
     rows = [
         (
             t("without_one_side", lang),
