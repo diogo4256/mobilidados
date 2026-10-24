@@ -2,12 +2,11 @@
 
 *[Português](https://github.com/diogo4256/mobilidados/blob/main/README.md) · English*
 
-**Mobility claims grounded in open data, in Portugal, starting with Lisbon.** mobilidados exists to improve
-mobility, and public transport is part of the solution. Its tools measure how a street's space is shared out and
-how much is left for people on foot, by bus or by bike. They turn the data that municipalities and operators
-already publish into findings a public body can check for itself: every number
-reproducible from its sources, and every statement graded by how well it is supported. A citizen, an
-association, a journalist or a councillor can then make a request that rests on facts, not impressions.
+**Tools for data-based mobility claims in Portugal, starting with Lisbon.** mobilidados exists to improve
+mobility, and public transport is part of the solution. The tools turn the data that municipalities and
+operators already publish into findings a public body can check for itself: every number reproducible from its
+sources, and every statement graded by how well it is supported. A citizen, an association, a journalist or a
+councillor can then make a request that rests on facts, not impressions.
 
 The first tool answers one question: **does on-street parking leave room for buses to pass each other?** It
 measures a street's cross-section from the municipality's own large-scale cartography, finds the bus routes

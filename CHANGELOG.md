@@ -5,8 +5,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-The project is now called **mobilidados**, a toolset for mobility claims grounded in open data, in Portugal,
-starting with Lisbon. The street-width audit is its first tool. Versions 0.1.0 and 0.2.0 were released as
+The project is now called **mobilidados**: tools for data-based mobility claims in Portugal, starting with
+Lisbon. The street-width audit is its first tool. Versions 0.1.0 and 0.2.0 were released as
 streetfit.
 
 ### Added

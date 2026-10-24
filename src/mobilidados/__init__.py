@@ -1,4 +1,4 @@
-"""mobilidados: mobility claims grounded in open data, in Portugal, starting with Lisbon."""
+"""mobilidados: tools for data-based mobility claims in Portugal, starting with Lisbon."""
 
 from importlib.metadata import version
 
