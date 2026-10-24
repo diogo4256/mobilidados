@@ -90,10 +90,9 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
         )
     r = Run(case, offline=offline)
     write_config(case)
-    if stages is None:  # a full run replaces every output, so nothing from an earlier configuration lingers
-        for pattern in ("tables/*.csv", "figures/*.png"):
-            for old in case.results_dir.glob(pattern):
-                old.unlink()
+    if stages is None:  # a full run replaces every table, so nothing from an earlier configuration lingers
+        for old in case.results_dir.glob("tables/*.csv"):  # the figures stage removes the figures it no longer makes
+            old.unlink()
     for name in stages or STAGES:
         log.info("[%s]", name)
         STAGES[name](r)
