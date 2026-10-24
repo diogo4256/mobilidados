@@ -15,24 +15,32 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release # one release at a time; a second waits instead of racing the first
+  cancel-in-progress: false
+
 env:
   TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.project.outputs.name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.TAG }}
+          ref: refs/tags/${{ env.TAG }} # the tag, never a branch of the same name
           persist-credentials: false
       - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           enable-cache: false # what is released is built from the tagged commit alone
       - name: The tag is the version in pyproject.toml and CITATION.cff
+        id: project
         run: |
           test "${TAG#v}" = "$(uv version --short)"
           grep -qx "version: ${TAG#v}" CITATION.cff
+          echo "name=$(uv version | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"  # releases before 0.3.0 are streetfit
       - name: Release notes are the changelog's section for the version
         run: |
           awk -v v="${TAG#v}" '
@@ -45,8 +53,12 @@ jobs:
           uv sync --locked --extra agents
           uv run pytest -m "not data and not live"
       - run: uv build
-      - name: The wheel installs and runs
-        run: uv run --isolated --no-project --with dist/*.whl mobilidados --help
+      - name: The wheel installs with the locked dependencies and runs
+        run: |
+          uv export --frozen --no-dev --no-emit-project --extra agents --quiet -o locked.txt
+          uv run --isolated --no-project --with-requirements locked.txt --with dist/*.whl "$NAME" --help
+        env:
+          NAME: ${{ steps.project.outputs.name }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release
@@ -58,15 +70,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # gh release create
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release
-      - run: gh release create "$TAG" dist/* --verify-tag --title "mobilidados ${TAG#v}" --notes-file notes.md
+      - run: gh release create "$TAG" dist/* --verify-tag --title "$NAME ${TAG#v}" --notes-file notes.md
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          NAME: ${{ needs.build.outputs.name }}
 
   pypi:
     needs: build
@@ -81,4 +94,4 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release
-      - uses: pypa/gh-action-pypi-publish@aef6c9b6e301dc803e1bc9133e9ce67ae9b0906b # v1.14.3
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3 (the commit, not the tag object)
