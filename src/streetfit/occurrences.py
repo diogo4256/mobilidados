@@ -23,7 +23,9 @@ def load_points(files: list[Path], cols: Columns, crs: int) -> pd.DataFrame:
     """Concatenate the CSVs and project lat/lon. Rows without valid coordinates keep x, y = NaN.
 
     Dates are parsed file by file, because every file (e.g. one per year) may use its own format and pandas infers a
-    single format per call. A date that does not parse stays NaT; ``file_summary`` counts those.
+    single format per call. A date that does not parse stays NaT; ``file_summary`` counts those. Such rows are not
+    re-parsed with a per-row guess (``format="mixed"``): a guess can silently swap day and month, and a wrong date is
+    worse than a counted missing one.
     """
 
     def read(f: Path) -> pd.DataFrame:
