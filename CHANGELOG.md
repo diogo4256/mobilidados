@@ -11,6 +11,15 @@ streetfit.
 
 ### Added
 
+- `mobilidados new-case "<street>" --like <case>` drafts a case for another street of the same city from its
+  name: the axis from the municipal layer, blocks cut at the cross streets, direction and side labels from the
+  bearing, check points and traffic-direction stations away from the junctions, and the bus routes and
+  reference stops from the model case's GTFS feed. Sources, pins, vehicles and parameters are the model case's.
+  A name that matches no axis is looked up by its most distinctive word: a single match that differs only in case
+  or accents is used, otherwise the error suggests the closest names. The draft's header, which lists what to
+  check, is in the case's language.
+  Drafting Rua Ricardo Jorge from its own case gives the same blocks, routes and reference stops as the
+  hand-written case.
 - `docs/stakeholders.md`: who makes claims with the results, who answers them, who is affected, whose data is
   used and who keeps the toolset alive; the questions to ask before a change; and what a toolset like this can
   and cannot do.
@@ -24,6 +33,14 @@ streetfit.
 
 ### Changed
 
+- Lisbon's settings are in three layers: `cities/lisboa.toml` (services, classes and the method parameters every
+  case shares), `cities/lisboa-2026-10.toml` (the GTFS feed, service day and Na Minha Rua files pinned in October
+  2026) and each case, which keeps only its street. Newer data go in a new dated file, so a case with results
+  keeps the inputs it was run with. The Lisbon case's loaded configuration is unchanged, value for value.
+- The known gaps of a city profile and of a case are both listed, the case's first; before, a case's list
+  replaced the profile's.
+- A street stored in the axes layer as several features or parts is joined into one axis when the pieces form
+  one continuous line; before, any street in more than one piece was an error.
 - The package, module and command are `mobilidados` (were `streetfit`), and so are the environment variables
   (`MOBILIDADOS_MODEL`, `MOBILIDADOS_EFFORT`, `MOBILIDADOS_CONTACT`), the exception (`MobilidadosError`) and the
   User-Agent sent to data providers. The repository moved to `diogo4256/mobilidados`; GitHub redirects the old

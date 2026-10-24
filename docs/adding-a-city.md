@@ -10,6 +10,15 @@ complete example. It needs:
 | `[axes]` | the street-name field of the street-axis layer |
 | `[network]` | fields of a routing network giving per-edge, per-direction access (optional) |
 | `[source_templates.*]` | how to fetch each source: kind, URL, CRS, licence as the publisher states it |
+| shared settings (optional) | method parameters, vehicles, design references, the sources every case uses, and the known gaps every case shares (listed after a case's own) |
+
+A case can change any value it inherits but cannot remove an inherited section: shared settings are for what every
+case of the city has (in Lisbon, buses and citizens' reports).
+
+Data that change over time (a GTFS feed and its service day, yearly files) go in a dated file that extends the
+profile, such as `cities/lisboa-2026-10.toml`. Cases extend the dated file. When newer data come out, add another
+dated file and point new cases at it: a case that already has results keeps the file it was run with, so it
+stays reproducible.
 
 ## What the cartography must provide
 
@@ -32,7 +41,9 @@ Check the cartography's survey date and stated accuracy, and record them in `[ca
 
 2. Write `cities/<city>.toml`; record each source's licence exactly as the publisher states it. If it is not
    stated, write "not stated", and do not commit the raw data.
-3. Create a case (`cases/<city>-<street>/case.toml`) with `extends = "../../cities/<city>.toml"`. The merged
+3. Create a case (`cases/<city>-<street>/case.toml`) with `extends = "../../cities/<city>.toml"` (or a dated file
+   that extends it). Once the city has one case, `mobilidados new-case "<street>" --like <that case>` drafts the
+   next ones from a street name. The merged
    configuration is validated when it is loaded (the models are in `src/mobilidados/config.py`): a misspelt key, a
    missing value or a reference to a source, vehicle or design reference that does not exist is reported by
    name before anything runs.

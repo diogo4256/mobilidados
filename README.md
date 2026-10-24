@@ -118,9 +118,19 @@ concessões feitas à partida, aspas, e "regra" ou "mínimo" usados para o que �
 
 ## Analisar a sua rua
 
-1. Se a sua cidade já tem perfil em [`cities/`](https://github.com/diogo4256/mobilidados/tree/main/cities), copie
-   [`cases/lisboa-rua-ricardo-jorge/case.toml`](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/case.toml), mude o nome da rua,
-   a zona, os quarteirões, as carreiras e as paragens de referência, e corra `fetch` e `run`.
+1. Se a sua cidade já tem um caso, basta o nome da rua:
+
+   ```bash
+   uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge --only carris_gtfs   # uma vez: o horário que o caso usa
+   uv run mobilidados new-case "Rua Teixeira de Pascoais" --like cases/lisboa-rua-ricardo-jorge
+   uv run mobilidados fetch cases/lisboa-rua-teixeira-de-pascoais
+   uv run mobilidados run cases/lisboa-rua-teixeira-de-pascoais
+   ```
+
+   O nome não tem de estar escrito tal e qual: se não houver um eixo com esse nome, o `new-case` procura nomes
+   parecidos e sugere-os. O `new-case` encontra a rua na cartografia da Câmara, divide-a em quarteirões nos cruzamentos, vai ao horário
+   buscar as carreiras que lá passam e escreve o `case.toml`. O resto (fontes, horário, veículos, parâmetros) vem
+   do caso indicado em `--like`. No topo do ficheiro fica a lista do que tem de confirmar antes de usar.
 2. Se não tem, comece pelo perfil da cidade: [docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md) (o `mobilidados discover` pode fazer um primeiro rascunho).
 
 O método e os seus limites estão em [docs/methodology.md](https://github.com/diogo4256/mobilidados/blob/main/docs/methodology.md); conselhos para escrever à
@@ -133,7 +143,7 @@ A documentação técnica está, por agora, em inglês.
 src/mobilidados/          biblioteca e comandos (agents/ = ferramentas opcionais com IA)
 src/mobilidados/data/     catálogo de veículos e normas de desenho de rua, com fonte
 src/mobilidados/locales/  textos das figuras, da lista de factos e dos relatórios, um ficheiro por língua
-cities/                   perfis de cidade: serviços, códigos, licenças
+cities/                   perfis de cidade (serviços, códigos, licenças, parâmetros) e dados datados (horário, ocorrências)
 cases/<caso>/             case.toml, sources.lock.json, results/ (no repositório), data/raw/ (fora dele)
 docs/                     método, ferramentas com IA, nova cidade, cartas a entidades públicas, partes interessadas
 tests/                    testes com dados fictícios e teste que refaz cada caso
