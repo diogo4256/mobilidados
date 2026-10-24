@@ -1,6 +1,6 @@
 # Writing to a public body with the results
 
-Lessons from using streetfit's results in real requests. They apply to any letter a citizen sends to a
+Lessons from using the results of mobilidados in real requests. They apply to any letter a citizen sends to a
 municipality, a transport operator or a parliament committee.
 
 ## State facts and ask
@@ -27,7 +27,7 @@ municipality, a transport operator or a parliament committee.
 * **No numbers that rest on an assumption without saying so.** If the bus width with mirrors is assumed, keep
   it out of the letter or label it.
 
-`streetfit lint` catches the mechanical cases; `streetfit check-claims` checks every claim against the ledger.
+`mobilidados lint` catches the mechanical cases; `mobilidados check-claims` checks every claim against the ledger.
 
 ## Practicalities
 

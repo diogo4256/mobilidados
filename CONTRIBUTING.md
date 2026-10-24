@@ -9,14 +9,14 @@ method on different cartography and makes the tool useful to more people.
   `case.toml`, `sources.lock.json`, `results/` and a short `README.md`. Open an issue with the *New case*
   template first if you want feedback on the question.
 * **A new city**: add `cities/<city>.toml` and one case that uses it. See [docs/adding-a-city.md](docs/adding-a-city.md).
-* **Design references**: add entries to `src/streetfit/data/standards.toml` with the document's URL and SHA-256,
-  printed and PDF page, a verbatim quote and the scope. `streetfit extract-standard` helps read drawings; a
+* **Design references**: add entries to `src/mobilidados/data/standards.toml` with the document's URL and SHA-256,
+  printed and PDF page, a verbatim quote and the scope. `mobilidados extract-standard` helps read drawings; a
   human confirms every value.
-* **Vehicles**: add entries to `src/streetfit/data/vehicles.toml` with a source and an evidence grade.
+* **Vehicles**: add entries to `src/mobilidados/data/vehicles.toml` with a source and an evidence grade.
   Catalogue text in other languages goes in a `translations.<lang>` table after the entry.
-* **A language**: copy `src/streetfit/locales/en.toml` to `<lang>.toml`, translate the values (keep the
-  `{placeholders}`), add the code to `Lang` in `src/streetfit/config.py` and its plural rule to `PLURAL_RULES` in
-  `src/streetfit/i18n.py`. A message that depends on a count is a table with the forms `one` and `other`
+* **A language**: copy `src/mobilidados/locales/en.toml` to `<lang>.toml`, translate the values (keep the
+  `{placeholders}`), add the code to `Lang` in `src/mobilidados/config.py` and its plural rule to `PLURAL_RULES` in
+  `src/mobilidados/i18n.py`. A message that depends on a count is a table with the forms `one` and `other`
   (`one` is the singular; write both, with the same placeholders in each). A test checks that every key, form and
   placeholder is there.
 * **Code**: new source kinds (WFS, OGC API Features, OpenStreetMap), swept-path analysis, orthophoto checks.
@@ -57,7 +57,7 @@ results), as described in [REUSE.toml](REUSE.toml).
    `CITATION.cff` too.
 2. In `CHANGELOG.md`, rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`, open a new empty `[Unreleased]` above it
    and update the link definitions at the bottom.
-3. Commit, then tag and push: `git tag -a vX.Y.Z -m "streetfit X.Y.Z" && git push origin main vX.Y.Z`.
+3. Commit, then tag and push: `git tag -a vX.Y.Z -m "mobilidados X.Y.Z" && git push origin main vX.Y.Z`.
 
 The tag starts `.github/workflows/release.yml`. It stops if the tag differs from the version in `pyproject.toml` or
 `CITATION.cff`, if the changelog has no section for it or if the unit tests fail on the tagged commit. Otherwise it
@@ -65,5 +65,6 @@ builds the package, checks that the wheel installs, makes a GitHub release with 
 publishes to PyPI through trusted publishing (no token is stored). Publication can be made to wait for a
 maintainer's approval by adding required reviewers to the `pypi` environment in the repository settings.
 
-Links in `README.md` are absolute because PyPI shows it as the project page. They point to `main`, so the page of
-an older release links to the current files.
+`README.md` (Portuguese) and `README.en.md` (English) say the same; a change to one goes into both. Their links are
+absolute because PyPI shows `README.md` as the project page. They point to `main`, so the page of an older release
+links to the current files.

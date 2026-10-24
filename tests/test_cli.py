@@ -1,9 +1,9 @@
 """The command line: what it prints, to which stream, and the exit code, on minimal cases (no network)."""
 
-from streetfit import cli
-from streetfit.config import Case
-from streetfit.provenance import Lock
-from streetfit.sources import raw_path
+from mobilidados import cli
+from mobilidados.config import Case
+from mobilidados.provenance import Lock
+from mobilidados.sources import raw_path
 
 
 def locked_case(make_case):
@@ -18,7 +18,7 @@ def locked_case(make_case):
     return case
 
 
-def test_a_streetfit_error_is_printed_without_a_traceback_and_exits_2(tmp_path, capsys):
+def test_a_mobilidados_error_is_printed_without_a_traceback_and_exits_2(tmp_path, capsys):
     assert cli.main(["verify", str(tmp_path)]) == 2
     out, err = capsys.readouterr()
     assert err.startswith("error: ")

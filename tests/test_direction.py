@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from streetfit.direction import directions
+from mobilidados.direction import directions
 
 OPEN = "Traversable"
 

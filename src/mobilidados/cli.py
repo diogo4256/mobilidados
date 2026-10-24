@@ -1,4 +1,4 @@
-"""Command-line interface: ``streetfit <command> ...``"""
+"""Command-line interface: ``mobilidados <command> ...``"""
 
 from __future__ import annotations
 
@@ -9,20 +9,20 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
-from .config import Case, StreetfitError
+from .config import Case, MobilidadosError
 
 
 def _agents(name: str) -> ModuleType:
     try:
-        return importlib.import_module(f"streetfit.agents.{name}")
+        return importlib.import_module(f"mobilidados.agents.{name}")
     except ImportError as e:  # pragma: no cover - depends on optional extras
         if e.name in {"anthropic", "pypdf", "pypdfium2"}:
-            raise StreetfitError("this command needs the optional extras: pip install 'streetfit[agents]'") from e
+            raise MobilidadosError("this command needs the optional extras: pip install 'mobilidados[agents]'") from e
         raise
 
 
 def parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(prog="streetfit", description=__doc__)
+    ap = argparse.ArgumentParser(prog="mobilidados", description=__doc__)
     ap.add_argument("-v", "--verbose", action="store_true", help="show debug messages")
     ap.add_argument("-q", "--quiet", action="store_true", help="show warnings and errors only")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -77,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     try:
         return _dispatch(a)
-    except StreetfitError as e:
+    except MobilidadosError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
 

@@ -1,13 +1,13 @@
 [project]
-name = "streetfit"
+name = "mobilidados"
 version = "0.2.0"
-description = "Reproducible, evidence-graded audits of whether a street fits the buses scheduled on it, from open municipal GIS, GTFS and design references."
+description = "Mobility claims grounded in open data, in Portugal, starting with Lisbon: reproducible, evidence-graded findings from municipal GIS, GTFS and design references."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSES/*.txt"]
 authors = [{ name = "Diogo Adegas", email = "diogo.adegas@gmail.com" }]
-keywords = ["civic-tech", "gtfs", "gis", "urban-planning", "public-transport", "open-data", "reproducibility"]
+keywords = ["civic-tech", "gtfs", "gis", "urban-planning", "public-transport", "open-data", "reproducibility", "mobility", "portugal", "lisboa"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
@@ -35,16 +35,16 @@ dependencies = [
 ]
 
 [project.urls]
-Source = "https://github.com/diogo4256/streetfit"
-Issues = "https://github.com/diogo4256/streetfit/issues"
-Changelog = "https://github.com/diogo4256/streetfit/blob/main/CHANGELOG.md"
+Source = "https://github.com/diogo4256/mobilidados"
+Issues = "https://github.com/diogo4256/mobilidados/issues"
+Changelog = "https://github.com/diogo4256/mobilidados/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 # AI-assisted tools: claim checking, OCR/vision extraction of standards, source discovery
 agents = ["anthropic>=2.3", "pypdf>=5.0", "pypdfium2>=4.30"]
 
 [project.scripts]
-streetfit = "streetfit.cli:main"
+mobilidados = "mobilidados.cli:main"
 
 [dependency-groups]
 dev = ["mypy>=1.13", "pytest>=8", "ruff>=0.6", "types-requests>=2.32"]
@@ -54,7 +54,7 @@ requires = ["hatchling>=1.26"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/streetfit"]
+packages = ["src/mobilidados"]
 
 [tool.ruff]
 line-length = 140
@@ -76,7 +76,7 @@ addopts = ["-ra", "--strict-markers", "--strict-config"]
 xfail_strict = true
 filterwarnings = ["error"]
 markers = [
-  "data: needs the case's cached sources (streetfit fetch)",
+  "data: needs the case's cached sources (mobilidados fetch)",
   "live: calls a paid or external API",
 ]
 

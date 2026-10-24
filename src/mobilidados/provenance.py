@@ -26,9 +26,9 @@ DOWNLOAD_TIMEOUT_S = 600  # seconds, for whole files (a GTFS feed, yearly CSVs),
 
 
 def user_agent() -> str:
-    """Identify the tool to the data provider. Set STREETFIT_CONTACT to add your own contact (optional)."""
-    contact = os.environ.get("STREETFIT_CONTACT")
-    return f"streetfit/{__version__}" + (f" ({contact})" if contact else "")
+    """Identify the tool to the data provider. Set MOBILIDADOS_CONTACT to add your own contact (optional)."""
+    contact = os.environ.get("MOBILIDADOS_CONTACT")
+    return f"mobilidados/{__version__}" + (f" ({contact})" if contact else "")
 
 
 @functools.cache

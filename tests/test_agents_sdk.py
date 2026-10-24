@@ -13,7 +13,7 @@ import pytest
 anthropic = pytest.importorskip("anthropic")
 httpx2 = pytest.importorskip("httpx2")
 
-from streetfit.agents import claim_checker, common, source_discovery, standards_extractor  # noqa: E402
+from mobilidados.agents import claim_checker, common, source_discovery, standards_extractor  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 CASE = ROOT / "cases" / "lisboa-rua-ricardo-jorge"

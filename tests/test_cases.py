@@ -6,8 +6,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from streetfit.config import Case
-from streetfit.provenance import Lock
+from mobilidados.config import Case
+from mobilidados.provenance import Lock
 
 ROOT = Path(__file__).resolve().parents[1]
 CASES = sorted(p.parent for p in (ROOT / "cases").glob("*/case.toml"))
@@ -25,8 +25,8 @@ def test_results_reproduce(case_dir, tmp_path):
     """Re-run the case from the locked cache into a scratch folder and compare every table with the committed one."""
     case = Case.load(case_dir)
     if any(s != "ok" for *_, s in Lock(case.lock_path).verify(case.raw_dir)):
-        pytest.skip("cached sources missing or different from the lock (run `streetfit fetch`)")
-    from streetfit.pipeline import run
+        pytest.skip("cached sources missing or different from the lock (run `mobilidados fetch`)")
+    from mobilidados.pipeline import run
 
     run(Case.load(case_dir, results_dir=tmp_path), offline=True)
     committed = sorted(p.name for p in (case.results_dir / "tables").glob("*.csv"))

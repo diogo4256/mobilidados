@@ -1,5 +1,5 @@
-# Mensagens do streetfit, português. Cada chave existe em todas as línguas (tests/test_i18n.py verifica chaves e {marcadores}).
-# Uma mensagem cuja redação depende de uma contagem é uma tabela com as formas `one` e `other` (ver streetfit/i18n.py).
+# Mensagens do mobilidados, português. Cada chave existe em todas as línguas (tests/test_i18n.py verifica chaves e {marcadores}).
+# Uma mensagem cuja redação depende de uma contagem é uma tabela com as formas `one` e `other` (ver mobilidados/i18n.py).
 
 [figure]
 free_width = "Faixa livre entre as faixas de estacionamento"
@@ -20,7 +20,7 @@ buses_day = "autocarros por dia útil"
 median_free = "faixa livre mediana (m)"
 parking_both = "estacionamento dos dois lados"
 free_width_short = "Faixa livre"
-data_credit = "Dados: {sources}; adaptados. Análise: streetfit."
+data_credit = "Dados: {sources}; adaptados. Análise: mobilidados."
 bus = "autocarro"
 car = "ligeiro"
 pattern_two_way = "dois sentidos, estacionamento dos dois lados, estreita"
@@ -61,12 +61,12 @@ one-way = "sentido único"
 "?" = "sentido desconhecido"
 
 [report]
-intro = "Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação tem um grau de evidência: **M** medido em dados oficiais · **D** texto de documento oficial · **I** inferência · **P** pressuposto · **NE** não encontrado / não verificado (≠ não existe)."
+intro = "Gerado por `mobilidados run` a partir das tabelas em `tables/`. Cada afirmação tem um grau de evidência: **M** medido em dados oficiais · **D** texto de documento oficial · **I** inferência · **P** pressuposto · **NE** não encontrado / não verificado (≠ não existe)."
 sources = "Fontes"
 origin = "origem"
 retrieved = "obtido"
 licence = "licença"
 files = { one = "{n} ficheiro, p. ex. {example}", other = "{n} ficheiros, p. ex. {example}" }
 attribution = "Atribuição"
-transformed = "Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo streetfit; não são publicações da entidade de origem, que não as subscreve."
+transformed = "Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo mobilidados; não são publicações da entidade de origem, que não as subscreve."
 and = " e "

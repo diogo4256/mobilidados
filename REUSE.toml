@@ -2,12 +2,12 @@ version = 1
 
 [[annotations]]
 path = ["src/**", "tests/**", "pyproject.toml", "uv.lock", "Makefile", ".github/**", ".gitignore", ".pre-commit-config.yaml", ".markdownlint-cli2.yaml", "cities/**", "cases/*/case.toml", "REUSE.toml"]
-SPDX-FileCopyrightText = "2026 streetfit contributors"
+SPDX-FileCopyrightText = "2026 mobilidados contributors"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = ["README.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md", "CITATION.cff", "docs/**", "cases/*/README.md"]
-SPDX-FileCopyrightText = "2026 streetfit contributors"
+path = ["README.md", "README.en.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md", "CITATION.cff", "docs/**", "cases/*/README.md"]
+SPDX-FileCopyrightText = "2026 mobilidados contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
@@ -19,5 +19,5 @@ SPDX-License-Identifier = "CC-BY-4.0"
 # attributions of the inputs, e.g. "© Câmara Municipal de Lisboa", CC-BY).
 [[annotations]]
 path = ["cases/*/results/**", "cases/*/sources.lock.json"]
-SPDX-FileCopyrightText = "2026 streetfit contributors; input data © their publishers (see sources.lock.json)"
+SPDX-FileCopyrightText = "2026 mobilidados contributors; input data © their publishers (see sources.lock.json)"
 SPDX-License-Identifier = "CC-BY-4.0"

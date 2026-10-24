@@ -11,4 +11,4 @@ body:
     attributes: {label: What you expected}
   - type: input
     id: version
-    attributes: {label: "streetfit version / commit, Python version, OS"}
+    attributes: {label: "mobilidados version / commit, Python version, OS"}

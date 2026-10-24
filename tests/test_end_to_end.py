@@ -9,10 +9,10 @@ import json
 import pandas as pd
 import pytest
 
-from streetfit import cli
-from streetfit.config import Case
-from streetfit.direction import directions
-from streetfit.pipeline import run
+from mobilidados import cli
+from mobilidados.config import Case
+from mobilidados.direction import directions
+from mobilidados.pipeline import run
 
 from .builders import write_case
 

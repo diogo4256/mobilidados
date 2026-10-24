@@ -23,9 +23,9 @@ The tables behind it are in [results/tables](results/tables). The figures below 
 ## Reproduce
 
 ```bash
-streetfit fetch cases/lisboa-rua-ricardo-jorge
-streetfit verify cases/lisboa-rua-ricardo-jorge
-streetfit run cases/lisboa-rua-ricardo-jorge
+mobilidados fetch cases/lisboa-rua-ricardo-jorge
+mobilidados verify cases/lisboa-rua-ricardo-jorge
+mobilidados run cases/lisboa-rua-ricardo-jorge
 ```
 
 Every input can be obtained by anyone and checked against `sources.lock.json`, which records what was
@@ -37,18 +37,19 @@ retrieved, from where and when:
   available.
 * **CML cartography and street axes:** fetched live. If the CML updates them, `verify` reports which files
   changed, and the results may change with them.
-* **Na Minha Rua occurrences** (CC-BY): fetched live from dados.cm-lisboa.pt. `streetfit snapshot` can package
+* **Na Minha Rua occurrences** (CC-BY): fetched live from dados.cm-lisboa.pt. `mobilidados snapshot` can package
   these and the cartography (both CC-BY) for an archive.
 * **Routing-network answers** (traffic direction): cached in `data/raw/*identify.json` during the first run.
 
 ## Provenance of this case
 
-This analysis was first done with standalone scripts and then rebuilt as streetfit. The rebuild was checked to
-reproduce the original outputs exactly, and `test_results_reproduce` (in `tests/test_cases.py`) now re-runs the
-case and fails if any committed table or finding changes. Two things were fixed on the way: two summary tables
-used by the original dossier had no script producing them (they are now generated), and the occurrences filter
-had drifted to also count bike-parking requests as abusive parking. The case uses an anchored category filter
-(`occurrences.filters` in `case.toml`), which reproduces the figure originally reported.
+This analysis was first done with standalone scripts and then rebuilt as this toolset (then called streetfit). The
+rebuild was checked to reproduce the original outputs exactly, and `test_results_reproduce` (in
+`tests/test_cases.py`) now re-runs the case and fails if any committed table or finding changes. Two things were
+fixed on the way: two summary tables used by the original dossier had no script producing them (they are now
+generated), and the occurrences filter had drifted to also count bike-parking requests as abusive parking. The case
+uses an anchored category filter (`occurrences.filters` in `case.toml`), which reproduces the figure originally
+reported.
 
 ## Not verified (NE)
 

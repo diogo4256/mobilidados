@@ -4,7 +4,7 @@ Grades (docs/evidence-standard.md): M measured from official data · D official 
 from M/D/P · P assumption · NE not found / not verified (which is not the same as "does not exist").
 
 The ledger is generated from the result tables, so a statement can never drift from its number. Letters and
-reports should quote the ledger, and ``streetfit check-claims`` verifies drafts against it.
+reports should quote the ledger, and ``mobilidados check-claims`` verifies drafts against it.
 """
 
 from __future__ import annotations

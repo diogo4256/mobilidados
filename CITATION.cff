@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use streetfit or its results, please cite it as below."
-title: "streetfit: reproducible, evidence-graded audits of whether a street fits the buses scheduled on it"
+message: "If you use mobilidados or its results, please cite it as below."
+title: "mobilidados: mobility claims grounded in open data, in Portugal, starting with Lisbon"
 type: software
 authors:
   - given-names: Diogo
@@ -9,5 +9,5 @@ authors:
 version: 0.2.0
 date-released: "2026-10-24"
 license: Apache-2.0
-repository-code: "https://github.com/diogo4256/streetfit"
-keywords: [civic-tech, gtfs, gis, public-transport, street-design, open-data, reproducibility]
+repository-code: "https://github.com/diogo4256/mobilidados"
+keywords: [civic-tech, gtfs, gis, public-transport, street-design, open-data, reproducibility, mobility, portugal, lisboa]

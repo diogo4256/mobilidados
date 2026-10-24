@@ -4,8 +4,8 @@ import pytest
 from shapely import affinity
 from shapely.geometry import LineString, box
 
-from streetfit.config import Block, StreetfitError
-from streetfit.geometry import TWO_STRIPS, classify, measure_profiles, narrow_sections, street_axis, strip_lengths, summarize_blocks
+from mobilidados.config import Block, MobilidadosError
+from mobilidados.geometry import TWO_STRIPS, classify, measure_profiles, narrow_sections, street_axis, strip_lengths, summarize_blocks
 
 from .builders import street
 
@@ -79,5 +79,5 @@ def test_the_axis_of_a_street_is_found_by_name():
     ids=["missing", "duplicate", "multi-part"],
 )
 def test_an_axis_that_is_missing_duplicated_or_in_parts_is_a_user_error(features, message):
-    with pytest.raises(StreetfitError, match=message):
+    with pytest.raises(MobilidadosError, match=message):
         street_axis(features, "NAME", "Rua B")

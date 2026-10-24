@@ -1,8 +1,8 @@
 # AI-assisted tools
 
-Install with `pip install 'streetfit[agents]'` (or `uv sync --extra agents`). The tools call the Claude API
-with the model and effort set in `src/streetfit/agents/common.py` (`MODEL`, `EFFORT`); override them with
-`STREETFIT_MODEL` and `STREETFIT_EFFORT`. Set
+Install with `pip install 'mobilidados[agents]'` (or `uv sync --extra agents`). The tools call the Claude API
+with the model and effort set in `src/mobilidados/agents/common.py` (`MODEL`, `EFFORT`); override them with
+`MOBILIDADOS_MODEL` and `MOBILIDADOS_EFFORT`. Set
 `ANTHROPIC_API_KEY`, or log in with Anthropic's `ant` CLI. Server-side refusal fallback is enabled.
 
 ## Design rule: the model proposes, code verifies
@@ -24,7 +24,7 @@ Tests, from cheapest to most complete:
   runs the tool-runner loop with our tools, and feeds the parsed responses into the checks. No key, no network.
 * `tests/test_agents_live.py`: the real API (`pytest -m live`, needs `ANTHROPIC_API_KEY`).
 
-## `streetfit check-claims CASE draft.md [--corpus source.pdf ...] [--out report.json]`
+## `mobilidados check-claims CASE draft.md [--corpus source.pdf ...] [--out report.json]`
 
 A fact-checking agent (tool runner with three read-only tools: `list_findings`, `search_sources`,
 `read_source`) over the case's findings ledger, the standards catalogue and any extra source texts you pass.
@@ -34,7 +34,7 @@ corrected wording in the draft's language. Use it on every letter before sending
 **Privacy:** the draft is sent to the Claude API. Remove names, addresses and other personal data from the
 draft first (keep placeholders such as `[nome]`).
 
-## `streetfit extract-standard manual.pdf --pages N[,N ...] [--out review.json]`
+## `mobilidados extract-standard manual.pdf --pages N[,N ...] [--out review.json]`
 
 Design manuals put key widths in cross-section drawings, often raster images without a text layer. Each page
 gets three independent readings:
@@ -49,7 +49,7 @@ them; the Lisbon manual's two-way profile (catalogue entry `cml_manual_two_way_p
 found by neither stays `vision_only` until a person confirms it on the saved page image. The output is a
 review file; adding an entry to `standards.toml` remains a human decision.
 
-## `streetfit discover --city NAME --start URL [URL ...] [--hosts ...] [--bbox lon,lat,lon,lat]`
+## `mobilidados discover --city NAME --start URL [URL ...] [--hosts ...] [--bbox lon,lat,lon,lat]`
 
 An agent explores a municipality's ArcGIS REST directory and open-data catalogue (CKAN/udata APIs) with
 GET-only tools limited to allow-listed hosts and a request budget. It proposes the cartography layer and class

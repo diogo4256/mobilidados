@@ -2,8 +2,8 @@
 
 import datetime as dt
 
-from streetfit import gtfs
-from streetfit.config import ReferenceStop
+from mobilidados import gtfs
+from mobilidados.config import ReferenceStop
 
 from .builders import CRS, make_feed
 

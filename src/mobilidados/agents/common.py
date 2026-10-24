@@ -9,12 +9,12 @@ from typing import Any, TypeVar
 import anthropic
 from pydantic import BaseModel
 
-from ..config import StreetfitError
+from ..config import MobilidadosError
 
 log = logging.getLogger(__name__)
 
-MODEL = os.environ.get("STREETFIT_MODEL", "claude-opus-5-5")
-EFFORT = os.environ.get("STREETFIT_EFFORT", "high")
+MODEL = os.environ.get("MOBILIDADOS_MODEL", "claude-opus-5-5")
+EFFORT = os.environ.get("MOBILIDADOS_EFFORT", "high")
 # Server-side fallback: if a request is declined by a safety classifier, the API retries it on a fallback model
 # chosen by refusal category, inside the same call.
 BETAS = ["server-side-fallback-2026-07-01"]
@@ -37,14 +37,14 @@ def parsed(message: Any, schema: type[Output]) -> Output:
     """The structured output of a final message, after checking that the model finished its answer."""
     if message.stop_reason == "refusal":
         details = getattr(message, "stop_details", None)
-        raise StreetfitError(
+        raise MobilidadosError(
             f"the model declined the request ({getattr(details, 'category', None)}): {getattr(details, 'explanation', '')}"
         )
     if message.stop_reason == "max_tokens":
-        raise StreetfitError("the response hit max_tokens before finishing; raise max_tokens or split the input")
+        raise MobilidadosError("the response hit max_tokens before finishing; raise max_tokens or split the input")
     out = message.parsed_output
     if not isinstance(out, schema):
-        raise StreetfitError(f"the answer does not match the {schema.__name__} schema")
+        raise MobilidadosError(f"the answer does not match the {schema.__name__} schema")
     return out
 
 
