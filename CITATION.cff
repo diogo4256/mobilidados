@@ -9,4 +9,5 @@ authors:
 version: 0.2.0
 date-released: "2026-10-24"
 license: Apache-2.0
+repository-code: "https://github.com/diogo4256/streetfit"
 keywords: [civic-tech, gtfs, gis, public-transport, street-design, open-data, reproducibility]

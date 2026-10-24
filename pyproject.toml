@@ -34,6 +34,11 @@ dependencies = [
   "urllib3>=2.0",
 ]
 
+[project.urls]
+Source = "https://github.com/diogo4256/streetfit"
+Issues = "https://github.com/diogo4256/streetfit/issues"
+Changelog = "https://github.com/diogo4256/streetfit/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 # AI-assisted tools: claim checking, OCR/vision extraction of standards, source discovery
 agents = ["anthropic>=2.3", "pypdf>=5.0", "pypdfium2>=4.30"]

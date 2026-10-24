@@ -62,7 +62,7 @@ Every statement in the ledger carries one grade ([docs/evidence-standard.md](doc
 ## Quick start
 
 ```bash
-git clone <this repository> && cd streetfit
+git clone https://github.com/diogo4256/streetfit.git && cd streetfit
 uv sync                      # or: python -m venv .venv && .venv/bin/pip install -e .
 uv run streetfit fetch cases/lisboa-rua-ricardo-jorge     # downloads the sources, writes sources.lock.json
 uv run streetfit verify cases/lisboa-rua-ricardo-jorge    # checks each file against the lock (sha256)

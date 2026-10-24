@@ -88,3 +88,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - Optional AI tools: `check-claims` (fact-checking agent), `extract-standard` (vision + multi-pass OCR),
   `discover` (city-profile agent); deterministic `lint` for letters.
 - Lisbon city profile and the Rua Ricardo Jorge case, reproducing the original October 2026 analysis exactly.
+
+[Unreleased]: https://github.com/diogo4256/streetfit/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/diogo4256/streetfit/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/diogo4256/streetfit/releases/tag/v0.1.0
