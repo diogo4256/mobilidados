@@ -11,6 +11,9 @@ streetfit.
 
 ### Added
 
+- `docs/stakeholders.md`: who makes claims with the results, who answers them, who is affected, whose data is
+  used and who keeps the toolset alive; the questions to ask before a change; and what a toolset like this can
+  and cannot do.
 - The free width without the mapped parking on one side, or on both, at the same stations as the measured free
   width (`without_parking.csv`), with a ledger finding and a bar in the width figure. Defined in
   `docs/methodology.md`. The existing tables and values are unchanged.
