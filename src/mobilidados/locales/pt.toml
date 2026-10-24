@@ -26,6 +26,7 @@ pattern_two_way = "dois sentidos, estacionamento dos dois lados, estreita"
 pattern_one_way = "sentido único, estacionamento dos dois lados, estreita"
 without_one_side = "Sem estacionamento de um lado"
 short_by = "faltam {x} m ({xm} m com espelhos)"
+removes = "nos troços com estacionamento dos dois lados, retira {m} m de estacionamento ({places})"
 
 [ledger]
 length = "O eixo da rua tem {length} m."
@@ -51,6 +52,9 @@ area_pattern = { one = "{n} tem dois sentidos e estacionamento dos dois lados, c
 area = "{streets}, {pattern}; destas, {nb} com autocarros nos dois sentidos: {names2}."
 standard = "{doc}, p. {page} ({kind}): {label}: {value} m. Âmbito: {scope}. Mediana medida: {fmed} m ({diff} m)."
 without_parking = "Sem o estacionamento do lado {side_l}, a largura livre passaria a ir de {lmin} a {lmax} m (mediana de {lmed} m); sem o do lado {side_r}, de {rmin} a {rmax} m (mediana de {rmed} m); sem estacionamento nenhum, mediana de {bmed} m. Dois autocarros precisam de {bb} m ({bbm} m com espelhos): só com estacionamento de um lado, a folga seria de {m1} m ({m1m} m com espelhos)."
+parking_removed = "Retirar o estacionamento de um lado, nos troços com estacionamento dos dois lados, retiraria {m} m de estacionamento cartografado ({places}); dos dois lados, {m2} m ({places2}). Lugares contados a {space} m cada (pressuposto). Em toda a rua, o estacionamento cartografado mede {wl} m do lado {side_l} e {wr} m do lado {side_r}."
+places = { one = "cerca de {n} lugar", other = "cerca de {n} lugares" }
+places_range = "cerca de {lo} a {hi} lugares"
 
 [kind]
 reference_profile = "perfil de referência"

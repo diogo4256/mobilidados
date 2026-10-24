@@ -11,6 +11,11 @@ streetfit.
 
 ### Added
 
+- The option without parking states what it removes: metres of mapped parking (one side and both sides, along
+  the stretches with parking on both sides), places as a range over assumed space lengths
+  (`profiles.parking_space_m`, the same lengths `parking_strip_lengths.csv` already used), and the mapped parking
+  along the whole street on each side, as a ledger finding (`parking_removed`), as columns of `without_parking.csv`
+  and as a note on the width figure.
 - Each run writes the resolved configuration it used to `results/config.json`, so a change to a city profile shows
   up as a diff in every case that uses it, and the reproduction test compares it.
 - The header of a `new-case` draft states what it assumed: each reference stop with its distance from the street

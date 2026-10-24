@@ -208,9 +208,10 @@ def narrow_sections(df: pd.DataFrame, step: float) -> list[tuple[float, float, s
 
 
 def strip_lengths(
-    df: pd.DataFrame, blocks: list[Block], step: float, stall_lengths: tuple[float, ...] = (5.0, 5.5, 6.0), min_strip: float = 0.5
+    df: pd.DataFrame, blocks: list[Block], step: float, stall_lengths: tuple[float, ...], min_strip: float = 0.5
 ) -> pd.DataFrame:
-    """Mapped parking-strip length per side and block, and the stall count it implies for given stall lengths."""
+    """Mapped parking-strip length per side and block, and the stall count it implies for given stall lengths
+    (``profiles.parking_space_m``)."""
     rows = []
     for label, sub in [(b.id, df[df.block == b.id]) for b in blocks] + [("all", df)]:
         r = {

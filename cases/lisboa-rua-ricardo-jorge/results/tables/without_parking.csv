@@ -1,4 +1,4 @@
-without,free_min,free_median,free_max
-L,6.79,6.91,7.68
-R,6.78,6.92,8.06
-both,8.79,8.92,10.06
+without,free_min,free_median,free_max,parking_removed_m,places_min,places_max
+L,6.79,6.91,7.68,116.0,19,23
+R,6.78,6.92,8.06,116.0,19,23
+both,8.79,8.92,10.06,232.0,38,46

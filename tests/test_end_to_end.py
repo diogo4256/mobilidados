@@ -191,6 +191,7 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
         "vehicle_car_typical_mirrors",
         "width_budget",
         "without_parking",
+        "parking_removed",
         "encounters",
         "occurrences",
         "area_pattern",
@@ -245,6 +246,20 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     assert findings["without_parking"]["statement"].endswith(
         "with parking on one side only, the margin would be +1.80 m (+1.00 m with mirrors)."
     )
+    # what the option removes: the length with parking on both sides (as free_width states it), counted at 6 m and 5 m per place
+    assert findings["parking_removed"]["grade"] == "I"
+    assert findings["parking_removed"]["values"] == {
+        "removed_one_side_m": findings["free_width"]["values"]["metres_two_strips"],
+        "places_one_side": [18, 21],
+        "removed_both_sides_m": 216.0,
+        "places_both_sides": [36, 43],
+        "parking_space_m": [5.0, 5.5, 6.0],
+        "whole_street_parking_m": {"left": 110.0, "right": 110.0},
+    }
+    assert (
+        "would remove 108 m of mapped parking (about 18 to 21 places); on both sides, 216 m (about 36 to 43 places). "
+        "Places counted at 5.00–6.00 m each (an assumption). Along the whole street, the mapped parking measures 110.0 m"
+    ) in findings["parking_removed"]["statement"]
     # a design reference keeps its stated scope: the scenario is not compared with the references
     assert "Without parking" not in findings["standard_rast06_bus_bus"]["statement"]
     assert findings["encounters"]["values"] == {"per_day": [1], "in_narrow_sections": [0, 1]}

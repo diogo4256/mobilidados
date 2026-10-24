@@ -253,6 +253,45 @@ def build(r: Run) -> list[Finding]:
                 caveat="Assumes the strip's space becomes carriageway and nothing else takes it; it measures an option, it is not a design.",
             )
         )
+        one, both = wp.loc["L"], wp.loc["both"]
+        spaces = cfg.profiles.parking_space_m
+        whole = r.table("parking_strip_lengths").set_index("block").loc["all"]
+
+        def places(row: Any) -> str:
+            lo, hi = int(row.places_min), int(row.places_max)
+            return say("places", count=hi, n=hi) if lo == hi else say("places_range", lo=lo, hi=hi)
+
+        F.append(
+            Finding(
+                id="parking_removed",
+                grade="I",
+                statement=say(
+                    "parking_removed",
+                    m=n(one.parking_removed_m, 0),
+                    places=places(one),
+                    m2=n(both.parking_removed_m, 0),
+                    places2=places(both),
+                    space=n(min(spaces)) if len(set(spaces)) == 1 else f"{n(min(spaces))}–{n(max(spaces))}",
+                    wl=n(whole.strip_L_length_m, 1),
+                    wr=n(whole.strip_R_length_m, 1),
+                    side_l=sides["L"],
+                    side_r=sides["R"],
+                ),
+                values={
+                    "removed_one_side_m": float(one.parking_removed_m),
+                    "places_one_side": [int(one.places_min), int(one.places_max)],
+                    "removed_both_sides_m": float(both.parking_removed_m),
+                    "places_both_sides": [int(both.places_min), int(both.places_max)],
+                    "parking_space_m": list(spaces),
+                    "whole_street_parking_m": {"left": float(whole.strip_L_length_m), "right": float(whole.strip_R_length_m)},
+                },
+                sources=["free_width", "parking_strips"],
+                method="Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the "
+                "longest and the shortest space length; the whole-street lengths are parking_strip_lengths.csv.",
+                caveat="Mapped parking area, not counted spaces: entrances and other gaps inside the strips are not subtracted. "
+                "The length of a space is an assumption.",
+            )
+        )
 
     if tr:
         es, ed = r.table("encounters_summary"), r.table("encounters_detail")
