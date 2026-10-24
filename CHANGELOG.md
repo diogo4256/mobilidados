@@ -69,6 +69,11 @@ streetfit.
 
 ### Fixed
 
+- The release workflow pinned the PyPI publishing action to the SHA of its tag object instead of its commit, for
+  which no container image exists, so the first publication would have failed after creating the GitHub
+  release. It checks out the tag by its full ref (never a branch of the same name), installs the built wheel with
+  the locked dependency versions before uploading it, names the release after the tagged project (so tags made
+  as streetfit can get their releases), and runs one release at a time. `.env` files are ignored by git.
 - A service that is down or keeps answering with an error (the Lisbon open-data portal answered 503 for a whole
   day) is reported as `error: <host> did not answer as expected ...`, with the URL, instead of a Python
   traceback.
