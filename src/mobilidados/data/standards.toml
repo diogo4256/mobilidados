@@ -106,7 +106,7 @@ quote = "Daraus resultiert ein Verkehrsraum von 6,50 m als Regelmaß bei Linienb
 
 [references.translations.pt]
 label = "Faixa de rodagem para o cruzamento de dois autocarros de carreira (RASt 06, citada)"
-scope = "Norma técnica alemã para ruas urbanas (RASt 06), citada pelo Senado de Berlim; não é lei portuguesa"
+scope = "Diretriz técnica alemã para ruas urbanas (RASt 06), citada pelo Senado de Berlim; não é lei portuguesa"
 derivation = "Espaço livre de 7,50 m (7,00 m em condições restritas) com distâncias de segurança, donde 6,50 m de faixa de rodagem; 6,00 m é referido como mínimo da RASt 06"
 
 [[references]]
@@ -124,4 +124,4 @@ quote = "für die Begegnungsfälle zweier Linienbusse bzw. zweier Lkw eine Fahrb
 [references.translations.pt]
 label = "Faixa de rodagem para o cruzamento de dois autocarros de carreira ou dois pesados (introdução da RASt 06 na Baviera)"
 scope = "Travessias de localidades em estradas federais e estaduais sob responsabilidade da Baviera; não é lei portuguesa"
-derivation = "«em regra» 6,50 m; faixa mais estreita só em ruas com tráfego muito reduzido"
+derivation = "Em geral, 6,50 m; faixa mais estreita só em ruas com tráfego muito reduzido"

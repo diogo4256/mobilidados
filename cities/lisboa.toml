@@ -162,8 +162,8 @@ pt = "A Carris não publica atrasos nem incidentes por rua."
 en = "Carris does not publish delays or incidents per street."
 
 [[known_gaps]]
-pt = "A largura dos autocarros com espelhos não foi encontrada em ficha oficial (2,90 m é pressuposto)."
-en = "No official mirror width was found for the buses (2.90 m is an assumption)."
+pt = "A largura dos autocarros com espelhos não foi encontrada em ficha oficial: a largura com espelhos usada é um pressuposto."
+en = "No official mirror width was found for the buses: the width with mirrors used here is an assumption."
 
 [[known_gaps]]
 pt = "A posição real dos carros estacionados (sobressaída das faixas) não foi medida no local."

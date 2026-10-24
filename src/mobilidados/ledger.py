@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from .config import AnySource, Case, Grade, HttpFiles, standards_catalogue
 from .direction import directions
 from .envelope import widths
+from .geometry import MIN_STRIP_M, TWO_STRIPS
 from .gtfs import ALL_TRIPS
 from .i18n import num, t
 from .provenance import Lock
@@ -29,6 +30,11 @@ if TYPE_CHECKING:
 def range_count(values: list[int]) -> float:
     """The count that picks the plural form of the range ``min–max`` printed for ``values`` (sorted, distinct)."""
     return values[0] if len(values) == 1 else math.inf  # a range of different numbers is plural
+
+
+def sentences(*parts: str) -> str:
+    """A caveat made of several sentences; empty parts (a note the city profile does not give) are left out."""
+    return " ".join(p for p in parts if p)
 
 
 class Finding(BaseModel):
@@ -47,9 +53,20 @@ def build(r: Run) -> list[Finding]:
     def say(key: str, **kw: Any) -> str:
         return t(f"ledger.{key}", lang, **kw)
 
+    def method(key: str, **kw: Any) -> str:
+        return t(f"method.{key}", lang, **kw)
+
+    def caveat(key: str, **kw: Any) -> str:
+        return t(f"caveat.{key}", lang, **kw)
+
     def n(x: Any, d: int = 2, sign: bool = False) -> str:
         return num(float(x), lang, d, sign)
 
+    def param(x: float) -> str:
+        """A parameter as it is set, without trailing zeros (``0.5``, ``3``)."""
+        return f"{x:g}".replace(".", ",") if lang == "pt" else f"{x:g}"
+
+    survey, accuracy = cfg.cartography.text("survey", lang), cfg.cartography.text("accuracy_note", lang)
     F: list[Finding] = []
     allrow = r.table("summary_by_block").set_index("block").loc["all"]
     fmed = float(allrow.free_median)
@@ -61,21 +78,23 @@ def build(r: Run) -> list[Finding]:
             statement=say("length", length=n(length)),
             values={"length_m": length},
             sources=[cfg.profiles.axes],
-            method="Axis polyline length (projected CRS).",
+            method=method("length"),
         )
     )
 
     if cfg.direction and cfg.network:
         edges = r.table("traffic_direction_edges")
         traffic = directions(edges, cfg.network.open_value)
+        points = edges.s_m.nunique()
+        two_way_at = sum(directions(g, cfg.network.open_value) == "two-way" for _, g in edges.groupby("s_m"))
         F.append(
             Finding(
                 id="traffic",
                 grade="M",
-                statement=say("traffic", count=edges.s_m.nunique(), traffic=t(f"traffic.{traffic}", lang), n=edges.s_m.nunique()),
+                statement=say("traffic", count=points, traffic=t(f"traffic.{traffic}", lang), k=two_way_at, n=points),
                 values={"traffic": traffic},
                 sources=[cfg.direction.source],
-                method="Identify on the routing network at stations along the axis.",
+                method=method("traffic"),
             )
         )
 
@@ -88,6 +107,11 @@ def build(r: Run) -> list[Finding]:
         "p5_m": allrow.free_p5,
         "p95_m": allrow.free_p95,
     }
+    # the free width counts the stations with parking on both sides and a narrow free width (geometry.classify): say
+    # how many stations with parking on both sides that leaves out for being wider
+    profiles = r.table("profiles")
+    both_sides = (profiles.strip_L > MIN_STRIP_M) & (profiles.strip_R > MIN_STRIP_M)
+    left_out = int((both_sides & (profiles["class"] != TWO_STRIPS)).sum())
     F.append(
         Finding(
             id="free_width",
@@ -101,8 +125,12 @@ def build(r: Run) -> list[Finding]:
             ),
             values={k: float(v) for k, v in free.items()} | {"metres_two_strips": metres},
             sources=[cfg.profiles.cartography, cfg.profiles.axes],
-            method=f"Transects every {cfg.profiles.step_m:g} m, widths read from mapped polygons only.",
-            caveat=cfg.cartography.accuracy_note,
+            method=method("free_width", step=param(cfg.profiles.step_m)),
+            caveat=sentences(
+                caveat("free_filter", count=left_out, max=n(cfg.profiles.narrow_max_m), k=left_out, n=int(both_sides.sum())),
+                caveat("survey", survey=survey) if survey else "",
+                accuracy,
+            ),
         )
     )
     sides = cfg.street.sides
@@ -113,7 +141,7 @@ def build(r: Run) -> list[Finding]:
             statement=say("strips", sl=n(allrow.strip_L_median), sr=n(allrow.strip_R_median), side_l=sides["L"], side_r=sides["R"]),
             values={"left_m": float(allrow.strip_L_median), "right_m": float(allrow.strip_R_median)},
             sources=[cfg.profiles.cartography],
-            method="Mapped area, not parked vehicles.",
+            method=method("parking_strips"),
         )
     )
 
@@ -142,7 +170,7 @@ def build(r: Run) -> list[Finding]:
                 ),
                 values=trips | {"service_date": str(tr.service_date)},
                 sources=[tr.source],
-                method="Trips counted at a reference stop per direction; timetable, not observed operation.",
+                method=method("transit"),
             )
         )
         for ref, g in r.table("scheduled_runtimes").groupby("ref_stop", sort=True):
@@ -168,7 +196,7 @@ def build(r: Run) -> list[Finding]:
                         "median_s_day": float(day.median_s),
                     },
                     sources=[tr.source],
-                    method="Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.",
+                    method=method("runtimes"),
                 )
             )
 
@@ -199,6 +227,9 @@ def build(r: Run) -> list[Finding]:
             )
         bus, car = vehicles[e.bus], vehicles[e.car]
         bb, bbm, bc, bcm = widths(bus, bus, False), widths(bus, bus, True), widths(bus, car, False), widths(bus, car, True)
+        wb = r.table("width_budget")  # the bus x bus margin, bodies only, at each free width it was computed for
+        spread = wb[(wb.scenario == f"{e.bus} x {e.bus}") & ~wb.mirrors].set_index("free_width_ref").margin_m
+        two = profiles[profiles["class"] == TWO_STRIPS]
         F.append(
             Finding(
                 id="width_budget",
@@ -220,8 +251,21 @@ def build(r: Run) -> list[Finding]:
                     "bus_car_margin_mirrors_m": round(fmed - bcm, 2),
                 },
                 sources=["free_width", f"vehicle_{e.bus}_body", f"vehicle_{e.bus}_mirrors", f"vehicle_{e.car}_body"],
-                method="Static envelope (sum of widths), not a swept-path simulation.",
-                caveat="Assumes parked vehicles stay inside the mapped strips; see overhang_sensitivity.csv.",
+                method=method("width_budget"),
+                caveat=sentences(
+                    caveat("budget_inside"),
+                    caveat(
+                        "budget_spread",
+                        fmin=n(spread["min"], sign=True),
+                        fmed=n(spread["median"], sign=True),
+                        fp95=n(spread["p95"], sign=True),
+                    )
+                    if len(spread)
+                    else "",
+                    caveat("budget_share", pct=round(100 * float((two.free_width < bb).mean())), bb=n(bb)),
+                    caveat("mirrors_clear" if bus.mirrors_clear_cars and car.category == "car" else "mirrors_all"),
+                    accuracy,
+                ),
             )
         )
         wp = r.table("without_parking").set_index("without")
@@ -249,8 +293,8 @@ def build(r: Run) -> list[Finding]:
                 values={f"without_{side}_median_m": float(wp.loc[side, "free_median"]) for side in ("L", "R", "both")}
                 | {"bus_bus_margin_one_side_m": round(one_side - bb, 2), "bus_bus_margin_one_side_mirrors_m": round(one_side - bbm, 2)},
                 sources=["free_width", "parking_strips", f"vehicle_{e.bus}_body", f"vehicle_{e.bus}_mirrors"],
-                method="Free width plus the mapped parking strip(s) on the same transect, at every station with parking on both sides.",
-                caveat="Assumes the strip's space becomes carriageway and nothing else takes it; it measures an option, it is not a design.",
+                method=method("without_parking"),
+                caveat=caveat("without_parking"),
             )
         )
         one, both = wp.loc["L"], wp.loc["both"]
@@ -286,10 +330,8 @@ def build(r: Run) -> list[Finding]:
                     "whole_street_parking_m": {"left": float(whole.strip_L_length_m), "right": float(whole.strip_R_length_m)},
                 },
                 sources=["free_width", "parking_strips"],
-                method="Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the "
-                "longest and the shortest space length; the whole-street lengths are parking_strip_lengths.csv.",
-                caveat="Mapped parking area, not counted spaces: entrances and other gaps inside the strips are not subtracted. "
-                "The length of a space is an assumption.",
+                method=method("parking_removed"),
+                caveat=caveat("parking_removed"),
             )
         )
 
@@ -299,7 +341,7 @@ def build(r: Run) -> list[Finding]:
         counts = sorted({int(x) for x in assumed.encounters_per_day})
         in_narrow = sorted({int(x) for x in ed.groupby("speed_kmh").in_narrow_section.sum()})
         check = (
-            say(
+            caveat(
                 "encounters_check",
                 kmh=n(schedule.speed_kmh.iloc[0], 1),
                 per_day=int(schedule.encounters_per_day.iloc[0]),
@@ -314,14 +356,15 @@ def build(r: Run) -> list[Finding]:
                 grade="I",
                 statement=say(
                     "encounters",
+                    day=tr.service_date,
                     meetings=say("meetings", count=range_count(counts), n="–".join(map(str, counts))),
                     speeds="/".join(f"{v:g}" for v in assumed.speed_kmh),
                     narrow=say("meetings_narrow", count=range_count(in_narrow), n="–".join(map(str, in_narrow))),
                 ),
                 values={"per_day": counts, "in_narrow_sections": in_narrow},
                 sources=["transit", "free_width"],
-                method="Presence-interval overlap at constant speed from scheduled times; timetable, not observation.",
-                caveat=check,
+                method=method("encounters"),
+                caveat=sentences(caveat("encounters_model"), check),
             )
         )
 
@@ -348,8 +391,10 @@ def build(r: Run) -> list[Finding]:
                     ),
                     values={"n": int(row[f"{fname}_n"]), "per_100m": float(row[f"{fname}_per_100m"]), "rank": rank, "of": len(occ)},
                     sources=[o.source],
-                    method="Nearest-street attribution of geolocated open-data records.",
-                    caveat="A report is not a proven infraction; counts are small.",
+                    method=method("occurrences"),
+                    # the rate divides the reports inside the window by each street's whole length (the bias is stated, not
+                    # corrected: the raw records are needed to recount streets that leave the window)
+                    caveat=caveat("occurrences", w=param(o.window_m)),
                 )
             )
 
@@ -382,8 +427,8 @@ def build(r: Run) -> list[Finding]:
                     ),
                     values={"two_way_streets": k.street.tolist(), "with_buses_both_directions": both.street.tolist()},
                     sources=[a.cartography, a.axes, a.identify_source or "", tr.source],
-                    method=f"Stations every {a.step_m:g} m on every street axis with buses; same width method as the case street; "
-                    "traffic direction from the routing network at one station per street.",
+                    method=method("area_pattern", step=param(a.step_m)),
+                    caveat=caveat("area_pattern", thr=n(a.threshold_m, 1), minm=param(a.min_pattern_m)),
                 )
             )
 

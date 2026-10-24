@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 INK, MUTED, GRID = "#1f2933", "#6b7280", "#d9dee5"
 FREE, BUS, BUS2, CAR, STRIP, ALERT = "#c9ced6", "#e8915b", "#c8553d", "#5b8fc9", "#8fbfe0", "#b42318"
-FREE_ALT = "#a8cfa0"  # the free width an alternative layout would leave
+FREE_ALT = "#aab3bf"  # the free width an alternative layout would leave: a neutral grey, it is an option, not a verdict
 
 STYLE: dict[Any, Any] = {
     "font.size": 10,
@@ -78,6 +78,13 @@ def width_budget(run: Run, lang: Lang) -> Figure:
     one_side = float(wp.loc[["L", "R"], "free_median"].min())
     lo, hi = int(wp.loc["L", "places_min"]), int(wp.loc["L", "places_max"])
     places = i18n.t("ledger.places", lang, count=hi, n=hi) if lo == hi else i18n.t("ledger.places_range", lang, lo=lo, hi=hi)
+
+    def margin(body: float, mirrors: float) -> str:
+        """What is left of the free width (or missing from it) with bodies only, and with mirrors."""
+        if body > free:
+            return t("short_by", lang, x=num(body - free, lang), xm=num(mirrors - free, lang))
+        return t("margin", lang, x=num(free - body, lang, sign=True), xm=num(free - mirrors, lang, sign=True))
+
     rows = [
         (
             t("without_one_side", lang),
@@ -90,16 +97,13 @@ def width_budget(run: Run, lang: Lang) -> Figure:
             f"{cat(bus)} × {cat(car)}",
             [(bus.width_body_m, BUS, num(bus.width_body_m, lang)), (car.width_body_m, CAR, num(car.width_body_m, lang))],
             car.width_mirrors_m - car.width_body_m,
-            f"{t('margin', lang)} {num(free - bus.width_body_m - car.width_body_m, lang, sign=True)} m · "
-            f"{t('with_mirrors', lang)} {num(free - envelope.widths(bus, car, True), lang, sign=True)} m",
+            margin(envelope.widths(bus, car, False), envelope.widths(bus, car, True)),
         ),
         (
             f"{cat(bus)} × {cat(bus)}",
             [(bus.width_body_m, BUS, num(bus.width_body_m, lang)), (bus.width_body_m, BUS2, num(bus.width_body_m, lang))],
             2 * (bus.width_mirrors_m - bus.width_body_m),
-            t("short_by", lang, x=num(2 * bus.width_body_m - free, lang), xm=num(2 * bus.width_mirrors_m - free, lang))
-            if 2 * bus.width_body_m > free
-            else "",
+            margin(envelope.widths(bus, bus, False), envelope.widths(bus, bus, True)),
         ),
     ]
     fig = Figure(figsize=(10, 4.4))
