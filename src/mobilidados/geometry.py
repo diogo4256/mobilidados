@@ -20,17 +20,17 @@ from shapely.geometry import LineString, MultiLineString
 from shapely.geometry.base import BaseGeometry
 
 from .arcgis import to_line, to_polygon
-from .config import Block, StreetfitError
+from .config import Block, MobilidadosError
 
 
 def street_axis(features: Iterable[dict], name_field: str, name: str) -> LineString:
     """The axis polyline of a named street (must be a single feature with a simple line)."""
     found = [f for f in features if f["attributes"].get(name_field) == name]
     if len(found) != 1:
-        raise StreetfitError(f"expected exactly one axis named {name!r} in field {name_field}, found {len(found)}")
+        raise MobilidadosError(f"expected exactly one axis named {name!r} in field {name_field}, found {len(found)}")
     line = to_line(found[0]["geometry"])
     if isinstance(line, MultiLineString):
-        raise StreetfitError(f"axis {name!r} is a multi-part line; split the case into one case per part")
+        raise MobilidadosError(f"axis {name!r} is a multi-part line; split the case into one case per part")
     return line
 
 

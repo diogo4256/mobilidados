@@ -2,8 +2,8 @@
 
 import pytest
 
-from streetfit import envelope
-from streetfit.config import vehicle_catalogue
+from mobilidados import envelope
+from mobilidados.config import vehicle_catalogue
 
 
 def test_width_budget_mirror_rule():

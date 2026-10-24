@@ -2,7 +2,7 @@
 
 The street runs east along y = ``ORIGIN[1]`` from x = ``ORIGIN[0]`` (projected CRS, metres). ``street`` builds its
 cartography, ``make_feed`` the buses that run along it, and ``write_case`` a case folder whose cached sources are in
-the formats ``streetfit fetch`` stores, so a run needs neither network nor real data.
+the formats ``mobilidados fetch`` stores, so a run needs neither network nor real data.
 """
 
 import json
@@ -17,9 +17,9 @@ from shapely.geometry import LineString, Polygon, box
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import orient
 
-from streetfit.config import Case
-from streetfit.provenance import Lock, sha256_file
-from streetfit.sources import raw_path
+from mobilidados.config import Case
+from mobilidados.provenance import Lock, sha256_file
+from mobilidados.sources import raw_path
 
 CRS = 3763
 ORIGIN = (-87500.0, -100700.0)
@@ -66,7 +66,7 @@ def make_feed(path):
     return LineString([(-87500, -100700), (-87300, -100700)])
 
 
-# --- ESRI JSON, as ArcGIS returns it and ``streetfit fetch`` stores it ------------------------------------------
+# --- ESRI JSON, as ArcGIS returns it and ``mobilidados fetch`` stores it ------------------------------------------
 def esri_polygon(poly: Polygon) -> dict[str, Any]:
     """Rings with the exterior clockwise, as ESRI JSON has it."""
     return {"rings": [[list(c) for c in orient(poly, sign=-1.0).exterior.coords]]}

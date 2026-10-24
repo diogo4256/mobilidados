@@ -7,11 +7,11 @@ import pytest
 pytest.importorskip("anthropic")
 pytest.importorskip("pydantic")
 
-from streetfit.agents import source_discovery
-from streetfit.agents.claim_checker import Claim, ClaimReport, Corpus, Evidence, verify
-from streetfit.agents.source_discovery import CityProfileDraft, DataSource, LayerChoice, to_toml
-from streetfit.agents.standards_extractor import DerivedTotal, PageReading, WidthValue, check
-from streetfit.config import ArcgisQuery, Case, HttpFile
+from mobilidados.agents import source_discovery
+from mobilidados.agents.claim_checker import Claim, ClaimReport, Corpus, Evidence, verify
+from mobilidados.agents.source_discovery import CityProfileDraft, DataSource, LayerChoice, to_toml
+from mobilidados.agents.standards_extractor import DerivedTotal, PageReading, WidthValue, check
+from mobilidados.config import ArcgisQuery, Case, HttpFile
 
 FINDINGS = {
     "free_width": {

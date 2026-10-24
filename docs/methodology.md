@@ -1,7 +1,7 @@
 # Methodology
 
 Parameters are named where they are set: a key of the case configuration (e.g. `profiles.step_m`, with its
-default in `src/streetfit/config.py`) or an argument of the function that applies it (e.g. `snap` in
+default in `src/mobilidados/config.py`) or an argument of the function that applies it (e.g. `snap` in
 `geometry.measure_profiles`). Values are not repeated here, so this text cannot disagree with the code; a case's
 ledger states the values it used where they matter.
 
@@ -79,7 +79,7 @@ ledger reports both. It is an estimate of how often the situation arises, graded
 
 Margin = free width − sum of the two vehicles' widths, for the minimum, median and 95th-percentile free
 width, bodies only and with mirrors. A bus's mirrors are mounted above a car's body, so in bus × car with
-mirrors only the car's mirrors count. Vehicle widths come from the catalogue in `src/streetfit/data/vehicles.toml`,
+mirrors only the car's mirrors count. Vehicle widths come from the catalogue in `src/mobilidados/data/vehicles.toml`,
 each graded D (published) or P (assumed). This is a static envelope, not a swept path: it ignores the extra
 width a vehicle needs when turning and the safety distance a driver keeps, so it is favourable to the
 narrow street.
@@ -106,7 +106,7 @@ lane.
 
 ## Design references (`standards.py`)
 
-`src/streetfit/data/standards.toml` lists references with the document's checksum and URL, the printed and PDF
+`src/mobilidados/data/standards.toml` lists references with the document's checksum and URL, the printed and PDF
 page, a verbatim quote, the derivation of the value and, above all, its **scope**. The comparison table gives
 the difference between the measured median and each reference; the scope decides whether the comparison is
 meaningful.

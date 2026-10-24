@@ -1,6 +1,6 @@
 """Deterministic text matching: accent-, case-, whitespace-, hyphenation- and decimal-separator-tolerant."""
 
-from streetfit.textmatch import contains, numbers, quote_near, value_in_text
+from mobilidados.textmatch import contains, numbers, quote_near, value_in_text
 
 
 def test_text_matching_is_accent_and_decimal_tolerant():

@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from streetfit import encounters
+from mobilidados import encounters
 
 
 def test_meeting_point_is_analytic():

@@ -5,8 +5,8 @@ import typing
 
 import pytest
 
-from streetfit.config import Lang
-from streetfit.i18n import PLURAL_RULES, messages, t
+from mobilidados.config import Lang
+from mobilidados.i18n import PLURAL_RULES, messages, t
 
 LANGUAGES = typing.get_args(Lang)
 FORMS = {"one", "other"}

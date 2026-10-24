@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from streetfit import arcgis
-from streetfit.config import StreetfitError
+from mobilidados import arcgis
+from mobilidados.config import MobilidadosError
 
 LAYER = "https://gis.example.org/arcgis/rest/services/Base/MapServer/53"
 ENVELOPE = (-9.2, 38.7, -9.1, 38.8)
@@ -72,7 +72,7 @@ def test_query_layer_without_matches_asks_for_no_features(monkeypatch, no_ids):
 
 def test_an_error_in_the_response_body_raises(monkeypatch):
     monkeypatch.setattr(arcgis, "http_get", lambda url, params=None: Response({"error": {"code": 400, "message": "Invalid query"}}))
-    with pytest.raises(StreetfitError, match="Invalid query"):
+    with pytest.raises(MobilidadosError, match="Invalid query"):
         arcgis.query_layer(LAYER, ENVELOPE, in_sr=4326, out_sr=3763)
 
 

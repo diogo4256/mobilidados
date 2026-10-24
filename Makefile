@@ -14,11 +14,11 @@ test:               ## unit tests (no network, no data)
 	uv run pytest -m "not data and not live"
 
 fetch:
-	uv run streetfit fetch $(CASE)
+	uv run mobilidados fetch $(CASE)
 
 verify:
-	uv run streetfit verify $(CASE)
+	uv run mobilidados verify $(CASE)
 
 reproduce: fetch verify   ## re-run a case and fail if any committed table changes
-	uv run streetfit run $(CASE)
+	uv run mobilidados run $(CASE)
 	git diff --exit-code -- $(CASE)/results/tables $(CASE)/results/findings.json

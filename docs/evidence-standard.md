@@ -2,7 +2,7 @@
 
 A request to a public body is only as strong as its weakest sentence. One overstated number, one paraphrase
 in quotation marks, or one design recommendation called "the law" gives the recipient a reason to dismiss the
-whole request. streetfit therefore attaches a grade to every statement it produces, and its tools check drafts
+whole request. mobilidados therefore attaches a grade to every statement it produces, and its tools check drafts
 against those grades.
 
 ## Grades
@@ -41,7 +41,7 @@ no delay data" is a claim about the world.
 * The **findings ledger** (`results/findings.md`, `findings.json`) is generated from the result tables, so a
   statement cannot drift from its number. Each finding lists its sources (ids in `sources.lock.json`), method
   and caveats.
-* **`streetfit lint`** mechanically flags generalisations, quotation marks, implied reviews, pre-emptive
-  concessions and normative words (the patterns are `RULES` in `src/streetfit/lint.py`).
-* **`streetfit check-claims`** has an AI agent compare each claim in a draft with the ledger and sources, then
+* **`mobilidados lint`** mechanically flags generalisations, quotation marks, implied reviews, pre-emptive
+  concessions and normative words (the patterns are `RULES` in `src/mobilidados/lint.py`).
+* **`mobilidados check-claims`** has an AI agent compare each claim in a draft with the ledger and sources, then
   verifies the agent's evidence mechanically (quotes, numbers, finding ids). See [ai-tools.md](ai-tools.md).

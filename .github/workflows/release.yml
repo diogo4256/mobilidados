@@ -46,7 +46,7 @@ jobs:
           uv run pytest -m "not data and not live"
       - run: uv build
       - name: The wheel installs and runs
-        run: uv run --isolated --no-project --with dist/*.whl streetfit --help
+        run: uv run --isolated --no-project --with dist/*.whl mobilidados --help
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release
-      - run: gh release create "$TAG" dist/* --verify-tag --title "streetfit ${TAG#v}" --notes-file notes.md
+      - run: gh release create "$TAG" dist/* --verify-tag --title "mobilidados ${TAG#v}" --notes-file notes.md
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/project/streetfit/
+      url: https://pypi.org/project/mobilidados/
     permissions:
       id-token: write # trusted publishing: PyPI accepts this workflow's identity instead of a token
     steps:

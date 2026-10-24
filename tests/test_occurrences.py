@@ -3,8 +3,8 @@
 import pytest
 from pyproj import Transformer
 
-from streetfit.config import Columns
-from streetfit.occurrences import file_summary, load_points
+from mobilidados.config import Columns
+from mobilidados.occurrences import file_summary, load_points
 
 COLS = Columns(lat="latitude", lon="longitude", date="dt_registo", category="tipologia")
 HEADER = "latitude,longitude,dt_registo,tipologia\n"

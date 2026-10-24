@@ -2,10 +2,10 @@
 
 import pytest
 
-from streetfit import provenance
-from streetfit.config import Case
-from streetfit.provenance import REQUEST_TIMEOUT_S, Lock, write_atomic
-from streetfit.sources import raw_path
+from mobilidados import provenance
+from mobilidados.config import Case
+from mobilidados.provenance import REQUEST_TIMEOUT_S, Lock, write_atomic
+from mobilidados.sources import raw_path
 
 
 def test_lock_detects_changed_and_missing_files(make_case):
@@ -23,10 +23,10 @@ def test_lock_detects_changed_and_missing_files(make_case):
 
 
 def test_the_user_agent_names_the_tool_and_optionally_a_contact(monkeypatch):
-    monkeypatch.delenv("STREETFIT_CONTACT", raising=False)
-    assert provenance.user_agent() == f"streetfit/{provenance.__version__}"
-    monkeypatch.setenv("STREETFIT_CONTACT", "me@example.org")
-    assert provenance.user_agent() == f"streetfit/{provenance.__version__} (me@example.org)"
+    monkeypatch.delenv("MOBILIDADOS_CONTACT", raising=False)
+    assert provenance.user_agent() == f"mobilidados/{provenance.__version__}"
+    monkeypatch.setenv("MOBILIDADOS_CONTACT", "me@example.org")
+    assert provenance.user_agent() == f"mobilidados/{provenance.__version__} (me@example.org)"
 
 
 def test_http_get_applies_the_default_timeout_and_raises_on_an_error_status(monkeypatch):

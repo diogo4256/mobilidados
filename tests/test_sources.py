@@ -4,10 +4,10 @@ import json
 
 import pytest
 
-from streetfit import arcgis, sources
-from streetfit.config import Case, StreetfitError
-from streetfit.provenance import DOWNLOAD_TIMEOUT_S, Lock
-from streetfit.sources import IdentifyCache, fetch, lock_identify_caches, raw_path, snapshot
+from mobilidados import arcgis, sources
+from mobilidados.config import Case, MobilidadosError
+from mobilidados.provenance import DOWNLOAD_TIMEOUT_S, Lock
+from mobilidados.sources import IdentifyCache, fetch, lock_identify_caches, raw_path, snapshot
 
 IDENTIFY = """
 [sources.identify]
@@ -62,9 +62,9 @@ def test_offline_an_uncached_point_is_an_error_and_a_cached_one_needs_no_network
     monkeypatch.setattr(arcgis, "identify", no_network)
     _, cache = identify_cache(make_case, offline=True, cached={"1000,2000": [{"Oneway": "Traversable"}]})
     assert cache.get(1000.2, 1999.8) == [{"Oneway": "Traversable"}]  # keyed by the rounded coordinates
-    with pytest.raises(StreetfitError, match=r"identify 1500,2000 is not cached"):
+    with pytest.raises(MobilidadosError, match=r"identify 1500,2000 is not cached"):
         cache.get(1500, 2000)
-    with pytest.raises(StreetfitError, match=r"identify 1000,2000@5 is not cached"):
+    with pytest.raises(MobilidadosError, match=r"identify 1000,2000@5 is not cached"):
         cache.get(1000, 2000, tolerance=5)  # another tolerance is another query
 
 
@@ -178,7 +178,7 @@ def test_snapshot_roundtrip(make_case, tmp_path):
     assert entries["cartography"]["retrieved_utc"] == "2026-10-24T00:00:00+00:00"  # original retrieval kept
     assert raw_path(dst, "identify").exists()  # identify caches restore too, so the case can run offline
     assert all(status == "ok" for *_, status in Lock(dst.lock_path).verify(dst.raw_dir))
-    with pytest.raises(StreetfitError, match="not in the snapshot"):
+    with pytest.raises(MobilidadosError, match="not in the snapshot"):
         fetch(dst, only=["street_axes"], from_dir=tmp_path / "snap")
 
 
@@ -192,7 +192,7 @@ def test_a_changed_upstream_file_never_replaces_the_pinned_one(make_case, monkey
         content = b"a newer feed"
 
     monkeypatch.setattr(sources, "http_get", lambda url, timeout: Response())
-    with pytest.raises(StreetfitError, match="different file"):
+    with pytest.raises(MobilidadosError, match="different file"):
         fetch(case, only=["feed"])
     assert not raw_path(case, "feed").exists()
     assert "feed" not in Lock(case.lock_path).entries

@@ -1,4 +1,4 @@
-"""Everything streetfit reads from TOML, validated: case files, city profiles and the packaged catalogues.
+"""Everything mobilidados reads from TOML, validated: case files, city profiles and the packaged catalogues.
 
 A case file names the street, the analysis parameters and the data sources. A city profile
 (``cities/<city>.toml``) holds what every street in that city shares: service URLs, cartography class codes,
@@ -27,7 +27,7 @@ Grade = Literal["M", "D", "I", "P", "NE"]  # evidence grades, see docs/evidence-
 Url = Annotated[str, Field(pattern=r"^https?://\S+$")]
 
 
-class StreetfitError(Exception):
+class MobilidadosError(Exception):
     """An error the user can fix (configuration, missing data, changed sources). The CLI prints it without a traceback."""
 
 
@@ -42,7 +42,7 @@ class Source(Model):
     licence_evidence: str = ""
     dataset_page: Url | None = None
     attribution: str = ""
-    redistributable: bool = Field(False, description="May be copied into a public snapshot (`streetfit snapshot`)")
+    redistributable: bool = Field(False, description="May be copied into a public snapshot (`mobilidados snapshot`)")
     description: str = ""
     note: str = ""
 
@@ -102,7 +102,7 @@ class ArcgisIdentify(Source):
 AnySource = ArcgisQuery | HttpFile | HttpFiles | ArcgisIdentify
 
 
-# --- catalogues (packaged in streetfit/data, extendable per case) -------------------------------------
+# --- catalogues (packaged in mobilidados/data, extendable per case) -------------------------------------
 class VehicleText(Model):
     label: str | None = None
     source_body: str | None = None
@@ -180,12 +180,12 @@ class Standards(Model):
     def reference(self, ref_id: str) -> tuple[Reference, Document]:
         ref = next((r for r in self.references if r.id == ref_id), None)
         if ref is None:
-            raise StreetfitError(f"unknown design reference {ref_id!r}")
+            raise MobilidadosError(f"unknown design reference {ref_id!r}")
         return ref, self.documents[ref.document]
 
 
 def _packaged(name: str) -> dict[str, Any]:
-    return tomllib.loads(resources.files("streetfit.data").joinpath(name).read_text(encoding="utf-8"))
+    return tomllib.loads(resources.files("mobilidados.data").joinpath(name).read_text(encoding="utf-8"))
 
 
 @functools.cache
@@ -429,7 +429,7 @@ def resolve_templates(data: dict[str, Any]) -> dict[str, Any]:
     for sid, src in data.get("sources", {}).items():
         name = src.get("template")
         if name is not None and name not in templates:
-            raise StreetfitError(f"sources.{sid}: unknown template {name!r} (known: {sorted(templates)})")
+            raise MobilidadosError(f"sources.{sid}: unknown template {name!r} (known: {sorted(templates)})")
         sources[sid] = deep_merge(templates[name], {k: v for k, v in src.items() if k != "template"}) if name else src
     return data | {"sources": sources}
 
@@ -448,11 +448,11 @@ class Case:
         root = Path(case_dir).resolve()
         path = root / "case.toml"
         if not path.exists():
-            raise StreetfitError(f"{path} not found")
+            raise MobilidadosError(f"{path} not found")
         try:
             config = Config.model_validate(resolve_templates(load_toml(path)))
         except ValidationError as e:
-            raise StreetfitError(f"{path}: invalid configuration\n{e}") from None
+            raise MobilidadosError(f"{path}: invalid configuration\n{e}") from None
         return cls(root=root, config=config, results_dir=Path(results_dir).resolve() if results_dir else root / "results")
 
     @property
@@ -469,7 +469,7 @@ class Case:
 
     @property
     def raw_dir(self) -> Path:
-        """Downloaded source data (never committed; re-created by ``streetfit fetch``)."""
+        """Downloaded source data (never committed; re-created by ``mobilidados fetch``)."""
         return self.root / "data" / "raw"
 
     @property
@@ -480,4 +480,4 @@ class Case:
         try:
             return self.config.sources[source_id]
         except KeyError:
-            raise StreetfitError(f"unknown source {source_id!r} (known: {sorted(self.config.sources)})") from None
+            raise MobilidadosError(f"unknown source {source_id!r} (known: {sorted(self.config.sources)})") from None

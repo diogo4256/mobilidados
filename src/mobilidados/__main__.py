@@ -1,4 +1,4 @@
-"""``python -m streetfit`` is the same as the ``streetfit`` command."""
+"""``python -m mobilidados`` is the same as the ``mobilidados`` command."""
 
 import sys
 

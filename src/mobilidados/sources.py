@@ -1,6 +1,6 @@
 """Fetch a case's sources into ``data/raw/`` and record them in ``sources.lock.json``.
 
-The source kinds are the models in :mod:`streetfit.config`: ``arcgis_query``, ``http_file``, ``http_files`` and
+The source kinds are the models in :mod:`mobilidados.config`: ``arcgis_query``, ``http_file``, ``http_files`` and
 ``arcgis_identify`` (point queries made during the analysis, cached in one JSON file and locked afterwards).
 """
 
@@ -14,7 +14,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from . import arcgis
-from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, HttpFile, HttpFiles, StreetfitError
+from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, HttpFile, HttpFiles, MobilidadosError
 from .provenance import DOWNLOAD_TIMEOUT_S, Lock, http_get, now_utc, sha256_bytes, sha256_file, write_atomic
 
 log = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
             continue
         if origin is not None:
             if not origin.exists():
-                raise StreetfitError(f"{sid}: {origin} is not in the snapshot; fetch it without --from-dir")
+                raise MobilidadosError(f"{sid}: {origin} is not in the snapshot; fetch it without --from-dir")
             if origin.is_dir():
                 shutil.copytree(origin, dest, dirs_exist_ok=True)
             else:
@@ -105,7 +105,7 @@ def _download(src: AnySource, dest: Path) -> dict[str, Any]:
     elif isinstance(src, HttpFile):
         content = http_get(src.url, timeout=DOWNLOAD_TIMEOUT_S).content
         if src.sha256 and sha256_bytes(content) != src.sha256:
-            raise StreetfitError(
+            raise MobilidadosError(
                 f"{src.url} now serves a different file (sha256 {sha256_bytes(content)[:12]}…) from the one pinned in "
                 f"case.toml ({src.sha256[:12]}…); nothing was written. Use an archived copy or update the pin deliberately."
             )
@@ -150,7 +150,7 @@ def lock_identify_caches(case: Case) -> None:
 def load_json(case: Case, source_id: str) -> dict[str, Any]:
     path = raw_path(case, source_id)
     if not path.exists():
-        raise StreetfitError(f"{path} is missing: run `streetfit fetch {case.root}` first")
+        raise MobilidadosError(f"{path} is missing: run `mobilidados fetch {case.root}` first")
     data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     return data
 
@@ -161,7 +161,7 @@ class IdentifyCache:
     def __init__(self, case: Case, source_id: str, offline: bool = False):
         src = case.source(source_id)
         if not isinstance(src, ArcgisIdentify):
-            raise StreetfitError(f"source {source_id!r} is not an arcgis_identify source")
+            raise MobilidadosError(f"source {source_id!r} is not an arcgis_identify source")
         self.src, self.path, self.offline = src, raw_path(case, source_id), offline
         self.data: dict[str, list[dict[str, Any]]] = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
         self.dirty = False
@@ -171,7 +171,7 @@ class IdentifyCache:
         key = f"{x:.0f},{y:.0f}" + ("" if tol == self.src.tolerance else f"@{tol:g}")
         if key not in self.data:
             if self.offline:
-                raise StreetfitError(f"identify {key} is not cached and --offline is set")
+                raise MobilidadosError(f"identify {key} is not cached and --offline is set")
             self.data[key] = arcgis.identify(self.src.url, x, y, self.src.sr, self.src.layers, tol)
             self.dirty = True
         return self.data[key]

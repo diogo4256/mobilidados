@@ -1,6 +1,6 @@
 """The letter linter: deterministic checks for drafts addressed to public bodies."""
 
-from streetfit.lint import lint_text
+from mobilidados.lint import lint_text
 
 
 def test_lint_flags_the_known_failure_modes():

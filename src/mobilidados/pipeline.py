@@ -23,7 +23,7 @@ from shapely.ops import linemerge, unary_union
 
 from . import area_scan, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
 from .arcgis import to_line
-from .config import ArcgisQuery, Case, Config, HttpFiles, StreetfitError
+from .config import ArcgisQuery, Case, Config, HttpFiles, MobilidadosError
 from .sources import IdentifyCache, check_pins, load_json, lock_identify_caches, raw_path
 
 log = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class Run:
         if name not in self.tables:
             path = self.tables_dir / f"{name}.csv"
             if not path.exists():
-                raise StreetfitError(f"table {name!r} is missing from {self.tables_dir}: run the stage that writes it first")
+                raise MobilidadosError(f"table {name!r} is missing from {self.tables_dir}: run the stage that writes it first")
             self.tables[name] = pd.read_csv(path)
         return self.tables[name]
 
@@ -81,10 +81,10 @@ class Run:
 def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> Run:
     unknown = sorted(set(stages or []) - set(STAGES))
     if unknown:
-        raise StreetfitError(f"unknown stages {unknown}; the stages are {list(STAGES)}")
+        raise MobilidadosError(f"unknown stages {unknown}; the stages are {list(STAGES)}")
     stale = check_pins(case)
     if stale:
-        raise StreetfitError(
+        raise MobilidadosError(
             f"cached files do not match the sha256 pinned in case.toml: {stale}. "
             "Restore the pinned files (fetch --from-dir) or update the pin deliberately."
         )

@@ -2,7 +2,7 @@
 
 import pytest
 
-from streetfit.config import ArcgisQuery, Case, StreetfitError, standards_catalogue, vehicle_catalogue
+from mobilidados.config import ArcgisQuery, Case, MobilidadosError, standards_catalogue, vehicle_catalogue
 
 FEED = "[sources.feed]\nkind = 'http_file'\nurl = 'https://example.org/gtfs.zip'\nlicence = 'x'\n"
 STOP_20 = "{ route = '20', direction_id = 0, stop_id = 's', s_m = 0, heading = 1 }"
@@ -37,7 +37,7 @@ def test_minimal_case_loads_with_defaults(make_case):
     ],
 )
 def test_invalid_configuration_is_reported(make_case, extra, message):
-    with pytest.raises(StreetfitError, match="invalid configuration") as err:
+    with pytest.raises(MobilidadosError, match="invalid configuration") as err:
         Case.load(make_case(extra))
     assert message in str(err.value)
 
@@ -50,7 +50,7 @@ def test_city_profile_and_templates(make_case, tmp_path):
     src = Case.load(make_case(templated, prefix='extends = "../city.toml"\n')).source("area")
     assert isinstance(src, ArcgisQuery)
     assert (src.url, src.licence, src.envelope) == ("https://example.org/MapServer/9", "CC-BY-4.0", (0, 0, 1, 1))
-    with pytest.raises(StreetfitError, match="unknown template 'other'"):
+    with pytest.raises(MobilidadosError, match="unknown template 'other'"):
         Case.load(make_case(templated.replace("layer", "other"), name="b", prefix='extends = "../city.toml"\n'))
 
 
@@ -70,6 +70,6 @@ def test_vehicle_catalogue_is_graded():
 
 
 def test_an_unknown_source_id_is_an_error_listing_the_known_ones(make_case):
-    with pytest.raises(StreetfitError, match="unknown source 'nope'") as err:
+    with pytest.raises(MobilidadosError, match="unknown source 'nope'") as err:
         Case.load(make_case()).source("nope")
     assert "['cartography', 'street_axes']" in str(err.value)

@@ -5,21 +5,32 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+The project is now called **mobilidados**, a toolset for mobility claims grounded in open data, in Portugal,
+starting with Lisbon. The street-width audit is its first tool. Versions 0.1.0 and 0.2.0 were released as
+streetfit.
+
 ### Added
 
+- `README.md` is in Portuguese and `README.en.md` in English. Both state the project's purpose (better mobility, with
+  public transport as part of the solution) and what the tools do not do yet.
 - A pushed tag `vX.Y.Z` makes a GitHub release with the changelog's section as notes and publishes the
   package to PyPI (`.github/workflows/release.yml`). The steps are in `CONTRIBUTING.md`.
 
 ### Changed
 
+- The package, module and command are `mobilidados` (were `streetfit`), and so are the environment variables
+  (`MOBILIDADOS_MODEL`, `MOBILIDADOS_EFFORT`, `MOBILIDADOS_CONTACT`), the exception (`MobilidadosError`) and the
+  User-Agent sent to data providers. The repository moved to `diogo4256/mobilidados`; GitHub redirects the old
+  address. The texts generated in `findings.md` and on the figures name mobilidados; tables and findings are
+  unchanged.
 - README links are absolute, so they work on PyPI as well as on GitHub.
 - Dependency lower bounds are the oldest versions that pass the test suite, and a `lowest` CI job installs
-  exactly them. `urllib3` is declared, since streetfit imports it directly.
+  exactly them. `urllib3` is declared, since mobilidados imports it directly.
 - The package ships `py.typed`, so type checkers use its annotations.
 - Limits, tolerances and timeouts that were bare numbers in the code are named constants or parameters.
-- `streetfit verify` lists every file that does not match the lock, whatever the number of files.
-- The module `streetfit.network` is now `streetfit.direction`, after the stage it implements (`network` read as
-  network access). `python -m streetfit` works.
+- `mobilidados verify` lists every file that does not match the lock, whatever the number of files.
+- The module `network` is now `direction`, after the stage it implements (`network` read as
+  network access). `python -m mobilidados` works.
 - `occurrences_files.csv` has a `with_date` column: the records with coordinates whose date parsed. A file
   without a located record reports 0, not an empty value, and empty dates.
 - A street name that is not in the axes layer (or is in several features or in parts) and an error answered by an
@@ -29,7 +40,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- `streetfit discover` wrote a street-axes template without a licence, which no case could load, and a
+- `mobilidados discover` wrote a street-axes template without a licence, which no case could load, and a
   multi-line note or check could break the draft's TOML.
 - The claim checker's read tool returned one line more than it told the model.
 - The dates of the citizen reports were parsed across all files at once, so a file whose date format differed
@@ -95,6 +106,6 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `discover` (city-profile agent); deterministic `lint` for letters.
 - Lisbon city profile and the Rua Ricardo Jorge case, reproducing the original October 2026 analysis exactly.
 
-[Unreleased]: https://github.com/diogo4256/streetfit/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/diogo4256/streetfit/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/diogo4256/streetfit/releases/tag/v0.1.0
+[Unreleased]: https://github.com/diogo4256/mobilidados/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/diogo4256/mobilidados/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/diogo4256/mobilidados/releases/tag/v0.1.0

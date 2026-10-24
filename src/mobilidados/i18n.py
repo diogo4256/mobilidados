@@ -31,7 +31,7 @@ PLURAL_RULES: dict[str, Callable[[float], str]] = {"en": one_only_for_exactly_on
 @functools.cache
 def messages(lang: str) -> dict[str, Message]:
     """All messages of a language, keyed ``section.key`` (e.g. ``ledger.length``)."""
-    data = tomllib.loads(resources.files("streetfit.locales").joinpath(f"{lang}.toml").read_text(encoding="utf-8"))
+    data = tomllib.loads(resources.files("mobilidados.locales").joinpath(f"{lang}.toml").read_text(encoding="utf-8"))
     return {f"{section}.{k}": v for section, table in data.items() for k, v in table.items()}
 
 

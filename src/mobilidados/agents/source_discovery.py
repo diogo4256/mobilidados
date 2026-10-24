@@ -57,7 +57,7 @@ class CityProfileDraft(BaseModel):
     notes: list[str] = Field(description="Caveats: scale, survey date, gaps, anything a human must check")
 
 
-SYSTEM = """You help add a new city to streetfit, a tool that measures street cross-sections from municipal
+SYSTEM = """You help add a new city to mobilidados, a tool that measures street cross-sections from municipal
 cartography and checks them against the buses scheduled on each street (GTFS).
 
 Find, using only the tools: (1) a polygon layer of the large-scale cartography (1:1000 to 1:2000) with
@@ -216,7 +216,7 @@ def to_toml(d: CityProfileDraft, checks: list[str]) -> str:
     q = lambda s: json.dumps(s, ensure_ascii=False)  # noqa: E731
     lines = (
         [
-            f"# DRAFT city profile proposed by `streetfit discover` for {_one_line(d.city)}. REVIEW every line before use.",
+            f"# DRAFT city profile proposed by `mobilidados discover` for {_one_line(d.city)}. REVIEW every line before use.",
             "# Automatic checks:",
         ]
         + [f"#   {_one_line(c)}" for c in checks]

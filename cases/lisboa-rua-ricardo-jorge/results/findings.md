@@ -2,7 +2,7 @@
 
 > A faixa livre entre as duas faixas de estacionamento deixa cruzar dois autocarros programados nos dois sentidos?
 
-Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação tem um grau de evidência: **M** medido em dados oficiais · **D** texto de documento oficial · **I** inferência · **P** pressuposto · **NE** não encontrado / não verificado (≠ não existe).
+Gerado por `mobilidados run` a partir das tabelas em `tables/`. Cada afirmação tem um grau de evidência: **M** medido em dados oficiais · **D** texto de documento oficial · **I** inferência · **P** pressuposto · **NE** não encontrado / não verificado (≠ não existe).
 
 - **[M]** O eixo da rua tem 209,25 m.  
   <sub>Axis polyline length (projected CRS).</sub>
@@ -57,4 +57,4 @@ Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação t
 - © Câmara Municipal de Lisboa, <https://dados.gov.pt/datasets/cartografia-numerica-vetorial>, CC-BY-4.0 (<https://creativecommons.org/licenses/by/4.0/>).
 - © Câmara Municipal de Lisboa, <https://dados.gov.pt/datasets/ocorrencias-na-minha-rua-lx>, CC-BY-4.0 (<https://creativecommons.org/licenses/by/4.0/>).
 
-Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo streetfit; não são publicações da entidade de origem, que não as subscreve.
+Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo mobilidados; não são publicações da entidade de origem, que não as subscreve.
