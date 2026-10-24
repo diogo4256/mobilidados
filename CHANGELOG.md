@@ -5,6 +5,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-24
+
 The project is now called **mobilidados**: tools for data-based mobility claims in Portugal, starting with
 Lisbon. The street-width audit is its first tool. Versions 0.1.0 and 0.2.0 were released as
 streetfit.
@@ -182,6 +184,7 @@ streetfit.
   `discover` (city-profile agent); deterministic `lint` for letters.
 - Lisbon city profile and the Rua Ricardo Jorge case, reproducing the original October 2026 analysis exactly.
 
-[Unreleased]: https://github.com/diogo4256/mobilidados/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/diogo4256/mobilidados/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/diogo4256/mobilidados/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/diogo4256/mobilidados/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/diogo4256/mobilidados/releases/tag/v0.1.0
