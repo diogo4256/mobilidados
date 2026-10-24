@@ -117,7 +117,18 @@ def width_budget(run: Run, lang: Lang) -> Figure:
         if mir:
             ax.barh(y, mir, left=x, height=0.55, color="white", edgecolor=MUTED, lw=0.8, hatch="////")
         if note:
-            ax.text(0, y - 0.38, note, ha="left", va="top", fontsize=9, color=MUTED)
+            # on a white ground, so the free-width line (zorder 2) does not cross the words; below the axis spine (2.5)
+            ax.text(
+                0,
+                y - 0.38,
+                note,
+                ha="left",
+                va="top",
+                fontsize=9,
+                color=MUTED,
+                zorder=2.2,
+                bbox={"facecolor": "white", "edgecolor": "none", "pad": 1},
+            )
         ax.text(-0.1, y, lab, ha="right", va="center", fontsize=10, color=INK)
     ax.axvline(free, color=ALERT, lw=1.6, ls="--")
     ax.text(free + 0.05, len(rows) - 0.4, f"{t('limit', lang)} {num(free, lang)} m", color=ALERT, fontsize=10, va="center")
