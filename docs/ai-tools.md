@@ -27,9 +27,9 @@ Tests, from cheapest to most complete:
 ## `mobilidados check-claims CASE draft.md [--corpus source.pdf ...] [--out report.json]`
 
 A fact-checking agent (tool runner with three read-only tools: `list_findings`, `search_sources`,
-`read_source`) over the case's findings ledger, the standards catalogue and any extra source texts you pass.
-It classifies each claim as supported, overstated, contradicted, unsupported or needs_human, and suggests a
-corrected wording in the draft's language. Use it on every letter before sending.
+`read_source`) over the case's findings ledger, the catalogue of design references (`standards.toml`) and any
+extra source texts you pass. It classifies each claim as supported, overstated, contradicted, unsupported or
+needs_human, and suggests a corrected wording in the draft's language. Use it on every letter before sending.
 
 **Privacy:** the draft is sent to the Claude API. Remove names, addresses and other personal data from the
 draft first (keep placeholders such as `[nome]`).

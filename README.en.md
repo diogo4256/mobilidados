@@ -24,10 +24,14 @@ its grade and source, is in the [findings ledger](https://github.com/diogo4256/m
 
 ## Public data, with its provenance
 
-Every input is a file or service that a public body or an operator makes available to anyone, without a login.
-Each case records in `sources.lock.json` where every input came from, when, its SHA-256 and its licence, or
-that the publisher states none; inputs without a stated licence are used but not redistributed. Anyone can
-obtain the same files and check the same results.
+Every input is a file or service that anyone can reach without an account or a password. For Lisbon, the
+cartography, street axes and Na Minha Rua reports come from the municipality's GIS services and open-data portal.
+The GTFS feed is a copy of the file Carris published, downloaded from the Mobility Database archive and pinned by
+its SHA-256. The traffic direction is queried from a service of Lisboa Interativa, the municipality's public map
+viewer, in guest access. That service states no licence, and its address embeds a backup date, so it may change.
+Each case records in `sources.lock.json` where every input came from, when, its SHA-256 and its licence, or that
+the publisher states none; inputs without a stated licence are used but not redistributed. Anyone can obtain the
+same files and check the same results.
 
 ## What it does
 
@@ -99,8 +103,9 @@ folder for archiving (e.g. on Zenodo); `mobilidados fetch CASE --from-dir DIR` r
 
 ## AI-assisted tools (optional)
 
-`pip install 'mobilidados[agents]'` adds three tools built on Claude. In all three, **the model proposes and
-plain code verifies**: a model output never becomes evidence by itself. See [docs/ai-tools.md](https://github.com/diogo4256/mobilidados/blob/main/docs/ai-tools.md).
+`pip install 'mobilidados[agents]'` adds the tools in the table below, built on Claude. In all of them, **the model
+proposes and plain code verifies**: a model output never becomes evidence by itself. See
+[docs/ai-tools.md](https://github.com/diogo4256/mobilidados/blob/main/docs/ai-tools.md).
 
 | Command | What the model does | What code then checks |
 | --- | --- | --- |
@@ -109,7 +114,7 @@ plain code verifies**: a model output never becomes evidence by itself. See [doc
 | `mobilidados discover --city X --start URL` | explores a municipality's GIS/open-data portal (allow-listed hosts, read-only) and proposes a city profile | every proposed layer is re-queried: fields exist, class codes occur in the test area |
 
 `mobilidados lint draft.md` runs the deterministic part of the letter checks (generalisations, pre-emptive
-concessions, quotation marks, "rule"/"minimum" for a recommendation) with no AI at all.
+concessions, quotation marks, normative words such as "mandatory" for a recommendation) with no AI at all.
 
 ## Add your street
 
