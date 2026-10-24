@@ -14,12 +14,14 @@ import json
 import os
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from . import __version__
+from .config import MobilidadosError
 
 REQUEST_TIMEOUT_S = 120  # seconds, for service queries
 DOWNLOAD_TIMEOUT_S = 600  # seconds, for whole files (a GTFS feed, yearly CSVs), which can be much larger than a query response
@@ -43,8 +45,15 @@ def session() -> requests.Session:
 
 
 def http_get(url: str, params: dict[str, Any] | None = None, timeout: float = REQUEST_TIMEOUT_S) -> requests.Response:
-    r = session().get(url, params=params, timeout=timeout)
-    r.raise_for_status()
+    """GET with retries. A service that cannot be reached or keeps answering with an error is a MobilidadosError."""
+    try:
+        r = session().get(url, params=params, timeout=timeout)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        raise MobilidadosError(
+            f"{urlparse(url).hostname} did not answer as expected, even after retrying ({url}): {e}. "
+            "The service may be down for a while; try again later."
+        ) from e
     return r
 
 
@@ -79,10 +88,12 @@ class Lock:
         self.entries: dict[str, dict[str, Any]] = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
     def record(self, source_id: str, files: list[Path], base: Path, **meta: Any) -> None:
-        self.entries[source_id] = {
-            **meta,
-            "files": {p.relative_to(base).as_posix(): {"sha256": sha256_file(p), "bytes": p.stat().st_size} for p in sorted(files)},
-        }
+        """Lock a source's files. Files identical to the locked ones keep their entry, retrieval time included, so
+        fetching unchanged data again leaves the lock file unchanged."""
+        locked = {p.relative_to(base).as_posix(): {"sha256": sha256_file(p), "bytes": p.stat().st_size} for p in sorted(files)}
+        if self.entries.get(source_id, {}).get("files") == locked:
+            return
+        self.entries[source_id] = {**meta, "files": locked}
 
     def save(self) -> None:
         self.path.write_text(json.dumps(self.entries, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
