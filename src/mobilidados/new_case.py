@@ -1,8 +1,8 @@
 """Draft a case for another street from an existing case of the same city (``mobilidados new-case``).
 
-Everything that does not depend on the street is copied from the model case: the city profile, the sources and
-their pins (so the same GTFS feed and service day), the vehicles, the parameters and the known gaps. What depends
-on the street is derived from the data:
+The draft extends the same file as the model case (in Lisbon, a dated data file such as
+``cities/lisboa-2026-10.toml``), so the data pins, the service day, the vehicles, the parameters and the shared known
+gaps are inherited, not copied. What depends on the street is derived from the data:
 
 * the axis, found by name in the city's axes layer (the whole layer, not only the model case's area);
 * the download envelopes around it, for the case and for the area scan;
@@ -10,7 +10,8 @@ on the street is derived from the data:
 * the labels of the two directions of travel and of the two sides, from the axis bearing;
 * the check points (block midpoints) and the traffic-direction stations;
 * the bus routes that run along the street on the service day, and one reference stop per route and direction:
-  the stop near the street served by most of that direction's trips.
+  the stop near the street served by most of that direction's trips;
+* the question and the gap about buses meeting, which depend on whether buses run both ways.
 
 The draft is a starting point: its header lists what a person must check before the case is used.
 """
@@ -26,14 +27,15 @@ import tomllib
 import unicodedata
 from itertools import pairwise
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 import numpy as np
 from pyproj import Transformer
 from shapely.geometry import LineString
 
 from . import arcgis, geometry, gtfs
-from .config import ArcgisQuery, Case, MobilidadosError
+from .config import ArcgisQuery, Case, Lang, MobilidadosError
+from .i18n import t
 from .sources import raw_path
 
 AXIS_MARGIN_M = 150.0  # around the street's axis: the case's cartography and axes
@@ -172,16 +174,17 @@ def draft(like: Case, street: str, out_dir: Path) -> dict[str, Any]:
     if "extends" in data:
         city_path = (like.root / data["extends"]).resolve()
         data["extends"] = Path(os.path.relpath(city_path, out_dir.resolve())).as_posix()
-    data["case"] = {k: v for k, v in data["case"].items() if k != "reference_run"} | {
+    data["case"] = {k: v for k, v in data["case"].items() if k not in ("reference_run", "question")} | {
         "id": out_dir.name,
         "title": f"{street} ({cfg.city.name})",
     }
+    data.pop("known_gaps", None)  # the model case's own gaps are about its street; the city's are inherited
     data["street"] = {"name": street, "headings": headings, "sides": sides, "blocks": street_blocks}
     data["_bearing"] = bearing(axis)
     step = cfg.profiles.step_m
     data.setdefault("profiles", {})["check_points_s"] = [on_grid((b["start"] + b["end"]) / 2, step) for b in street_blocks]
-    if "direction" in data:
-        data["direction"]["stations_s"] = stations(axis.length, [b["start"] for b in street_blocks[1:]])
+    if cfg.direction:
+        data.setdefault("direction", {})["stations_s"] = stations(axis.length, [b["start"] for b in street_blocks[1:]])
     if cfg.transit:
         feed_path = raw_path(like, cfg.transit.source)
         if not feed_path.exists():
@@ -189,14 +192,18 @@ def draft(like: Case, street: str, out_dir: Path) -> dict[str, Any]:
         routes, refs = transit(gtfs.Feed(feed_path), axis, like.crs, cfg.transit.service_date, cfg.transit.buffer_m)
         if not refs:
             raise MobilidadosError(f"no bus route of the feed runs along {street!r} on {cfg.transit.service_date}")
-        data["transit"] |= {"routes": routes, "reference_stops": refs}
+        data.setdefault("transit", {}).update(routes=routes, reference_stops=refs)
+        both_ways = len({r["heading"] for r in refs}) == 2
+        data["case"]["question"] = t("draft.question_both" if both_ways else "draft.question_one", lang)
+        if both_ways:
+            data["known_gaps"] = [{lg: t("draft.gap_meeting", lg) for lg in get_args(Lang)}]
 
-    area = {cfg.area_scan.cartography, cfg.area_scan.axes} if cfg.area_scan else set()
-    for sid, spec in data.get("sources", {}).items():
-        if sid in area:
-            spec["envelope"] = area_env
-        elif sid in (cfg.profiles.cartography, cfg.profiles.axes):
-            spec["envelope"] = env
+    sources = data.setdefault("sources", {})
+    for sid in (cfg.profiles.cartography, cfg.profiles.axes):
+        sources.setdefault(sid, {})["envelope"] = env
+    if cfg.area_scan:
+        for sid in (cfg.area_scan.cartography, cfg.area_scan.axes):
+            sources.setdefault(sid, {})["envelope"] = area_env
     return data
 
 
@@ -254,19 +261,13 @@ def write(like: Case, street: str, out_dir: Path | None = None) -> Path:
     bearing_deg = data.pop("_bearing")
     header = (
         f"# Draft made by `mobilidados new-case` from {like.id} on {dt.date.today().isoformat()}. Check before use:\n"
-        "# - [case] title and question;\n"
+        "# - [case] title;\n"
         "# - [street] blocks: cut where other axes meet the street, labelled with their full names; headings and\n"
         f"#   sides: compass labels from the axis bearing ({bearing_deg:.0f}° from grid north), which may need judgement;\n"
         "# - [transit] routes and reference_stops: the routes that run along the street on the service day, and for\n"
         "#   each route and direction the stop near the street that most of its trips serve;\n"
-        + (
-            "# - [case] question: on the service day the buses run along the street in one direction only, so a question\n"
-            "#   about buses meeting from opposite directions does not apply as it stands;\n"
-            if len({r["heading"] for r in data.get("transit", {}).get("reference_stops", [])}) == 1
-            else ""
-        )
-        + f"# - [[known_gaps]]: copied from {like.id}.\n"
-        "# Everything else (sources and pins, vehicles, parameters) is the model case's.\n"
+        "# - [case] question: written for buses in both directions or in one, as the timetable shows.\n"
+        f"# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {like.id}.\n"
     )
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "case.toml").write_text(dumps(data, header), encoding="utf-8")

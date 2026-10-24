@@ -1,0 +1,29 @@
+# Lisbon data as of October 2026: the GTFS feed and the Na Minha Rua files a case uses, and the service day it
+# counts buses on. When newer data come out, add a file like this one (e.g. lisboa-2027-04.toml) and point new
+# cases at it; a case that already has results keeps the file it was run with, so its results stay reproducible.
+
+extends = "lisboa.toml"
+
+[transit]
+service_date = 2026-10-27        # a Tuesday within the feed's validity
+
+[sources.carris_gtfs]
+# The Carris endpoint only serves the current feed; the pinned feed is archived byte-for-byte by the
+# Mobility Database, and the case downloads it from there.
+url = "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
+sha256 = "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7"
+description = "Carris GTFS as published on 2026-10-19 (origin: https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS)"
+
+[sources.na_minha_rua]
+files = [
+  { name = "2017.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/d66d2141-5a5e-4725-9593-ac2da4e65f17/download/2017.csv" },
+  { name = "2018.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/d2cc80e2-8c42-4f05-ba9a-8a6b3093900f/download/2018.csv" },
+  { name = "2019.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/555479f0-cece-4094-a2a4-47c14c284e06/download/2019.csv" },
+  { name = "2020.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/6088d980-bb5d-4ade-af38-58bfb5587e50/download/2020.csv" },
+  { name = "2021.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/c3d13f68-a546-450f-83d8-99574623d7fc/download/2021.csv" },
+  { name = "2022.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/0d7c76f3-f206-47b7-be82-0a76bb79ba54/download/2022.csv" },
+  { name = "2023.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/ffe6d37a-0a45-49ee-bbe9-9b5d5209753b/download/2023.csv" },
+  { name = "2024.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/a67f2c0c-89b9-4911-a8d7-146137976b42/download/2024.csv" },
+  { name = "2025.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/6434e62b-eb7d-4d2c-95d8-a19bc8bd1755/download/2025.csv" },
+  { name = "2026_1s.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/e77c5e16-70c2-492a-96ef-fc5bdadf387c/download/20261s.csv" },
+]

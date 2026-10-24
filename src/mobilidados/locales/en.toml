@@ -72,3 +72,8 @@ files = { one = "{n} file, e.g. {example}", other = "{n} files, e.g. {example}" 
 attribution = "Attribution"
 transformed = "The data were transformed: tables and figures are measurements, counts and aggregations derived by mobilidados; they are not publications of the originating body, which does not endorse them."
 and = " and "
+
+[draft]
+question_both = "Does the free width between the two parking strips let two scheduled buses pass each other in opposite directions?"
+question_one = "Does the free width between the two parking strips leave room for a scheduled bus and a car side by side?"
+gap_meeting = "No field observation of two buses meeting on this street: encounters are timetable estimates."

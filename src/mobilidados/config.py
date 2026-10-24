@@ -414,11 +414,17 @@ def deep_merge(base: dict[str, Any], over: dict[str, Any]) -> dict[str, Any]:
 
 
 def load_toml(path: Path) -> dict[str, Any]:
-    """Load a TOML file, following ``extends`` (relative to the file) recursively."""
+    """Load a TOML file, following ``extends`` (relative to the file) recursively.
+
+    The file's values win over the parent's, except ``known_gaps``: the gaps of both are listed, the file's first,
+    so a city profile states the gaps every case shares and a case adds its own.
+    """
     data = tomllib.loads(path.read_text(encoding="utf-8"))
     parent = data.pop("extends", None)
     if parent:
-        data = deep_merge(load_toml((path.parent / parent).resolve()), data)
+        base = load_toml((path.parent / parent).resolve())
+        gaps = data.get("known_gaps", []) + base.get("known_gaps", [])
+        data = deep_merge(base, data) | ({"known_gaps": gaps} if gaps else {})
     return data
 
 

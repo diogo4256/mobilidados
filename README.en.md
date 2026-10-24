@@ -137,7 +137,7 @@ Method and limits: [docs/methodology.md](https://github.com/diogo4256/mobilidado
 src/mobilidados/          library and CLI (agents/ = optional AI tools)
 src/mobilidados/data/     vehicle catalogue and design references (graded, with sources)
 src/mobilidados/locales/  message catalogues for figures, ledger and reports, one file per language
-cities/                   city profiles: services, class codes, licences
+cities/                   city profiles (services, class codes, licences, parameters) and dated data (feed, reports)
 cases/<case>/             case.toml, sources.lock.json, results/ (committed), data/raw/ (not committed)
 docs/                     evidence standard, methodology, AI tools, adding a city, writing to public bodies
 tests/                    unit tests (synthetic data) and the case reproduction test

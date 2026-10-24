@@ -27,6 +27,12 @@ streetfit.
 
 ### Changed
 
+- Lisbon's settings are in three layers: `cities/lisboa.toml` (services, classes and the method parameters every
+  case shares), `cities/lisboa-2026-10.toml` (the GTFS feed, service day and Na Minha Rua files pinned in October
+  2026) and each case, which keeps only its street. Newer data go in a new dated file, so a case with results
+  keeps the inputs it was run with. The Lisbon case's loaded configuration is unchanged, value for value.
+- The known gaps of a city profile and of a case are both listed, the case's first; before, a case's list
+  replaced the profile's.
 - A street stored in the axes layer as several features or parts is joined into one axis when the pieces form
   one continuous line; before, any street in more than one piece was an error.
 - The package, module and command are `mobilidados` (were `streetfit`), and so are the environment variables

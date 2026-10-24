@@ -76,3 +76,90 @@ dataset_page = "https://dados.gov.pt/datasets/ocorrencias-na-minha-rua-lx"
 attribution = "© Câmara Municipal de Lisboa"
 redistributable = true
 columns = { lat = "latitude", lon = "longitude", date = "dt_registo", category = "tipologia" }
+
+# --- What every Lisbon case shares ----------------------------------------------------------------------
+# Method parameters, the vehicles and the design references compared. A case can override any of them. The data
+# pinned at a date (the GTFS feed and its service day, the Na Minha Rua files) are in a dated file that extends this
+# one, e.g. lisboa-2026-10.toml, so a case keeps its inputs when newer data come out.
+
+[profiles]
+step_m = 0.5
+half_width_m = 25
+narrow_max_m = 7.0
+
+[direction]
+source = "network_identify"
+
+[transit]
+source = "carris_gtfs"
+speeds_kmh = [15, 20]            # assumed; scheduled_runtimes.csv gives the speeds the schedule implies, and the
+                                 # ledger also reports the encounters at the slowest of them
+buffer_m = 12
+
+[envelope]
+bus = "carris_man_city_gold"
+car = "car_typical"
+scenarios = [
+  ["carris_man_city_gold"],
+  ["carris_man_city_gold", "car_typical"],
+  ["carris_man_city_gold", "carris_man_city_gold"],
+  ["car_typical", "car_typical"],
+]
+
+[occurrences]
+source = "na_minha_rua"
+window_m = 300
+max_dist_m = 12
+min_street_length_m = 100
+filters = { abusive_parking = "^Estacionamento abusivo" }
+
+[area_scan]
+step_m = 3
+threshold_m = 5.5
+reference_m = 6.5
+min_pattern_m = 30
+identify_source = "area_network_identify"
+
+[standards]
+compare = ["cml_manual_two_way_profile", "rast06_bus_bus"]
+
+# A case gives the envelopes of the four ArcGIS sources (around its street, and around its area).
+[sources.cartography]
+template = "cml_cartography_polygons"
+
+[sources.street_axes]
+template = "cml_street_axes"
+
+[sources.network_identify]
+template = "lxi_network_identify"
+tolerance = 6
+
+[sources.carris_gtfs]
+template = "carris_gtfs"
+
+[sources.na_minha_rua]
+template = "cml_na_minha_rua"
+
+[sources.area_cartography]
+template = "cml_cartography_polygons"
+where = "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea')"
+
+[sources.area_axes]
+template = "cml_street_axes"
+
+[sources.area_network_identify]
+template = "lxi_network_identify"
+tolerance = 3
+
+# Listed after a case's own gaps.
+[[known_gaps]]
+pt = "A Carris não publica atrasos nem incidentes por rua."
+en = "Carris does not publish delays or incidents per street."
+
+[[known_gaps]]
+pt = "A largura dos autocarros com espelhos não foi encontrada em ficha oficial (2,90 m é pressuposto)."
+en = "No official mirror width was found for the buses (2.90 m is an assumption)."
+
+[[known_gaps]]
+pt = "A posição real dos carros estacionados (sobressaída das faixas) não foi medida no local."
+en = "The actual position of parked cars (overhang beyond the strips) was not measured on site."

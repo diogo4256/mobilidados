@@ -105,7 +105,53 @@ def test_a_drafted_case_loads_and_carries_the_new_street(tmp_path, city_layer):
     assert text.startswith("# Draft made by `mobilidados new-case` from synthetic-street")
     assert "(90° from grid north)" in text
     assert "one direction only" not in text  # route 10 and route 20 run in opposite directions
-    assert tomllib.loads(text)["known_gaps"] == tomllib.loads((like.root / "case.toml").read_text(encoding="utf-8"))["known_gaps"]
+    # buses run both ways, so the question and the gap are about two buses meeting
+    assert (
+        case.config.case.question
+        == "Does the free width between the two parking strips let two scheduled buses pass each other in opposite directions?"
+    )
+    assert tomllib.loads(text)["known_gaps"] == [
+        {
+            "en": "No field observation of two buses meeting on this street: encounters are timetable estimates.",
+            "pt": "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário.",
+        }
+    ]
+
+
+SHARED = {"case", "street"}  # tables that are the case's own; everything else moves to the city file
+
+
+def split(root):
+    """Rewrite a synthetic case the way Lisbon is laid out: the case keeps its street, a city file the rest."""
+    data = tomllib.loads((root / "case.toml").read_text(encoding="utf-8"))
+    own = {k: data.pop(k) for k in SHARED} | {
+        "profiles": {"check_points_s": data["profiles"].pop("check_points_s")},
+        "direction": {"stations_s": data["direction"].pop("stations_s")},
+        "transit": {k: data["transit"].pop(k) for k in ("routes", "reference_stops")},
+        "sources": {
+            sid: {"envelope": data["sources"][sid].pop("envelope")}
+            for sid in ("cartography", "street_axes", "area_cartography", "area_axes")
+        },
+        "known_gaps": data.pop("known_gaps"),
+    }
+    (root.parent / "city.toml").write_text(new_case.dumps(data, "# city\n"), encoding="utf-8")
+    (root / "case.toml").write_text(new_case.dumps({"extends": "../city.toml"} | own, "# case\n"), encoding="utf-8")
+
+
+def test_a_draft_from_a_case_that_extends_a_city_file_holds_only_the_street(tmp_path, city_layer):
+    root = write_case(tmp_path / "like")
+    before = Case.load(root).config
+    split(root)
+    like = Case.load(root)
+    assert like.config == before  # the split changes nothing in the loaded configuration
+
+    out = write(like, "Rua do Teste", tmp_path / "example-rua-do-teste")
+    data = tomllib.loads((out / "case.toml").read_text(encoding="utf-8"))
+    assert data["extends"] == "../city.toml"
+    assert set(data) == {"extends", "case", "street", "profiles", "direction", "transit", "sources", "known_gaps"}
+    assert set(data["sources"]) == {"cartography", "street_axes", "area_cartography", "area_axes"}
+    assert all(set(spec) == {"envelope"} for spec in data["sources"].values())
+    assert Case.load(out).source("feed") == like.source("feed")  # the pinned feed comes from the city file
 
 
 def test_drafting_refuses_to_overwrite_and_reports_a_street_without_buses(tmp_path, city_layer):

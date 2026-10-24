@@ -143,7 +143,7 @@ A documentação técnica está, por agora, em inglês.
 src/mobilidados/          biblioteca e comandos (agents/ = ferramentas opcionais com IA)
 src/mobilidados/data/     catálogo de veículos e normas de desenho de rua, com fonte
 src/mobilidados/locales/  textos das figuras, da lista de factos e dos relatórios, um ficheiro por língua
-cities/                   perfis de cidade: serviços, códigos, licenças
+cities/                   perfis de cidade (serviços, códigos, licenças, parâmetros) e dados datados (horário, ocorrências)
 cases/<caso>/             case.toml, sources.lock.json, results/ (no repositório), data/raw/ (fora dele)
 docs/                     método, ferramentas com IA, nova cidade, cartas a entidades públicas
 tests/                    testes com dados fictícios e teste que refaz cada caso
