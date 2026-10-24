@@ -16,6 +16,10 @@ streetfit.
   (`profiles.parking_space_m`, the same lengths `parking_strip_lengths.csv` already used), and the mapped parking
   along the whole street on each side, as a ledger finding (`parking_removed`), as columns of `without_parking.csv`
   and as a note on the width figure.
+- The header of a `new-case` draft states what it assumed: each reference stop with its distance from the street
+  and its position along it (a stop on a cross street near an end is clamped to that end), both compass readings
+  when the bearing is within 10° of a boundary between two points, and, where buses run one way, that the
+  question supposes a car beside the bus, which does not hold on a one-way single-lane street.
 - `mobilidados new-case "<street>" --like <case>` drafts a case for another street of the same city from its
   name: the axis from the municipal layer, blocks cut at the cross streets, direction and side labels from the
   bearing, check points and traffic-direction stations away from the junctions, and the bus routes and
@@ -93,6 +97,11 @@ streetfit.
 
 ### Fixed
 
+- The release workflow pinned the PyPI publishing action to the SHA of its tag object instead of its commit, for
+  which no container image exists, so the first publication would have failed after creating the GitHub
+  release. It checks out the tag by its full ref (never a branch of the same name), installs the built wheel with
+  the locked dependency versions before uploading it, names the release after the tagged project (so tags made
+  as streetfit can get their releases), and runs one release at a time. `.env` files are ignored by git.
 - A service that is down or keeps answering with an error (the Lisbon open-data portal answered 503 for a whole
   day) is reported as `error: <host> did not answer as expected ...`, with the URL, instead of a Python
   traceback.

@@ -110,13 +110,30 @@ and = " and "
 question_both = "Does the free width between the two parking strips let two scheduled buses pass each other in opposite directions?"
 question_one = "Does the free width between the two parking strips leave room for a scheduled bus and a car side by side?"
 gap_meeting = "No field observation of two buses meeting on this street: encounters are timetable estimates."
-header = """
-# Draft made by `mobilidados new-case` from {model} on {date}. Check before use:
-# - [case] title;
-# - [street] blocks: cut where other axes meet the street, labelled with their full names; headings and
-#   sides: compass labels from the axis bearing ({bearing}° from grid north), which may need judgement;
+# the header of a draft is composed from the lines below, in this order; some appear only when they apply
+header_intro = "# Draft made by `mobilidados new-case` from {model} on {date}. Check before use:"
+header_title = "# - [case] title;"
+header_blocks = "# - [street] blocks: cut where other axes meet the street, labelled with their full names;"
+header_compass = """
+# - [street] headings and sides: compass labels from the axis bearing ({bearing}° from grid north), which may
+#   need judgement;"""
+header_compass_boundary = """
+# - [street] headings and sides, which need your decision here: the axis bearing is {bearing}° from grid north,
+#   only {gap}° from the boundary between {point} and {other_point} ({boundary}°). The draft reads the street as
+#   {point} (headings {headings}, sides {sides}), but reading it as {other_point} (headings {other_headings}, sides
+#   {other_sides}) is just as valid. Keep the reading that people who know the street recognise and, if it is the
+#   other one, correct the headings and sides;"""
+header_transit = """
 # - [transit] routes and reference_stops: the routes that run along the street on the service day, and for
-#   each route and direction the stop near the street that most of its trips serve;
-# - [case] question: written for buses in both directions or in one, as the timetable shows.
-# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {model}.
-"""
+#   each route and direction the stop near the street that most of its trips serve. Stops chosen (distance
+#   from the axis; s, position along the street):"""
+header_stop = "#     route {route} heading {heading} (direction_id {direction_id}): stop {stop_id} ({name}), {dist} m from the axis, s = {s} m;"
+header_stop_note = """
+#   A stop within {radius} m of the axis may be on a cross street near one end; its position s is then that
+#   end's (0 or {length} m). Check on a map that each stop really serves this street;"""
+header_question = "# - [case] question: written for buses in both directions or in one, as the timetable shows."
+header_one_way = """
+#   Here buses run one way only, and the question assumes a car fits beside the bus, that is, that the street is
+#   two-way or has two lanes. If the street is one-way with a single lane, the question does not apply as
+#   written: rewrite it once `mobilidados run` shows the direction of traffic."""
+header_inherited = "# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {model}."
