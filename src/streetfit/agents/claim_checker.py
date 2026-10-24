@@ -22,11 +22,10 @@ from typing import Literal
 from anthropic import beta_tool
 from pydantic import BaseModel, Field
 
-from .. import standards
-from ..config import Case
+from ..config import Case, standards_catalogue
 from ..lint import QUOTE
 from ..textmatch import contains, normalize, numbers, quote_near
-from .common import check_stop, client, report_usage, request_kwargs
+from .common import client, parsed, report_usage, request_kwargs
 
 
 class Evidence(BaseModel):
@@ -111,17 +110,16 @@ class Corpus:
 
 
 def build_corpus(case: Case, extra: list[Path]) -> tuple[Corpus, dict]:
-    ledger = json.loads((case.results_dir / "findings.json").read_text())
+    ledger = json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))
     findings = {f["id"]: f for f in ledger["findings"]}
     corpus = Corpus()
     corpus.add("ledger", "\n".join(f"[{f['grade']}] {f['id']}: {f['statement']} {f['caveat']}".strip() for f in findings.values()))
-    cat = standards.catalogue()
+    cat = standards_catalogue()
     corpus.add(
         "standards",
         "\n".join(
-            f"{r['id']} ({cat['documents'][r['document']]['title']}, p. {r['page']}): "
-            f"{r['label']} = {r['value_m']} m. Scope: {r['scope']}. Quote: {r.get('quote', '')}"
-            for r in cat["references"]
+            f"{r.id} ({cat.documents[r.document].title}, p. {r.page}): {r.label} = {r.value_m} m. Scope: {r.scope}. Quote: {r.quote}"
+            for r in cat.references
         ),
     )
     for p in extra:
@@ -174,7 +172,7 @@ def verify(report: ClaimReport, draft: str, corpus: Corpus, findings: dict) -> l
     return out
 
 
-def run_agent(draft: str, corpus: Corpus, log=print) -> ClaimReport:
+def run_agent(draft: str, corpus: Corpus) -> ClaimReport:
     @beta_tool
     def list_findings() -> str:
         """List every finding in the case ledger: id, evidence grade, statement and caveat."""
@@ -212,13 +210,9 @@ def run_agent(draft: str, corpus: Corpus, log=print) -> ClaimReport:
         max_iterations=40,
         messages=[{"role": "user", "content": f"Corpus documents: {sorted(corpus.docs)}.\n\nDraft to check:\n<draft>\n{draft}\n</draft>"}],
     )
-    seen = []
-    for message in runner:
-        seen.append(message)
-    final = seen[-1]
-    check_stop(final)
-    report_usage(seen, log)
-    return final.parsed_output
+    seen = list(runner)
+    report_usage(seen)
+    return parsed(seen[-1], ClaimReport)
 
 
 def to_markdown(claims: list[dict]) -> str:
@@ -231,7 +225,7 @@ def to_markdown(claims: list[dict]) -> str:
     }
     lines = ["| | claim | problem / checks | suggestion |", "| --- | --- | --- | --- |"]
     for c in claims:
-        prob = "; ".join(x for x in [c.get("problem", "")] + c.get("checks", []) if x)
+        prob = "; ".join(x for x in [c.get("problem", ""), *c.get("checks", [])] if x)
         cell = lambda s: re.sub(r"\s+", " ", s).replace("|", "\\|")  # noqa: E731
         lines.append(f"| {icon[c['verdict']]} | {cell(c['text'])} | {cell(prob)} | {cell(c.get('suggestion', ''))} |")
     return "\n".join(lines) + "\n"
@@ -244,5 +238,5 @@ def main(case: Case, draft_path: Path, corpus_files: list[Path], out: Path | Non
     md = to_markdown(claims)
     print(md)
     if out:
-        out.write_text(json.dumps(claims, ensure_ascii=False, indent=2) + "\n")
+        out.write_text(json.dumps(claims, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return 0 if all(c["verdict"] == "supported" for c in claims) else 1

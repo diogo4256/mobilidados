@@ -1,0 +1,63 @@
+# Mensagens do streetfit, português. Cada chave existe em todas as línguas (tests/test_config.py verifica chaves e {marcadores}).
+
+[figure]
+free_width = "Faixa livre entre as faixas de estacionamento"
+width_m = "largura (m), à escala"
+limit = "limite"
+mirrors = "espelhos"
+does_not_fit = "não cabe"
+margin = "folga"
+with_mirrors = "com espelhos"
+trips_per_hour = "viagens por hora"
+hour = "hora do dia"
+weekday_trips = "Viagens programadas na rua, dia útil {day}"
+along = "distância ao longo da rua (m)"
+strips = "Faixas de estacionamento cartografadas (esq. / dir.)"
+profile_title = "Perfil cartografado ao longo da rua"
+area_title = "Ruas com autocarros na zona: faixa livre vs. autocarros por dia"
+buses_day = "autocarros por dia útil"
+median_free = "faixa livre mediana (m)"
+parking_both = "estacionamento dos dois lados"
+free_width_short = "Faixa livre"
+data_credit = "Dados: {sources}; adaptados. Análise: streetfit."
+bus = "autocarro"
+car = "ligeiro"
+pattern_two_way = "dois sentidos, estacionamento dos dois lados, estreita"
+pattern_one_way = "sentido único, estacionamento dos dois lados, estreita"
+
+[ledger]
+length = "O eixo da rua tem {length} m."
+traffic = "A rede viária municipal marca a rua como de {traffic} (arestas verificadas em {n} pontos ao longo da rua)."
+free = "Onde há faixas de estacionamento cartografadas dos dois lados ({metres} m da rua), a faixa livre cartografada entre elas mede {fmin}–{fmax} m (mediana {fmed} m)."
+strips = "As faixas de estacionamento cartografadas têm {sl} m (lado {side_l}) e {sr} m (lado {side_r}) (medianas)."
+routes = "As carreiras {routes} estão programadas ao longo da rua. Em {day}: {n_up} viagens {up} e {n_down} viagens {down} (no máximo {max_up} e {max_down} por hora)."
+vehicle_body = "Veículo de referência «{label}»: largura da carroçaria {w} m ({src})."
+vehicle_mirrors = "Largura com espelhos de «{label}» considerada {w} m ({src})."
+budget = "Com as duas faixas ocupadas e os veículos estacionados dentro delas, dois autocarros precisam de {bb} m (só carroçaria; {bbm} m com espelhos) para uma faixa livre mediana de {fmed} m: folga {mbb} m. Um autocarro e um ligeiro precisam de {bc} m: folga {mbc} m ({mbcm} m com o espelho do ligeiro)."
+encounters = "O horário implica {nrange} encontros por dia útil entre autocarros em sentidos opostos na rua (modelo de velocidade constante a {speeds} km/h); {nnarrow} caem nos troços com estacionamento dos dois lados."
+encounters_check = "A {kmh} km/h, a velocidade mais baixa implícita no horário de {day} entre paragens (um mínimo), o modelo dá {per_day}."
+runtimes = "Tempo programado da paragem {a} à seguinte ({b}, {d} m em linha reta): mediana de {m_all} s em todas as viagens do feed (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h)."
+occurrences = "Foram atribuídas à rua {n} ocorrências da categoria «{flt}» ({period}, a ≤{d} m do eixo): {rate} por 100 m, {rank}.ª de {total} ruas com pelo menos {minlen} m na envolvente."
+area = "Das {total} ruas com autocarros programados na envolvente, {k} são de dois sentidos e combinam estacionamento dos dois lados com uma faixa livre inferior a {thr} m em pelo menos {minm} m ({names}); destas, {nb} com autocarros nos dois sentidos: {names2}."
+standard = "{doc}, p. {page} ({kind}): {label}: {value} m. Âmbito: {scope}. Mediana medida: {fmed} m ({diff} m)."
+
+[kind]
+reference_profile = "perfil de referência"
+conditional_value = "valor condicionado"
+secondary_citation = "citado em documento oficial"
+
+[traffic]
+two-way = "dois sentidos"
+one-way = "sentido único"
+"?" = "sentido desconhecido"
+
+[report]
+intro = "Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação tem um grau de evidência: **M** medido em dados oficiais · **D** texto de documento oficial · **I** inferência · **P** pressuposto · **NE** não encontrado / não verificado (≠ não existe)."
+sources = "Fontes"
+origin = "origem"
+retrieved = "obtido"
+licence = "licença"
+files = "{n} ficheiros, p. ex. {example}"
+attribution = "Atribuição"
+transformed = "Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo streetfit; não são publicações da entidade de origem, que não as subscreve."
+and = " e "

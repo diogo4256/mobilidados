@@ -28,7 +28,7 @@ def test_claim_checker_catches_an_overstatement():
         "Todos os dias, sempre que passam dois autocarros, ficam bloqueados.\n"
     )
     corpus, findings = build_corpus(Case.load(CASE), [])
-    claims = verify(run_agent(draft, corpus, log=lambda *_: None), draft, corpus, findings)
+    claims = verify(run_agent(draft, corpus), draft, corpus, findings)
     by_text = {c["text"][:20]: c["verdict"] for c in claims}
     assert any(v == "supported" for k, v in by_text.items() if k.startswith("A faixa livre"))
     assert any(v in {"overstated", "unsupported", "needs_human"} for k, v in by_text.items() if "autocarros" in k or k.startswith("Todos"))

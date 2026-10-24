@@ -9,19 +9,21 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from shapely.geometry import LineString, MultiLineString, MultiPolygon, Point, Polygon
+from shapely.geometry import LineString, MultiLineString, MultiPolygon, Polygon
 
 from .provenance import http_get
 
 
-def _json(url: str, params: dict) -> dict:
-    data = http_get(url, params).json()
+def _json(url: str, params: dict[str, Any]) -> dict[str, Any]:
+    data: dict[str, Any] = http_get(url, params).json()
     if "error" in data:
         raise RuntimeError(f"{url}: {data['error']}")
     return data
 
 
-def query_layer(layer_url: str, envelope: list[float], in_sr: int, out_sr: int, where: str = "1=1", batch: int = 100) -> dict:
+def query_layer(
+    layer_url: str, envelope: tuple[float, ...], in_sr: int, out_sr: int, where: str = "1=1", batch: int = 100
+) -> dict[str, Any]:
     """All features of a layer intersecting an envelope [xmin, ymin, xmax, ymax], with all attributes."""
     meta = _json(layer_url, {"f": "json"})
     env = dict(zip(("xmin", "ymin", "xmax", "ymax"), envelope, strict=True)) | {"spatialReference": {"wkid": in_sr}}
@@ -32,10 +34,10 @@ def query_layer(layer_url: str, envelope: list[float], in_sr: int, out_sr: int, 
         "spatialRel": "esriSpatialRelIntersects",
         "where": where,
     }
-    oids = _json(f"{layer_url}/query", {**spatial, "returnIdsOnly": "true", "f": "json"}).get("objectIds") or []
-    feats: list[dict] = []
+    oids = sorted(_json(f"{layer_url}/query", {**spatial, "returnIdsOnly": "true", "f": "json"}).get("objectIds") or [])
+    feats: list[dict[str, Any]] = []
     for i in range(0, len(oids), batch):
-        chunk = ",".join(map(str, sorted(oids)[i : i + batch]))
+        chunk = ",".join(map(str, oids[i : i + batch]))
         feats += _json(
             f"{layer_url}/query", {"objectIds": chunk, "outFields": "*", "returnGeometry": "true", "outSR": out_sr, "f": "json"}
         ).get("features", [])
@@ -48,7 +50,7 @@ def query_layer(layer_url: str, envelope: list[float], in_sr: int, out_sr: int, 
     }
 
 
-def identify(url: str, x: float, y: float, sr: int, layers: str, tolerance: float, half_extent: float = 100) -> list[dict]:
+def identify(url: str, x: float, y: float, sr: int, layers: str, tolerance: float, half_extent: float = 100) -> list[dict[str, Any]]:
     """Attributes of the features within ``tolerance`` pixels of a point (MapServer identify)."""
     ext = f"{x - half_extent},{y - half_extent * 0.5625},{x + half_extent},{y + half_extent * 0.5625}"
     data = _json(
@@ -74,21 +76,22 @@ def to_line(g: dict[str, Any]) -> LineString | MultiLineString:
     return parts[0] if len(parts) == 1 else MultiLineString(parts)
 
 
-def _signed_area(ring: list) -> float:
+def _signed_area(ring: list[list[float]]) -> float:
     return sum(ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1] for i in range(len(ring) - 1)) / 2
 
 
 def to_polygon(g: dict[str, Any]) -> Polygon | MultiPolygon:
-    """ESRI rings: exterior rings are clockwise (negative signed area), holes counter-clockwise."""
-    ext, holes = [], []
-    for r in g["rings"]:
-        (ext if _signed_area(r) < 0 else holes).append(r)
-    polys = []
-    for e in ext:
-        shell = Polygon(e)
-        polys.append(Polygon(e, [h for h in holes if shell.contains(Point(h[0]))]))
+    """ESRI rings: exterior rings are clockwise (negative signed area), holes counter-clockwise.
+
+    Each hole belongs to the smallest exterior ring that contains it, so a hole touching its exterior and an
+    island inside a hole (an exterior ring of its own) are both kept right.
+    """
+    shells = [Polygon(r) for r in g["rings"] if _signed_area(r) < 0]
+    holes = [Polygon(r) for r in g["rings"] if _signed_area(r) > 0]
+    inner: list[list[Any]] = [[] for _ in shells]
+    for h in holes:
+        around = [i for i, s in enumerate(shells) if s.contains(h)]
+        if around:
+            inner[min(around, key=lambda i: shells[i].area)].append(h.exterior.coords)
+    polys = [Polygon(s.exterior.coords, rings) for s, rings in zip(shells, inner, strict=True)]
     return polys[0] if len(polys) == 1 else MultiPolygon(polys)
-
-
-def features(collection: dict) -> list[dict]:
-    return collection.get("features", [])

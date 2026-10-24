@@ -87,7 +87,7 @@ def test_claim_checker_end_to_end(monkeypatch):
     api = FakeAPI(tool_use("search_sources", query="faixa livre mediana"), final(report)).install(monkeypatch)
 
     corpus, findings = claim_checker.build_corpus(claim_checker.Case.load(CASE), [])
-    claims = claim_checker.verify(claim_checker.run_agent(draft, corpus, log=lambda *_: None), draft, corpus, findings)
+    claims = claim_checker.verify(claim_checker.run_agent(draft, corpus), draft, corpus, findings)
 
     first, second = api.requests
     common_request_checks(first["body"], first["headers"])
@@ -99,8 +99,10 @@ def test_claim_checker_end_to_end(monkeypatch):
         for b in (m["content"] if isinstance(m["content"], list) else [])
         if b.get("type") == "tool_result"
     ]
-    assert results and "ledger" in json.dumps(results[0]["content"])  # our tool ran and its output went back
-    assert claims[0]["verdict"] == "supported" and claims[0]["checks"] == []
+    assert results
+    assert "ledger" in json.dumps(results[0]["content"])
+    assert claims[0]["verdict"] == "supported"
+    assert claims[0]["checks"] == []
 
 
 def test_extractor_end_to_end(monkeypatch, tmp_path):
@@ -134,7 +136,8 @@ def test_extractor_end_to_end(monkeypatch, tmp_path):
     kinds = [b["type"] for b in body["messages"][0]["content"]]
     assert kinds == ["document", "image", "text"]
     assert body["messages"][0]["content"][1]["source"]["media_type"] == "image/jpeg"
-    assert result["values"][0]["verified_by"] == "vision_only" and result["totals"][0]["sum_checks"]
+    assert result["values"][0]["verified_by"] == "vision_only"
+    assert result["totals"][0]["sum_checks"]
 
 
 def test_discover_end_to_end(monkeypatch, tmp_path):

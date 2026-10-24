@@ -8,14 +8,16 @@ tells you, file by file, whether the upstream data changed since the reference r
 from __future__ import annotations
 
 import datetime as dt
+import functools
 import hashlib
 import json
 import os
-import time
 from pathlib import Path
 from typing import Any
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from . import __version__
 
@@ -26,25 +28,40 @@ def user_agent() -> str:
     return f"streetfit/{__version__}" + (f" ({contact})" if contact else "")
 
 
-def http_get(url: str, params: dict | None = None, timeout: float = 120, retries: int = 3) -> requests.Response:
-    for attempt in range(retries):
-        try:
-            r = requests.get(url, params=params, timeout=timeout, headers={"User-Agent": user_agent()})
-            r.raise_for_status()
-            return r
-        except requests.RequestException:
-            if attempt == retries - 1:
-                raise
-            time.sleep(2 * (attempt + 1))
-    raise AssertionError("unreachable")
+@functools.cache
+def session() -> requests.Session:
+    """A shared HTTP session that retries transient failures (connection errors, 429 and 5xx) with backoff."""
+    s = requests.Session()
+    retry = Retry(total=4, backoff_factor=2, status_forcelist=(429, 500, 502, 503, 504), allowed_methods={"GET"})
+    s.mount("https://", HTTPAdapter(max_retries=retry))
+    s.mount("http://", HTTPAdapter(max_retries=retry))
+    s.headers["User-Agent"] = user_agent()
+    return s
+
+
+def http_get(url: str, params: dict[str, Any] | None = None, timeout: float = 120) -> requests.Response:
+    r = session().get(url, params=params, timeout=timeout)
+    r.raise_for_status()
+    return r
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
-    with open(path, "rb") as f:
+    with path.open("rb") as f:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def write_atomic(path: Path, data: bytes) -> None:
+    """Write via a temporary file, so an interrupted download never leaves a truncated file in the cache."""
+    tmp = path.with_name(path.name + ".part")
+    tmp.write_bytes(data)
+    tmp.replace(path)
 
 
 def now_utc() -> str:
@@ -56,16 +73,16 @@ class Lock:
 
     def __init__(self, path: Path):
         self.path = path
-        self.entries: dict[str, dict[str, Any]] = json.loads(path.read_text()) if path.exists() else {}
+        self.entries: dict[str, dict[str, Any]] = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
     def record(self, source_id: str, files: list[Path], base: Path, **meta: Any) -> None:
         self.entries[source_id] = {
             **meta,
-            "files": {str(p.relative_to(base)): {"sha256": sha256_file(p), "bytes": p.stat().st_size} for p in sorted(files)},
+            "files": {p.relative_to(base).as_posix(): {"sha256": sha256_file(p), "bytes": p.stat().st_size} for p in sorted(files)},
         }
 
     def save(self) -> None:
-        self.path.write_text(json.dumps(self.entries, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        self.path.write_text(json.dumps(self.entries, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     def verify(self, base: Path) -> list[tuple[str, str, str]]:
         """Compare files on disk with the lock. Returns (source_id, file, status) for every locked file."""

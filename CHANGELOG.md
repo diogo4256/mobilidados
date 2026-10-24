@@ -3,6 +3,46 @@
 All notable changes are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-24
+
+### Changed
+
+- The configuration is validated when a case is loaded (`src/streetfit/config.py`): unknown keys, missing
+  values and references to sources, vehicles or design references that do not exist are reported by name before
+  anything runs. Defaults are defined once, there.
+- Stages pass data to each other only through result tables. The hidden `results/facts.json` is gone; what it
+  held is now in tables: `street.csv` (axis length), `occurrences_files.csv` (records and dates per file, which
+  give the period) and a `schedule` row, told apart by a new `basis` column, in `encounters_summary.csv`.
+- The ledger and the figures report what the configuration asks for, not whichever tables are on disk; a full
+  run replaces every table and figure.
+- All user-facing text is in `locales/<lang>.toml`; catalogue entries use one convention for other languages
+  (a `translations.<lang>` table).
+- Case files: blocks use `start` / `end`; `direction_id` is an integer, as in GTFS; `feed` is now `description`.
+- HTTP retries use urllib3 (backoff, connection errors, 429 and 5xx only). Downloads are written atomically, and
+  a file that does not match its pin is never written.
+- Logging instead of print, with `-v` / `-q`; errors the user can fix are one line, not a traceback.
+- The GTFS `stop_times` table is read once per run (transit stage: about 15 s to 4 s).
+- Figures are drawn without pyplot, so importing streetfit changes no global matplotlib state.
+- Tooling: mypy in CI and `make lint`; tests treat warnings as errors; CI runs Python 3.11–3.14 on Linux and
+  3.14 on macOS and Windows, with actions pinned by commit; dependabot waits 7 days before adopting a release;
+  zizmor audits the workflows in pre-commit.
+
+### Fixed
+
+- ESRI polygons: a hole touching its exterior ring was dropped, and a hole inside an island inside a hole was
+  also given to the outer polygon. Each hole now belongs to the smallest exterior ring that contains it. The
+  Lisbon cartography is not affected (all 2,368 polygons are identical).
+- The ledger's sources table showed no origin for a source whose lock entry has no URLs (Na Minha Rua); origins
+  now come from the case configuration.
+- `metres_two_strips` in `findings.json` is a number, not a string.
+- Text files are read and written as UTF-8 on every platform, and lock-file paths use `/` on Windows.
+- An AI answer that does not match the expected schema is an error instead of `None` passed on.
+
+### Results
+
+- Lisbon case: every table and every finding statement is identical to 0.1.0, apart from the additions above
+  and `traffic_direction_edges.s_m`, now printed as `10.0` (stations are positions in metres).
+
 ## [0.1.0] - 2026-10-24
 
 ### Added

@@ -12,7 +12,7 @@ grade_mirrors = "P"
 source_mirrors = "Assumption: +0.40 m for mirrors, as in the Mercedes-Benz eCitaro technical sheet"
 mirrors_clear_cars = true
 
-[vehicles.bus_eu_max.pt]
+[vehicles.bus_eu_max.translations.pt]
 label = "Autocarro com a largura máxima legal (UE/PT)"
 source_body = "Diretiva 96/53/CE, Anexo I 1.2; Decreto-Lei 132/2017, art. 3.º n.º 3 a)"
 source_mirrors = "Pressuposto: +0,40 m para os espelhos, como na ficha técnica do Mercedes-Benz eCitaro"
@@ -28,7 +28,7 @@ grade_mirrors = "P"
 source_mirrors = "Assumption: no official mirror width published; +0.40 m as in the Mercedes-Benz eCitaro sheet"
 mirrors_clear_cars = true
 
-[vehicles.carris_man_city_gold.pt]
+[vehicles.carris_man_city_gold.translations.pt]
 label = "Carris MAN 18.310 / Caetano City Gold (12 m)"
 source_body = "ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643"
 source_mirrors = "pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro"
@@ -43,7 +43,7 @@ width_mirrors_m = 2.05
 grade_mirrors = "P"
 source_mirrors = "Assumption: typical width with mirrors unfolded; validate in the field"
 
-[vehicles.car_typical.pt]
+[vehicles.car_typical.translations.pt]
 label = "Ligeiro típico"
 source_body = "pressuposto: largura típica de um ligeiro europeu; a validar no local"
 source_mirrors = "pressuposto: largura típica com espelhos abertos; a validar no local"

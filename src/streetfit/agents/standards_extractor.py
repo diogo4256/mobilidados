@@ -26,7 +26,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from ..textmatch import value_in_text
-from .common import check_stop, client, report_usage, request_kwargs
+from .common import client, parsed, report_usage, request_kwargs
 
 
 class WidthValue(BaseModel):
@@ -134,8 +134,7 @@ def read_page(pdf: Path, page: int, png: bytes) -> tuple[PageReading, object]:
             }
         ],
     )
-    check_stop(msg)
-    return msg.parsed_output, msg
+    return parsed(msg, PageReading), msg
 
 
 def check(reading: PageReading, text: str, ocr_text: str | None) -> dict:
@@ -176,6 +175,6 @@ def main(pdf: Path, pages: list[int], out: Path | None) -> int:
         )
     report_usage(msgs)
     dest = out or out_dir / "extraction.json"
-    dest.write_text(json.dumps({"pdf": str(pdf), "pages": results}, ensure_ascii=False, indent=2) + "\n")
+    dest.write_text(json.dumps({"pdf": str(pdf), "pages": results}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"review file: {dest}  (values marked vision_only need a human look at the page image)")
     return 0

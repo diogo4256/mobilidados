@@ -67,7 +67,9 @@ class Profiler:
         self.polys = polygons
         self.tree = STRtree([g for _, g in polygons])
 
-    def intervals(self, transect: LineString, cx: float, cy: float, nrm: tuple[float, float], classes: set[str]):
+    def intervals(
+        self, transect: LineString, cx: float, cy: float, nrm: tuple[float, float], classes: set[str]
+    ) -> list[tuple[float, float]]:
         out = []
         for i in self.tree.query(transect):
             cls, g = self.polys[i]
@@ -197,7 +199,7 @@ def narrow_sections(df: pd.DataFrame, step: float) -> list[tuple[float, float, s
 
 
 def strip_lengths(
-    df: pd.DataFrame, blocks: list[Block], step: float, stall_lengths=(5.0, 5.5, 6.0), min_strip: float = 0.5
+    df: pd.DataFrame, blocks: list[Block], step: float, stall_lengths: tuple[float, ...] = (5.0, 5.5, 6.0), min_strip: float = 0.5
 ) -> pd.DataFrame:
     """Mapped parking-strip length per side and block, and the stall count it implies for given stall lengths."""
     rows = []

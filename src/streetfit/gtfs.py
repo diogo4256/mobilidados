@@ -10,11 +10,16 @@ from __future__ import annotations
 import datetime as dt
 import zipfile
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
 from pyproj import Transformer
 from shapely.geometry import LineString, Point
+
+from .config import ReferenceStop
+
+ALL_TRIPS = "all trips in the feed"  # scope label of the whole-feed rows in scheduled_runtimes
 
 
 class Feed:
@@ -22,19 +27,20 @@ class Feed:
 
     def __init__(self, path: Path):
         self.path = Path(path)
-        self._zip = zipfile.ZipFile(self.path)
 
-    def table(self, name: str, **kw) -> pd.DataFrame:
-        with self._zip.open(f"{name}.txt") as f:
+    def table(self, name: str, **kw: Any) -> pd.DataFrame:
+        with zipfile.ZipFile(self.path) as z, z.open(f"{name}.txt") as f:
             return pd.read_csv(f, **kw)
+
+    def has(self, name: str) -> bool:
+        with zipfile.ZipFile(self.path) as z:
+            return f"{name}.txt" in z.namelist()
 
     def stop_times(self, trip_ids: set[str]) -> pd.DataFrame:
         """stop_times for the given trips only (the full table is large; read it in chunks)."""
         cols = ["trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence"]
-        parts = []
-        with self._zip.open("stop_times.txt") as f:
-            for chunk in pd.read_csv(f, usecols=cols, dtype=str, chunksize=500_000):
-                parts.append(chunk[chunk.trip_id.isin(trip_ids)])
+        with zipfile.ZipFile(self.path) as z, z.open("stop_times.txt") as f:
+            parts = [chunk[chunk.trip_id.isin(trip_ids)] for chunk in pd.read_csv(f, usecols=cols, dtype=str, chunksize=500_000)]
         st = pd.concat(parts, ignore_index=True)
         st["stop_sequence"] = st.stop_sequence.astype(int)
         return st
@@ -50,17 +56,13 @@ def active_service_ids(feed: Feed, day: dt.date) -> set[str]:
     """Service IDs running on ``day`` (calendar.txt rules, then calendar_dates.txt exceptions)."""
     ds, wd = day.strftime("%Y%m%d"), day.strftime("%A").lower()
     active: set[str] = set()
-    try:
+    if feed.has("calendar"):  # optional when calendar_dates.txt carries everything
         cal = feed.table("calendar", dtype=str)
         active = set(cal[(cal[wd] == "1") & (cal.start_date <= ds) & (cal.end_date >= ds)].service_id)
-    except KeyError:
-        pass  # calendar.txt is optional when calendar_dates.txt carries everything
-    try:
+    if feed.has("calendar_dates"):
         cd = feed.table("calendar_dates", dtype=str)
         active |= set(cd[(cd.date == ds) & (cd.exception_type == "1")].service_id)
         active -= set(cd[(cd.date == ds) & (cd.exception_type == "2")].service_id)
-    except KeyError:
-        pass
     return active
 
 
@@ -77,7 +79,7 @@ def shapes_along(
     rows = []
     for sid, g in feed.table("shapes").groupby("shape_id"):
         g = g.sort_values("shape_pt_sequence")
-        x, y = tr.transform(g.shape_pt_lon.values, g.shape_pt_lat.values)
+        x, y = tr.transform(g.shape_pt_lon.to_numpy(), g.shape_pt_lat.to_numpy())
         ls = LineString(np.c_[x, y])
         if ls.distance(axis) > buffer_m:
             continue
@@ -113,7 +115,7 @@ def route_summary(trips: pd.DataFrame) -> pd.DataFrame:
 def stops_near(feed: Feed, axis: LineString, crs: int, max_dist: float = 40.0) -> pd.DataFrame:
     stops = feed.table("stops", dtype={"stop_id": str})
     tr = Transformer.from_crs(4326, crs, always_xy=True)
-    x, y = tr.transform(stops.stop_lon.values, stops.stop_lat.values)
+    x, y = tr.transform(stops.stop_lon.to_numpy(), stops.stop_lat.to_numpy())
     pts = [Point(a, b) for a, b in zip(x, y, strict=True)]
     stops["dist_m"] = [p.distance(axis) for p in pts]
     stops["s_m"] = [axis.project(p) for p in pts]
@@ -121,21 +123,21 @@ def stops_near(feed: Feed, axis: LineString, crs: int, max_dist: float = 40.0) -
     return near[["stop_id", "stop_name", "stop_lat", "stop_lon", "dist_m", "s_m"]].round({"dist_m": 1, "s_m": 1})
 
 
-def reference_passings(feed: Feed, trips: pd.DataFrame, refs: list[dict], day: dt.date) -> pd.DataFrame:
+def reference_passings(feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame, refs: list[ReferenceStop], day: dt.date) -> pd.DataFrame:
     """Scheduled arrival at each route/direction's reference stop, for trips running on ``day``.
 
-    ``refs``: dicts with ``route``, ``direction_id``, ``stop_id``, ``s_m`` (stop position along the axis) and
-    ``heading`` (+1/-1). One row per trip: route, direction_id, heading, s_ref, arrival_time, t (seconds).
+    ``stop_times`` must cover ``trips``. One row per trip: route, direction_id, heading, s_ref (the stop's position
+    along the axis), arrival_time and t (seconds after midnight).
     """
     active = active_service_ids(feed, day)
-    keyed = {(r["route"], str(r["direction_id"])): r for r in refs}
+    keyed = {(r.route, str(r.direction_id)): r for r in refs}
     sel = trips[[(rt, d) in keyed for rt, d in zip(trips.route_short_name, trips.direction_id, strict=True)]]
     sel = sel[sel.service_id.isin(active)]
-    st = feed.stop_times(set(sel.trip_id))
+    st = stop_times[stop_times.trip_id.isin(sel.trip_id)]
     rows = []
     for (rt, d), ref in keyed.items():
-        t = sel[(sel.route_short_name == rt) & (sel.direction_id == d)].merge(st[st.stop_id == str(ref["stop_id"])], on="trip_id")
-        rows.append(t.assign(ref_stop=str(ref["stop_id"]), s_ref=float(ref["s_m"]), heading=int(ref["heading"])))
+        t = sel[(sel.route_short_name == rt) & (sel.direction_id == d)].merge(st[st.stop_id == ref.stop_id], on="trip_id")
+        rows.append(t.assign(ref_stop=ref.stop_id, s_ref=ref.s_m, heading=ref.heading))
     out = pd.concat(rows, ignore_index=True)
     out["t"] = out.arrival_time.map(seconds)
     cols = ["route_short_name", "direction_id", "trip_id", "ref_stop", "s_ref", "heading", "arrival_time", "t"]
@@ -149,11 +151,11 @@ def trips_per_hour(passings: pd.DataFrame) -> pd.DataFrame:
     return tab.reindex(columns=[1, -1], fill_value=0)
 
 
-def scheduled_runtimes(feed: Feed, trips: pd.DataFrame, ref_stop: str, crs: int) -> dict:
-    """Scheduled time from ``ref_stop`` to the most common next stop (median, p10, p90 in seconds), the straight-line
-    distance between the two stops and the speed it implies at the median time (a lower bound: the route is longer
-    than the straight line)."""
-    st = feed.stop_times(set(trips.trip_id)).sort_values(["trip_id", "stop_sequence"])
+def scheduled_runtimes(stop_times: pd.DataFrame, stops: pd.DataFrame, ref_stop: str, crs: int) -> dict[str, Any]:
+    """Scheduled time from ``ref_stop`` to the most common next stop (median, p10, p90 in seconds) over the trips in
+    ``stop_times``, the straight-line distance between the two stops and the speed it implies at the median time (a
+    lower bound: the route is longer than the straight line)."""
+    st = stop_times.sort_values(["trip_id", "stop_sequence"])
     st["t_arr"], st["t_dep"] = st.arrival_time.map(seconds), st.departure_time.map(seconds)
     rows = []
     for _, g in st.groupby("trip_id"):
@@ -164,9 +166,9 @@ def scheduled_runtimes(feed: Feed, trips: pd.DataFrame, ref_stop: str, crs: int)
     r = pd.DataFrame(rows)
     nxt = r.next_stop.value_counts().index[0]
     sel = r[r.next_stop == nxt].dt_s
-    stops = feed.table("stops", dtype={"stop_id": str}).set_index("stop_id")
+    stops = stops.set_index("stop_id")
     (x0, x1), (y0, y1) = Transformer.from_crs(4326, crs, always_xy=True).transform(
-        stops.loc[[ref_stop, nxt], "stop_lon"].values, stops.loc[[ref_stop, nxt], "stop_lat"].values
+        stops.loc[[ref_stop, nxt], "stop_lon"].to_numpy(), stops.loc[[ref_stop, nxt], "stop_lat"].to_numpy()
     )
     dist = float(np.hypot(x1 - x0, y1 - y0))
     return {

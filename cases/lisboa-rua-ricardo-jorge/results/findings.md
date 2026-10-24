@@ -48,7 +48,7 @@ Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação t
 | area_network_identify | <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify> | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `0f584f1874ef…` area_network_identify.json |
 | carris_gtfs | <https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip> | 2026-10-24 | not stated at the download endpoint (not redistributed) | `c7550ea2d2f0…` carris_gtfs.zip |
 | cartography | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53> | 2026-10-24 | CC-BY-4.0 | `87c633260730…` cartography.json |
-| na_minha_rua |  | 2026-10-22 | CC-BY-4.0 | `5be40828a57b…` na_minha_rua/2017.csv<br>`ef31c04e2e67…` na_minha_rua/2018.csv<br>`dd1283b12cc5…` na_minha_rua/2019.csv<br>+7 |
+| na_minha_rua | 10 ficheiros, p. ex. <https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/d66d2141-5a5e-4725-9593-ac2da4e65f17/download/2017.csv> | 2026-10-22 | CC-BY-4.0 | `5be40828a57b…` na_minha_rua/2017.csv<br>`ef31c04e2e67…` na_minha_rua/2018.csv<br>`dd1283b12cc5…` na_minha_rua/2019.csv<br>+7 |
 | network_identify | <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify> | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `71a5fe259fc7…` network_identify.json |
 | street_axes | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79> | 2026-10-24 | not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified) | `902bbeda01db…` street_axes.json |
 

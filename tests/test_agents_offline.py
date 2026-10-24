@@ -5,8 +5,8 @@ import pytest
 pytest.importorskip("anthropic")
 pytest.importorskip("pydantic")
 
-from streetfit.agents.claim_checker import Claim, ClaimReport, Corpus, Evidence, verify  # noqa: E402
-from streetfit.agents.standards_extractor import DerivedTotal, PageReading, WidthValue, check  # noqa: E402
+from streetfit.agents.claim_checker import Claim, ClaimReport, Corpus, Evidence, verify
+from streetfit.agents.standards_extractor import DerivedTotal, PageReading, WidthValue, check
 
 FINDINGS = {
     "free_width": {
@@ -41,12 +41,14 @@ def claim(**kw):
 
 def test_supported_claim_passes():
     out = verify(ClaimReport(claims=[claim()]), "Na rua, a faixa livre é de 4,90 m.", corpus(), FINDINGS)
-    assert out[0]["verdict"] == "supported" and out[0]["checks"] == []
+    assert out[0]["verdict"] == "supported"
+    assert out[0]["checks"] == []
 
 
 def test_wrong_number_is_downgraded():
     out = verify(ClaimReport(claims=[claim(text="a faixa livre é de 4,50 m")]), "a faixa livre é de 4,50 m", corpus(), FINDINGS)
-    assert out[0]["verdict"] == "needs_human" and "numbers not in the cited findings" in out[0]["checks"][0]
+    assert out[0]["verdict"] == "needs_human"
+    assert "numbers not in the cited findings" in out[0]["checks"][0]
 
 
 def test_invented_evidence_is_caught():
@@ -59,12 +61,16 @@ def test_invented_evidence_is_caught():
 def test_paraphrase_in_quotes_is_flagged_without_the_model():
     draft = "O manual diz «só se admite 2,75 m quando não há autocarros nenhuns»."
     out = verify(ClaimReport(claims=[]), draft, corpus(), FINDINGS)
-    assert out and out[0]["kind"] == "quotation" and out[0]["verdict"] == "needs_human"
+    assert out
+    assert out[0]["kind"] == "quotation"
+    assert out[0]["verdict"] == "needs_human"
 
 
 def test_corpus_search_is_accent_insensitive():
     hits = corpus().search("nao circulem autocarros")
-    assert hits and hits[0]["doc_id"] == "manual" and hits[0]["line"] == 2
+    assert hits
+    assert hits[0]["doc_id"] == "manual"
+    assert hits[0]["line"] == 2
 
 
 def test_extraction_values_are_cross_checked():

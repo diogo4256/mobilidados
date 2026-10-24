@@ -2,7 +2,7 @@
 
 Uses an ArcGIS ``identify`` on a network layer whose features carry, per edge and per direction, whether
 travel is allowed (Lisbon: ``Oneway`` = ``Traversable`` / ``Prohibited``, ``[Direction]`` = ``Along`` /
-``Against``). Field names come from the city profile.
+``Against``). Field names come from the city profile's ``[network]``.
 """
 
 from __future__ import annotations
@@ -10,19 +10,19 @@ from __future__ import annotations
 import pandas as pd
 from shapely.geometry import LineString
 
+from .config import Network
 from .sources import IdentifyCache
 
 
-def edges_along(
-    axis: LineString, cache: IdentifyCache, fields: dict[str, str], stations: list[float], tolerance: float = 6
-) -> pd.DataFrame:
+def edges_at(cache: IdentifyCache, net: Network, x: float, y: float) -> list[dict[str, object]]:
+    return [{"edge": a.get(net.edge), "direction": a.get(net.direction), "status": a.get(net.status)} for a in cache.get(x, y)]
+
+
+def edges_along(axis: LineString, cache: IdentifyCache, net: Network, stations: list[float]) -> pd.DataFrame:
     rows = []
     for s in stations:
         p = axis.interpolate(s)
-        for a in cache.get(p.x, p.y, tolerance):
-            rows.append(
-                {"s_m": s, "edge": a.get(fields["edge"]), "direction": a.get(fields["direction"]), "status": a.get(fields["status"])}
-            )
+        rows += [{"s_m": s, **e} for e in edges_at(cache, net, p.x, p.y)]
     return pd.DataFrame(rows).drop_duplicates()
 
 

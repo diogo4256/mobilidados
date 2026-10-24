@@ -18,13 +18,16 @@ from pyproj import Transformer
 from shapely import STRtree
 from shapely.geometry import LineString
 
+from .config import Network
 from .geometry import Profiler
 from .gtfs import Feed, active_service_ids
-from .network import directions
+from .network import directions, edges_at
 from .sources import IdentifyCache
 
 
-def bus_shapes(feed: Feed, day: dt.date, crs: int, bbox: tuple[float, float, float, float]):
+def bus_shapes(
+    feed: Feed, day: dt.date, crs: int, bbox: tuple[float, float, float, float]
+) -> tuple[dict[str, LineString], pd.Series[int], pd.Series[str]]:
     """Shapes of trips running on ``day`` that intersect ``bbox`` (projected), with trips/day and route."""
     trips = feed.table("trips", dtype=str)
     routes = feed.table("routes", dtype=str)[["route_id", "route_short_name"]]
@@ -72,7 +75,9 @@ def scan(
             a = shapely.get_coordinates(shapely.line_interpolate_point(part, np.clip(s - 1, 0, part.length)))
             b = shapely.get_coordinates(shapely.line_interpolate_point(part, np.clip(s + 1, 0, part.length)))
             tv = (b - a) / np.linalg.norm(b - a, axis=1)[:, None]
-            bus, dirs, rts = np.zeros(len(s)), [set() for _ in s], [set() for _ in s]
+            bus = np.zeros(len(s))
+            dirs: list[set[int]] = [set() for _ in s]
+            rts: list[set[str]] = [set() for _ in s]
             for j in stree.query(part.buffer(near_m)):
                 ln = shapes[sids[j]]
                 k = np.where(shapely.distance(ln, pts) <= near_m)[0]
@@ -120,11 +125,11 @@ def rank_streets(
     threshold: float,
     reference: float,
     cache: IdentifyCache | None,
-    fields: dict[str, str] | None,
-    open_value: str = "Traversable",
+    net: Network | None,
     min_bus_m: float = 45,
     min_below_ref_m: float = 30,
 ) -> pd.DataFrame:
+    """One row per street with buses: free width, two-sided parking and, for the narrowest, the traffic direction."""
     out = []
     for name, g in st.groupby("street"):
         v = g.dropna(subset=["free_width_m"])
@@ -144,15 +149,9 @@ def rank_streets(
             "metres_with_pattern": round(len(pattern) * step),
             "traffic": "",
         }
-        if cache is not None and fields and r[f"metres_below_{reference:g}m"] >= min_below_ref_m:
+        if cache is not None and net is not None and r[f"metres_below_{reference:g}m"] >= min_below_ref_m:
             ref = pattern if len(pattern) else v.nsmallest(max(1, len(v) // 2), "free_width_m")
             q = ref.iloc[len(pattern) // 2 if len(pattern) else 0]
-            edges = pd.DataFrame(
-                [
-                    {"edge": a.get(fields["edge"]), "direction": a.get(fields["direction"]), "status": a.get(fields["status"])}
-                    for a in cache.get(q.x, q.y, cache.src.get("tolerance", 3))
-                ]
-            )
-            r["traffic"] = directions(edges, open_value)
+            r["traffic"] = directions(pd.DataFrame(edges_at(cache, net, q.x, q.y)), net.open_value)
         out.append(r)
     return pd.DataFrame(out).sort_values(["metres_with_pattern", f"metres_below_{reference:g}m"], ascending=False)

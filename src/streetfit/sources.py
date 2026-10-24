@@ -1,172 +1,182 @@
 """Fetch a case's sources into ``data/raw/`` and record them in ``sources.lock.json``.
 
-Source kinds (``kind`` in the case/city TOML):
-
-* ``arcgis_query`` - features of one MapServer layer intersecting ``envelope`` (optionally filtered by ``where``)
-* ``http_file``    - one file (e.g. a GTFS zip); ``sha256`` in the lock pins the exact version used
-* ``http_files``   - several files listed as ``files = [{name, url}, ...]`` (e.g. yearly open-data CSVs)
-* ``arcgis_identify`` - point queries made during the analysis; cached in one JSON file and locked afterwards
+The source kinds are the models in :mod:`streetfit.config`: ``arcgis_query``, ``http_file``, ``http_files`` and
+``arcgis_identify`` (point queries made during the analysis, cached in one JSON file and locked afterwards).
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import shutil
 from pathlib import Path
+from typing import Any
+from urllib.parse import urlparse
 
 from . import arcgis
-from .config import Case
-from .provenance import Lock, http_get, now_utc, sha256_file
+from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, HttpFile, HttpFiles, StreetfitError
+from .provenance import Lock, http_get, now_utc, sha256_bytes, sha256_file, write_atomic
+
+log = logging.getLogger(__name__)
 
 
 def raw_path(case: Case, source_id: str) -> Path:
     src = case.source(source_id)
-    kind = src["kind"]
-    if kind in ("arcgis_query", "arcgis_identify"):
-        return case.raw_dir / f"{source_id}.json"
-    if kind == "http_file":
-        return case.raw_dir / f"{source_id}{src.get('suffix', Path(src['url']).suffix or '.bin')}"
-    if kind == "http_files":
+    if isinstance(src, HttpFile):
+        return case.raw_dir / f"{source_id}{src.suffix or Path(urlparse(src.url).path).suffix or '.bin'}"
+    if isinstance(src, HttpFiles):
         return case.raw_dir / source_id
-    raise ValueError(f"source {source_id}: unknown kind {kind!r}")
+    return case.raw_dir / f"{source_id}.json"
 
 
 def _files_of(path: Path) -> list[Path]:
     return sorted(p for p in path.rglob("*") if p.is_file()) if path.is_dir() else [path]
 
 
-def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from_dir: Path | None = None, log=print) -> None:
+def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from_dir: Path | None = None) -> None:
     """Download (or copy from ``from_dir``, e.g. an archived snapshot) every source that is not cached yet."""
     case.raw_dir.mkdir(parents=True, exist_ok=True)
     lock = Lock(case.lock_path)
-    snapshot_meta = json.loads((from_dir / "_snapshot.json").read_text()) if from_dir and (from_dir / "_snapshot.json").exists() else {}
-    for sid in only or case.source_ids():
-        src = case.source(sid)
-        dest = raw_path(case, sid)
-        if src["kind"] == "arcgis_identify" and not (from_dir and (from_dir / dest.name).exists()):
+    snapshot_meta = (
+        json.loads((from_dir / "_snapshot.json").read_text(encoding="utf-8")) if from_dir and (from_dir / "_snapshot.json").exists() else {}
+    )
+    for sid in only or list(case.config.sources):
+        src, dest = case.source(sid), raw_path(case, sid)
+        origin = from_dir / dest.name if from_dir is not None else None
+        if isinstance(src, ArcgisIdentify) and not (origin and origin.exists()):
             continue  # filled during the analysis (unless a snapshot has it), locked by `lock_identify_caches`
         if dest.exists() and not refresh:
-            log(f"  cached   {sid}")
+            log.info("cached   %s", sid)
             continue
-        if from_dir is not None:
-            origin = from_dir / dest.name
+        if origin is not None:
             if not origin.exists():
-                raise FileNotFoundError(f"{sid}: {origin} not in the snapshot; fetch it without --from-dir")
+                raise StreetfitError(f"{sid}: {origin} is not in the snapshot; fetch it without --from-dir")
             if origin.is_dir():
                 shutil.copytree(origin, dest, dirs_exist_ok=True)
             else:
                 shutil.copy2(origin, dest)
-            log(f"  copied   {sid} <- {origin}")
+            log.info("copied   %s <- %s", sid, origin)
             # keep the original retrieval metadata: from the lock, else from the snapshot's _snapshot.json
-            meta = lock.entries.get(sid) or snapshot_meta.get(sid) or {"kind": src["kind"], "retrieved_utc": "unknown"}
+            meta = lock.entries.get(sid) or snapshot_meta.get(sid) or {"kind": src.kind, "retrieved_utc": "unknown"}
         else:
             meta = _download(src, dest)
-            log(f"  fetched  {sid}")
+            log.info("fetched  %s", sid)
         lock.record(sid, _files_of(dest), case.raw_dir, **{k: v for k, v in meta.items() if k != "files"})
         lock.save()  # after each source, so a failure further on does not lose what was already fetched
 
 
-def snapshot(case: Case, out_dir: Path, log=print) -> list[str]:
+def snapshot(case: Case, out_dir: Path) -> list[str]:
     """Copy the cached sources that may be redistributed (``redistributable = true``) into ``out_dir``, with their
     lock metadata in ``_snapshot.json``, ready to archive (e.g. on Zenodo) and restore with ``fetch --from-dir``.
     Returns the ids of the sources left out, which a user of the snapshot fetches from their origin."""
     lock = Lock(case.lock_path)
     out_dir.mkdir(parents=True, exist_ok=True)
     meta, skipped = {}, []
-    for sid in case.source_ids():
-        src, p = case.source(sid), raw_path(case, sid)
-        if not src.get("redistributable", False) or not p.exists():
+    for sid, src in case.config.sources.items():
+        p = raw_path(case, sid)
+        if not src.redistributable or not p.exists():
             skipped.append(sid)
             continue
         if p.is_dir():
             shutil.copytree(p, out_dir / p.name, dirs_exist_ok=True)
         else:
             shutil.copy2(p, out_dir / p.name)
-        meta[sid] = lock.entries.get(sid, {}) | {"licence": src.get("licence"), "attribution": src.get("attribution", "")}
-        log(f"  added    {sid}")
-    (out_dir / "_snapshot.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        meta[sid] = lock.entries.get(sid, {}) | {"licence": src.licence, "attribution": src.attribution}
+        log.info("added    %s", sid)
+    (out_dir / "_snapshot.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     for sid in skipped:
-        log(f"  left out {sid} (not marked redistributable)")
+        log.info("left out %s (not marked redistributable)", sid)
     return skipped
 
 
-def _download(src: dict, dest: Path) -> dict:
-    kind, meta = src["kind"], {"kind": src["kind"], "retrieved_utc": now_utc(), "licence": src.get("licence", "unknown")}
-    if kind == "arcgis_query":
-        env, in_sr = src["envelope"], int(src.get("envelope_sr", 4326))
-        data = arcgis.query_layer(src["url"], env, in_sr=in_sr, out_sr=int(src["out_sr"]), where=src.get("where", "1=1"))
-        dest.write_text(json.dumps(data, ensure_ascii=False))
+def _download(src: AnySource, dest: Path) -> dict[str, Any]:
+    meta: dict[str, Any] = {"kind": src.kind, "retrieved_utc": now_utc(), "licence": src.licence}
+    if isinstance(src, ArcgisQuery):
+        data = arcgis.query_layer(src.url, src.envelope, in_sr=src.envelope_sr, out_sr=src.out_sr, where=src.where)
+        write_atomic(dest, json.dumps(data, ensure_ascii=False).encode())
         meta |= {
-            "url": src["url"],
-            "envelope": env,
-            "envelope_sr": in_sr,
-            "where": src.get("where", "1=1"),
+            "url": src.url,
+            "envelope": list(src.envelope),
+            "envelope_sr": src.envelope_sr,
+            "where": src.where,
             "n_features": len(data["features"]),
             "copyrightText": data.get("copyrightText"),
         }
-    elif kind == "http_file":
-        dest.write_bytes(http_get(src["url"], timeout=600).content)
-        meta |= {"url": src["url"]}
-    elif kind == "http_files":
+    elif isinstance(src, HttpFile):
+        content = http_get(src.url, timeout=600).content
+        if src.sha256 and sha256_bytes(content) != src.sha256:
+            raise StreetfitError(
+                f"{src.url} now serves a different file (sha256 {sha256_bytes(content)[:12]}…) from the one pinned in "
+                f"case.toml ({src.sha256[:12]}…); nothing was written. Use an archived copy or update the pin deliberately."
+            )
+        write_atomic(dest, content)
+        meta |= {"url": src.url}
+    elif isinstance(src, HttpFiles):
         dest.mkdir(parents=True, exist_ok=True)
-        for f in src["files"]:
-            (dest / f["name"]).write_bytes(http_get(f["url"], timeout=600).content)
-        meta |= {"urls": {f["name"]: f["url"] for f in src["files"]}}
+        for f in src.files:
+            write_atomic(dest / f.name, http_get(f.url, timeout=600).content)
+        meta |= {"urls": {f.name: f.url for f in src.files}}
     return meta
 
 
 def check_pins(case: Case) -> list[str]:
     """Sources whose TOML pins a sha256 that the cached file does not match (e.g. a newer GTFS feed)."""
     bad = []
-    for sid in case.source_ids():
-        pin = case.source(sid).get("sha256")
+    for sid, src in case.config.sources.items():
         p = raw_path(case, sid)
-        if pin and p.exists() and p.is_file() and sha256_file(p) != pin:
+        if isinstance(src, HttpFile) and src.sha256 and p.is_file() and sha256_file(p) != src.sha256:
             bad.append(sid)
     return bad
 
 
 def lock_identify_caches(case: Case) -> None:
     lock = Lock(case.lock_path)
-    for sid in case.source_ids():
-        src = case.source(sid)
+    for sid, src in case.config.sources.items():
         p = raw_path(case, sid)
-        if src["kind"] == "arcgis_identify" and p.exists():
+        if isinstance(src, ArcgisIdentify) and p.exists():
             lock.record(
                 sid,
                 [p],
                 case.raw_dir,
-                kind="arcgis_identify",
-                url=src["url"],
-                layers=src["layers"],
+                kind=src.kind,
+                url=src.url,
+                layers=src.layers,
                 retrieved_utc=lock.entries.get(sid, {}).get("retrieved_utc") or now_utc(),
-                licence=src.get("licence", "unknown"),
+                licence=src.licence,
             )
     lock.save()
 
 
-def load_json(case: Case, source_id: str) -> dict:
-    return json.loads(raw_path(case, source_id).read_text())
+def load_json(case: Case, source_id: str) -> dict[str, Any]:
+    path = raw_path(case, source_id)
+    if not path.exists():
+        raise StreetfitError(f"{path} is missing: run `streetfit fetch {case.root}` first")
+    data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return data
 
 
 class IdentifyCache:
     """Point identify results cached on disk, keyed by rounded coordinates, so re-runs work offline."""
 
     def __init__(self, case: Case, source_id: str, offline: bool = False):
-        self.src, self.path, self.offline = case.source(source_id), raw_path(case, source_id), offline
-        self.data: dict[str, list[dict]] = json.loads(self.path.read_text()) if self.path.exists() else {}
+        src = case.source(source_id)
+        if not isinstance(src, ArcgisIdentify):
+            raise StreetfitError(f"source {source_id!r} is not an arcgis_identify source")
+        self.src, self.path, self.offline = src, raw_path(case, source_id), offline
+        self.data: dict[str, list[dict[str, Any]]] = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
         self.dirty = False
 
-    def get(self, x: float, y: float, tolerance: float) -> list[dict]:
-        key = f"{x:.0f},{y:.0f}" + ("" if tolerance == self.src.get("tolerance", 3) else f"@{tolerance:g}")
+    def get(self, x: float, y: float, tolerance: float | None = None) -> list[dict[str, Any]]:
+        tol = self.src.tolerance if tolerance is None else tolerance
+        key = f"{x:.0f},{y:.0f}" + ("" if tol == self.src.tolerance else f"@{tol:g}")
         if key not in self.data:
             if self.offline:
-                raise RuntimeError(f"identify {key} not cached and --offline is set")
-            self.data[key] = arcgis.identify(self.src["url"], x, y, int(self.src["sr"]), self.src["layers"], tolerance)
+                raise StreetfitError(f"identify {key} is not cached and --offline is set")
+            self.data[key] = arcgis.identify(self.src.url, x, y, self.src.sr, self.src.layers, tol)
             self.dirty = True
         return self.data[key]
 
     def save(self) -> None:
         if self.dirty:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            self.path.write_text(json.dumps(self.data, ensure_ascii=False, sort_keys=True))
+            self.path.write_text(json.dumps(self.data, ensure_ascii=False, sort_keys=True), encoding="utf-8")

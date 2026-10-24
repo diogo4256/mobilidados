@@ -2,64 +2,77 @@
 
 from __future__ import annotations
 
-import matplotlib
+from typing import TYPE_CHECKING, Any
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib as mpl
+from matplotlib.figure import Figure
 
-from . import envelope  # noqa: E402
-from .i18n import num, t  # noqa: E402
+from . import envelope, i18n
+from .config import Case, Lang, Vehicle
+
+if TYPE_CHECKING:
+    from .pipeline import Run
 
 INK, MUTED, GRID = "#1f2933", "#6b7280", "#d9dee5"
 FREE, BUS, BUS2, CAR, STRIP, ALERT = "#c9ced6", "#e8915b", "#c8553d", "#5b8fc9", "#8fbfe0", "#b42318"
 
-plt.rcParams.update(
-    {
-        "font.size": 10,
-        "axes.edgecolor": MUTED,
-        "axes.labelcolor": INK,
-        "xtick.color": MUTED,
-        "ytick.color": MUTED,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-    }
-)
+STYLE: dict[Any, Any] = {
+    "font.size": 10,
+    "axes.edgecolor": MUTED,
+    "axes.labelcolor": INK,
+    "xtick.color": MUTED,
+    "ytick.color": MUTED,
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+}
 
 
-def make_all(run) -> None:
+def t(key: str, lang: Lang, **kw: Any) -> str:
+    return i18n.t(f"figure.{key}", lang, **kw)
+
+
+def num(x: float, lang: Lang, sign: bool = False) -> str:
+    return i18n.num(x, lang, sign=sign)
+
+
+def make_all(run: Run) -> None:
     out = run.case.results_dir / "figures"
     out.mkdir(parents=True, exist_ok=True)
-    lang = run.case.lang
-    figs = {"width_budget": width_budget(run, lang), "trips_per_hour": trips_per_hour(run, lang), "free_width_profile": profile(run, lang)}
-    if "area_streets" in run.tables or (run.tables_dir / "area_streets.csv").exists():
-        figs["area_streets"] = area(run, lang)
-    note = credit(run.case)
-    for name, f in figs.items():
-        if f is None:
-            continue
-        f.text(0.995, 0.005, note, ha="right", va="bottom", fontsize=6.5, color=MUTED)
-        f.savefig(out / f"{name}.png", dpi=160)
-    plt.close("all")
+    cfg, lang = run.cfg, run.case.lang
+    with mpl.rc_context(STYLE):
+        figs = {"free_width_profile": profile(run, lang)}
+        if cfg.envelope:
+            figs["width_budget"] = width_budget(run, lang)
+        if cfg.transit:
+            figs["trips_per_hour"] = trips_per_hour(run, lang)
+        if cfg.area_scan and cfg.transit and (fig := area(run, lang)) is not None:
+            figs["area_streets"] = fig
+        note = credit(run.case)
+        for name, f in figs.items():
+            f.text(0.995, 0.005, note, ha="right", va="bottom", fontsize=6.5, color=MUTED)
+            f.savefig(out / f"{name}.png", dpi=160)
 
 
-def credit(case) -> str:
+def credit(case: Case) -> str:
     """Data credit printed on every figure (attribution required by the inputs' licences)."""
-    parts = []
-    for sid in case.source_ids():
-        s = case.source(sid)
-        item = f"{s['attribution']} ({s['licence']})" if s.get("licence_url") else s.get("attribution")
+    parts: list[str] = []
+    for s in case.config.sources.values():
+        item = f"{s.attribution} ({s.licence})" if s.licence_url else s.attribution
         if item and item not in parts:
             parts.append(item)
     return t("data_credit", case.lang, sources="; ".join(parts))
 
 
-def width_budget(run, lang):
-    s = run.tables["summary_by_block"].set_index("block").loc["all"]
-    free = float(s.free_median)
-    e = run.case.section("envelope")
-    veh = envelope.load_vehicles(run.case.cfg.get("vehicles"))
-    bus, car = veh[e["bus"]], veh[e["car"]]
-    cat = lambda v: t(v.category, lang) if v.category in ("bus", "car") else v.category  # noqa: E731
+def width_budget(run: Run, lang: Lang) -> Figure:
+    e = run.cfg.envelope
+    assert e is not None
+    free = float(run.table("summary_by_block").set_index("block").loc["all", "free_median"])
+    vehicles = run.cfg.all_vehicles()
+    bus, car = vehicles[e.bus], vehicles[e.car]
+
+    def cat(v: Vehicle) -> str:
+        return t(v.category, lang) if v.category in ("bus", "car") else v.category
+
     rows = [
         (t("free_width_short", lang), [(free, FREE, f"{num(free, lang)} m")], 0.0, ""),
         (
@@ -78,7 +91,8 @@ def width_budget(run, lang):
             else "",
         ),
     ]
-    fig, ax = plt.subplots(figsize=(10, 3.6))
+    fig = Figure(figsize=(10, 3.6))
+    ax = fig.subplots()
     for i, (lab, parts, mir, note) in enumerate(rows):
         y, x = len(rows) - 1 - i, 0.0
         for w, col, txt in parts:
@@ -100,10 +114,11 @@ def width_budget(run, lang):
     return fig
 
 
-def trips_per_hour(run, lang):
-    tph = run.tables["trips_per_hour"]
-    tph = tph.set_index("hour") if "hour" in tph.columns else tph
-    fig, ax = plt.subplots(figsize=(9.5, 3.6))
+def trips_per_hour(run: Run, lang: Lang) -> Figure:
+    assert run.cfg.transit is not None
+    tph = run.table("trips_per_hour").set_index("hour")
+    fig = Figure(figsize=(9.5, 3.6))
+    ax = fig.subplots()
     w = 0.4
     for k, (col, color) in enumerate(zip(tph.columns, (BUS, CAR), strict=False)):
         ax.bar(tph.index + (k - 0.5) * w, tph[col], w, label=f"{col} ({int(tph[col].sum())})", color=color)
@@ -111,26 +126,23 @@ def trips_per_hour(run, lang):
     ax.set_ylabel(t("trips_per_hour", lang))
     ax.legend(frameon=False)
     ax.grid(axis="y", color=GRID, lw=0.6)
-    ax.set_title(t("weekday_trips", lang, day=run.case.section("transit")["service_date"]), loc="left", fontsize=10, color=INK)
+    ax.set_title(t("weekday_trips", lang, day=run.cfg.transit.service_date), loc="left", fontsize=10, color=INK)
     fig.tight_layout()
     return fig
 
 
-def profile(run, lang):
-    p = run.tables["profiles"].dropna(subset=["free_width"])
-    fig, ax = plt.subplots(figsize=(10, 3.8))
-    for b in run.case.blocks:
-        ax.axvspan(b.start, b.end, color=GRID if run.case.blocks.index(b) % 2 else "white", alpha=0.5, lw=0)
+def profile(run: Run, lang: Lang) -> Figure:
+    p = run.table("profiles").dropna(subset=["free_width"])
+    fig = Figure(figsize=(10, 3.8))
+    ax = fig.subplots()
+    for i, b in enumerate(run.cfg.street.blocks):
+        ax.axvspan(b.start, b.end, color=GRID if i % 2 else "white", alpha=0.5, lw=0)
         ax.text((b.start + b.end) / 2, 0.15, b.id, ha="center", color=MUTED, fontsize=9)
     ax.plot(p.s, p.free_width, color=INK, lw=1.4, label=t("free_width", lang))
     ax.plot(p.s, p.strip_L, color=STRIP, lw=1, label=t("strips", lang))
     ax.plot(p.s, p.strip_R, color=STRIP, lw=1, ls="--")
-    if "standards_comparison" in run.tables or (run.tables_dir / "standards_comparison.csv").exists():
-        import pandas as pd
-
-        sc = run.tables.get("standards_comparison")
-        sc = sc if sc is not None else pd.read_csv(run.tables_dir / "standards_comparison.csv")
-        for v in sorted(set(sc.value_m)):
+    if run.cfg.standards.compare:
+        for v in sorted(set(run.table("standards_comparison").value_m)):
             ax.axhline(v, color=ALERT, lw=0.8, ls=":")
             ax.text(p.s.max(), v + 0.08, f"{num(v, lang)} m", color=ALERT, ha="right", fontsize=8)
     ax.set_ylim(0, max(10, p.free_width.quantile(0.98) + 0.5))
@@ -142,20 +154,18 @@ def profile(run, lang):
     return fig
 
 
-def area(run, lang):
-    import pandas as pd
-
-    a = run.tables.get("area_streets")
-    a = a if a is not None else pd.read_csv(run.tables_dir / "area_streets.csv")
-    a = a.dropna(subset=["free_width_median_m"])
+def area(run: Run, lang: Lang) -> Figure | None:
+    sc = run.cfg.area_scan
+    assert sc is not None
+    a = run.table("area_streets").dropna(subset=["free_width_median_m"])
     if a.empty:
         return None
-    me = run.case.cfg["street"]["name"]
-    sc = run.case.section("area_scan")
-    fig, ax = plt.subplots(figsize=(9, 5))
+    me = run.cfg.street.name
+    fig = Figure(figsize=(9, 5))
+    ax = fig.subplots()
     # the case's pattern: two-way traffic + parking on both sides + narrow free width over a minimum length
-    pattern = (a.traffic == "two-way") & (a.metres_with_pattern >= sc.get("min_pattern_m", 30))
-    one_way = (a.metres_with_pattern >= sc.get("min_pattern_m", 30)) & ~pattern
+    pattern = (a.traffic == "two-way") & (a.metres_with_pattern >= sc.min_pattern_m)
+    one_way = (a.metres_with_pattern >= sc.min_pattern_m) & ~pattern
     rest = ~pattern & ~one_way
     ax.scatter(a.buses_per_day[rest], a.free_width_median_m[rest], s=20, color=MUTED, alpha=0.45, lw=0)
     ax.scatter(
@@ -178,7 +188,7 @@ def area(run, lang):
             color=ALERT if row.street == me else INK,
             weight="bold" if row.street == me else None,
         )
-    ax.axhline(sc.get("reference_m", 6.5), color=ALERT, lw=0.8, ls=":")
+    ax.axhline(sc.reference_m, color=ALERT, lw=0.8, ls=":")
     ax.set_xlabel(t("buses_day", lang))
     ax.set_ylabel(t("median_free", lang))
     ax.set_title(t("area_title", lang), loc="left", fontsize=10, color=INK)

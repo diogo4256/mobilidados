@@ -1,3 +1,4 @@
-speed_kmh,seconds_on_street,encounters_per_day,max_per_hour,hours_with_encounter
-15.0,50,7,2,5
-20.0,38,6,2,5
+basis,speed_kmh,seconds_on_street,encounters_per_day,max_per_hour,hours_with_encounter
+assumed,15.0,50,7,2,5
+assumed,20.0,38,6,2,5
+schedule,12.7,59,7,2,5

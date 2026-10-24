@@ -68,13 +68,15 @@ def locate(enc: pd.DataFrame, narrow: list[tuple[float, float, str]]) -> pd.Data
     return enc
 
 
-def summary(passings: pd.DataFrame, length: float, speeds: list[float]) -> pd.DataFrame:
+def summary(passings: pd.DataFrame, length: float, speeds: list[float], basis: str = "assumed") -> pd.DataFrame:
+    """Encounters per day at each speed. ``basis`` says where the speeds come from (assumed, or the schedule)."""
     rows = []
     for v in speeds:
         e = encounters(passings, length, v)
         hours = e.time.str[:2].value_counts() if len(e) else pd.Series(dtype=int)
         rows.append(
             {
+                "basis": basis,
                 "speed_kmh": v,
                 "seconds_on_street": round(length / (v / 3.6)),
                 "encounters_per_day": len(e),

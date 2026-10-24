@@ -31,7 +31,10 @@ Check the cartography's survey date and stated accuracy, and record them in `[ca
 
 2. Write `cities/<city>.toml`; record each source's licence exactly as the publisher states it. If it is not
    stated, write "not stated", and do not commit the raw data.
-3. Create a case (`cases/<city>-<street>/case.toml`) with `extends = "../../cities/<city>.toml"`.
+3. Create a case (`cases/<city>-<street>/case.toml`) with `extends = "../../cities/<city>.toml"`. The merged
+   configuration is validated when it is loaded (the models are in `src/streetfit/config.py`): a misspelt key, a
+   missing value or a reference to a source, vehicle or design reference that does not exist is reported by
+   name before anything runs.
 4. `streetfit fetch`, `streetfit run`, and inspect `results/figures/free_width_profile.png`: a sensible profile
    (strips around 2 m, a plausible free width) is the first check that the class codes are right.
 5. Open a pull request with the city profile, the case and its `results/` (see [CONTRIBUTING.md](../CONTRIBUTING.md)).

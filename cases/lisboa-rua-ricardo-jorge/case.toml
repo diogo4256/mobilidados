@@ -12,9 +12,9 @@ name = "Rua Ricardo Jorge"
 headings = { "+" = "SO→NE", "-" = "NE→SO" }   # s = 0 at Av. do Rio de Janeiro (SW), increasing to the NE
 sides = { L = "NO", R = "SE" }                  # left / right of the direction of increasing s
 blocks = [
-  { id = "B1", from = 0.0, to = 87.42, label = "Av. do Rio de Janeiro → R. Cor. Marques Leitão" },
-  { id = "B2", from = 87.42, to = 158.27, label = "R. Cor. Marques Leitão → R. Constantino Fernandes" },
-  { id = "B3", from = 158.27, to = 209.25, label = "R. Constantino Fernandes → R. Carlos Mayer" },
+  { id = "B1", start = 0.0, end = 87.42, label = "Av. do Rio de Janeiro → R. Cor. Marques Leitão" },
+  { id = "B2", start = 87.42, end = 158.27, label = "R. Cor. Marques Leitão → R. Constantino Fernandes" },
+  { id = "B3", start = 158.27, end = 209.25, label = "R. Constantino Fernandes → R. Carlos Mayer" },
 ]
 
 [profiles]
@@ -35,9 +35,9 @@ speeds_kmh = [15, 20]            # stop-to-stop medians imply >=16–18 km/h ove
                                  # service day (scheduled_runtimes.csv); the ledger also reports the count at the latter
 buffer_m = 12
 reference_stops = [
-  { route = "744", direction_id = "0", stop_id = "11315", s_m = 33.6, heading = 1 },   # on the street
-  { route = "744", direction_id = "1", stop_id = "11318", s_m = 202.5, heading = -1 },  # R. Reinaldo Ferreira, 16 m from the NE end
-  { route = "46B", direction_id = "0", stop_id = "11318", s_m = 202.5, heading = -1 },
+  { route = "744", direction_id = 0, stop_id = "11315", s_m = 33.6, heading = 1 },   # on the street
+  { route = "744", direction_id = 1, stop_id = "11318", s_m = 202.5, heading = -1 },  # R. Reinaldo Ferreira, 16 m from the NE end
+  { route = "46B", direction_id = 0, stop_id = "11318", s_m = 202.5, heading = -1 },
 ]
 
 [envelope]
@@ -102,7 +102,7 @@ template = "carris_gtfs"
 # 2026-11-03) is archived byte-for-byte by the Mobility Database (feed mdb-2929, dataset of 2026-10-20).
 url = "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
 sha256 = "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7"
-feed = "Carris GTFS as published on 2026-10-19 (origin: https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS)"
+description = "Carris GTFS as published on 2026-10-19 (origin: https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS)"
 
 [sources.na_minha_rua]
 template = "cml_na_minha_rua"

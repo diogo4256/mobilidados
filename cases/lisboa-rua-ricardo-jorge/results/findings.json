@@ -43,7 +43,7 @@
         "max_m": 5.68,
         "p5_m": 4.81,
         "p95_m": 5.08,
-        "metres_two_strips": "116"
+        "metres_two_strips": 116.0
       },
       "sources": [
         "cartography",
@@ -318,18 +318,18 @@
         38.766
       ],
       "envelope_sr": 4326,
-      "kind": "arcgis_query",
-      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
-      "n_features": 268,
-      "retrieved_utc": "2026-10-24T15:47:00+00:00",
-      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
-      "where": "1=1",
       "files": {
         "area_axes.json": {
           "bytes": 423717,
           "sha256": "3096da389677413398f863b4888d326765a725d71c9007dc427f6fc3f18bea1a"
         }
-      }
+      },
+      "kind": "arcgis_query",
+      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
+      "n_features": 268,
+      "retrieved_utc": "2026-10-24T15:47:00+00:00",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+      "where": "1=1"
     },
     "area_cartography": {
       "copyrightText": "",
@@ -340,43 +340,43 @@
         38.766
       ],
       "envelope_sr": 4326,
-      "kind": "arcgis_query",
-      "licence": "CC-BY-4.0",
-      "n_features": 1457,
-      "retrieved_utc": "2026-10-24T15:46:48+00:00",
-      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
-      "where": "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea')",
       "files": {
         "area_cartography.json": {
           "bytes": 10616313,
           "sha256": "6d49fe735c72ed8ad166ca1d477cef81674b38fbc6f4345b2c820f29f6351fef"
         }
-      }
+      },
+      "kind": "arcgis_query",
+      "licence": "CC-BY-4.0",
+      "n_features": 1457,
+      "retrieved_utc": "2026-10-24T15:46:48+00:00",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "where": "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea')"
     },
     "area_network_identify": {
-      "kind": "arcgis_identify",
-      "layers": "all:203",
-      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
-      "retrieved_utc": "2026-10-24T15:49:12+00:00",
-      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify",
       "files": {
         "area_network_identify.json": {
           "bytes": 34530,
           "sha256": "0f584f1874ef4dabdbae6bf1045419c96005b4cdd7e35043c4b01f833dd34840"
         }
-      }
+      },
+      "kind": "arcgis_identify",
+      "layers": "all:203",
+      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+      "retrieved_utc": "2026-10-24T15:49:12+00:00",
+      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
     },
     "carris_gtfs": {
-      "kind": "http_file",
-      "licence": "not stated at the download endpoint (not redistributed)",
-      "retrieved_utc": "2026-10-24T15:46:42+00:00",
-      "url": "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip",
       "files": {
         "carris_gtfs.zip": {
           "bytes": 47948626,
           "sha256": "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7"
         }
-      }
+      },
+      "kind": "http_file",
+      "licence": "not stated at the download endpoint (not redistributed)",
+      "retrieved_utc": "2026-10-24T15:46:42+00:00",
+      "url": "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
     },
     "cartography": {
       "copyrightText": "",
@@ -387,23 +387,20 @@
         38.759
       ],
       "envelope_sr": 4326,
-      "kind": "arcgis_query",
-      "licence": "CC-BY-4.0",
-      "n_features": 911,
-      "retrieved_utc": "2026-10-24T15:50:29+00:00",
-      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
-      "where": "1=1",
       "files": {
         "cartography.json": {
           "bytes": 5471743,
           "sha256": "87c633260730017e4a00be84e34da7ff7dbc74658caab4c0177f1bee5a4c9cd3"
         }
-      }
+      },
+      "kind": "arcgis_query",
+      "licence": "CC-BY-4.0",
+      "n_features": 911,
+      "retrieved_utc": "2026-10-24T15:50:29+00:00",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "where": "1=1"
     },
     "na_minha_rua": {
-      "kind": "http_files",
-      "licence": "CC-BY-4.0",
-      "retrieved_utc": "2026-10-22 (file times)",
       "files": {
         "na_minha_rua/2017.csv": {
           "bytes": 10793626,
@@ -445,20 +442,23 @@
           "bytes": 9614193,
           "sha256": "6d8abc0ecf0f06087c87da31ec26011eef81f018def4e204b39fa8b6e5d9ade4"
         }
-      }
+      },
+      "kind": "http_files",
+      "licence": "CC-BY-4.0",
+      "retrieved_utc": "2026-10-22 (file times)"
     },
     "network_identify": {
-      "kind": "arcgis_identify",
-      "layers": "all:203",
-      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
-      "retrieved_utc": "2026-10-24T15:49:12+00:00",
-      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify",
       "files": {
         "network_identify.json": {
           "bytes": 3860,
           "sha256": "71a5fe259fc789c008d92691732c6ae67f5f8a94cfe1e54ab2c8a99cce6e6d05"
         }
-      }
+      },
+      "kind": "arcgis_identify",
+      "layers": "all:203",
+      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+      "retrieved_utc": "2026-10-24T15:49:12+00:00",
+      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
     },
     "street_axes": {
       "copyrightText": "",
@@ -469,18 +469,18 @@
         38.759
       ],
       "envelope_sr": 4326,
-      "kind": "arcgis_query",
-      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
-      "n_features": 26,
-      "retrieved_utc": "2026-10-24T15:50:35+00:00",
-      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
-      "where": "1=1",
       "files": {
         "street_axes.json": {
           "bytes": 33491,
           "sha256": "902bbeda01dbe1ace471da6b1c0d27b4b34554c50fb1848dbcef5d07594ada2a"
         }
-      }
+      },
+      "kind": "arcgis_query",
+      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
+      "n_features": 26,
+      "retrieved_utc": "2026-10-24T15:50:35+00:00",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+      "where": "1=1"
     }
   }
 }

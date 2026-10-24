@@ -8,6 +8,7 @@ install:            ## dev environment with the optional AI tools
 lint:
 	uv run ruff check src tests
 	uv run ruff format --check src tests
+	uv run mypy
 
 test:               ## unit tests (no network, no data)
 	uv run pytest -m "not data and not live"

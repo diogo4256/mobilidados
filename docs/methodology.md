@@ -60,8 +60,9 @@ for A heading +1 at `s_a` at `t_a` and B heading −1 at `s_b` at `t_b`. Results
 (15 and 20 km/h in Lisbon) and flagged when the meeting point falls inside a two-strip section. Slower buses
 stay longer on the street and meet more often, so the pipeline also reports the count at the slowest
 stop-to-stop speed implied by the service day's schedule (straight-line distance over median scheduled time, a
-lower bound): in Lisbon 12.7 km/h gives 7, the top of the 6–7 range. It is an estimate of how often the
-situation arises, graded I.
+lower bound): in Lisbon 12.7 km/h gives 7, the top of the 6–7 range. Both are rows of `encounters_summary.csv`,
+told apart by its `basis` column (`assumed` or `schedule`). It is an estimate of how often the situation arises,
+graded I.
 
 ## Width budget (`envelope.py`)
 

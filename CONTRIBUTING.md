@@ -13,8 +13,11 @@ method on different cartography and makes the tool useful to more people.
   printed and PDF page, a verbatim quote and the scope. `streetfit extract-standard` helps read drawings; a
   human confirms every value.
 * **Vehicles**: add entries to `src/streetfit/data/vehicles.toml` with a source and an evidence grade.
-* **Code**: new source kinds (WFS, OGC API Features, OpenStreetMap), swept-path analysis, orthophoto checks,
-  translations of the ledger templates (`report.py`, `i18n.py`).
+  Catalogue text in other languages goes in a `translations.<lang>` table after the entry.
+* **A language**: copy `src/streetfit/locales/en.toml` to `<lang>.toml`, translate the values (keep the
+  `{placeholders}`) and add the code to `Lang` in `src/streetfit/config.py`; a test checks that every key and
+  placeholder is there.
+* **Code**: new source kinds (WFS, OGC API Features, OpenStreetMap), swept-path analysis, orthophoto checks.
 
 ## Ground rules
 
@@ -33,11 +36,11 @@ method on different cartography and makes the tool useful to more people.
 ```bash
 uv sync --extra agents        # Python 3.11+
 uv run pre-commit install     # optional: ruff, formatting and REUSE checks before each commit
-make lint test                # what CI runs
+make lint test                # what CI runs: ruff, mypy, pytest
 make reproduce                # re-runs the Lisbon case from its sources (downloads ~250 MB)
 ```
 
-Tests: unit tests use synthetic data and need no network. `pytest -m data` re-runs every case from its cache
+Tests: unit tests use synthetic data and need no network; warnings fail them, so deprecations surface early. `pytest -m data` re-runs every case from its cache
 and compares with the committed results. `pytest -m live` calls the Claude API (needs credentials).
 
 ## Pull requests

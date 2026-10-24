@@ -1,6 +1,7 @@
-"""Cross-section measurement on a synthetic street with known widths."""
+"""Cross-section measurement on a synthetic street with known widths, and ESRI JSON geometry conversion."""
 
 import pytest
+from shapely import affinity
 from shapely.geometry import LineString, box
 
 from streetfit.arcgis import to_polygon
@@ -27,39 +28,64 @@ def street(free=4.90, strip=2.0, walk=2.5, length=100.0, strip_from=20.0, strip_
 
 def test_widths_on_two_strip_section():
     axis, polys = street()
-    df = measure_profiles(axis, polys, CLASSES, step=1.0)
-    mid = df[df.s == 50].iloc[0]
+    mid = measure_profiles(axis, polys, CLASSES, step=1.0).set_index("s").loc[50]
     assert mid.free_width == pytest.approx(4.90)
-    assert mid.strip_L == pytest.approx(2.0) and mid.strip_R == pytest.approx(2.0)
+    assert mid.strip_L == pytest.approx(2.0)
+    assert mid.strip_R == pytest.approx(2.0)
     assert mid.kerb_to_kerb == pytest.approx(8.90)
-    assert mid.sidewalk_L == pytest.approx(2.5) and mid.to_plot_R == pytest.approx(2.5)
+    assert mid.sidewalk_L == pytest.approx(2.5)
+    assert mid.to_plot_R == pytest.approx(2.5)
+
+
+@pytest.mark.parametrize("angle", [0, 17, 90, 133, 241])
+def test_measurement_does_not_depend_on_the_street_orientation(angle):
+    axis, polys = street(free=5.3, strip=1.9)
+    turn = lambda g: affinity.rotate(g, angle, origin=(0, 0))  # noqa: E731
+    mid = measure_profiles(turn(axis), [(c, turn(g)) for c, g in polys], CLASSES, step=1.0).set_index("s").loc[50]
+    assert (mid.free_width, mid.strip_L, mid.strip_R, mid.kerb_to_kerb) == pytest.approx((5.3, 1.9, 1.9, 9.1), abs=0.011)
 
 
 def test_no_strip_outside_parking_section():
     axis, polys = street()
-    df = measure_profiles(axis, polys, CLASSES, step=1.0)
-    end = df[df.s == 5].iloc[0]
-    assert end.strip_L == 0 and end.strip_R == 0
+    end = measure_profiles(axis, polys, CLASSES, step=1.0).set_index("s").loc[5]
+    assert end.strip_L == 0
+    assert end.strip_R == 0
     assert end.kerb_to_kerb == pytest.approx(4.90)
 
 
 def test_classify_summary_and_sections():
     axis, polys = street()
-    blocks = [Block("A", 0, 50), Block("B", 50, 100)]
+    blocks = [Block(id="A", start=0, end=50), Block(id="B", start=50, end=100)]
     df = classify(measure_profiles(axis, polys, CLASSES, step=1.0), blocks)
     two = df[df["class"] == TWO_STRIPS]
     # a transect lying exactly on a strip's end edge counts the strip (shared boundary), as in the original scripts
-    assert two.s.min() == 20 and two.s.max() == 80
-    s = summarize_blocks(df, blocks).set_index("block")
-    assert s.loc["all", "free_median"] == pytest.approx(4.90)
+    assert (two.s.min(), two.s.max()) == (20, 80)
+    assert summarize_blocks(df, blocks).set_index("block").loc["all", "free_median"] == pytest.approx(4.90)
     assert [b for _, _, b in narrow_sections(df, 1.0)] == ["A", "B"]
-    lengths = strip_lengths(df, blocks, 1.0).set_index("block")
-    assert lengths.loc["all", "strip_L_length_m"] == pytest.approx(61.0)
+    assert strip_lengths(df, blocks, 1.0).set_index("block").loc["all", "strip_L_length_m"] == pytest.approx(61.0)
 
 
-def test_esri_rings_orientation_and_holes():
-    # ESRI: exterior clockwise, hole counter-clockwise
-    ext = [[0, 0], [0, 10], [10, 10], [10, 0], [0, 0]]
+# ESRI rings: exterior clockwise, hole counter-clockwise
+OUTER = [[0, 0], [0, 10], [10, 10], [10, 0], [0, 0]]
+
+
+def test_esri_ring_orientation_and_holes():
     hole = [[2, 2], [4, 2], [4, 4], [2, 4], [2, 2]]
-    p = to_polygon({"rings": [ext, hole]})
+    assert to_polygon({"rings": [OUTER, hole]}).area == pytest.approx(100 - 4)
+
+
+def test_hole_touching_its_exterior_is_kept():
+    hole = [[0, 0], [3, 1], [1, 3], [0, 0]]  # touches the exterior at its corner (0, 0)
+    p = to_polygon({"rings": [OUTER, hole]})
+    assert p.is_valid
     assert p.area == pytest.approx(100 - 4)
+
+
+def test_hole_inside_an_island_inside_a_hole():
+    hole = [[1, 1], [9, 1], [9, 9], [1, 9], [1, 1]]
+    island = [[3, 3], [3, 7], [7, 7], [7, 3], [3, 3]]
+    hole_in_island = [[4, 4], [6, 4], [6, 6], [4, 6], [4, 4]]
+    p = to_polygon({"rings": [OUTER, hole, island, hole_in_island]})
+    assert p.geom_type == "MultiPolygon"
+    assert p.is_valid
+    assert p.area == pytest.approx((100 - 64) + (16 - 4))
