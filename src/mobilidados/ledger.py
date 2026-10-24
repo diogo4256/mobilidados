@@ -224,6 +224,35 @@ def build(r: Run) -> list[Finding]:
                 caveat="Assumes parked vehicles stay inside the mapped strips; see overhang_sensitivity.csv.",
             )
         )
+        wp = r.table("without_parking").set_index("without")
+        one_side = float(wp.loc[["L", "R"], "free_median"].min())
+        F.append(
+            Finding(
+                id="without_parking",
+                grade="I",
+                statement=say(
+                    "without_parking",
+                    side_l=sides["L"],
+                    lmin=n(wp.loc["L", "free_min"]),
+                    lmax=n(wp.loc["L", "free_max"]),
+                    lmed=n(wp.loc["L", "free_median"]),
+                    side_r=sides["R"],
+                    rmin=n(wp.loc["R", "free_min"]),
+                    rmax=n(wp.loc["R", "free_max"]),
+                    rmed=n(wp.loc["R", "free_median"]),
+                    bmed=n(wp.loc["both", "free_median"]),
+                    bb=n(bb),
+                    bbm=n(bbm),
+                    m1=n(one_side - bb, sign=True),
+                    m1m=n(one_side - bbm, sign=True),
+                ),
+                values={f"without_{side}_median_m": float(wp.loc[side, "free_median"]) for side in ("L", "R", "both")}
+                | {"bus_bus_margin_one_side_m": round(one_side - bb, 2), "bus_bus_margin_one_side_mirrors_m": round(one_side - bbm, 2)},
+                sources=["free_width", "parking_strips", f"vehicle_{e.bus}_body", f"vehicle_{e.bus}_mirrors"],
+                method="Free width plus the mapped parking strip(s) on the same transect, at every station with parking on both sides.",
+                caveat="Assumes the strip's space becomes carriageway and nothing else takes it; it measures an option, it is not a design.",
+            )
+        )
 
     if tr:
         es, ed = r.table("encounters_summary"), r.table("encounters_detail")

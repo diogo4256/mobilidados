@@ -186,6 +186,7 @@ def stage_envelope(r: Run) -> None:
     vehicles = r.cfg.all_vehicles()
     r.save("width_budget", envelope.width_budget(free, vehicles, e.scenarios))
     r.save("overhang_sensitivity", envelope.overhang_sensitivity(free["median"], vehicles, e.scenarios))
+    r.save("without_parking", envelope.without_parking(r.table("profiles")))
 
 
 def stage_encounters(r: Run) -> None:

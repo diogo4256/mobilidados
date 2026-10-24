@@ -115,18 +115,18 @@ WORDING = {
     },
     "pt": {
         "ledger.traffic": (
-            "A rede viária municipal marca a rua como de TRAFFIC (arestas verificadas em 1 ponto ao longo da rua).",
-            "A rede viária municipal marca a rua como de TRAFFIC (arestas verificadas em 3 pontos ao longo da rua).",
+            "Segundo a rede viária da Câmara, a rua tem TRAFFIC (verificado em 1 ponto ao longo da rua).",
+            "Segundo a rede viária da Câmara, a rua tem TRAFFIC (verificado em 3 pontos ao longo da rua).",
         ),
         "ledger.routes_scheduled": (
-            "A carreira 744 está programada ao longo da rua.",
-            "As carreiras 744 estão programadas ao longo da rua.",
+            "Segundo o horário, a carreira 744 passa nesta rua.",
+            "Segundo o horário, as carreiras 744 passam nesta rua.",
         ),
         "ledger.trips": ("1 viagem HEADING", "3 viagens HEADING"),
         "ledger.meetings": ("1 encontro", "3 encontros"),
         "ledger.meetings_narrow": (
-            "1 cai nos troços com estacionamento dos dois lados",
-            "3 caem nos troços com estacionamento dos dois lados",
+            "1 acontece nos troços com estacionamento dos dois lados",
+            "3 acontecem nos troços com estacionamento dos dois lados",
         ),
         "ledger.reports_attributed": (
             "Foi atribuída à rua 1 ocorrência da categoria «Parking»",
@@ -136,10 +136,10 @@ WORDING = {
             "1.ª de 1 rua com pelo menos 100 m na envolvente",
             "1.ª de 3 ruas com pelo menos 100 m na envolvente",
         ),
-        "ledger.area_streets": ("De 1 rua com autocarros programados na envolvente", "Das 3 ruas com autocarros programados na envolvente"),
+        "ledger.area_streets": ("De 1 rua da zona com autocarros no horário", "Das 3 ruas da zona com autocarros no horário"),
         "ledger.area_pattern": (
-            "1 é de dois sentidos e combina estacionamento dos dois lados com uma faixa livre inferior a 5,5 m em pelo menos 30 m (Rua A)",
-            "3 são de dois sentidos e combinam estacionamento dos dois lados com uma faixa livre inferior a 5,5 m em pelo menos 30 m (Rua A)",
+            "1 tem dois sentidos e estacionamento dos dois lados, com menos de 5,5 m de largura livre em pelo menos 30 m (Rua A)",
+            "3 têm dois sentidos e estacionamento dos dois lados, com menos de 5,5 m de largura livre em pelo menos 30 m (Rua A)",
         ),
         "report.files": ("1 ficheiro, p. ex. <u>", "3 ficheiros, p. ex. <u>"),
     },

@@ -78,7 +78,7 @@ def test_claim_checker_end_to_end(monkeypatch):
                 "kind": "number",
                 "verdict": "supported",
                 "finding_ids": ["free_width"],
-                "evidence": [{"doc_id": "ledger", "line": 0, "quote": "mediana 4,90 m"}],
+                "evidence": [{"doc_id": "ledger", "line": 0, "quote": "mediana de 4,90 m"}],
                 "problem": "",
                 "suggestion": "",
             }

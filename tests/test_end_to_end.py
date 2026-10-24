@@ -42,6 +42,7 @@ TABLES = {
     "traffic_direction_edges",
     "trips_per_hour",
     "width_budget",
+    "without_parking",
 }
 
 
@@ -189,6 +190,7 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
         "vehicle_car_typical_body",
         "vehicle_car_typical_mirrors",
         "width_budget",
+        "without_parking",
         "encounters",
         "occurrences",
         "area_pattern",
@@ -198,7 +200,7 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     ]
     grades = {k: v["grade"] for k, v in findings.items()}
     assert grades["length"] == grades["free_width"] == grades["occurrences"] == "M"
-    assert (grades["width_budget"], grades["encounters"]) == ("I", "I")
+    assert (grades["width_budget"], grades["without_parking"], grades["encounters"]) == ("I", "I", "I")
     assert (grades["vehicle_bus_eu_max_body"], grades["vehicle_bus_eu_max_mirrors"], grades["standard_rast06_bus_bus"]) == ("D", "P", "D")
     assert grades["gap_1"] == "NE"
 
@@ -231,6 +233,20 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
         "bus_car_margin_mirrors_m": 0.3,
     }
     assert "margin −0.20 m" in findings["width_budget"]["statement"]
+    # the strip given back to the carriageway is added on every transect: 4.90 m free + 2.00 m strip(s)
+    assert findings["without_parking"]["values"] == {
+        "without_L_median_m": 6.9,
+        "without_R_median_m": 6.9,
+        "without_both_median_m": 8.9,
+        "bus_bus_margin_one_side_m": 1.8,
+        "bus_bus_margin_one_side_mirrors_m": 1.0,
+    }
+    assert "the free width would range from 6.90 to 6.90 m (median 6.90 m)" in findings["without_parking"]["statement"]
+    assert findings["without_parking"]["statement"].endswith(
+        "with parking on one side only, the margin would be +1.80 m (+1.00 m with mirrors)."
+    )
+    # a design reference keeps its stated scope: the scenario is not compared with the references
+    assert "Without parking" not in findings["standard_rast06_bus_bus"]["statement"]
     assert findings["encounters"]["values"] == {"per_day": [1], "in_narrow_sections": [0, 1]}
     assert findings["occurrences"]["values"] == {"n": 5, "per_100m": 2.5, "rank": 1, "of": 2}
     assert "(2024-03-05 – 2025-07-03, within 12 m of the axis): 2.50 per 100 m, rank 1 of 2 streets" in findings["occurrences"]["statement"]

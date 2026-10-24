@@ -55,7 +55,7 @@ flowchart LR
 | `profiles` | largura livre, estacionamento de cada lado, largura entre lancis e passeios ao longo da rua; resumo por quarteirão |
 | `direction` | sentido único ou duplo, segundo a rede viária da Câmara |
 | `transit` | carreiras que passam na rua, em que sentido, quantas viagens por hora num dia de serviço, tempos previstos entre paragens |
-| `envelope` | folgas para dois autocarros, autocarro e ligeiro, e dois ligeiros, com e sem espelhos; efeito de carros estacionados que ficam fora do lugar |
+| `envelope` | folgas para dois autocarros, autocarro e ligeiro, e dois ligeiros, com e sem espelhos; efeito de carros estacionados que ficam fora do lugar; largura livre sem o estacionamento de um lado ou dos dois |
 | `encounters` | autocarros em sentidos opostos que, segundo o horário, se cruzam na rua, e em que ponto |
 | `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
 | `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
