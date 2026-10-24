@@ -1,0 +1,407 @@
+{
+  "area_scan": {
+    "axes": "area_axes",
+    "cartography": "area_cartography",
+    "identify_source": "area_network_identify",
+    "min_pattern_m": 30.0,
+    "reference_m": 6.5,
+    "step_m": 3.0,
+    "threshold_m": 5.5
+  },
+  "axes": {
+    "name_field": "DESIGNACAO"
+  },
+  "cartography": {
+    "accuracy_note": {
+      "en": "Planimetric accuracy assumed ≤0.30 m per edge (DGT figure for plan-scale cartography, as quoted in a 2025 DGT opinion); the 1:1000 RMSE itself was not found.",
+      "pt": "Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
+    },
+    "class_field": "LAYER",
+    "parking": [
+      "10100104_ParqueEstacionamentoArea"
+    ],
+    "plot": [
+      "06020103_Predio",
+      "06020206_Logradouro",
+      "06020201_Garagem",
+      "06020203_ArrecadacaoAnexo",
+      "06000000_ConstrucoesEmGeral",
+      "06020102_VivendaCasa",
+      "06020106_CorpoRecuado",
+      "06020111_CorpoBalancado",
+      "06020112_CorpoElevado",
+      "06020202_TelheiroAlpendre"
+    ],
+    "road": [
+      "10010306_RuaAvenidaRotundaPracaLargoPasseio",
+      "10010307_Arruamentos"
+    ],
+    "sidewalk": [
+      "87000501_Passeio"
+    ],
+    "survey": {
+      "en": "aerial photogrammetry of May 2016, restitution and field completion in 2020, homologated by DGT (dados.gov.pt record)",
+      "pt": "fotogrametria aérea de maio de 2016, restituição e completagem de campo em 2020, homologada pela DGT (registo em dados.gov.pt)"
+    }
+  },
+  "case": {
+    "id": "lisboa-rua-ricardo-jorge",
+    "language": "pt",
+    "question": "A faixa livre entre as duas faixas de estacionamento deixa cruzar dois autocarros programados nos dois sentidos?",
+    "reference_run": "2026-10-20",
+    "title": "Rua Ricardo Jorge (Alvalade, Lisboa)"
+  },
+  "city": {
+    "country": "PT",
+    "crs": 3763,
+    "id": "lisboa",
+    "name": "Lisboa"
+  },
+  "direction": {
+    "source": "network_identify",
+    "stations_s": [
+      10.0,
+      30.0,
+      60.0,
+      80.0,
+      120.0,
+      150.0,
+      180.0,
+      200.0
+    ]
+  },
+  "envelope": {
+    "bus": "carris_man_city_gold",
+    "car": "car_typical",
+    "scenarios": [
+      [
+        "carris_man_city_gold"
+      ],
+      [
+        "carris_man_city_gold",
+        "car_typical"
+      ],
+      [
+        "carris_man_city_gold",
+        "carris_man_city_gold"
+      ],
+      [
+        "car_typical",
+        "car_typical"
+      ]
+    ]
+  },
+  "known_gaps": [
+    {
+      "en": "No field observation of two buses meeting on this street: encounters are timetable estimates.",
+      "pt": "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário."
+    },
+    {
+      "en": "Carris does not publish delays or incidents per street.",
+      "pt": "A Carris não publica atrasos nem incidentes por rua."
+    },
+    {
+      "en": "No official mirror width was found for the buses: the width with mirrors used here is an assumption.",
+      "pt": "A largura dos autocarros com espelhos não foi encontrada em ficha oficial: a largura com espelhos usada é um pressuposto."
+    },
+    {
+      "en": "The actual position of parked cars (overhang beyond the strips) was not measured on site.",
+      "pt": "A posição real dos carros estacionados (sobressaída das faixas) não foi medida no local."
+    }
+  ],
+  "network": {
+    "direction": "[Direction]",
+    "edge": "[EID]",
+    "open_value": "Traversable",
+    "status": "Oneway"
+  },
+  "occurrences": {
+    "filters": {
+      "abusive_parking": "^Estacionamento abusivo"
+    },
+    "max_dist_m": 12.0,
+    "min_street_length_m": 100.0,
+    "source": "na_minha_rua",
+    "window_m": 300.0
+  },
+  "profiles": {
+    "axes": "street_axes",
+    "cartography": "cartography",
+    "check_points_s": [
+      60.0,
+      122.0,
+      180.0
+    ],
+    "half_width_m": 25.0,
+    "narrow_max_m": 7.0,
+    "parking_space_m": [
+      5.0,
+      5.5,
+      6.0
+    ],
+    "step_m": 0.5
+  },
+  "sources": {
+    "area_axes": {
+      "attribution": "© Câmara Municipal de Lisboa",
+      "dataset_page": null,
+      "description": "",
+      "envelope": [
+        -9.156,
+        38.744,
+        -9.127,
+        38.766
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "note": "",
+      "out_sr": 3763,
+      "redistributable": false,
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+      "where": "1=1"
+    },
+    "area_cartography": {
+      "attribution": "© Câmara Municipal de Lisboa",
+      "dataset_page": "https://dados.gov.pt/datasets/cartografia-numerica-vetorial",
+      "description": "",
+      "envelope": [
+        -9.156,
+        38.744,
+        -9.127,
+        38.766
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "CC-BY-4.0",
+      "licence_evidence": "https://dados.gov.pt/datasets/cartografia-numerica-vetorial (licence id cc-by, defined by dados.gov.pt as CC BY 4.0; checked 2026-10-24)",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "note": "",
+      "out_sr": 3763,
+      "redistributable": true,
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "where": "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea')"
+    },
+    "area_network_identify": {
+      "attribution": "",
+      "dataset_page": null,
+      "description": "",
+      "kind": "arcgis_identify",
+      "layers": "all:203",
+      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "note": "The site name embeds a backup date (22Set26) and may be renamed; list current sites at https://websig.cm-lisboa.pt/MuniSIG/REST/sites",
+      "redistributable": false,
+      "sr": 3763,
+      "tolerance": 3.0,
+      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+    },
+    "carris_gtfs": {
+      "attribution": "Carris (GTFS)",
+      "dataset_page": null,
+      "description": "Carris GTFS as published on 2026-10-19 (origin: https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS)",
+      "kind": "http_file",
+      "licence": "not stated at the download endpoint (not redistributed)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "note": "Always serves the current feed; a case pins the feed it used with sha256.",
+      "redistributable": false,
+      "sha256": "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7",
+      "suffix": ".zip",
+      "url": "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
+    },
+    "cartography": {
+      "attribution": "© Câmara Municipal de Lisboa",
+      "dataset_page": "https://dados.gov.pt/datasets/cartografia-numerica-vetorial",
+      "description": "",
+      "envelope": [
+        -9.1425,
+        38.7555,
+        -9.1355,
+        38.759
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "CC-BY-4.0",
+      "licence_evidence": "https://dados.gov.pt/datasets/cartografia-numerica-vetorial (licence id cc-by, defined by dados.gov.pt as CC BY 4.0; checked 2026-10-24)",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "note": "",
+      "out_sr": 3763,
+      "redistributable": true,
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "where": "1=1"
+    },
+    "na_minha_rua": {
+      "attribution": "© Câmara Municipal de Lisboa",
+      "columns": {
+        "category": "tipologia",
+        "date": "dt_registo",
+        "lat": "latitude",
+        "lon": "longitude"
+      },
+      "dataset_page": "https://dados.gov.pt/datasets/ocorrencias-na-minha-rua-lx",
+      "description": "",
+      "files": [
+        {
+          "name": "2017.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/d66d2141-5a5e-4725-9593-ac2da4e65f17/download/2017.csv"
+        },
+        {
+          "name": "2018.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/d2cc80e2-8c42-4f05-ba9a-8a6b3093900f/download/2018.csv"
+        },
+        {
+          "name": "2019.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/555479f0-cece-4094-a2a4-47c14c284e06/download/2019.csv"
+        },
+        {
+          "name": "2020.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/6088d980-bb5d-4ade-af38-58bfb5587e50/download/2020.csv"
+        },
+        {
+          "name": "2021.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/c3d13f68-a546-450f-83d8-99574623d7fc/download/2021.csv"
+        },
+        {
+          "name": "2022.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/0d7c76f3-f206-47b7-be82-0a76bb79ba54/download/2022.csv"
+        },
+        {
+          "name": "2023.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/ffe6d37a-0a45-49ee-bbe9-9b5d5209753b/download/2023.csv"
+        },
+        {
+          "name": "2024.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/a67f2c0c-89b9-4911-a8d7-146137976b42/download/2024.csv"
+        },
+        {
+          "name": "2025.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/6434e62b-eb7d-4d2c-95d8-a19bc8bd1755/download/2025.csv"
+        },
+        {
+          "name": "2026_1s.csv",
+          "url": "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/e77c5e16-70c2-492a-96ef-fc5bdadf387c/download/20261s.csv"
+        }
+      ],
+      "kind": "http_files",
+      "licence": "CC-BY-4.0",
+      "licence_evidence": "https://dados.gov.pt/datasets/ocorrencias-na-minha-rua-lx (licence id cc-by, defined by dados.gov.pt as CC BY 4.0; checked 2026-10-24)",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "note": "",
+      "redistributable": true
+    },
+    "network_identify": {
+      "attribution": "",
+      "dataset_page": null,
+      "description": "",
+      "kind": "arcgis_identify",
+      "layers": "all:203",
+      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "note": "The site name embeds a backup date (22Set26) and may be renamed; list current sites at https://websig.cm-lisboa.pt/MuniSIG/REST/sites",
+      "redistributable": false,
+      "sr": 3763,
+      "tolerance": 6.0,
+      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+    },
+    "street_axes": {
+      "attribution": "© Câmara Municipal de Lisboa",
+      "dataset_page": null,
+      "description": "",
+      "envelope": [
+        -9.1425,
+        38.7555,
+        -9.1355,
+        38.759
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "note": "",
+      "out_sr": 3763,
+      "redistributable": false,
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+      "where": "1=1"
+    }
+  },
+  "standards": {
+    "compare": [
+      "cml_manual_two_way_profile",
+      "rast06_bus_bus"
+    ]
+  },
+  "street": {
+    "blocks": [
+      {
+        "end": 87.42,
+        "id": "B1",
+        "label": "Av. do Rio de Janeiro → R. Cor. Marques Leitão",
+        "start": 0.0
+      },
+      {
+        "end": 158.27,
+        "id": "B2",
+        "label": "R. Cor. Marques Leitão → R. Constantino Fernandes",
+        "start": 87.42
+      },
+      {
+        "end": 209.25,
+        "id": "B3",
+        "label": "R. Constantino Fernandes → R. Carlos Mayer",
+        "start": 158.27
+      }
+    ],
+    "headings": {
+      "+": "SO→NE",
+      "-": "NE→SO"
+    },
+    "name": "Rua Ricardo Jorge",
+    "sides": {
+      "L": "NO",
+      "R": "SE"
+    }
+  },
+  "transit": {
+    "buffer_m": 12.0,
+    "reference_stops": [
+      {
+        "direction_id": 0,
+        "heading": 1,
+        "route": "744",
+        "s_m": 33.6,
+        "stop_id": "11315"
+      },
+      {
+        "direction_id": 1,
+        "heading": -1,
+        "route": "744",
+        "s_m": 202.5,
+        "stop_id": "11318"
+      },
+      {
+        "direction_id": 0,
+        "heading": -1,
+        "route": "46B",
+        "s_m": 202.5,
+        "stop_id": "11318"
+      }
+    ],
+    "routes": [
+      "744",
+      "46B"
+    ],
+    "service_date": "2026-10-27",
+    "source": "carris_gtfs",
+    "speeds_kmh": [
+      15.0,
+      20.0
+    ]
+  },
+  "vehicles": {}
+}

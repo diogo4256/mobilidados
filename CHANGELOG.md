@@ -16,6 +16,8 @@ streetfit.
   (`profiles.parking_space_m`, the same lengths `parking_strip_lengths.csv` already used), and the mapped parking
   along the whole street on each side, as a ledger finding (`parking_removed`), as columns of `without_parking.csv`
   and as a note on the width figure.
+- Each run writes the resolved configuration it used to `results/config.json`, so a change to a city profile shows
+  up as a diff in every case that uses it, and the reproduction test compares it.
 - The header of a `new-case` draft states what it assumed: each reference stop with its distance from the street
   and its position along it (a stop on a cross street near an end is clamped to that end), both compass readings
   when the bearing is within 10° of a boundary between two points, and, where buses run one way, that the
@@ -61,6 +63,11 @@ streetfit.
   técnica", vehicle labels lose their quotation marks, the mirror-width gap no longer repeats a configured
   number, and the width figure shows the margin with and without mirrors for both pairs, labels the median free
   width as such, keeps that line from crossing the notes and draws the option without parking in grey.
+- The documentation calls the municipal manual and the German guideline design references, not norms; it says
+  exactly where each input comes from (the GTFS feed from the Mobility Database archive, the traffic direction
+  from the Lisboa Interativa public viewer in guest access, whose address carries a backup date); it states the
+  roles of public bodies no further than is certain; and the Lisbon case's README points to the layered settings.
+- `mobilidados lint` also flags plural forms of normative words ("normas", "regras", "obrigatórios").
 - Lisbon's settings are in three layers: `cities/lisboa.toml` (services, classes and the method parameters every
   case shares), `cities/lisboa-2026-10.toml` (the GTFS feed, service day and Na Minha Rua files pinned in October
   2026) and each case, which keeps only its street. Newer data go in a new dated file, so a case with results
