@@ -24,6 +24,10 @@ method on different cartography and makes the tool useful to more people.
 
 ## Ground rules
 
+Before changing the method, the tools or the wording, weigh the change against
+[docs/stakeholders.md](docs/stakeholders.md): who makes claims with these results, who answers them, who is affected,
+whose data is used, and what a toolset like this can and cannot do.
+
 1. **Evidence first.** Every number in a case comes from a source in `sources.lock.json` or the catalogues, with
    a grade (see [docs/evidence-standard.md](docs/evidence-standard.md)). No hand-typed results.
 2. **Licences.** Record each source's licence as its publisher states it. Do not commit raw third-party data

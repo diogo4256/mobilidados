@@ -139,7 +139,7 @@ src/mobilidados/data/     vehicle catalogue and design references (graded, with 
 src/mobilidados/locales/  message catalogues for figures, ledger and reports, one file per language
 cities/                   city profiles (services, class codes, licences, parameters) and dated data (feed, reports)
 cases/<case>/             case.toml, sources.lock.json, results/ (committed), data/raw/ (not committed)
-docs/                     evidence standard, methodology, AI tools, adding a city, writing to public bodies
+docs/                     evidence standard, methodology, AI tools, adding a city, writing to public bodies, stakeholders
 tests/                    unit tests (synthetic data) and the case reproduction test
 ```
 
