@@ -2,8 +2,11 @@
 
 Who has a stake in a claim built with mobilidados, what each needs from it, and what would make each distrust it.
 A change to the tools, the method or the wording is weighed against this list before it is made. The aim is
-better mobility, with public transport as part of the solution; the toolset serves that aim by being the
-version of the facts every party below can check and none can dismiss.
+better mobility, with public transport as part of the solution; the toolset serves that aim by giving facts that
+every party below can check.
+
+The parties are named by their role. Where a public body is named, it is because of its responsibilities; no
+organisation listed here is involved in this project or endorses it.
 
 ## Who they are
 
@@ -12,7 +15,7 @@ version of the facts every party below can check and none can dismiss.
 | Who | Role and responsibilities | Needs from the toolset | Would distrust it if |
 | --- | --- | --- | --- |
 | Residents | Raise a problem in their street, often alone and without technical training | A short path from a street name to findings they understand, in Portuguese; limits stated plainly | It needs a programmer, or its results read as a verdict they cannot defend |
-| Civic associations (for example MUBi, ACA-M, Lisboa Para Pessoas, accessibility groups) | Campaign across many streets; meet the municipality; publish positions | The same method on many streets; results they can compare and cite | It looks like one side's argument dressed as data |
+| Civic associations (mobility, public space, accessibility) | Campaign across many streets; meet the municipality; publish positions | The same method on many streets; results they can compare and cite | It looks like one side's argument dressed as data |
 | Passengers and their committees | Use the buses every day; speak for reliability and access | Evidence about the service as scheduled, and what the street costs it | The framing treats buses as the problem rather than the people on them |
 | Journalists | Check claims before publishing; quote numbers | Every number traceable to a public source, with its grade and its caveats | A number cannot be traced, or the caveats are hidden |
 | Elected representatives (councillors, municipal assembly members, parish councils) | Table motions and questions; answer to voters on both sides | Findings they can put to the services and defend in public | Results depend on assumptions they cannot see |
@@ -22,9 +25,9 @@ version of the facts every party below can check and none can dismiss.
 | Who | Role and responsibilities | Needs from the toolset | Would distrust it if |
 | --- | --- | --- | --- |
 | Câmara Municipal de Lisboa: mobility and public-space services | Decide street layouts, apply the municipal public-space manual, weigh every user of the street | Measurements from their own data, design references cited with page and scope, no claim beyond the evidence | A reference is applied outside its scope, or a model output is presented as fact |
-| EMEL | Manages on-street parking and its enforcement | A clear statement of what a change would remove (metres or places of parking) | The parking lost by an option is left unsaid |
+| EMEL | Manages on-street parking | A clear statement of what a change would remove (metres or places of parking) | The parking lost by an option is left unsaid |
 | Carris | Runs the buses; publishes the timetable (GTFS) and the fleet sheets | Vehicle widths from its own sheets, the timetable read correctly, its data attributed | Timetable estimates are presented as observed operation, or delays are claimed without data |
-| Polícia Municipal | Enforces parking rules | Reports and measurements kept apart from proof of infractions | Citizens' reports are presented as proven infractions |
+| Those who enforce parking rules | Act on parking where it is not allowed | Reports and measurements kept apart from proof of infractions | Citizens' reports are presented as proven infractions |
 
 ### Those affected by a change
 
@@ -95,7 +98,8 @@ It cannot:
 * The option without parking is measured, but not compared with design references whose scope assumes the
   parking it removes (services).
 * Pins and dated data files keep every published result reproducible (services, journalists, reviewers).
-* Citizens' reports are counted per street, never shown one by one (privacy, Polícia Municipal).
+* Citizens' reports are counted per street, never shown one by one, and are not presented as proven infractions
+  (privacy, those who enforce parking rules).
 * Downloads are cached and locked; a failed or unchanged download does not leave the repository changed
   (publishers, maintainers).
 
