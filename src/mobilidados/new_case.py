@@ -202,7 +202,7 @@ def draft(like: Case, street: str, out_dir: Path) -> dict[str, Any]:
 
 # --- TOML ---------------------------------------------------------------------------------------------------
 def _key(k: str) -> str:
-    return k if re.fullmatch(r"[A-Za-z0-9_-]+", k) else json.dumps(k, ensure_ascii=False)
+    return k if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", k) else json.dumps(k, ensure_ascii=False)
 
 
 def _value(v: Any) -> str:
@@ -242,7 +242,7 @@ def dumps(data: dict[str, Any], header: str) -> str:
         "".join(f"[[{_key(k)}]]\n" + "".join(f"{_key(a)} = {_value(b)}\n" for a, b in x.items()) + "\n" for x in v)
         for k, v in arrays.items()
     ]
-    return "\n".join(p.rstrip("\n") + "\n" for p in parts if p)
+    return "\n".join(p.strip("\n") + "\n" for p in parts if p.strip())
 
 
 def write(like: Case, street: str, out_dir: Path | None = None) -> Path:
@@ -259,7 +259,13 @@ def write(like: Case, street: str, out_dir: Path | None = None) -> Path:
         f"#   sides: compass labels from the axis bearing ({bearing_deg:.0f}° from grid north), which may need judgement;\n"
         "# - [transit] routes and reference_stops: the routes that run along the street on the service day, and for\n"
         "#   each route and direction the stop near the street that most of its trips serve;\n"
-        f"# - [[known_gaps]]: copied from {like.id}.\n"
+        + (
+            "# - [case] question: on the service day the buses run along the street in one direction only, so a question\n"
+            "#   about buses meeting from opposite directions does not apply as it stands;\n"
+            if len({r["heading"] for r in data.get("transit", {}).get("reference_stops", [])}) == 1
+            else ""
+        )
+        + f"# - [[known_gaps]]: copied from {like.id}.\n"
         "# Everything else (sources and pins, vehicles, parameters) is the model case's.\n"
     )
     out_dir.mkdir(parents=True, exist_ok=True)

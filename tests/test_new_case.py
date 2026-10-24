@@ -104,6 +104,7 @@ def test_a_drafted_case_loads_and_carries_the_new_street(tmp_path, city_layer):
     text = (out / "case.toml").read_text(encoding="utf-8")
     assert text.startswith("# Draft made by `mobilidados new-case` from synthetic-street")
     assert "(90° from grid north)" in text
+    assert "one direction only" not in text  # route 10 and route 20 run in opposite directions
     assert tomllib.loads(text)["known_gaps"] == tomllib.loads((like.root / "case.toml").read_text(encoding="utf-8"))["known_gaps"]
 
 
