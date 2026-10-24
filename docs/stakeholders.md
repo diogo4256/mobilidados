@@ -24,10 +24,10 @@ organisation listed here is involved in this project or endorses it.
 
 | Who | Role and responsibilities | Needs from the toolset | Would distrust it if |
 | --- | --- | --- | --- |
-| Câmara Municipal de Lisboa: mobility and public-space services | Decide street layouts, apply the municipal public-space manual, weigh every user of the street | Measurements from their own data, design references cited with page and scope, no claim beyond the evidence | A reference is applied outside its scope, or a model output is presented as fact |
-| EMEL | Manages on-street parking | A clear statement of what a change would remove (metres or places of parking) | The parking lost by an option is left unsaid |
-| Carris | Runs the buses; publishes the timetable (GTFS) and the fleet sheets | Vehicle widths from its own sheets, the timetable read correctly, its data attributed | Timetable estimates are presented as observed operation, or delays are claimed without data |
-| Those who enforce parking rules | Act on parking where it is not allowed | Reports and measurements kept apart from proof of infractions | Citizens' reports are presented as proven infractions |
+| Câmara Municipal de Lisboa: mobility and public-space services | Plan the layout of the streets in the municipality's charge, with the municipal public-space manual among their references | Measurements from their own data, design references cited with page and scope, no claim beyond the evidence | A reference is applied outside its scope, or a model output is presented as fact |
+| EMEL | Manages on-street parking in the zones the municipality has entrusted to it | A clear statement of what a change would remove (metres or places of parking) | The parking lost by an option is left unsaid |
+| Carris | Runs Lisbon's municipal bus network; publishes its timetable (GTFS) and fleet sheets on its website | Vehicle widths from its own sheets, the timetable read correctly, its data attributed | Timetable estimates are presented as observed operation, or delays are claimed without data |
+| Those who enforce parking rules | Act, within their powers, on vehicles parked where parking is not allowed | Reports and measurements kept apart from proof of infractions | Citizens' reports are presented as proven infractions |
 
 ### Those affected by a change
 
@@ -37,15 +37,15 @@ organisation listed here is involved in this project or endorses it.
 | Residents and businesses who park in the street | Lose parking if space is reallocated | The cost of each option stated as plainly as its benefit |
 | Pedestrians, including people with reduced mobility | Sidewalk width, crossings | Their space measured, not traded away unseen (sidewalks are profiled today; a dedicated tool is welcome) |
 | People on bikes | Lane space and safety | The same, in future tools |
-| Emergency services (Regimento de Sapadores Bombeiros) and waste collection | Need access for wide vehicles | Their vehicles can be added to the catalogue, with an official width source |
+| Emergency services (in Lisbon, among others, the Regimento de Sapadores Bombeiros) and waste collection | Need access for wide vehicles | Their vehicles can be added to the catalogue, with an official width source |
 
 ### Those whose data the toolset uses
 
 | Who | Role | What the toolset owes them |
 | --- | --- | --- |
-| CML open-data and GIS teams; dados.gov.pt | Publish the cartography, street axes, routing network and Na Minha Rua reports | Attribution as their licences require; downloads cached so their services are not queried again for nothing; a User-Agent that names the tool (and a contact, if set) |
-| Carris and the Mobility Database | Publish and archive the timetable | The exact feed pinned and cited; the feed not redistributed while its licence is not stated |
-| Direção-Geral do Território | Homologates the municipal cartography | Its stated accuracy quoted, not assumed better |
+| CML open-data and GIS teams; dados.gov.pt | The CML publishes the cartography, street axes and Na Minha Rua reports, and serves the routing network through its Lisboa Interativa viewer; dados.gov.pt lists the datasets and their licences | Attribution as their licences require; downloads cached so their services are not queried again for nothing; a User-Agent that names the tool (and a contact, if set) |
+| Carris and the Mobility Database | Carris publishes the timetable; the Mobility Database keeps copies of past versions | The exact feed pinned and cited; the feed not redistributed while its licence is not stated |
+| Direção-Geral do Território | Homologated the municipal cartography used here, according to its dados.gov.pt record | Its stated accuracy quoted, not assumed better |
 
 ### Those who keep the toolset alive
 
@@ -53,7 +53,7 @@ organisation listed here is involved in this project or endorses it.
 | --- | --- | --- |
 | Maintainer and contributors | Volunteers who review, fix and extend it | Little code, few dependencies, offline tests, one place for each fact |
 | Other cities | Add their own profile and cases | A city profile that is the only city-specific part |
-| Technical reviewers (traffic engineers, planners, researchers; IMT and AMT for national standards and regulation) | Judge whether the method is sound | The method and its limits written down, results reproducible bit for bit |
+| Technical reviewers (traffic engineers, planners, researchers; IMT and AMT within their national remits in transport and its regulation) | Judge whether the method is sound | The method and its limits written down, results reproducible bit for bit |
 
 ## Questions to ask before a change
 
