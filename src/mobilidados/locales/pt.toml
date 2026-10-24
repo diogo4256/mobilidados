@@ -75,7 +75,7 @@ free_filter = { one = "Só contam os perfis com estacionamento cartografado dos 
 survey = "Cartografia: {survey}."
 budget_inside = "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas."
 budget_spread = "Só com a carroçaria, a folga entre dois autocarros é de {fmin} m na largura livre mínima, {fmed} m na mediana e {fp95} m no percentil 95."
-budget_share = "Em {pct}% dos perfis contados na largura livre, ela fica abaixo dos {bb} m de duas carroçarias de autocarro."
+budget_share = "Em {pct}% dos perfis contados, a largura livre fica abaixo dos {bb} m que ocupam duas carroçarias de autocarro."
 mirrors_clear = "Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto)."
 mirrors_all = "Espelhos: contam os de todos os veículos."
 without_parking = "Admite que o espaço do estacionamento passa para a faixa de rodagem e que nada mais o ocupa; mede uma opção, não é um projeto."

@@ -38,6 +38,25 @@ streetfit.
 
 ### Changed
 
+- Every finding states its method and its limits in the case's language (`[method]` and `[caveat]` in the
+  locales), and the limits say more:
+  - the free width says which stations count and how many with parking on both sides are left out for being
+    wider than `profiles.narrow_max_m`, and names the cartography's survey and accuracy (`cartography.survey`
+    and `accuracy_note` can be given per language);
+  - the width budget says "at least" (bodies with no gap between them), the bus × bus margin at the minimum,
+    median and 95th percentile of the free width, the share of stations below two bus bodies, and which mirrors
+    count;
+  - the traffic direction says at how many of the checked points both directions are open;
+  - the encounters name the service day (they said "per weekday", which nothing checked) and the limits of the
+    constant-speed model;
+  - the occurrences say that the ranking divides by each street's whole length, which favours streets that lie
+    wholly inside the attribution window, such as the case street; the computation is unchanged;
+  - the area scan says it uses its own parameters and thresholds chosen for the analysis.
+
+  The Lisbon findings keep their ids, grades, values and sources. The Portuguese scope of RASt 06 says "Diretriz
+  técnica", vehicle labels lose their quotation marks, the mirror-width gap no longer repeats a configured
+  number, and the width figure shows the margin with and without mirrors for both pairs, labels the median free
+  width as such and draws the option without parking in grey.
 - Lisbon's settings are in three layers: `cities/lisboa.toml` (services, classes and the method parameters every
   case shares), `cities/lisboa-2026-10.toml` (the GTFS feed, service day and Na Minha Rua files pinned in October
   2026) and each case, which keeps only its street. Newer data go in a new dated file, so a case with results

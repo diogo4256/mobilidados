@@ -251,7 +251,7 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     assert budget.startswith("Assumes parked vehicles stay inside the mapped strips; overhang_sensitivity.csv")
     # the spread of the bus x bus margin over width_budget.csv's free widths (the same 4.90 m everywhere here)
     assert "the margin between two buses is −0.20 m at the minimum free width, −0.20 m at the median and −0.20 m at the 95th" in budget
-    assert "At 100% of the transects counted in the free width, it is below the 5.10 m of two bus bodies." in budget
+    assert "At 100% of the transects counted, the free width is below the 5.10 m taken by two bus bodies." in budget
     # bus_eu_max's mirrors pass above a car (mirrors_clear_cars): only the car's count in bus x car
     assert "bus × bus counts the four bus mirrors; bus × car counts only the car's" in budget
     # the rate divides the reports in the window by each street's whole length

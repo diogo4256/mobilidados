@@ -75,7 +75,7 @@ free_filter = { one = "Only transects with parking mapped on both sides and a fr
 survey = "Cartography: {survey}."
 budget_inside = "Assumes parked vehicles stay inside the mapped strips; overhang_sensitivity.csv shows how much the margin shrinks if they do not."
 budget_spread = "Bodies only, the margin between two buses is {fmin} m at the minimum free width, {fmed} m at the median and {fp95} m at the 95th percentile."
-budget_share = "At {pct}% of the transects counted in the free width, it is below the {bb} m of two bus bodies."
+budget_share = "At {pct}% of the transects counted, the free width is below the {bb} m taken by two bus bodies."
 mirrors_clear = "Mirrors: bus × bus counts the four bus mirrors; bus × car counts only the car's, because the bus's mirrors are assumed to pass above the car (an assumption)."
 mirrors_all = "Mirrors: every vehicle's mirrors count."
 without_parking = "Assumes the strip's space becomes carriageway and nothing else takes it; it measures an option, it is not a design."
