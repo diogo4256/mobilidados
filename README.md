@@ -99,6 +99,9 @@ uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # escreve os resulta
 git diff --exit-code cases/lisboa-rua-ricardo-jorge/results/tables   # dá o mesmo que a análise de referência?
 ```
 
+O pacote também está no [PyPI](https://pypi.org/project/mobilidados/) (`pip install mobilidados`), mas os casos e
+os perfis de cidade ficam neste repositório: para refazer um caso ou começar outro, clone-o como acima.
+
 Os serviços da Câmara vão sendo atualizados, por isso um `fetch` feito hoje pode não dar exatamente o mesmo que
 a análise de referência; o `verify` diz que ficheiros mudaram. Cada caso fixa o horário GTFS que usou, pela
 impressão digital, e recusa correr com outro, a não ser que se mude isso de propósito. No caso de Lisboa, o

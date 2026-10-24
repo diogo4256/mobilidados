@@ -5,6 +5,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The READMEs say the package is on PyPI and that the cases and city profiles stay in the repository.
+
 ### Fixed
 
 - The figures no longer depend on the machine that draws them. They start from matplotlib's own defaults, so a
