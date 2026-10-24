@@ -5,6 +5,12 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `new-case --out` with a folder outside the repository writes `extends` as an absolute path to the city file,
+  instead of a relative path that climbs through unrelated folders and breaks when either side moves. Inside the
+  repository it stays relative.
+
 ## [0.3.0] - 2026-10-24
 
 The project is now called **mobilidados**: tools for data-based mobility claims in Portugal, starting with

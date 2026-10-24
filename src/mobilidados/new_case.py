@@ -233,6 +233,16 @@ class Draft:
     one_way: bool = False  # buses run one way, so the question supposes a car beside the bus
 
 
+def extends_path(city: Path, like_root: Path, out_dir: Path) -> str:
+    """How the draft in ``out_dir`` refers to the model case's city file: relative while the draft stays inside the
+    folder that holds both the model case and the city file (the repository, for Lisbon), so the two move together;
+    absolute outside it, where a relative path would climb through unrelated folders and break when either moves."""
+    project = Path(os.path.commonpath([city, like_root]))
+    if out_dir.is_relative_to(project) and project != Path(project.anchor):
+        return Path(os.path.relpath(city, out_dir)).as_posix()
+    return city.as_posix()
+
+
 def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     """The case for ``street``, derived from the model case ``like`` and the city's data. ``out_dir`` defaults to
     ``<city>-<street>`` next to the model case, named as the axes layer spells the street."""
@@ -251,8 +261,7 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
 
     data = tomllib.loads((like.root / "case.toml").read_text(encoding="utf-8"))
     if "extends" in data:
-        city_path = (like.root / data["extends"]).resolve()
-        data["extends"] = Path(os.path.relpath(city_path, out_dir.resolve())).as_posix()
+        data["extends"] = extends_path((like.root / data["extends"]).resolve(), like.root.resolve(), out_dir.resolve())
     data["case"] = {k: v for k, v in data["case"].items() if k not in ("reference_run", "question")} | {
         "id": out_dir.name,
         "title": f"{street} ({cfg.city.name})",

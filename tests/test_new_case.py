@@ -3,6 +3,7 @@
 import logging
 import re
 import tomllib
+from pathlib import Path
 
 import pytest
 from shapely.geometry import LineString
@@ -197,6 +198,25 @@ def test_a_draft_from_a_case_that_extends_a_city_file_holds_only_the_street(tmp_
     assert set(data["sources"]) == {"cartography", "street_axes", "area_cartography", "area_axes"}
     assert all(set(spec) == {"envelope"} for spec in data["sources"].values())
     assert Case.load(out).source("feed") == like.source("feed")  # the pinned feed comes from the city file
+
+
+def test_a_draft_outside_the_model_cases_folder_extends_the_city_file_by_absolute_path(tmp_path, city_layer):
+    (tmp_path / "repo" / "cases").mkdir(parents=True)
+    root = write_case(tmp_path / "repo" / "cases" / "like")
+    split(root)
+    like = Case.load(root)
+    out = write(like, "Rua do Teste", tmp_path / "elsewhere" / "rua-do-teste")
+    data = tomllib.loads((out / "case.toml").read_text(encoding="utf-8"))
+    assert data["extends"] == (tmp_path / "repo" / "cases" / "city.toml").resolve().as_posix()
+    assert Case.load(out).source("feed") == like.source("feed")
+
+
+def test_extends_is_relative_inside_the_project_and_absolute_outside_it():
+    city, like = Path("/repo/cities/city.toml"), Path("/repo/cases/like")
+    assert new_case.extends_path(city, like, Path("/repo/cases/other")) == "../../cities/city.toml"
+    assert new_case.extends_path(city, like, Path("/repo/drafts/a/b")) == "../../../cities/city.toml"
+    assert new_case.extends_path(city, like, Path("/tmp/draft")) == "/repo/cities/city.toml"
+    assert new_case.extends_path(Path("/city.toml"), Path("/like"), Path("/draft")) == "/city.toml"  # nothing shared but the root
 
 
 def test_drafting_refuses_to_overwrite_and_reports_a_street_without_buses(tmp_path, city_layer):
