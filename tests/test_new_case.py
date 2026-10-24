@@ -9,13 +9,42 @@ from shapely.geometry import LineString
 
 from mobilidados import new_case
 from mobilidados.config import ArcgisQuery, Case, MobilidadosError
-from mobilidados.new_case import blocks, directions, slug, stations, write
+from mobilidados.new_case import blocks, compass, directions, other_reading, slug, stations, write
 from tests.builders import CRS, LENGTH, at_origin, esri_path, layer_file, write_case
 
 
 def test_directions_and_sides_follow_the_axis_bearing():
     assert directions(LineString([(0, 0), (100, 0)]), "pt") == ({"+": "O→E", "-": "E→O"}, {"L": "N", "R": "S"})
     assert directions(LineString([(0, 0), (70, 70)]), "en") == ({"+": "SW→NE", "-": "NE→SW"}, {"L": "NW", "R": "SE"})
+
+
+def test_a_bearing_near_a_boundary_between_compass_points_has_another_reading():
+    def readings(b):
+        near = other_reading(b)
+        return near and (near[0], compass(b, "en"), compass(near[1], "en"))
+
+    assert readings(68.7) == (67.5, "E", "NE")  # Rua Ricardo Jorge: 1.2° from the NE/E boundary
+    assert readings(66.0) == (67.5, "NE", "E")
+    assert readings(12.6) == (22.5, "N", "NE")  # 9.9° away
+    assert readings(12.4) is None  # 10.1° away
+    assert readings(90.0) is None
+    assert readings(337.6) == (337.5, "N", "NW")  # across north
+    assert readings(-22.0) == (337.5, "N", "NW")
+    on = other_reading(202.5)  # on the boundary: the reading compass() did not pick
+    assert on is not None
+    assert on[0] == 202.5
+    assert {compass(202.5, "en"), compass(on[1], "en")} == {"S", "SW"}
+
+
+def flat(text):
+    """A draft's header with its wrapped comment lines joined, to check sentences that wrap."""
+    return re.sub(r"\n#   (?=\S)", " ", text)
+
+
+def draft_in_portuguese(monkeypatch, like, out):
+    """The header of a draft from ``like`` as a case in Portuguese would have it (the synthetic case is in English)."""
+    monkeypatch.setattr(Case, "lang", property(lambda self: "pt"))
+    return flat((write(like, "Rua do Teste", out) / "case.toml").read_text(encoding="utf-8"))
 
 
 def test_blocks_are_cut_at_the_cross_streets_and_named_after_them():
@@ -110,7 +139,17 @@ def test_a_drafted_case_loads_and_carries_the_new_street(tmp_path, city_layer):
     text = (out / "case.toml").read_text(encoding="utf-8")
     assert text.startswith("# Draft made by `mobilidados new-case` from synthetic-street")
     assert "(90° from grid north)" in text
-    assert "one direction only" not in text  # route 10 and route 20 run in opposite directions
+    header = flat(text)
+    assert "compass labels from the axis bearing (90° from grid north), which may need judgement;" in header
+    assert "boundary" not in header
+    # the reference stops, with their distance from the axis and position along it
+    assert "route 10 heading W→E (direction_id 0): stop S1 (First), 0.0 m from the axis, s = 0.0 m;" in header
+    assert "route 20 heading E→W (direction_id 1): stop S1 (First), 0.0 m from the axis, s = 0.0 m;" in header
+    assert (
+        "A stop within 40 m of the axis may be on a cross street near one end; its position s is then that end's (0 or 200.0 m)." in header
+    )
+    assert set(tomllib.loads(text)["transit"]["reference_stops"][0]) == {"route", "direction_id", "stop_id", "s_m", "heading"}
+    assert "one-way" not in header  # route 10 and route 20 run in opposite directions
     # buses run both ways, so the question and the gap are about two buses meeting
     assert (
         case.config.case.question
@@ -191,7 +230,7 @@ def test_the_default_folder_is_named_after_the_layers_spelling(tmp_path, city_la
 
 def test_the_draft_header_is_in_the_cases_language(tmp_path, city_layer):
     like = Case.load(write_case(tmp_path / "like"))
-    assert new_case.dumps({}, new_case.t("draft.header", "pt", model="m", date="d", bearing="9")).startswith(
+    assert new_case.dumps({}, new_case.t("draft.header_intro", "pt", model="m", date="d")).startswith(
         "# Rascunho feito por `mobilidados new-case` a partir de m, em d. Confirme antes de usar:"
     )
     text = (write(like, "Rua do Teste", tmp_path / "x") / "case.toml").read_text(encoding="utf-8")
@@ -208,3 +247,47 @@ def test_a_draft_that_does_not_load_leaves_nothing_behind(tmp_path, city_layer, 
     with pytest.raises(MobilidadosError, match="invalid configuration"):
         write(like, "Rua do Teste", tmp_path / "new")
     assert not (tmp_path / "new").exists()
+
+
+def test_a_draft_for_buses_one_way_says_the_question_may_not_apply(tmp_path, city_layer, monkeypatch):
+    monkeypatch.setattr(new_case.gtfs, "active_service_ids", lambda feed, day: {"WK"})  # route 20 does not run
+    like = Case.load(write_case(tmp_path / "like"))
+    out = write(like, "Rua do Teste", tmp_path / "x")
+    assert Case.load(out).config.case.question == (
+        "Does the free width between the two parking strips leave room for a scheduled bus and a car side by side?"
+    )
+    header = flat((out / "case.toml").read_text(encoding="utf-8"))
+    assert "route 10 heading W→E (direction_id 0): stop S1 (First)" in header
+    assert "route 20" not in header
+    assert (
+        "If the street is one-way with a single lane, the question does not apply as written: "
+        "rewrite it once `mobilidados run` shows the direction of traffic." in header
+    )
+
+    pt = draft_in_portuguese(monkeypatch, like, tmp_path / "y")
+    assert "carreira 10 no sentido O→E (direction_id 0): paragem S1 (First), a 0,0 m do eixo, s = 0,0 m;" in pt
+    assert (
+        "Se a rua tiver um só sentido e uma só via, a pergunta não se aplica tal como está: "
+        "reescreva-a depois de o `mobilidados run` mostrar o sentido do trânsito." in pt
+    )
+
+
+def test_a_bearing_near_a_compass_boundary_is_named_with_both_readings(tmp_path, city_layer, monkeypatch):
+    monkeypatch.setattr(new_case, "bearing", lambda axis: 68.7)  # as Rua Ricardo Jorge's
+    like = Case.load(write_case(tmp_path / "like"))
+    out = write(like, "Rua do Teste", tmp_path / "x")
+    assert Case.load(out).config.street.headings == {"+": "W→E", "-": "E→W"}
+    header = flat((out / "case.toml").read_text(encoding="utf-8"))
+    assert (
+        "the axis bearing is 68.7° from grid north, only 1.2° from the boundary between E and NE (67.5°). "
+        "The draft reads the street as E (headings W→E / E→W, sides N / S), but reading it as NE "
+        "(headings SW→NE / NE→SW, sides NW / SE) is just as valid." in header
+    )
+    assert "which may need judgement" not in header
+
+    pt = draft_in_portuguese(monkeypatch, like, tmp_path / "y")
+    assert (
+        "o eixo está orientado a 68,7° do norte da quadrícula, a só 1,2° do limite entre E e NE (67,5°). "
+        "O rascunho lê a rua como E (sentidos O→E / E→O, lados N / S), mas lê-la como NE "
+        "(sentidos SO→NE / NE→SO, lados NO / SE) é igualmente válido." in pt
+    )

@@ -77,14 +77,29 @@ and = " e "
 question_both = "A faixa livre entre as duas faixas de estacionamento deixa cruzar dois autocarros programados nos dois sentidos?"
 question_one = "A faixa livre entre as duas faixas de estacionamento deixa espaço para um autocarro programado e um ligeiro lado a lado?"
 gap_meeting = "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário."
-header = """
-# Rascunho feito por `mobilidados new-case` a partir de {model}, em {date}. Confirme antes de usar:
-# - [case] o título;
-# - [street] os quarteirões, cortados onde outros eixos encontram a rua e com os nomes completos dessas ruas; os
-#   sentidos e os lados, pontos cardeais tirados da orientação do eixo ({bearing}° a partir do norte da
-#   quadrícula), que podem pedir juízo;
+# the header of a draft is composed from the lines below, in this order; some appear only when they apply
+header_intro = "# Rascunho feito por `mobilidados new-case` a partir de {model}, em {date}. Confirme antes de usar:"
+header_title = "# - [case] o título;"
+header_blocks = "# - [street] os quarteirões, cortados onde outros eixos encontram a rua e com os nomes completos dessas ruas;"
+header_compass = """
+# - [street] os sentidos e os lados, pontos cardeais tirados da orientação do eixo ({bearing}° a partir do norte
+#   da quadrícula), que podem pedir juízo;"""
+header_compass_boundary = """
+# - [street] os sentidos e os lados, que aqui pedem uma decisão sua: o eixo está orientado a {bearing}° do norte
+#   da quadrícula, a só {gap}° do limite entre {point} e {other_point} ({boundary}°). O rascunho lê a rua como
+#   {point} (sentidos {headings}, lados {sides}), mas lê-la como {other_point} (sentidos {other_headings}, lados
+#   {other_sides}) é igualmente válido. Fique com a leitura que quem conhece a rua reconhece e, se for a outra,
+#   corrija os sentidos e os lados;"""
+header_transit = """
 # - [transit] as carreiras que percorrem a rua no dia de serviço e, para cada carreira e sentido, a paragem junto
-#   à rua servida pela maioria das viagens;
-# - [case] a pergunta, escrita para autocarros nos dois sentidos ou num só, conforme o horário.
-# O resto (dados fixados, veículos, parâmetros, lacunas comuns) é herdado, tal como em {model}.
-"""
+#   à rua servida pela maioria das viagens. Paragens escolhidas (distância ao eixo; s, posição ao longo da rua):"""
+header_stop = "#     carreira {route} no sentido {heading} (direction_id {direction_id}): paragem {stop_id} ({name}), a {dist} m do eixo, s = {s} m;"
+header_stop_note = """
+#   Uma paragem até {radius} m do eixo pode estar numa rua transversal, perto de uma das pontas; nesse caso, a
+#   posição s é a dessa ponta (0 ou {length} m). Veja no mapa se cada paragem serve mesmo esta rua;"""
+header_question = "# - [case] a pergunta, escrita para autocarros nos dois sentidos ou num só, conforme o horário."
+header_one_way = """
+#   Aqui os autocarros só passam num sentido, e a pergunta parte do princípio de que cabe um ligeiro ao lado do
+#   autocarro, ou seja, de que a rua tem dois sentidos ou duas vias. Se a rua tiver um só sentido e uma só via, a
+#   pergunta não se aplica tal como está: reescreva-a depois de o `mobilidados run` mostrar o sentido do trânsito."""
+header_inherited = "# O resto (dados fixados, veículos, parâmetros, lacunas comuns) é herdado, tal como em {model}."
