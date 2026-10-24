@@ -1,39 +1,11 @@
 """GTFS reading: service calendars, shapes and headings, and passings at reference stops, on a tiny synthetic feed."""
 
 import datetime as dt
-import zipfile
-
-from pyproj import Transformer
-from shapely.geometry import LineString
 
 from streetfit import gtfs
 from streetfit.config import ReferenceStop
 
-CRS = 3763
-
-
-def make_feed(path):
-    """Two routes along a 200 m street in Lisbon's projected CRS; route B only on Tuesdays via calendar_dates."""
-    to_ll = Transformer.from_crs(CRS, 4326, always_xy=True)
-    (lon0, lon1), (lat0, lat1) = to_ll.transform([-87500, -87300], [-100700, -100700])
-    files = {
-        "routes.txt": "route_id,route_short_name,route_long_name,route_type\nA,10,Up,3\nB,20,Down,3\n",
-        "trips.txt": "route_id,service_id,trip_id,direction_id,shape_id\nA,WK,a1,0,up\nA,WK,a2,0,up\nB,X,b1,1,down\n",
-        "calendar.txt": "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
-        "WK,1,1,1,1,1,0,0,20260101,20261231\n",
-        "calendar_dates.txt": "service_id,date,exception_type\nX,20261027,1\nWK,20261028,2\n",
-        "shapes.txt": "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence\n"
-        f"up,{lat0},{lon0},1\nup,{lat1},{lon1},2\ndown,{lat1},{lon1},1\ndown,{lat0},{lon0},2\n",
-        "stops.txt": f"stop_id,stop_name,stop_lat,stop_lon\nS1,First,{lat0},{lon0}\nS2,Last,{lat1},{lon1}\n",
-        "stop_times.txt": "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n"
-        "a1,08:00:00,08:00:00,S1,1\na1,08:01:00,08:01:00,S2,2\n"
-        "a2,09:00:00,09:00:00,S1,1\na2,09:01:00,09:01:00,S2,2\n"
-        "b1,08:00:20,08:00:20,S2,1\nb1,08:01:20,08:01:20,S1,2\n",
-    }
-    with zipfile.ZipFile(path, "w") as z:
-        for name, text in files.items():
-            z.writestr(name, text)
-    return LineString([(-87500, -100700), (-87300, -100700)])
+from .builders import CRS, make_feed
 
 
 def test_calendar_rules_and_exceptions(tmp_path):

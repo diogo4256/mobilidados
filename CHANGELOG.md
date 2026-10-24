@@ -14,12 +14,20 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - `streetfit verify` lists every file that does not match the lock, whatever the number of files.
 - The module `streetfit.network` is now `streetfit.direction`, after the stage it implements (`network` read as
   network access). `python -m streetfit` works.
+- `occurrences_files.csv` has a `with_date` column: the records with coordinates whose date parsed. A file
+  without a located record reports 0, not an empty value, and empty dates.
+- A street name that is not in the axes layer (or is in several features or in parts) and an error answered by an
+  ArcGIS service are reported as `error: ...` by the command line, like other errors the user can fix.
+- The unit suite runs a synthetic case through every stage offline (`tests/test_end_to_end.py`), so CI, including the
+  `lowest` job, exercises the whole pipeline, the ledger and the figures.
 
 ### Fixed
 
 - `streetfit discover` wrote a street-axes template without a licence, which no case could load, and a
   multi-line note or check could break the draft's TOML.
 - The claim checker's read tool returned one line more than it told the model.
+- The dates of the citizen reports were parsed across all files at once, so a file whose date format differed
+  from the first file's lost its dates without a message. Each file is now parsed on its own.
 
 ## [0.2.0] - 2026-10-24
 

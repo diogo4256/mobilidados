@@ -28,7 +28,10 @@ strips, sidewalks and plots/buildings. Intervals of the same role separated by l
 A station is `two_strips` when both strips are wider than `min_strip` and the free width is at most
 `profiles.narrow_max_m`; `one_strip` when only one side has a strip (`geometry.classify`). A transect lying
 exactly on a strip's end edge counts the strip (shared boundary). Summary statistics use `two_strips` stations
-only.
+only. Consecutive `two_strips` stations within a block form a section (`narrow_sections.csv`); the length the
+ledger gives for them is the distance from the first to the last station of each section, summed. It is not
+the station count times `profiles.step_m`, which would add one step per section, and it is not the mapped
+strip length per side in `parking_strip_lengths.csv`.
 
 **What this is not:** parked vehicles are not observed. The strips are mapped areas. Whether cars stay inside
 them is tested by `overhang_sensitivity.csv` and can be checked on orthophotos or on site.
@@ -87,8 +90,9 @@ Geolocated records (Lisbon: *Na Minha Rua*) within `occurrences.window_m` of the
 nearest street axis within `occurrences.max_dist_m`, filtered by category with an anchored regular expression
 (`occurrences.filters`), and counted per 100 m of street. Only streets of at least
 `occurrences.min_street_length_m` are ranked. `occurrences_files.csv` records, per file, how many records there
-are and the dates they span. Counts are small and a report is not a proven infraction; only aggregates are
-published.
+are, how many have coordinates, how many of those have a date that parsed (each file's dates are parsed on their
+own, so files may use different formats) and the dates they span. Counts are small and a report is not a proven
+infraction; only aggregates are published.
 
 ## Area scan (`area_scan.py`)
 

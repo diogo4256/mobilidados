@@ -261,6 +261,7 @@ def build(r: Run) -> list[Finding]:
         if len(me):
             row, rank = me.iloc[0], int(me.index[0]) + 1
             files = r.table("occurrences_files")
+            dated = files[files.first_date.notna() & (files.first_date != "")]  # a file without a located record has no dates
             F.append(
                 Finding(
                     id="occurrences",
@@ -269,7 +270,7 @@ def build(r: Run) -> list[Finding]:
                         "occurrences",
                         n=int(row[f"{fname}_n"]),
                         flt=frx.lstrip("^"),
-                        period=f"{files.first_date.min()} – {files.last_date.max()}",
+                        period=f"{dated.first_date.min()} – {dated.last_date.max()}",
                         d=f"{o.max_dist_m:g}",
                         rate=n(row[f"{fname}_per_100m"]),
                         rank=rank,

@@ -4,25 +4,12 @@ import pytest
 from shapely import affinity
 from shapely.geometry import LineString, box
 
-from streetfit.config import Block
-from streetfit.geometry import TWO_STRIPS, classify, measure_profiles, narrow_sections, strip_lengths, summarize_blocks
+from streetfit.config import Block, StreetfitError
+from streetfit.geometry import TWO_STRIPS, classify, measure_profiles, narrow_sections, street_axis, strip_lengths, summarize_blocks
+
+from .builders import street
 
 CLASSES = {"road": {"road"}, "parking": {"park"}, "sidewalk": {"walk"}, "plot": {"plot"}}
-
-
-def street(free=4.90, strip=2.0, walk=2.5, length=100.0, strip_from=20.0, strip_to=80.0):
-    """A straight street along +x: road centred on y=0, parking strips on both sides between strip_from and strip_to."""
-    h = free / 2
-    polys = [
-        ("road", box(0, -h, length, h)),
-        ("park", box(strip_from, h, strip_to, h + strip)),
-        ("park", box(strip_from, -h - strip, strip_to, -h)),
-        ("walk", box(0, h + strip, length, h + strip + walk)),
-        ("walk", box(0, -h - strip - walk, length, -h - strip)),
-        ("plot", box(0, h + strip + walk, length, h + strip + walk + 10)),
-        ("plot", box(0, -h - strip - walk - 10, length, -h - strip - walk)),
-    ]
-    return LineString([(0, 0), (length, 0)]), polys
 
 
 def test_widths_on_two_strip_section():
@@ -71,3 +58,26 @@ def test_classify_summary_and_sections():
     assert summarize_blocks(df, blocks).set_index("block").loc["all", "free_median"] == pytest.approx(4.90)
     assert [b for _, _, b in narrow_sections(df, 1.0)] == ["A", "B"]
     assert strip_lengths(df, blocks, 1.0).set_index("block").loc["all", "strip_L_length_m"] == pytest.approx(61.0)
+
+
+def axis_feature(name, *paths):
+    return {"attributes": {"NAME": name}, "geometry": {"paths": [[list(p) for p in path] for path in paths]}}
+
+
+def test_the_axis_of_a_street_is_found_by_name():
+    features = [axis_feature("Rua A", [(0, 0), (10, 0)]), axis_feature("Rua B", [(0, 5), (10, 5)])]
+    assert street_axis(features, "NAME", "Rua B").length == pytest.approx(10)
+
+
+@pytest.mark.parametrize(
+    ("features", "message"),
+    [
+        ([axis_feature("Rua A", [(0, 0), (10, 0)])], "found 0"),
+        ([axis_feature("Rua B", [(0, 0), (10, 0)]), axis_feature("Rua B", [(10, 0), (20, 0)])], "found 2"),
+        ([axis_feature("Rua B", [(0, 0), (10, 0)], [(20, 0), (30, 0)])], "multi-part"),
+    ],
+    ids=["missing", "duplicate", "multi-part"],
+)
+def test_an_axis_that_is_missing_duplicated_or_in_parts_is_a_user_error(features, message):
+    with pytest.raises(StreetfitError, match=message):
+        street_axis(features, "NAME", "Rua B")

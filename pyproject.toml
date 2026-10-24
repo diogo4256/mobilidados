@@ -20,8 +20,9 @@ classifiers = [
   "Topic :: Scientific/Engineering :: GIS",
   "Typing :: Typed",
 ]
-# Lower bounds: the `lowest` CI job installs exactly these versions and runs the unit tests; the `data` tests
-# (cached sources, not in CI) are run locally on the same install.
+# Lower bounds: the `lowest` CI job installs exactly these versions and runs the unit tests, which include a
+# synthetic case through every stage of the pipeline. Only the `data` tests (the Lisbon case's cached sources,
+# not in CI) are left to a local run on the same install.
 dependencies = [
   "matplotlib>=3.10.7", # older releases call pyparsing APIs that pyparsing now deprecates (warnings are errors in the tests)
   "numpy>=2.0",

@@ -20,11 +20,20 @@ from .config import Columns
 
 
 def load_points(files: list[Path], cols: Columns, crs: int) -> pd.DataFrame:
-    """Concatenate the CSVs and project lat/lon. Rows without valid coordinates keep x, y = NaN."""
-    df = pd.concat([pd.read_csv(f, dtype=str).assign(file=f.name) for f in files], ignore_index=True)
+    """Concatenate the CSVs and project lat/lon. Rows without valid coordinates keep x, y = NaN.
+
+    Dates are parsed file by file, because every file (e.g. one per year) may use its own format and pandas infers a
+    single format per call. A date that does not parse stays NaT; ``file_summary`` counts those.
+    """
+
+    def read(f: Path) -> pd.DataFrame:
+        df = pd.read_csv(f, dtype=str).assign(file=f.name)
+        df["date"] = pd.to_datetime(df[cols.date], errors="coerce")
+        return df
+
+    df = pd.concat([read(f) for f in files], ignore_index=True)
     lat, lon = pd.to_numeric(df[cols.lat], errors="coerce"), pd.to_numeric(df[cols.lon], errors="coerce")
     ok = lat.notna() & lon.notna()
-    df["date"] = pd.to_datetime(df[cols.date], errors="coerce")
     df["category"] = df[cols.category]
     df["x"] = df["y"] = np.nan
     df.loc[ok, "x"], df.loc[ok, "y"] = Transformer.from_crs(4326, crs, always_xy=True).transform(lon[ok].to_numpy(), lat[ok].to_numpy())
@@ -32,21 +41,30 @@ def load_points(files: list[Path], cols: Columns, crs: int) -> pd.DataFrame:
 
 
 def file_summary(points: pd.DataFrame) -> pd.DataFrame:
-    """Per file: records, records with coordinates and the dates they span (the period the counts cover)."""
+    """Per file: records, records with coordinates, those of them whose date parsed, and the dates they span.
+
+    The span is the period the counts cover. A file without a located record has 0 for the counts and empty dates.
+    """
     located = points[points.x.notna()]
-    by_file = located.groupby("file").date
-    return (
-        pd.DataFrame(
-            {
-                "records": points.groupby("file").size(),
-                "with_coordinates": located.groupby("file").size(),
-                "first_date": by_file.min().dt.date.astype(str),
-                "last_date": by_file.max().dt.date.astype(str),
-            }
-        )
-        .rename_axis("file")
-        .reset_index()
-    )
+    dated = located[located.date.notna()]
+    files = pd.Index(sorted(points.file.unique()), name="file")
+
+    def count(rows: pd.DataFrame) -> pd.Series:
+        return rows.groupby("file").size().reindex(files, fill_value=0)
+
+    def day(how: str) -> pd.Series:
+        span = dated.groupby("file").date.agg(how)
+        return span.map(lambda d: d.date().isoformat()).reindex(files, fill_value="")
+
+    return pd.DataFrame(
+        {
+            "records": count(points),
+            "with_coordinates": count(located),
+            "with_date": count(dated),
+            "first_date": day("min"),
+            "last_date": day("max"),
+        }
+    ).reset_index()
 
 
 def attribute_to_streets(points: pd.DataFrame, streets: dict[str, BaseGeometry], window: tuple[float, float, float, float]) -> pd.DataFrame:

@@ -11,6 +11,7 @@ from typing import Any
 
 from shapely.geometry import LineString, MultiLineString, MultiPolygon, Polygon
 
+from .config import StreetfitError
 from .provenance import http_get
 
 IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX, IMAGE_DPI = 1600, 900, 96  # the map image an identify request describes; its tolerance is in these pixels
@@ -19,7 +20,7 @@ IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX, IMAGE_DPI = 1600, 900, 96  # the map image an i
 def _json(url: str, params: dict[str, Any]) -> dict[str, Any]:
     data: dict[str, Any] = http_get(url, params).json()
     if "error" in data:
-        raise RuntimeError(f"{url}: {data['error']}")
+        raise StreetfitError(f"{url}: {data['error']}")
     return data
 
 
