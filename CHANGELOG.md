@@ -29,6 +29,9 @@ streetfit.
 - The Portuguese texts of the ledger and the figures are rewritten in plain Portuguese (for example "Cada
   afirmação diz em que se apoia", "mediana de 4,90 m"). The width figure says how much width is missing
   ("faltam 0,10 m") instead of "não cabe".
+- The pull request checklist asks whether a change can affect results, and if it can, for `pytest -m data` or an
+  explanation. It no longer asks contributors for `make reproduce`, which depends on live services and on a
+  cache only the maintainer has.
 - README links are absolute, so they work on PyPI as well as on GitHub.
 - Dependency lower bounds are the oldest versions that pass the test suite, and a `lowest` CI job installs
   exactly them. `urllib3` is declared, since mobilidados imports it directly.
