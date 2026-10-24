@@ -11,6 +11,12 @@ streetfit.
 
 ### Added
 
+- `mobilidados new-case "<street>" --like <case>` drafts a case for another street of the same city from its
+  name: the axis from the municipal layer, blocks cut at the cross streets, direction and side labels from the
+  bearing, check points and traffic-direction stations away from the junctions, and the bus routes and
+  reference stops from the model case's GTFS feed. Sources, pins, vehicles and parameters are the model case's.
+  Drafting Rua Ricardo Jorge from its own case gives the same blocks, routes and reference stops as the
+  hand-written case.
 - The free width without the mapped parking on one side, or on both, at the same stations as the measured free
   width (`without_parking.csv`), with a ledger finding and a bar in the width figure. Defined in
   `docs/methodology.md`. The existing tables and values are unchanged.
@@ -21,6 +27,8 @@ streetfit.
 
 ### Changed
 
+- A street stored in the axes layer as several features or parts is joined into one axis when the pieces form
+  one continuous line; before, any street in more than one piece was an error.
 - The package, module and command are `mobilidados` (were `streetfit`), and so are the environment variables
   (`MOBILIDADOS_MODEL`, `MOBILIDADOS_EFFORT`, `MOBILIDADOS_CONTACT`), the exception (`MobilidadosError`) and the
   User-Agent sent to data providers. The repository moved to `diogo4256/mobilidados`; GitHub redirects the old

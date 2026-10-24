@@ -5,8 +5,9 @@ method on different cartography and makes the tool useful to more people.
 
 ## Ways to contribute
 
-* **A new case** (a street in a city that already has a profile): add `cases/<city>-<street>/` with
-  `case.toml`, `sources.lock.json`, `results/` and a short `README.md`. Open an issue with the *New case*
+* **A new case** (a street in a city that already has a profile): `mobilidados new-case "<street>" --like
+  cases/<a case of that city>` drafts `cases/<city>-<street>/case.toml`; check what its header lists, then add
+  `sources.lock.json`, `results/` and a short `README.md`. Open an issue with the *New case*
   template first if you want feedback on the question.
 * **A new city**: add `cities/<city>.toml` and one case that uses it. See [docs/adding-a-city.md](docs/adding-a-city.md).
 * **Design references**: add entries to `src/mobilidados/data/standards.toml` with the document's URL and SHA-256,

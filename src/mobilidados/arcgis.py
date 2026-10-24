@@ -25,18 +25,20 @@ def _json(url: str, params: dict[str, Any]) -> dict[str, Any]:
 
 
 def query_layer(
-    layer_url: str, envelope: tuple[float, ...], in_sr: int, out_sr: int, where: str = "1=1", batch: int = 100
+    layer_url: str, envelope: tuple[float, ...] | None, in_sr: int, out_sr: int, where: str = "1=1", batch: int = 100
 ) -> dict[str, Any]:
-    """All features of a layer intersecting an envelope [xmin, ymin, xmax, ymax], with all attributes."""
+    """All features of a layer matching ``where`` and intersecting an envelope [xmin, ymin, xmax, ymax] (``None``:
+    the whole layer), with all attributes."""
     meta = _json(layer_url, {"f": "json"})
-    env = dict(zip(("xmin", "ymin", "xmax", "ymax"), envelope, strict=True)) | {"spatialReference": {"wkid": in_sr}}
-    spatial = {
-        "geometry": json.dumps(env),
-        "geometryType": "esriGeometryEnvelope",
-        "inSR": in_sr,
-        "spatialRel": "esriSpatialRelIntersects",
-        "where": where,
-    }
+    spatial: dict[str, Any] = {"where": where}
+    if envelope is not None:
+        env = dict(zip(("xmin", "ymin", "xmax", "ymax"), envelope, strict=True)) | {"spatialReference": {"wkid": in_sr}}
+        spatial |= {
+            "geometry": json.dumps(env),
+            "geometryType": "esriGeometryEnvelope",
+            "inSR": in_sr,
+            "spatialRel": "esriSpatialRelIntersects",
+        }
     oids = sorted(_json(f"{layer_url}/query", {**spatial, "returnIdsOnly": "true", "f": "json"}).get("objectIds") or [])
     feats: list[dict[str, Any]] = []
     for i in range(0, len(oids), batch):

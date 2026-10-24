@@ -69,15 +69,22 @@ def test_the_axis_of_a_street_is_found_by_name():
     assert street_axis(features, "NAME", "Rua B").length == pytest.approx(10)
 
 
+def test_a_street_stored_in_contiguous_pieces_is_joined_into_one_axis():
+    features = [axis_feature("Rua B", [(10, 0), (20, 0)]), axis_feature("Rua B", [(0, 0), (10, 0)], [(20, 0), (20, 5)])]
+    axis = street_axis(features, "NAME", "Rua B")
+    assert axis.length == pytest.approx(25)
+    assert {axis.coords[0], axis.coords[-1]} == {(0.0, 0.0), (20.0, 5.0)}
+
+
 @pytest.mark.parametrize(
     ("features", "message"),
     [
-        ([axis_feature("Rua A", [(0, 0), (10, 0)])], "found 0"),
-        ([axis_feature("Rua B", [(0, 0), (10, 0)]), axis_feature("Rua B", [(10, 0), (20, 0)])], "found 2"),
-        ([axis_feature("Rua B", [(0, 0), (10, 0)], [(20, 0), (30, 0)])], "multi-part"),
+        ([axis_feature("Rua A", [(0, 0), (10, 0)])], "no axis named 'Rua B'"),
+        ([axis_feature("Rua B", [(0, 0), (10, 0)], [(20, 0), (30, 0)])], "not one continuous line"),
+        ([axis_feature("Rua B", [(0, 0), (10, 0)]), axis_feature("Rua B", [(5, 0), (5, 8)])], "not one continuous line"),
     ],
-    ids=["missing", "duplicate", "multi-part"],
+    ids=["missing", "gap", "branch"],
 )
-def test_an_axis_that_is_missing_duplicated_or_in_parts_is_a_user_error(features, message):
+def test_an_axis_that_is_missing_has_gaps_or_branches_is_a_user_error(features, message):
     with pytest.raises(MobilidadosError, match=message):
         street_axis(features, "NAME", "Rua B")
