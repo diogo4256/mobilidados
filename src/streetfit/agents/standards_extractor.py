@@ -88,6 +88,7 @@ def text_layer(pdf: Path, page: int) -> str:
 # in Tesseract's sparse-text modes, and pool the text. A single low-resolution pass misses labels that this finds.
 OCR_SCALE = 8.0
 OCR_PASSES = [(0, "11"), (0, "12"), (90, "11"), (90, "12")]  # (rotation in degrees, Tesseract --psm)
+OCR_TIMEOUT_S = 900  # seconds per Tesseract pass
 
 
 def ocr(pdf: Path, page: int, scale: float = OCR_SCALE) -> str | None:
@@ -102,7 +103,9 @@ def ocr(pdf: Path, page: int, scale: float = OCR_SCALE) -> str | None:
     for rot, psm in OCR_PASSES:
         with tempfile.NamedTemporaryFile(suffix=".png") as f:
             img.rotate(rot, expand=True).save(f.name)
-            texts.append(subprocess.run([exe, f.name, "stdout", "--psm", psm], capture_output=True, text=True, timeout=900).stdout)
+            texts.append(
+                subprocess.run([exe, f.name, "stdout", "--psm", psm], capture_output=True, text=True, timeout=OCR_TIMEOUT_S).stdout
+            )
     return "\n".join(texts)
 
 

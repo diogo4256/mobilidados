@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 
 from . import arcgis
 from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, HttpFile, HttpFiles, StreetfitError
-from .provenance import Lock, http_get, now_utc, sha256_bytes, sha256_file, write_atomic
+from .provenance import DOWNLOAD_TIMEOUT_S, Lock, http_get, now_utc, sha256_bytes, sha256_file, write_atomic
 
 log = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ def _download(src: AnySource, dest: Path) -> dict[str, Any]:
             "copyrightText": data.get("copyrightText"),
         }
     elif isinstance(src, HttpFile):
-        content = http_get(src.url, timeout=600).content
+        content = http_get(src.url, timeout=DOWNLOAD_TIMEOUT_S).content
         if src.sha256 and sha256_bytes(content) != src.sha256:
             raise StreetfitError(
                 f"{src.url} now serves a different file (sha256 {sha256_bytes(content)[:12]}…) from the one pinned in "
@@ -114,7 +114,7 @@ def _download(src: AnySource, dest: Path) -> dict[str, Any]:
     elif isinstance(src, HttpFiles):
         dest.mkdir(parents=True, exist_ok=True)
         for f in src.files:
-            write_atomic(dest / f.name, http_get(f.url, timeout=600).content)
+            write_atomic(dest / f.name, http_get(f.url, timeout=DOWNLOAD_TIMEOUT_S).content)
         meta |= {"urls": {f.name: f.url for f in src.files}}
     return meta
 

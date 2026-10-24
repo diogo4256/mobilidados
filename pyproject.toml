@@ -20,14 +20,17 @@ classifiers = [
   "Topic :: Scientific/Engineering :: GIS",
   "Typing :: Typed",
 ]
+# Lower bounds: the `lowest` CI job installs exactly these versions and runs the unit tests; the `data` tests
+# (cached sources, not in CI) are run locally on the same install.
 dependencies = [
-  "matplotlib>=3.8",
+  "matplotlib>=3.10.7", # older releases call pyparsing APIs that pyparsing now deprecates (warnings are errors in the tests)
   "numpy>=2.0",
-  "pandas>=2.2",
+  "pandas>=2.2.2",
   "pydantic>=2.7",
   "pyproj>=3.6",
-  "requests>=2.32",
-  "shapely>=2.0",
+  "requests>=2.32.2",
+  "shapely>=2.1", # 2.0.x (older GEOS) warns "invalid value encountered in distance" on valid geometries
+  "urllib3>=2.0",
 ]
 
 [project.optional-dependencies]

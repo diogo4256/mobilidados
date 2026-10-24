@@ -3,6 +3,22 @@
 All notable changes are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Dependency lower bounds are the oldest versions that pass the test suite, and a `lowest` CI job installs
+  exactly them. `urllib3` is declared, since streetfit imports it directly.
+- The package ships `py.typed`, so type checkers use its annotations.
+- Limits, tolerances and timeouts that were bare numbers in the code are named constants or parameters.
+- `streetfit verify` lists every file that does not match the lock, whatever the number of files.
+
+### Fixed
+
+- `streetfit discover` wrote a street-axes template without a licence, which no case could load, and a
+  multi-line note or check could break the draft's TOML.
+- The claim checker's read tool returned one line more than it told the model.
+
 ## [0.2.0] - 2026-10-24
 
 ### Changed

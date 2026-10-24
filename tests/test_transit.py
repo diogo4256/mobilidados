@@ -62,6 +62,13 @@ def test_shapes_headings_and_passings(tmp_path):
     assert (tph.loc[8, 1], tph.loc[9, 1], tph.loc[8, -1]) == (1, 1, 1)
 
 
+def test_a_shape_with_too_little_length_near_the_street_is_left_out(tmp_path):
+    axis = make_feed(tmp_path / "f.zip")  # both shapes run along the whole 200 m axis
+    feed = gtfs.Feed(tmp_path / "f.zip")
+    assert sorted(gtfs.shapes_along(feed, axis, CRS, min_inside_m=150).shape_id) == ["down", "up"]
+    assert gtfs.shapes_along(feed, axis, CRS, min_inside_m=250).empty
+
+
 def test_meeting_point_is_analytic():
     # A at s=0 at t=0 heading up, B at s=200 at t=0 heading down, both 10 m/s: meet at s=100, t=10
     t, s = encounters.meeting(0, 0, 0, 200, 10)

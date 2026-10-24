@@ -8,6 +8,10 @@ import pytest
 from streetfit.config import ArcgisQuery, Case, Lang, StreetfitError, standards_catalogue, vehicle_catalogue
 from streetfit.i18n import messages
 
+FEED = "[sources.feed]\nkind = 'http_file'\nurl = 'https://example.org/gtfs.zip'\nlicence = 'x'\n"
+STOP_20 = "{ route = '20', direction_id = 0, stop_id = 's', s_m = 0, heading = 1 }"
+REPORTS = "[sources.reports]\nkind = 'http_files'\nlicence = 'x'\nfiles = [{ name = 'a.csv', url = 'https://example.org/a.csv' }]\n"
+
 
 def test_minimal_case_loads_with_defaults(make_case):
     case = Case.load(make_case())
@@ -27,6 +31,13 @@ def test_minimal_case_loads_with_defaults(make_case):
         ("[standards]\ncompare = ['made_up']\n", "unknown design reference 'made_up'"),
         ("[[known_gaps]]\npt = 'só em português'\n", "has no 'en' text"),
         ("[[street.blocks]]\nid = 'A'\nstart = 0\nend = 10\n[[street.blocks]]\nid = 'B'\nstart = 12\nend = 20\n", "contiguous"),
+        ("[[street.blocks]]\nid = 'A'\nstart = 5\nend = 5\n", "every block needs start < end"),
+        (
+            FEED + "[transit]\nsource = 'feed'\nservice_date = 2026-10-27\nroutes = ['10']\nreference_stops = [" + STOP_20 + "]\n",
+            "not in transit.routes",
+        ),
+        (REPORTS + "[occurrences]\nsource = 'reports'\nfilters = { a = 'x' }\n", "needs `columns`"),
+        ("[area_scan]\n", "[area_scan] needs [transit]"),
     ],
 )
 def test_invalid_configuration_is_reported(make_case, extra, message):
@@ -65,3 +76,9 @@ def test_every_message_exists_in_every_language_with_the_same_placeholders():
         other = messages(lang)
         assert other.keys() == en.keys(), f"{lang}: keys differ from en"
         assert all(fields(other[k]) == fields(en[k]) for k in en), f"{lang}: placeholders differ from en"
+
+
+def test_an_unknown_source_id_is_an_error_listing_the_known_ones(make_case):
+    with pytest.raises(StreetfitError, match="unknown source 'nope'") as err:
+        Case.load(make_case()).source("nope")
+    assert "['cartography', 'street_axes']" in str(err.value)

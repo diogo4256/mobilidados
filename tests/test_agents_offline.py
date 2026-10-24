@@ -1,12 +1,17 @@
 """The deterministic halves of the AI tools, with the model's output faked (no API calls)."""
 
+import json
+
 import pytest
 
 pytest.importorskip("anthropic")
 pytest.importorskip("pydantic")
 
+from streetfit.agents import source_discovery
 from streetfit.agents.claim_checker import Claim, ClaimReport, Corpus, Evidence, verify
+from streetfit.agents.source_discovery import CityProfileDraft, DataSource, LayerChoice, to_toml
 from streetfit.agents.standards_extractor import DerivedTotal, PageReading, WidthValue, check
+from streetfit.config import ArcgisQuery, Case, HttpFile
 
 FINDINGS = {
     "free_width": {
@@ -103,3 +108,121 @@ def test_extraction_values_are_cross_checked():
     assert r["totals"][0]["sum_checks"] is True
     wrong = check(PageReading(page_title="", values=[], totals=[DerivedTotal(label="x", components_m=[3.0, 3.0], total_m=6.8)]), "", None)
     assert wrong["totals"][0]["sum_checks"] is False
+
+
+CASE_ON_A_PROFILE = """extends = "exampleton.toml"
+
+[case]
+id = "t"
+title = "Test street"
+
+[street]
+name = "Rua do Teste"
+headings = { "+" = "up", "-" = "down" }
+
+[sources.cartography]
+template = "cartography_polygons"
+envelope = [-9.2, 38.7, -9.1, 38.8]
+
+[sources.street_axes]
+template = "street_axes"
+envelope = [-9.2, 38.7, -9.1, 38.8]
+"""
+GTFS_FROM_THE_PROFILE = '\n[sources.feed]\ntemplate = "gtfs"\n'
+
+
+def layer(name, field, values):
+    base = "https://gis.example.org/arcgis/rest/services/Base/MapServer"
+    return LayerChoice(layer_url=f"{base}/{name}", field=field, values=values, evidence="fields and sample", confidence=0.9)
+
+
+def draft_of(full):
+    optional = (
+        {
+            "sidewalk_polygons": layer(54, "LAYER", ["sidewalk"]),
+            "plot_polygons": layer(53, "LAYER", ["building", "yard"]),
+            "traffic_direction": None,
+            "gtfs": DataSource(
+                url="https://example.org/gtfs.zip", licence="CC-BY-4.0", licence_evidence_url="https://example.org", evidence="page"
+            ),
+            "occurrences": None,
+            "cartography_licence": DataSource(
+                url="https://example.org/data", licence="CC0-1.0", licence_evidence_url="https://example.org", evidence="page"
+            ),
+            "notes": ['Survey date unknown.\nScale is "1:1000", check it.'],
+        }
+        if full
+        else dict.fromkeys(("sidewalk_polygons", "plot_polygons", "traffic_direction", "gtfs", "occurrences", "cartography_licence"))
+        | {"notes": []}
+    )
+    return CityProfileDraft(
+        city="São João",
+        crs_epsg=3763,
+        road_polygons=layer(53, "LAYER", ["road"]),
+        parking_polygons=layer(53, "LAYER", ["park"]),
+        street_axes=layer(79, "NAME", []),
+        **optional,
+    )
+
+
+@pytest.mark.parametrize("full", [False, True], ids=["minimal", "full"])
+def test_a_discovered_draft_is_a_city_profile_a_case_can_extend(tmp_path, full):
+    checks = ["road_polygons: layer 'Polygons' ok", "street_axes: CHECK FAILED (HTTP 500:\nServer Error)"]
+    (tmp_path / "exampleton.toml").write_text(to_toml(draft_of(full), checks), encoding="utf-8")
+    (tmp_path / "case.toml").write_text(CASE_ON_A_PROFILE + (GTFS_FROM_THE_PROFILE if full else ""), encoding="utf-8")
+
+    case = Case.load(tmp_path)
+
+    assert (case.config.city.name, case.crs) == ("São João", 3763)
+    assert case.config.cartography.roles()["road"] == {"road"}
+    assert case.config.axes.name_field == "NAME"
+    cartography, axes = case.source("cartography"), case.source("street_axes")
+    assert isinstance(cartography, ArcgisQuery)
+    assert isinstance(axes, ArcgisQuery)
+    assert cartography.url.endswith("/MapServer/53")
+    assert axes.url.endswith("/MapServer/79")
+    assert cartography.licence == ("CC0-1.0" if full else "REVIEW: not found")
+    assert axes.licence.startswith("REVIEW")  # the draft holds no evidence for it, and a source cannot load without one
+    if full:
+        feed = case.source("feed")
+        assert isinstance(feed, HttpFile)
+        assert (feed.url, feed.licence, feed.suffix) == ("https://example.org/gtfs.zip", "CC-BY-4.0", ".zip")
+        assert case.config.cartography.roles()["plot"] == {"building", "yard"}
+
+
+def test_discovery_requests_are_cached_budgeted_and_time_limited(monkeypatch):
+    seen = []
+
+    class Session:
+        def get(self, url, params, timeout):
+            seen.append((url, timeout))
+
+            class Response:
+                def raise_for_status(self):
+                    pass
+
+                def json(self):
+                    return {"url": url}
+
+            return Response()
+
+    monkeypatch.setattr(source_discovery, "session", Session)
+    http = source_discovery.Http({"example.org"}, max_calls=2)
+    assert http.get_json("https://gis.example.org/a") == {"url": "https://gis.example.org/a"}
+    http.get_json("https://gis.example.org/a")  # answered from the cache: it does not use the budget
+    http.get_json("https://gis.example.org/b")
+    with pytest.raises(RuntimeError, match="request budget exhausted"):
+        http.get_json("https://gis.example.org/c")
+    assert seen == [
+        ("https://gis.example.org/a", source_discovery.REQUEST_TIMEOUT_S),
+        ("https://gis.example.org/b", source_discovery.REQUEST_TIMEOUT_S),
+    ]
+
+
+def test_long_tool_results_are_cut_before_they_reach_the_model():
+    short = {"a": "x"}
+    assert json.loads(source_discovery._clip(short)) == short
+    clipped = source_discovery._clip({"a": "x" * 3 * source_discovery.MAX_CHARS})
+    assert clipped.startswith('{"a": "xxx')
+    assert clipped.endswith("chars]")
+    assert "[truncated, " in clipped

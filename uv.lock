@@ -2009,6 +2009,7 @@ dependencies = [
     { name = "pyproj", version = "3.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "requests" },
     { name = "shapely" },
+    { name = "urllib3" },
 ]
 
 [package.optional-dependencies]
@@ -2029,15 +2030,16 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anthropic", marker = "extra == 'agents'", specifier = ">=2.3" },
-    { name = "matplotlib", specifier = ">=3.8" },
+    { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "numpy", specifier = ">=2.0" },
-    { name = "pandas", specifier = ">=2.2" },
+    { name = "pandas", specifier = ">=2.2.2" },
     { name = "pydantic", specifier = ">=2.7" },
     { name = "pypdf", marker = "extra == 'agents'", specifier = ">=5.0" },
     { name = "pypdfium2", marker = "extra == 'agents'", specifier = ">=4.30" },
     { name = "pyproj", specifier = ">=3.6" },
-    { name = "requests", specifier = ">=2.32" },
-    { name = "shapely", specifier = ">=2.0" },
+    { name = "requests", specifier = ">=2.32.2" },
+    { name = "shapely", specifier = ">=2.1" },
+    { name = "urllib3", specifier = ">=2.0" },
 ]
 provides-extras = ["agents"]
 

@@ -24,6 +24,7 @@ from .common import client, parsed, report_usage, request_kwargs
 MAX_CHARS = 12_000  # longest tool result returned to the model
 MAX_TURNS = 60  # agent turns before the run stops
 MAX_REQUESTS = 80  # HTTP requests the agent may make
+REQUEST_TIMEOUT_S = 60  # seconds per HTTP request
 
 
 class LayerChoice(BaseModel):
@@ -82,7 +83,7 @@ class Http:
             if self.calls >= self.max_calls:
                 raise RuntimeError("request budget exhausted")
             self.calls += 1
-            r = session().get(url, params=params, timeout=60)
+            r = session().get(url, params=params, timeout=REQUEST_TIMEOUT_S)
             r.raise_for_status()
             self.cache[key] = r.json()
         return self.cache[key]
@@ -206,12 +207,20 @@ def validate(draft: CityProfileDraft, http: Http, bbox: list[float] | None) -> l
     return out
 
 
+def _one_line(text: str) -> str:
+    """Collapse line breaks, so text from the model or a server cannot end a TOML comment and leave junk after it."""
+    return " ".join(text.split())
+
+
 def to_toml(d: CityProfileDraft, checks: list[str]) -> str:
     q = lambda s: json.dumps(s, ensure_ascii=False)  # noqa: E731
     lines = (
-        [f"# DRAFT city profile proposed by `streetfit discover` for {d.city}. REVIEW every line before use.", "# Automatic checks:"]
-        + [f"#   {c}" for c in checks]
-        + [f"# Note: {n}" for n in d.notes]
+        [
+            f"# DRAFT city profile proposed by `streetfit discover` for {_one_line(d.city)}. REVIEW every line before use.",
+            "# Automatic checks:",
+        ]
+        + [f"#   {_one_line(c)}" for c in checks]
+        + [f"# Note: {_one_line(n)}" for n in d.notes]
         + [
             "",
             "[city]",
@@ -245,6 +254,7 @@ def to_toml(d: CityProfileDraft, checks: list[str]) -> str:
         f"url = {q(d.street_axes.layer_url)}",
         "envelope_sr = 4326",
         f"out_sr = {d.crs_epsg}",
+        'licence = "REVIEW: not found"',  # the draft has no licence evidence for the axes layer, and a source needs one
         "",
     ]
     if d.gtfs:

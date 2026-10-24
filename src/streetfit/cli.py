@@ -97,9 +97,8 @@ def _dispatch(a: argparse.Namespace) -> int:
         case = Case.load(a.case)
         rows = Lock(case.lock_path).verify(case.raw_dir)
         bad = [r for r in rows if r[2] != "ok"]
-        for sid, f, status in rows:
-            if status != "ok" or len(rows) < 40:
-                print(f"{status:8s} {sid:24s} {f}")
+        for sid, f, status in bad:
+            print(f"{status:8s} {sid:24s} {f}")
         print(f"{len(rows) - len(bad)}/{len(rows)} files match the lock")
         return 1 if bad else 0
     elif a.cmd == "snapshot":

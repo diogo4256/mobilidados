@@ -67,9 +67,11 @@ def active_service_ids(feed: Feed, day: dt.date) -> set[str]:
 
 
 def shapes_along(
-    feed: Feed, axis: LineString, crs: int, buffer_m: float = 12.0, near_m: float = 6.0, min_run_m: float = 20.0
+    feed: Feed, axis: LineString, crs: int, buffer_m: float = 12.0, near_m: float = 6.0, min_run_m: float = 20.0, min_inside_m: float = 5.0
 ) -> pd.DataFrame:
     """Shapes passing within ``buffer_m`` of the axis, with their heading along it.
+
+    A shape with less than ``min_inside_m`` of its length inside the buffer is left out (it only grazes the street).
 
     ``heading`` is +1 (increasing s), -1 (decreasing s) or 0 when the shape only crosses the street or touches
     one end (it covers less than ``min_run_m`` of the axis).
@@ -84,7 +86,7 @@ def shapes_along(
         if ls.distance(axis) > buffer_m:
             continue
         length = ls.intersection(buf).length
-        if length < 5:
+        if length < min_inside_m:
             continue
         ss = [axis.project(Point(a, b)) for a, b in zip(x, y, strict=True) if Point(a, b).distance(axis) < near_m]
         run = (ss[-1] - ss[0]) if len(ss) > 1 else 0.0

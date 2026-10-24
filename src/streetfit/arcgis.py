@@ -13,6 +13,8 @@ from shapely.geometry import LineString, MultiLineString, MultiPolygon, Polygon
 
 from .provenance import http_get
 
+IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX, IMAGE_DPI = 1600, 900, 96  # the map image an identify request describes; its tolerance is in these pixels
+
 
 def _json(url: str, params: dict[str, Any]) -> dict[str, Any]:
     data: dict[str, Any] = http_get(url, params).json()
@@ -52,7 +54,8 @@ def query_layer(
 
 def identify(url: str, x: float, y: float, sr: int, layers: str, tolerance: float, half_extent: float = 100) -> list[dict[str, Any]]:
     """Attributes of the features within ``tolerance`` pixels of a point (MapServer identify)."""
-    ext = f"{x - half_extent},{y - half_extent * 0.5625},{x + half_extent},{y + half_extent * 0.5625}"
+    half_height = half_extent * (IMAGE_HEIGHT_PX / IMAGE_WIDTH_PX)  # the extent has the image's aspect ratio
+    ext = f"{x - half_extent},{y - half_height},{x + half_extent},{y + half_height}"
     data = _json(
         url,
         {
@@ -62,7 +65,7 @@ def identify(url: str, x: float, y: float, sr: int, layers: str, tolerance: floa
             "layers": layers,
             "tolerance": tolerance,
             "mapExtent": ext,
-            "imageDisplay": "1600,900,96",
+            "imageDisplay": f"{IMAGE_WIDTH_PX},{IMAGE_HEIGHT_PX},{IMAGE_DPI}",
             "returnGeometry": "false",
             "f": "json",
         },

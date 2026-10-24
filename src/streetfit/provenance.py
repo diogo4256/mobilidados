@@ -21,6 +21,9 @@ from urllib3.util.retry import Retry
 
 from . import __version__
 
+REQUEST_TIMEOUT_S = 120  # seconds, for service queries
+DOWNLOAD_TIMEOUT_S = 600  # seconds, for whole files (a GTFS feed, yearly CSVs), which can be much larger than a query response
+
 
 def user_agent() -> str:
     """Identify the tool to the data provider. Set STREETFIT_CONTACT to add your own contact (optional)."""
@@ -39,7 +42,7 @@ def session() -> requests.Session:
     return s
 
 
-def http_get(url: str, params: dict[str, Any] | None = None, timeout: float = 120) -> requests.Response:
+def http_get(url: str, params: dict[str, Any] | None = None, timeout: float = REQUEST_TIMEOUT_S) -> requests.Response:
     r = session().get(url, params=params, timeout=timeout)
     r.raise_for_status()
     return r

@@ -53,6 +53,15 @@ def test_no_strip_outside_parking_section():
     assert end.kerb_to_kerb == pytest.approx(4.90)
 
 
+def test_the_axis_may_lie_slightly_outside_the_road_polygon():
+    axis = LineString([(0, 0), (100, 0)])
+    road = [("road", box(0, 0.03, 100, 5))]  # the axis runs 3 cm outside it
+    inside = measure_profiles(axis, road, CLASSES, step=50.0).iloc[1]
+    assert inside.free_width == pytest.approx(4.97)
+    strict = measure_profiles(axis, road, CLASSES, step=50.0, axis_tol=0.01).iloc[1]
+    assert strict.note == "axis outside the mapped road polygon"
+
+
 def test_classify_summary_and_sections():
     axis, polys = street()
     blocks = [Block(id="A", start=0, end=50), Block(id="B", start=50, end=100)]

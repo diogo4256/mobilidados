@@ -1,12 +1,12 @@
-"""Snapshots, restoring from a snapshot, the lock file and pinned downloads, on a minimal case (no network)."""
+"""Snapshots, restoring from a snapshot, the lock file, pinned downloads and HTTP access, on a minimal case (no network)."""
 
 import json
 
 import pytest
 
-from streetfit import sources
+from streetfit import provenance, sources
 from streetfit.config import Case, StreetfitError
-from streetfit.provenance import Lock
+from streetfit.provenance import REQUEST_TIMEOUT_S, Lock, write_atomic
 from streetfit.sources import fetch, raw_path, snapshot
 
 IDENTIFY = """
@@ -71,3 +71,41 @@ def test_a_changed_upstream_file_never_replaces_the_pinned_one(make_case, monkey
         fetch(case, only=["feed"])
     assert not raw_path(case, "feed").exists()
     assert "feed" not in Lock(case.lock_path).entries
+
+
+def test_the_user_agent_names_the_tool_and_optionally_a_contact(monkeypatch):
+    monkeypatch.delenv("STREETFIT_CONTACT", raising=False)
+    assert provenance.user_agent() == f"streetfit/{provenance.__version__}"
+    monkeypatch.setenv("STREETFIT_CONTACT", "me@example.org")
+    assert provenance.user_agent() == f"streetfit/{provenance.__version__} (me@example.org)"
+
+
+def test_http_get_applies_the_default_timeout_and_raises_on_an_error_status(monkeypatch):
+    seen: dict = {}
+
+    class Response:
+        def __init__(self, status):
+            self.status = status
+
+        def raise_for_status(self):
+            if self.status >= 400:
+                raise RuntimeError(f"HTTP {self.status}")
+
+    class Session:
+        def get(self, url, params, timeout):
+            seen.update(url=url, params=params, timeout=timeout)
+            return Response(500 if url.endswith("/broken") else 200)
+
+    monkeypatch.setattr(provenance, "session", Session)
+    provenance.http_get("https://example.org/ok", {"f": "json"})
+    assert seen == {"url": "https://example.org/ok", "params": {"f": "json"}, "timeout": REQUEST_TIMEOUT_S}
+    with pytest.raises(RuntimeError, match="HTTP 500"):
+        provenance.http_get("https://example.org/broken")
+
+
+def test_write_atomic_replaces_the_file_and_leaves_no_partial_one(tmp_path):
+    target = tmp_path / "data.json"
+    write_atomic(target, b"first")
+    write_atomic(target, b"second")
+    assert target.read_bytes() == b"second"
+    assert [p.name for p in tmp_path.iterdir()] == ["data.json"]

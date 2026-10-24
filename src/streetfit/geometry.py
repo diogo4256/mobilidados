@@ -93,11 +93,14 @@ def measure_profiles(
     step: float = 0.5,
     half_width: float = 25.0,
     snap: float = 0.35,
+    axis_tol: float = 0.05,
 ) -> pd.DataFrame:
     """One row per station: free carriageway between parking strips, strips, kerb-to-kerb, sidewalks, plots.
 
     ``classes`` maps the roles ``road``, ``parking``, ``sidewalk`` and ``plot`` to cartography class codes.
     Columns ending in ``_L`` are on the left of the direction of increasing s, ``_R`` on the right.
+    ``snap`` is how far apart (m) two mapped edges may be and still count as touching; ``axis_tol`` is how far
+    outside a road interval (m) the axis may lie and still count as on it.
     """
     prof = Profiler(polygons)
     rows = []
@@ -108,7 +111,7 @@ def measure_profiles(
         transect = LineString(
             [(c.x - nrm[0] * half_width, c.y - nrm[1] * half_width), (c.x + nrm[0] * half_width, c.y + nrm[1] * half_width)]
         )
-        road = [iv for iv in prof.intervals(transect, c.x, c.y, nrm, classes["road"]) if iv[0] - 0.05 <= 0 <= iv[1] + 0.05]
+        road = [iv for iv in prof.intervals(transect, c.x, c.y, nrm, classes["road"]) if iv[0] - axis_tol <= 0 <= iv[1] + axis_tol]
         park = prof.intervals(transect, c.x, c.y, nrm, classes["parking"])
         side = prof.intervals(transect, c.x, c.y, nrm, classes["sidewalk"])
         plot = prof.intervals(transect, c.x, c.y, nrm, classes["plot"])
