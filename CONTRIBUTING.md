@@ -50,3 +50,20 @@ and compares with the committed results. `pytest -m live` calls the Claude API (
 Keep them focused; describe what changed in the results if a case's tables change, and why. By contributing
 you agree that your contributions are licensed under Apache-2.0 (code) and CC-BY-4.0 (documentation and
 results), as described in [REUSE.toml](REUSE.toml).
+
+## Releasing
+
+1. `uv version X.Y.Z` sets the version in `pyproject.toml` and `uv.lock`. Set it, with the release date, in
+   `CITATION.cff` too.
+2. In `CHANGELOG.md`, rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`, open a new empty `[Unreleased]` above it
+   and update the link definitions at the bottom.
+3. Commit, then tag and push: `git tag -a vX.Y.Z -m "streetfit X.Y.Z" && git push origin main vX.Y.Z`.
+
+The tag starts `.github/workflows/release.yml`. It stops if the tag differs from the version in `pyproject.toml` or
+`CITATION.cff`, if the changelog has no section for it or if the unit tests fail on the tagged commit. Otherwise it
+builds the package, checks that the wheel installs, makes a GitHub release with the changelog section as notes and
+publishes to PyPI through trusted publishing (no token is stored). Publication can be made to wait for a
+maintainer's approval by adding required reviewers to the `pypi` environment in the repository settings.
+
+Links in `README.md` are absolute because PyPI shows it as the project page. They point to `main`, so the page of
+an older release links to the current files.
