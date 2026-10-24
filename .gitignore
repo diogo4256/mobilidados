@@ -16,6 +16,10 @@ cases/*/data/
 *.draft.toml
 check-claims*.json
 
+# Local secrets (e.g. ANTHROPIC_API_KEY for the AI tools)
+.env
+.env.*
+
 # OS / editors
 .DS_Store
 .idea/
