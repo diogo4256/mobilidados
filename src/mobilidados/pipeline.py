@@ -186,7 +186,9 @@ def stage_envelope(r: Run) -> None:
     vehicles = r.cfg.all_vehicles()
     r.save("width_budget", envelope.width_budget(free, vehicles, e.scenarios))
     r.save("overhang_sensitivity", envelope.overhang_sensitivity(free["median"], vehicles, e.scenarios))
-    r.save("without_parking", envelope.without_parking(r.table("profiles")))
+    narrow = r.table("narrow_sections")
+    two_strips_m = round(float((narrow.s_to - narrow.s_from).sum()), 1)  # as the free_width finding states it
+    r.save("without_parking", envelope.without_parking(r.table("profiles"), two_strips_m, e.parking_space_m))
 
 
 def stage_encounters(r: Run) -> None:

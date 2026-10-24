@@ -77,6 +77,7 @@ def args_for(key, count):
         "ledger.street_rank": {"rank": 1, "total": count, "minlen": "100"},
         "ledger.area_streets": {"n": count},
         "ledger.area_pattern": {"n": count, "thr": "5,5", "minm": "30", "names": "Rua A"},
+        "ledger.places": {"n": count},
         "report.files": {"n": count, "example": "<u>"},
     }[key]
 
@@ -111,6 +112,7 @@ WORDING = {
             "1 is two-way and combines parking on both sides with a free width below 5,5 m over at least 30 m (Rua A)",
             "3 are two-way and combine parking on both sides with a free width below 5,5 m over at least 30 m (Rua A)",
         ),
+        "ledger.places": ("about 1 place", "about 3 places"),
         "report.files": ("1 file, e.g. <u>", "3 files, e.g. <u>"),
     },
     "pt": {
@@ -141,6 +143,7 @@ WORDING = {
             "1 tem dois sentidos e estacionamento dos dois lados, com menos de 5,5 m de largura livre em pelo menos 30 m (Rua A)",
             "3 têm dois sentidos e estacionamento dos dois lados, com menos de 5,5 m de largura livre em pelo menos 30 m (Rua A)",
         ),
+        "ledger.places": ("cerca de 1 lugar", "cerca de 3 lugares"),
         "report.files": ("1 ficheiro, p. ex. <u>", "3 ficheiros, p. ex. <u>"),
     },
 }

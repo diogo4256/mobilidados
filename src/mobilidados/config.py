@@ -310,6 +310,12 @@ class Envelope(Model):
     bus: str
     car: str
     scenarios: list[Annotated[list[str], Field(min_length=1, max_length=2)]] = Field(min_length=1)
+    parking_space_m: float = Field(
+        5.0,
+        gt=0,
+        description="Length of one longitudinal parking space, to turn metres of parking into places: an assumption "
+        "(grade P); set it from the municipality's own standard where one is known",
+    )
 
 
 class Occurrences(Model):

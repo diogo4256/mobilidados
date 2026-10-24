@@ -253,6 +253,32 @@ def build(r: Run) -> list[Finding]:
                 caveat="Assumes the strip's space becomes carriageway and nothing else takes it; it measures an option, it is not a design.",
             )
         )
+        one, both = wp.loc["L"], wp.loc["both"]
+        F.append(
+            Finding(
+                id="parking_removed",
+                grade="I",
+                statement=say(
+                    "parking_removed",
+                    m=n(one.parking_removed_m, 0),
+                    places=say("places", count=int(one.places), n=int(one.places)),
+                    m2=n(both.parking_removed_m, 0),
+                    places2=say("places", count=int(both.places), n=int(both.places)),
+                    space=n(e.parking_space_m),
+                ),
+                values={
+                    "removed_one_side_m": float(one.parking_removed_m),
+                    "places_one_side": int(one.places),
+                    "removed_both_sides_m": float(both.parking_removed_m),
+                    "places_both_sides": int(both.places),
+                    "parking_space_m": e.parking_space_m,
+                },
+                sources=["free_width", "parking_strips"],
+                method="Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the length of one space.",
+                caveat="Mapped parking area, not counted spaces: entrances and other gaps inside the strips are not subtracted. "
+                "The length of a space is an assumption.",
+            )
+        )
 
     if tr:
         es, ed = r.table("encounters_summary"), r.table("encounters_detail")

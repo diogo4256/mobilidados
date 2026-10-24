@@ -102,6 +102,5 @@ It cannot:
   (privacy, those who enforce parking rules).
 * Downloads are cached and locked; a failed or unchanged download does not leave the repository changed
   (publishers, maintainers).
-
-Open, from this list: state the parking an option removes (metres per side, and places as a stated assumption),
-so that EMEL and the residents who park see the cost next to the gain.
+* The option without parking states what it removes, in metres of mapped parking and in places counted at an
+  assumed length per space, in the ledger and on the figure (EMEL, residents who park).

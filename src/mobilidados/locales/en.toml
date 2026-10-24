@@ -26,6 +26,7 @@ pattern_two_way = "two-way, parking both sides, narrow"
 pattern_one_way = "one-way, parking both sides, narrow"
 without_one_side = "Without parking on one side"
 short_by = "{x} m short ({xm} m with mirrors)"
+removes = "removes {m} m of parking, {places}"
 
 [ledger]
 length = "The street axis is {length} m long."
@@ -51,6 +52,8 @@ area_pattern = { one = "{n} is two-way and combines parking on both sides with a
 area = "{streets}, {pattern}; of these, {nb} with buses in both directions: {names2}."
 standard = "{doc}, p. {page} ({kind}): {label}: {value} m. Scope: {scope}. Measured median: {fmed} m ({diff} m)."
 without_parking = "Without the parking on the {side_l} side, the free width would range from {lmin} to {lmax} m (median {lmed} m); without the parking on the {side_r} side, from {rmin} to {rmax} m (median {rmed} m); without parking on either side, median {bmed} m. Two buses need {bb} m ({bbm} m with mirrors): with parking on one side only, the margin would be {m1} m ({m1m} m with mirrors)."
+parking_removed = "Removing the parking on one side, along the stretches with parking on both sides, would remove {m} m of mapped parking ({places}); on both sides, {m2} m ({places2}). Places counted at {space} m each (an assumption)."
+places = { one = "about {n} place", other = "about {n} places" }
 
 [kind]
 reference_profile = "reference profile"

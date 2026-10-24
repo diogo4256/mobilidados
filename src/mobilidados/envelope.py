@@ -6,7 +6,7 @@ vehicle's mirrors sit above the other vehicle's body (``mirrors_clear_cars``: a 
 The vehicles come from ``data/vehicles.toml`` and the case's own ``[vehicles.<id>]`` (see ``Config.all_vehicles``).
 
 ``without_parking`` measures the alternative: the free width if the mapped parking on one side, or on both, were
-given back to the carriageway.
+given back to the carriageway, and what that removes: metres of mapped parking and the places they would hold.
 """
 
 from __future__ import annotations
@@ -55,20 +55,31 @@ def width_budget(free: dict[str, float], vehicles: dict[str, Vehicle], scenarios
     return pd.DataFrame(rows)
 
 
-def without_parking(profiles: pd.DataFrame) -> pd.DataFrame:
-    """Free width at the two-strip stations if the strip on side L, on side R or on both became carriageway.
+def without_parking(profiles: pd.DataFrame, two_strips_m: float, space_m: float) -> pd.DataFrame:
+    """Free width at the two-strip stations if the strip on side L, on side R or on both became carriageway, and
+    the parking that removes.
 
     Per station, the free width plus the strip(s) on that station; the quantiles are over the same stations as the
-    measured free width, so the two can be compared directly.
+    measured free width, so the two can be compared directly. ``two_strips_m`` is the length of street with parking
+    on both sides (the same stretches), so one side removes that length of parking and both sides twice it;
+    ``space_m`` turns it into whole places.
     """
     d = profiles[profiles["class"] == TWO_STRIPS]
     options = {"L": d.free_width + d.strip_L, "R": d.free_width + d.strip_R, "both": d.free_width + d.strip_L + d.strip_R}
-    return pd.DataFrame(
-        [
-            {"without": side, "free_min": round(w.min(), 2), "free_median": round(w.median(), 2), "free_max": round(w.max(), 2)}
-            for side, w in options.items()
-        ]
-    )
+    rows = []
+    for side, w in options.items():
+        removed = two_strips_m * (2 if side == "both" else 1)
+        rows.append(
+            {
+                "without": side,
+                "free_min": round(w.min(), 2),
+                "free_median": round(w.median(), 2),
+                "free_max": round(w.max(), 2),
+                "parking_removed_m": round(removed, 1),
+                "places": int(removed // space_m),
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def overhang_sensitivity(
