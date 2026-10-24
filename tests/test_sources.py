@@ -159,6 +159,25 @@ def test_fetch_downloads_every_kind_locks_it_and_skips_what_is_cached(make_case,
     assert len(requests) == n + 1
 
 
+def test_a_multi_file_download_that_failed_halfway_is_not_taken_as_cached(make_case, monkeypatch):
+    class Response:
+        content = b"rows"
+
+    def down(url, timeout):
+        raise MobilidadosError("example.org did not answer as expected")
+
+    case = Case.load(make_case(DOWNLOADS))
+    monkeypatch.setattr(sources, "http_get", down)
+    with pytest.raises(MobilidadosError, match="did not answer"):
+        fetch(case, only=["reports"])
+    assert raw_path(case, "reports").is_dir()  # the folder was created before the first file failed
+
+    monkeypatch.setattr(sources, "http_get", lambda url, timeout: Response())
+    fetch(case, only=["reports"])
+    assert sorted(p.name for p in raw_path(case, "reports").iterdir()) == ["2024.csv", "2025.csv"]
+    assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
+
+
 def test_snapshot_roundtrip(make_case, tmp_path):
     src = Case.load(make_case(REDISTRIBUTABLE_IDENTIFY, name="a"))
     src.raw_dir.mkdir(parents=True)

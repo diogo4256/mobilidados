@@ -46,6 +46,13 @@ streetfit.
 
 ### Fixed
 
+- A service that is down or keeps answering with an error (the Lisbon open-data portal answered 503 for a whole
+  day) is reported as `error: <host> did not answer as expected ...`, with the URL, instead of a Python
+  traceback.
+- A multi-file source whose download failed halfway (an empty or incomplete folder) was taken as cached by the
+  next `fetch`, which skipped it. It is now cached only when every listed file is there.
+- Fetching data identical to the locked data again rewrote the retrieval times in `sources.lock.json`, leaving
+  the repository modified for no change. An entry now changes only when its files do.
 - `mobilidados discover` wrote a street-axes template without a licence, which no case could load, and a
   multi-line note or check could break the draft's TOML.
 - The claim checker's read tool returned one line more than it told the model.

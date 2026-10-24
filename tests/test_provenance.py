@@ -1,9 +1,10 @@
 """The lock file (what was retrieved, with checksums, and what changed since) and HTTP access: user agent, timeout, atomic writes."""
 
 import pytest
+import requests
 
 from mobilidados import provenance
-from mobilidados.config import Case
+from mobilidados.config import Case, MobilidadosError
 from mobilidados.provenance import REQUEST_TIMEOUT_S, Lock, write_atomic
 from mobilidados.sources import raw_path
 
@@ -38,7 +39,7 @@ def test_http_get_applies_the_default_timeout_and_raises_on_an_error_status(monk
 
         def raise_for_status(self):
             if self.status >= 400:
-                raise RuntimeError(f"HTTP {self.status}")
+                raise requests.HTTPError(f"HTTP {self.status}")
 
     class Session:
         def get(self, url, params, timeout):
@@ -48,8 +49,20 @@ def test_http_get_applies_the_default_timeout_and_raises_on_an_error_status(monk
     monkeypatch.setattr(provenance, "session", Session)
     provenance.http_get("https://example.org/ok", {"f": "json"})
     assert seen == {"url": "https://example.org/ok", "params": {"f": "json"}, "timeout": REQUEST_TIMEOUT_S}
-    with pytest.raises(RuntimeError, match="HTTP 500"):
+    with pytest.raises(MobilidadosError, match=r"^example.org did not answer as expected, even after retrying .*HTTP 500"):
         provenance.http_get("https://example.org/broken")
+
+
+def test_fetching_identical_data_again_leaves_the_lock_entry_unchanged(tmp_path):
+    f = tmp_path / "a.json"
+    f.write_text("{}")
+    lock = Lock(tmp_path / "sources.lock.json")
+    lock.record("a", [f], tmp_path, retrieved_utc="2026-10-24T15:00:00+00:00")
+    lock.record("a", [f], tmp_path, retrieved_utc="2026-10-24T20:00:00+00:00")
+    assert lock.entries["a"]["retrieved_utc"] == "2026-10-24T15:00:00+00:00"
+    f.write_text('{"new": 1}')
+    lock.record("a", [f], tmp_path, retrieved_utc="2026-10-25T09:00:00+00:00")
+    assert lock.entries["a"]["retrieved_utc"] == "2026-10-25T09:00:00+00:00"
 
 
 def test_write_atomic_replaces_the_file_and_leaves_no_partial_one(tmp_path):

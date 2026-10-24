@@ -45,7 +45,7 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
         origin = from_dir / dest.name if from_dir is not None else None
         if isinstance(src, ArcgisIdentify) and not (origin and origin.exists()):
             continue  # filled during the analysis (unless a snapshot has it), locked by `lock_identify_caches`
-        if dest.exists() and not refresh:
+        if _cached(src, dest) and not refresh:
             log.info("cached   %s", sid)
             continue
         if origin is not None:
@@ -87,6 +87,13 @@ def snapshot(case: Case, out_dir: Path) -> list[str]:
     for sid in skipped:
         log.info("left out %s (not marked redistributable)", sid)
     return skipped
+
+
+def _cached(src: AnySource, dest: Path) -> bool:
+    """A multi-file source is cached only when every file is there: a download that failed halfway is not."""
+    if isinstance(src, HttpFiles):
+        return all((dest / f.name).exists() for f in src.files)
+    return dest.exists()
 
 
 def _download(src: AnySource, dest: Path) -> dict[str, Any]:
