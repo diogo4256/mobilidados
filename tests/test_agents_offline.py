@@ -73,6 +73,14 @@ def test_corpus_search_is_accent_insensitive():
     assert hits[0]["line"] == 2
 
 
+def test_corpus_read_returns_at_most_the_limit():
+    c = Corpus()
+    c.add("long", "\n".join(f"line {i}" for i in range(1, 3 * Corpus.READ_LIMIT)))
+    text = c.read("long", 5, 10 * Corpus.READ_LIMIT)
+    assert len(text.splitlines()) == Corpus.READ_LIMIT
+    assert text.startswith("5: line 5")
+
+
 def test_extraction_values_are_cross_checked():
     reading = PageReading(
         page_title="Perfil",

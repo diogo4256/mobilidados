@@ -1,7 +1,8 @@
 # AI-assisted tools
 
 Install with `pip install 'streetfit[agents]'` (or `uv sync --extra agents`). The tools call the Claude API
-(default model `claude-opus-5-5`; override with `STREETFIT_MODEL`, effort with `STREETFIT_EFFORT`). Set
+with the model and effort set in `src/streetfit/agents/common.py` (`MODEL`, `EFFORT`); override them with
+`STREETFIT_MODEL` and `STREETFIT_EFFORT`. Set
 `ANTHROPIC_API_KEY`, or log in with Anthropic's `ant` CLI. Server-side refusal fallback is enabled.
 
 ## Design rule: the model proposes, code verifies
@@ -33,20 +34,20 @@ corrected wording in the draft's language. Use it on every letter before sending
 **Privacy:** the draft is sent to the Claude API. Remove names, addresses and other personal data from the
 draft first (keep placeholders such as `[nome]`).
 
-## `streetfit extract-standard manual.pdf --pages 194,198 [--out review.json]`
+## `streetfit extract-standard manual.pdf --pages N[,N ...] [--out review.json]`
 
 Design manuals put key widths in cross-section drawings, often raster images without a text layer. Each page
 gets three independent readings:
 
 1. the PDF text layer (pypdf);
-2. OCR with Tesseract: an 8× render, upright and rotated 90° (dimension labels are often vertical), in two
-   sparse-text modes, pooled;
+2. OCR with Tesseract of a high-resolution render, upright and rotated (dimension labels are often vertical),
+   in several sparse-text modes, pooled (`OCR_SCALE`, `OCR_PASSES` in `agents/standards_extractor.py`);
 3. Claude reading the page as PDF and as a high-resolution image, returning structured values.
 
-On the Lisbon manual's two-way profile (printed p. 152) the text layer contains none of the drawing's
-dimensions; pooled OCR recovers 3.00 m and 3.25 m but not 0.40 m. So 0.40 m stays `vision_only` until a person
-confirms it on the saved page image. The output is a review file; adding an entry to `standards.toml` remains
-a human decision.
+A cross-section drawing may have none of its dimensions in the text layer, and OCR may recover only some of
+them; the Lisbon manual's two-way profile (catalogue entry `cml_manual_two_way_profile`) is such a page. A value
+found by neither stays `vision_only` until a person confirms it on the saved page image. The output is a
+review file; adding an entry to `standards.toml` remains a human decision.
 
 ## `streetfit discover --city NAME --start URL [URL ...] [--hosts ...] [--bbox lon,lat,lon,lat]`
 
@@ -58,5 +59,6 @@ instructions. The result is a `*.draft.toml` with the automatic checks at the to
 
 ## Costs
 
-Each command prints the number of requests and tokens. One manual page or one short letter is a few requests;
-`discover` explores more and is capped at 60 agent turns and 80 HTTP requests.
+Each command logs the number of requests and tokens it used. Checking a letter or reading a page takes few
+requests; `discover` explores more, within the agent-turn and HTTP-request limits `MAX_TURNS` and
+`MAX_REQUESTS` in `agents/source_discovery.py` (`check-claims` has its own `MAX_TURNS`).

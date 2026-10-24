@@ -84,13 +84,13 @@ def text_layer(pdf: Path, page: int) -> str:
     return PdfReader(pdf).pages[page - 1].extract_text() or ""
 
 
-# Dimension labels in drawings are small and often rotated: OCR an 8x render, upright and turned 90 degrees, in
-# two sparse-text modes, and pool the text. On the Lisbon manual's p. 152 this recovers 3.00 m that a single
-# 3x pass misses (0.40 m still needs a human look).
-OCR_PASSES = [(0, "11"), (0, "12"), (90, "11"), (90, "12")]
+# Dimension labels in drawings are small and often rotated: OCR a high-resolution render, upright and turned,
+# in Tesseract's sparse-text modes, and pool the text. A single low-resolution pass misses labels that this finds.
+OCR_SCALE = 8.0
+OCR_PASSES = [(0, "11"), (0, "12"), (90, "11"), (90, "12")]  # (rotation in degrees, Tesseract --psm)
 
 
-def ocr(pdf: Path, page: int, scale: float = 8.0) -> str | None:
+def ocr(pdf: Path, page: int, scale: float = OCR_SCALE) -> str | None:
     """Pooled Tesseract OCR of a page. None if Tesseract is not installed."""
     exe = shutil.which("tesseract")
     if not exe:

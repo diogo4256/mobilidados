@@ -48,6 +48,8 @@ class ClaimReport(BaseModel):
     claims: list[Claim]
 
 
+MAX_TURNS = 40  # agent turns before the run stops
+
 SYSTEM = """You check the facts in a citizen's letter to a public body before it is sent.
 
 You have tools to read a local corpus: the case's findings ledger (every number the analysis produced, each
@@ -73,6 +75,8 @@ state facts and requests, without hedging and without adding claims that the cor
 
 class Corpus:
     """Documents as lists of lines, searchable accent- and case-insensitively."""
+
+    READ_LIMIT = 80  # lines returned by one read
 
     def __init__(self) -> None:
         self.docs: dict[str, list[str]] = {}
@@ -105,7 +109,7 @@ class Corpus:
 
     def read(self, doc_id: str, start: int, end: int) -> str:
         lines = self.docs[doc_id]
-        start, end = max(1, start), min(len(lines), end, start + 80)
+        start, end = max(1, start), min(len(lines), end, start + self.READ_LIMIT - 1)
         return "\n".join(f"{i}: {lines[i - 1]}" for i in range(start, end + 1))
 
 
@@ -190,7 +194,7 @@ def run_agent(draft: str, corpus: Corpus) -> ClaimReport:
 
     @beta_tool
     def read_source(doc_id: str, start_line: int, end_line: int) -> str:
-        """Read numbered lines of one corpus document (at most 80 lines per call).
+        """Read numbered lines of one corpus document (long ranges are cut; ask again from where it stopped).
 
         Args:
             doc_id: Document id from search results or list_findings ("ledger", "standards", or a source file name).
@@ -207,7 +211,7 @@ def run_agent(draft: str, corpus: Corpus) -> ClaimReport:
         tools=[list_findings, search_sources, read_source],
         output_format=ClaimReport,
         cache_control={"type": "ephemeral"},
-        max_iterations=40,
+        max_iterations=MAX_TURNS,
         messages=[{"role": "user", "content": f"Corpus documents: {sorted(corpus.docs)}.\n\nDraft to check:\n<draft>\n{draft}\n</draft>"}],
     )
     seen = list(runner)

@@ -9,10 +9,10 @@ against those grades.
 
 | Grade | Use it for | Example |
 | --- | --- | --- |
-| **M** measured | values computed or counted directly from official data | "the mapped free width between the parking strips is 4.78–5.68 m" (municipal 1:1000 cartography) |
-| **D** document | what an official document says, with page | "the manual's two-way profile gives 6.80 m between parking strips (p. 152)" |
-| **I** inference | results of a model or a calculation on M/D/P inputs | "the timetable implies 6–7 meetings per weekday between buses in opposite directions" |
-| **P** assumption | values nobody publishes, which the analysis needs | "bus width with mirrors taken as 2.90 m" |
+| **M** measured | values computed or counted directly from official data | the free width between the parking strips, read from the municipal cartography |
+| **D** document | what an official document says, with page | the width a design manual's reference profile gives between parking strips, with its page |
+| **I** inference | results of a model or a calculation on M/D/P inputs | how often the timetable implies that buses in opposite directions meet on the street |
+| **P** assumption | values nobody publishes, which the analysis needs | a bus's width with mirrors, where no technical sheet states it |
 | **NE** not found | what was looked for and not found, or not verified | "no field observation of two buses meeting on this street" |
 
 **NE is not "does not exist".** "I did not find delay data per street" is a fact about the search; "there is
@@ -41,6 +41,7 @@ no delay data" is a claim about the world.
 * The **findings ledger** (`results/findings.md`, `findings.json`) is generated from the result tables, so a
   statement cannot drift from its number. Each finding lists its sources (ids in `sources.lock.json`), method
   and caveats.
-* **`streetfit lint`** flags rules 4–6 and normative words mechanically.
+* **`streetfit lint`** mechanically flags generalisations, quotation marks, implied reviews, pre-emptive
+  concessions and normative words (the patterns are `RULES` in `src/streetfit/lint.py`).
 * **`streetfit check-claims`** has an AI agent compare each claim in a draft with the ledger and sources, then
   verifies the agent's evidence mechanically (quotes, numbers, finding ids). See [ai-tools.md](ai-tools.md).

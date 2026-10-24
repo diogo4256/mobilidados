@@ -5,8 +5,8 @@ municipality, a transport operator or a parliament committee.
 
 ## State facts and ask
 
-* **Open with what can be verified from the recipient's own data.** "Your 1:1000 cartography shows a free
-  width of 4.78–5.68 m between the parking strips" invites a check; "the street is too narrow" invites an
+* **Open with what can be verified from the recipient's own data.** "Your cartography shows a free width of
+  *x*–*y* m between the parking strips" invites a check; "the street is too narrow" invites an
   opinion.
 * **Ask for something the recipient can do and answer**: an inspection, a review of the street's design, a
   copy of a document, a reply within the legal deadline. One request per topic, one topic per letter.

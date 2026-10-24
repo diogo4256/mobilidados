@@ -34,10 +34,10 @@ method on different cartography and makes the tool useful to more people.
 ## Development
 
 ```bash
-uv sync --extra agents        # Python 3.11+
+uv sync --extra agents
 uv run pre-commit install     # optional: ruff, formatting and REUSE checks before each commit
 make lint test                # what CI runs: ruff, mypy, pytest
-make reproduce                # re-runs the Lisbon case from its sources (downloads ~250 MB)
+make reproduce                # re-runs the Lisbon case from its sources (downloads them first)
 ```
 
 Tests: unit tests use synthetic data and need no network; warnings fail them, so deprecations surface early. `pytest -m data` re-runs every case from its cache

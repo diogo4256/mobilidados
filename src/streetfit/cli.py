@@ -57,7 +57,7 @@ def parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("extract-standard", help="AI + OCR extraction of width values from PDF pages")
     p.add_argument("pdf", type=Path)
-    p.add_argument("--pages", required=True, help="1-based PDF page numbers, e.g. 194,198")
+    p.add_argument("--pages", required=True, help="comma-separated PDF page numbers, counted from 1")
     p.add_argument("--out", type=Path)
 
     p = sub.add_parser("discover", help="AI agent that proposes a city profile from a GIS/open-data portal")

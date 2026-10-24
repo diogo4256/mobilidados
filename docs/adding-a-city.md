@@ -1,19 +1,20 @@
 # Adding a city
 
-A city profile (`cities/<city>.toml`) holds what every street in that city shares. It needs:
+A city profile (`cities/<city>.toml`) holds what every street in that city shares; `cities/lisboa.toml` is a
+complete example. It needs:
 
-| Section | What | Lisbon example |
-| --- | --- | --- |
-| `[city]` | id, name, a projected CRS in metres | EPSG:3763 (ETRS89 / PT-TM06) |
-| `[cartography]` | the class field and class codes for `road`, `parking`, `sidewalk`, `plot` in a large-scale polygon layer | `LAYER`; `10100104_ParqueEstacionamentoArea` for parking |
-| `[axes]` | the street-name field of the street-axis layer | `DESIGNACAO` |
-| `[network]` | fields of a routing network giving per-edge, per-direction access (optional) | `[EID]`, `[Direction]`, `Oneway` = `Traversable` |
-| `[source_templates.*]` | how to fetch each source: kind, URL, CRS, licence as the publisher states it | see `cities/lisboa.toml` |
+| Section | What |
+| --- | --- |
+| `[city]` | id, name, a projected CRS in metres |
+| `[cartography]` | the class field and class codes for `road`, `parking`, `sidewalk`, `plot` in a large-scale polygon layer |
+| `[axes]` | the street-name field of the street-axis layer |
+| `[network]` | fields of a routing network giving per-edge, per-direction access (optional) |
+| `[source_templates.*]` | how to fetch each source: kind, URL, CRS, licence as the publisher states it |
 
 ## What the cartography must provide
 
 The method needs **on-street parking mapped as its own polygon class**, separate from the carriageway. Many
-municipal 1:500–1:2000 cartographies do (road surface, parking bays, sidewalks, buildings). Where parking is
+large-scale municipal cartographies do (road surface, parking bays, sidewalks, buildings). Where parking is
 not mapped, the free width cannot be read from the map, and the case has to rely on field measurements or
 orthophotos, which streetfit does not automate yet.
 
@@ -25,8 +26,8 @@ Check the cartography's survey date and stated accuracy, and record them in `[ca
 1. Find the services (by hand or with `streetfit discover`, see [ai-tools.md](ai-tools.md)):
 
    ```bash
-   streetfit discover --city Porto --start https://<gis-host>/arcgis/rest/services https://<open-data-host>/api/3 \
-       --bbox -8.62,41.15,-8.60,41.16
+   streetfit discover --city <city> --start https://<gis-host>/arcgis/rest/services https://<open-data-host>/api/3 \
+       --bbox <lon_min>,<lat_min>,<lon_max>,<lat_max>
    ```
 
 2. Write `cities/<city>.toml`; record each source's licence exactly as the publisher states it. If it is not
@@ -36,7 +37,7 @@ Check the cartography's survey date and stated accuracy, and record them in `[ca
    missing value or a reference to a source, vehicle or design reference that does not exist is reported by
    name before anything runs.
 4. `streetfit fetch`, `streetfit run`, and inspect `results/figures/free_width_profile.png`: a sensible profile
-   (strips around 2 m, a plausible free width) is the first check that the class codes are right.
+   (parking strips about as wide as a parked car, a plausible free width) is the first check that the class codes are right.
 5. Open a pull request with the city profile, the case and its `results/` (see [CONTRIBUTING.md](../CONTRIBUTING.md)).
 
 ## Other source kinds

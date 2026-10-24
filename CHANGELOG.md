@@ -21,17 +21,17 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - HTTP retries use urllib3 (backoff, connection errors, 429 and 5xx only). Downloads are written atomically, and
   a file that does not match its pin is never written.
 - Logging instead of print, with `-v` / `-q`; errors the user can fix are one line, not a traceback.
-- The GTFS `stop_times` table is read once per run (transit stage: about 15 s to 4 s).
+- The GTFS `stop_times` table, the largest in the feed, is read once per run instead of once per use.
 - Figures are drawn without pyplot, so importing streetfit changes no global matplotlib state.
-- Tooling: mypy in CI and `make lint`; tests treat warnings as errors; CI runs Python 3.11–3.14 on Linux and
-  3.14 on macOS and Windows, with actions pinned by commit; dependabot waits 7 days before adopting a release;
-  zizmor audits the workflows in pre-commit.
+- Tooling: mypy in CI and `make lint`; tests treat warnings as errors; CI runs every supported Python version
+  on Linux and the newest on macOS and Windows, with actions pinned by commit; dependabot waits before adopting
+  a new release; zizmor audits the workflows in pre-commit.
 
 ### Fixed
 
 - ESRI polygons: a hole touching its exterior ring was dropped, and a hole inside an island inside a hole was
   also given to the outer polygon. Each hole now belongs to the smallest exterior ring that contains it. The
-  Lisbon cartography is not affected (all 2,368 polygons are identical).
+  Lisbon cartography is not affected: every polygon is identical.
 - The ledger's sources table showed no origin for a source whose lock entry has no URLs (Na Minha Rua); origins
   now come from the case configuration.
 - `metres_two_strips` in `findings.json` is a number, not a string.
@@ -41,7 +41,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 ### Results
 
 - Lisbon case: every table and every finding statement is identical to 0.1.0, apart from the additions above
-  and `traffic_direction_edges.s_m`, now printed as `10.0` (stations are positions in metres).
+  and the station positions in `traffic_direction_edges.csv`, now printed as decimals (they are metres).
 
 ## [0.1.0] - 2026-10-24
 
