@@ -12,7 +12,10 @@
     "name_field": "DESIGNACAO"
   },
   "cartography": {
-    "accuracy_note": "Planimetric accuracy assumed ≤0.30 m per edge (DGT figure for plan-scale cartography, as quoted in a 2025 DGT opinion); the 1:1000 RMSE itself was not found.",
+    "accuracy_note": {
+      "en": "Planimetric accuracy assumed ≤0.30 m per edge (DGT figure for plan-scale cartography, as quoted in a 2025 DGT opinion); the 1:1000 RMSE itself was not found.",
+      "pt": "Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
+    },
     "class_field": "LAYER",
     "parking": [
       "10100104_ParqueEstacionamentoArea"
@@ -36,7 +39,10 @@
     "sidewalk": [
       "87000501_Passeio"
     ],
-    "survey": "Aerial photogrammetry May 2016; restitution and field completion 2020; homologated by DGT (dados.gov.pt record)"
+    "survey": {
+      "en": "aerial photogrammetry of May 2016, restitution and field completion in 2020, homologated by DGT (dados.gov.pt record)",
+      "pt": "fotogrametria aérea de maio de 2016, restituição e completagem de campo em 2020, homologada pela DGT (registo em dados.gov.pt)"
+    }
   },
   "case": {
     "id": "lisboa-rua-ricardo-jorge",
@@ -95,8 +101,8 @@
       "pt": "A Carris não publica atrasos nem incidentes por rua."
     },
     {
-      "en": "No official mirror width was found for the buses (2.90 m is an assumption).",
-      "pt": "A largura dos autocarros com espelhos não foi encontrada em ficha oficial (2,90 m é pressuposto)."
+      "en": "No official mirror width was found for the buses: the width with mirrors used here is an assumption.",
+      "pt": "A largura dos autocarros com espelhos não foi encontrada em ficha oficial: a largura com espelhos usada é um pressuposto."
     },
     {
       "en": "The actual position of parked cars (overhang beyond the strips) was not measured on site.",

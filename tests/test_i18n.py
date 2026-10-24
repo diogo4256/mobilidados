@@ -66,9 +66,10 @@ def test_the_count_picks_the_form_and_a_plural_message_needs_one():
 
 
 def args_for(key, count):
-    """The placeholders of the plural messages; the count prints as ``n``, or is the ``total`` of the streets ranked."""
+    """The placeholders of the plural messages; the count prints as ``n``, or is the ``total`` of the streets ranked, or
+    the ``k`` transects left out of the free width."""
     return {
-        "ledger.traffic": {"traffic": "TRAFFIC", "n": count},
+        "ledger.traffic": {"traffic": "TRAFFIC", "k": 1, "n": count},
         "ledger.routes_scheduled": {"routes": "744"},
         "ledger.trips": {"n": count, "heading": "HEADING"},
         "ledger.meetings": {"n": count},
@@ -79,6 +80,7 @@ def args_for(key, count):
         "ledger.area_pattern": {"n": count, "thr": "5,5", "minm": "30", "names": "Rua A"},
         "ledger.places": {"n": count},
         "report.files": {"n": count, "example": "<u>"},
+        "caveat.free_filter": {"max": "7,00", "k": count, "n": 240},
     }[key]
 
 
@@ -86,8 +88,8 @@ def args_for(key, count):
 WORDING = {
     "en": {
         "ledger.traffic": (
-            "The municipal routing network marks the street as TRAFFIC (edges checked at 1 point along it).",
-            "The municipal routing network marks the street as TRAFFIC (edges checked at 3 points along it).",
+            "The municipal routing network marks the street as TRAFFIC: an edge is open in both directions at 1 of 1 point checked along it.",
+            "The municipal routing network marks the street as TRAFFIC: an edge is open in both directions at 1 of 3 points checked along it.",
         ),
         "ledger.routes_scheduled": ("Route 744 is scheduled along the street.", "Routes 744 are scheduled along the street."),
         "ledger.trips": ("1 trip HEADING", "3 trips HEADING"),
@@ -114,11 +116,19 @@ WORDING = {
         ),
         "ledger.places": ("about 1 place", "about 3 places"),
         "report.files": ("1 file, e.g. <u>", "3 files, e.g. <u>"),
+        "caveat.free_filter": (
+            "Only transects with parking mapped on both sides and a free width of at most 7,00 m count: "
+            "1 of the 240 transects with parking on both sides is wider and was left out.",
+            "Only transects with parking mapped on both sides and a free width of at most 7,00 m count: "
+            "3 of the 240 transects with parking on both sides are wider and were left out.",
+        ),
     },
     "pt": {
         "ledger.traffic": (
-            "Segundo a rede viária da Câmara, a rua tem TRAFFIC (verificado em 1 ponto ao longo da rua).",
-            "Segundo a rede viária da Câmara, a rua tem TRAFFIC (verificado em 3 pontos ao longo da rua).",
+            "Segundo a rede viária da Câmara, a rua tem TRAFFIC: em 1 de 1 ponto verificado ao longo da rua, "
+            "a circulação é permitida em ambos os sentidos.",
+            "Segundo a rede viária da Câmara, a rua tem TRAFFIC: em 1 de 3 pontos verificados ao longo da rua, "
+            "a circulação é permitida em ambos os sentidos.",
         ),
         "ledger.routes_scheduled": (
             "Segundo o horário, a carreira 744 passa nesta rua.",
@@ -145,6 +155,12 @@ WORDING = {
         ),
         "ledger.places": ("cerca de 1 lugar", "cerca de 3 lugares"),
         "report.files": ("1 ficheiro, p. ex. <u>", "3 ficheiros, p. ex. <u>"),
+        "caveat.free_filter": (
+            "Só contam os perfis com estacionamento cartografado dos dois lados e até 7,00 m de largura livre: "
+            "1 dos 240 perfis com estacionamento dos dois lados tem mais largura livre e ficou de fora.",
+            "Só contam os perfis com estacionamento cartografado dos dois lados e até 7,00 m de largura livre: "
+            "3 dos 240 perfis com estacionamento dos dois lados têm mais largura livre e ficaram de fora.",
+        ),
     },
 }
 

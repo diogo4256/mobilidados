@@ -33,7 +33,9 @@ exactly on a strip's end edge counts the strip (shared boundary). Summary statis
 only. Consecutive `two_strips` stations within a block form a section (`narrow_sections.csv`); the length the
 ledger gives for them is the distance from the first to the last station of each section, summed. It is not
 the station count times `profiles.step_m`, which would add one step per section, and it is not the mapped
-strip length per side in `parking_strip_lengths.csv`.
+strip length per side in `parking_strip_lengths.csv`. The free-width finding's caveat states this filter, with
+the value of `profiles.narrow_max_m`, and how many stations with parking on both sides it leaves out for being
+wider, next to the cartography's survey and accuracy notes.
 
 **What this is not:** parked vehicles are not observed. The strips are mapped areas. Whether cars stay inside
 them is tested by `overhang_sensitivity.csv` and can be checked on orthophotos or on site.
@@ -45,7 +47,8 @@ its uncertainty combines both: report ranges, not single decimals, when this mat
 ## Traffic direction (`direction.py`)
 
 An ArcGIS `identify` on the municipal routing network at `direction.stations_s` returns, per network edge and
-direction, whether travel is allowed. The street is two-way if some edge is open in both directions.
+direction, whether travel is allowed. The street is two-way if some edge is open in both directions; the ledger
+also says at how many of the stations checked an edge is open in both directions.
 
 ## Scheduled buses (`gtfs.py`)
 
@@ -72,10 +75,12 @@ t* = (s_b - s_a + v (t_a + t_b)) / (2 v)        s* = s_a + v (t* - t_a)
 
 for A heading +1 at `s_a` at `t_a` and B heading −1 at `s_b` at `t_b`. Results are given for the case's speeds
 (`transit.speeds_kmh`) and flagged when the meeting point falls inside a two-strip section. Slower buses stay
-longer on the street and meet more often, so the pipeline also computes the count at the slowest stop-to-stop
-speed implied by the service day's schedule (straight-line distance over median scheduled time, a lower bound).
+longer on the street and meet more often, so the pipeline also computes the count at the lowest of the service
+day's stop-to-stop speeds from the reference stops (straight-line distance over median scheduled time).
 Both are rows of `encounters_summary.csv`, told apart by its `basis` column (`assumed` or `schedule`), and the
-ledger reports both. It is an estimate of how often the situation arises, graded I.
+ledger reports both. It is an estimate of how often the situation arises, graded I. The model has no dwell
+times at stops, so a meeting a few metres from the edge of a section may in fact fall inside it; the ledger
+says so.
 
 ## Width budget (`envelope.py`)
 
@@ -84,7 +89,9 @@ width, bodies only and with mirrors. A bus's mirrors are mounted above a car's b
 mirrors only the car's mirrors count. Vehicle widths come from the catalogue in `src/mobilidados/data/vehicles.toml`,
 each graded D (published) or P (assumed). This is a static envelope, not a swept path: it ignores the extra
 width a vehicle needs when turning and the safety distance a driver keeps, so it is favourable to the
-narrow street.
+narrow street: the summed width is the least the vehicles need. The ledger's caveat gives the bus × bus margin
+at the three free widths, the share of two-strip stations narrower than two bus bodies and how mirrors are
+counted.
 
 ## Without parking (`envelope.py`)
 
@@ -112,17 +119,20 @@ nearest street axis within `occurrences.max_dist_m`, filtered by category with a
 `occurrences.min_street_length_m` are ranked. `occurrences_files.csv` records, per file, how many records there
 are, how many have coordinates, how many of those have a date that parsed (each file's dates are parsed on their
 own, so files may use different formats) and the dates they span. Counts are small and a report is not a proven
-infraction; only aggregates are published.
+infraction; only aggregates are published. The window is a rectangle around the street, but a street's rate
+divides the reports counted inside it by the street's whole length, which favours streets that lie wholly
+inside the window, such as the case street; the ledger states this bias.
 
 ## Area scan (`area_scan.py`)
 
-The same transect method runs every `area_scan.step_m` along every street axis in a wider area where a
-scheduled bus shape runs along the street (within `near_m` of the axis and `max_angle` of its direction, in
-`area_scan.scan`). Per street: metres with buses, buses per weekday, whether buses run in both directions,
-median and 10th-percentile free width, share of stations with parking on both sides, metres below
-`area_scan.reference_m`, metres combining two-sided parking with a free width below `area_scan.threshold_m`,
-and the traffic direction. Only two-way streets share the case's pattern: a one-way street needs a single
-lane.
+A transect method like the case street's runs every `area_scan.step_m` along every street axis in a wider area
+where a scheduled bus shape runs along the street (within `near_m` of the axis and `max_angle` of its direction,
+in `area_scan.scan`), with its own transect half-width and tolerances (`half`, `snap`). Per street: metres with
+buses, buses per weekday, whether buses run in both directions, median and 10th-percentile free width, share of
+stations with parking on both sides, metres below `area_scan.reference_m`, metres combining two-sided parking
+with a free width below `area_scan.threshold_m`, and the traffic direction, read at one station per street
+(`area_scan.rank_streets`). Only two-way streets share the case's pattern: a one-way street needs a single
+lane. The thresholds are parameters of the analysis, not values from a design document.
 
 ## Design references (`standards.py`)
 

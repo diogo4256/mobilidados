@@ -220,8 +220,12 @@ class Cartography(Model):
     parking: list[str] = Field(min_length=1)
     sidewalk: list[str] = []
     plot: list[str] = []
-    survey: str = ""
-    accuracy_note: str = ""
+    survey: str | dict[Lang, str] = Field("", description="When and how the cartography was made; text, or text per language")
+    accuracy_note: str | dict[Lang, str] = Field("", description="Its stated positional accuracy; text, or text per language")
+
+    def text(self, key: Literal["survey", "accuracy_note"], lang: Lang) -> str:
+        value = getattr(self, key)
+        return value if isinstance(value, str) else value.get(lang) or next(iter(value.values()), "")
 
     def roles(self) -> dict[str, set[str]]:
         """Cartography class codes per role: road, parking, sidewalk, plot."""

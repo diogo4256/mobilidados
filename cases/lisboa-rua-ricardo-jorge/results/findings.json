@@ -17,20 +17,20 @@
       "sources": [
         "street_axes"
       ],
-      "method": "Axis polyline length (projected CRS).",
+      "method": "Comprimento do eixo da rua, em coordenadas projetadas.",
       "caveat": ""
     },
     {
       "id": "traffic",
       "grade": "M",
-      "statement": "Segundo a rede viária da Câmara, a rua tem dois sentidos (verificado em 8 pontos ao longo da rua).",
+      "statement": "Segundo a rede viária da Câmara, a rua tem dois sentidos: em 8 de 8 pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos.",
       "values": {
         "traffic": "two-way"
       },
       "sources": [
         "network_identify"
       ],
-      "method": "Identify on the routing network at stations along the axis.",
+      "method": "Consulta à rede viária municipal em pontos ao longo do eixo.",
       "caveat": ""
     },
     {
@@ -49,8 +49,8 @@
         "cartography",
         "street_axes"
       ],
-      "method": "Transects every 0.5 m, widths read from mapped polygons only.",
-      "caveat": "Planimetric accuracy assumed ≤0.30 m per edge (DGT figure for plan-scale cartography, as quoted in a 2025 DGT opinion); the 1:1000 RMSE itself was not found."
+      "method": "Perfis transversais a cada 0,5 m; as larguras são lidas só nos polígonos cartografados.",
+      "caveat": "Só contam os perfis com estacionamento cartografado dos dois lados e até 7,00 m de largura livre: 5 dos 240 perfis com estacionamento dos dois lados têm mais largura livre e ficaram de fora. Cartografia: fotogrametria aérea de maio de 2016, restituição e completagem de campo em 2020, homologada pela DGT (registo em dados.gov.pt). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
     },
     {
       "id": "parking_strips",
@@ -63,7 +63,7 @@
       "sources": [
         "cartography"
       ],
-      "method": "Mapped area, not parked vehicles.",
+      "method": "Área cartografada, não carros estacionados.",
       "caveat": ""
     },
     {
@@ -80,7 +80,7 @@
       "sources": [
         "carris_gtfs"
       ],
-      "method": "Trips counted at a reference stop per direction; timetable, not observed operation.",
+      "method": "Viagens contadas numa paragem de referência em cada sentido; é o horário, não a operação observada.",
       "caveat": ""
     },
     {
@@ -95,7 +95,7 @@
       "sources": [
         "carris_gtfs"
       ],
-      "method": "Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.",
+      "method": "Chegada à paragem seguinte menos partida da paragem de referência; distância em linha reta entre as duas.",
       "caveat": ""
     },
     {
@@ -110,13 +110,13 @@
       "sources": [
         "carris_gtfs"
       ],
-      "method": "Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.",
+      "method": "Chegada à paragem seguinte menos partida da paragem de referência; distância em linha reta entre as duas.",
       "caveat": ""
     },
     {
       "id": "vehicle_carris_man_city_gold_body",
       "grade": "D",
-      "statement": "Veículo de referência «Carris MAN 18.310 / Caetano City Gold (12 m)»: carroçaria com 2,50 m de largura (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643).",
+      "statement": "Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Carroçaria com 2,50 m de largura (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643).",
       "values": {
         "width_m": 2.5
       },
@@ -129,7 +129,7 @@
     {
       "id": "vehicle_carris_man_city_gold_mirrors",
       "grade": "P",
-      "statement": "Largura de «Carris MAN 18.310 / Caetano City Gold (12 m)» com espelhos assumida em 2,90 m (pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro).",
+      "statement": "Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Largura com espelhos assumida em 2,90 m (pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro).",
       "values": {
         "width_m": 2.9
       },
@@ -142,7 +142,7 @@
     {
       "id": "vehicle_car_typical_body",
       "grade": "P",
-      "statement": "Veículo de referência «Ligeiro típico»: carroçaria com 1,80 m de largura (pressuposto: largura típica de um ligeiro europeu; a validar no local).",
+      "statement": "Veículo de referência: Ligeiro típico. Carroçaria com 1,80 m de largura (pressuposto: largura típica de um ligeiro europeu; a validar no local).",
       "values": {
         "width_m": 1.8
       },
@@ -155,7 +155,7 @@
     {
       "id": "vehicle_car_typical_mirrors",
       "grade": "P",
-      "statement": "Largura de «Ligeiro típico» com espelhos assumida em 2,05 m (pressuposto: largura típica com espelhos abertos; a validar no local).",
+      "statement": "Veículo de referência: Ligeiro típico. Largura com espelhos assumida em 2,05 m (pressuposto: largura típica com espelhos abertos; a validar no local).",
       "values": {
         "width_m": 2.05
       },
@@ -168,7 +168,7 @@
     {
       "id": "width_budget",
       "grade": "I",
-      "statement": "Com o estacionamento ocupado dos dois lados e os carros dentro dos lugares, dois autocarros precisam de 5,00 m (só a carroçaria; 5,80 m com espelhos) e a largura livre mediana é de 4,90 m: folga de −0,10 m. Um autocarro e um ligeiro precisam de 4,30 m: folga de +0,60 m (+0,35 m contando com o espelho do ligeiro).",
+      "statement": "Com o estacionamento ocupado dos dois lados e os carros dentro dos lugares, dois autocarros precisam de pelo menos 5,00 m (só a carroçaria, sem espaço nenhum entre eles; 5,80 m com espelhos) e a largura livre mediana é de 4,90 m: folga de −0,10 m. Um autocarro e um ligeiro precisam de pelo menos 4,30 m: folga de +0,60 m (+0,35 m contando com os espelhos do ligeiro).",
       "values": {
         "bus_bus_margin_m": -0.1,
         "bus_bus_margin_mirrors_m": -0.9,
@@ -181,13 +181,13 @@
         "vehicle_carris_man_city_gold_mirrors",
         "vehicle_car_typical_body"
       ],
-      "method": "Static envelope (sum of widths), not a swept-path simulation.",
-      "caveat": "Assumes parked vehicles stay inside the mapped strips; see overhang_sensitivity.csv."
+      "method": "Soma das larguras dos veículos lado a lado (envelope estático), sem simular a trajetória nem as curvas.",
+      "caveat": "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas. Só com a carroçaria, a folga entre dois autocarros é de −0,22 m na largura livre mínima, −0,10 m na mediana e +0,08 m no percentil 95. Em 77% dos perfis contados, a largura livre fica abaixo dos 5,00 m que ocupam duas carroçarias de autocarro. Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
     },
     {
       "id": "without_parking",
       "grade": "I",
-      "statement": "Sem o estacionamento do lado NO, a largura livre passaria a ir de 6,79 a 7,68 m (mediana de 6,91 m); sem o do lado SE, de 6,78 a 8,06 m (mediana de 6,92 m); sem estacionamento nenhum, mediana de 8,92 m. Dois autocarros precisam de 5,00 m (5,80 m com espelhos): só com estacionamento de um lado, a folga seria de +1,91 m (+1,11 m com espelhos).",
+      "statement": "Sem o estacionamento do lado NO, a largura livre passaria a ir de 6,79 a 7,68 m (mediana de 6,91 m); sem o do lado SE, de 6,78 a 8,06 m (mediana de 6,92 m); sem estacionamento nenhum, mediana de 8,92 m. Dois autocarros precisam de pelo menos 5,00 m (5,80 m com espelhos): só com estacionamento de um lado, a folga seria de +1,91 m (+1,11 m com espelhos).",
       "values": {
         "without_L_median_m": 6.91,
         "without_R_median_m": 6.92,
@@ -201,8 +201,8 @@
         "vehicle_carris_man_city_gold_body",
         "vehicle_carris_man_city_gold_mirrors"
       ],
-      "method": "Free width plus the mapped parking strip(s) on the same transect, at every station with parking on both sides.",
-      "caveat": "Assumes the strip's space becomes carriageway and nothing else takes it; it measures an option, it is not a design."
+      "method": "Largura livre mais a faixa (ou as faixas) de estacionamento cartografada no mesmo perfil, em cada perfil com estacionamento dos dois lados.",
+      "caveat": "Admite que o espaço do estacionamento passa para a faixa de rodagem e que nada mais o ocupa; mede uma opção, não é um projeto."
     },
     {
       "id": "parking_removed",
@@ -233,13 +233,13 @@
         "free_width",
         "parking_strips"
       ],
-      "method": "Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the longest and the shortest space length; the whole-street lengths are parking_strip_lengths.csv.",
-      "caveat": "Mapped parking area, not counted spaces: entrances and other gaps inside the strips are not subtracted. The length of a space is an assumption."
+      "method": "Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua vêm de parking_strip_lengths.csv.",
+      "caveat": "Área de estacionamento cartografada, não lugares contados: entradas e outras interrupções dentro das faixas não são descontadas. O comprimento de um lugar é um pressuposto."
     },
     {
       "id": "encounters",
       "grade": "I",
-      "statement": "Segundo o horário, há 6–7 encontros por dia útil entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de 15/20 km/h); 1–2 acontecem nos troços com estacionamento dos dois lados.",
+      "statement": "Segundo o horário, em 2026-10-27 há 6–7 encontros entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de 15/20 km/h); 1–2 acontecem nos troços com estacionamento dos dois lados.",
       "values": {
         "per_day": [
           6,
@@ -254,8 +254,8 @@
         "transit",
         "free_width"
       ],
-      "method": "Presence-interval overlap at constant speed from scheduled times; timetable, not observation.",
-      "caveat": "A 12,7 km/h, a velocidade mais baixa entre paragens que o horário de 2026-10-27 permite (é um mínimo), o modelo dá 7."
+      "method": "Sobreposição dos intervalos em que cada autocarro está na rua, a velocidade constante e com as horas do horário; é o horário, não uma observação.",
+      "caveat": "Os pontos de encontro saem de um modelo de velocidade constante, sem tempo parado nas paragens: um encontro a poucos metros do limite de um troço pode acontecer dentro dele. A 12,7 km/h, a mais baixa das velocidades entre paragens em 2026-10-27 (distância em linha reta a dividir pelo tempo mediano do horário), o modelo dá 7."
     },
     {
       "id": "occurrences",
@@ -270,8 +270,8 @@
       "sources": [
         "na_minha_rua"
       ],
-      "method": "Nearest-street attribution of geolocated open-data records.",
-      "caveat": "A report is not a proven infraction; counts are small."
+      "method": "Cada ocorrência georreferenciada dos dados abertos é atribuída ao eixo de rua mais próximo.",
+      "caveat": "Uma ocorrência não é uma infração provada e as contagens são pequenas. A ordenação divide as ocorrências contadas dentro da janela de atribuição (um retângulo que vai 300 m além da rua) pelo comprimento total de cada rua, incluindo a parte fora da janela: isso favorece as ruas que cabem inteiras na janela, como a deste caso."
     },
     {
       "id": "area_pattern",
@@ -292,8 +292,8 @@
         "area_network_identify",
         "carris_gtfs"
       ],
-      "method": "Stations every 3 m on every street axis with buses; same width method as the case street; traffic direction from the routing network at one station per street.",
-      "caveat": ""
+      "method": "Perfis a cada 3 m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua.",
+      "caveat": "Os limiares (5,5 m de largura livre, 30 m de extensão) são parâmetros escolhidos para esta análise, não valores de um documento técnico."
     },
     {
       "id": "standard_cml_manual_two_way_profile",
@@ -312,7 +312,7 @@
     {
       "id": "standard_rast06_bus_bus",
       "grade": "D",
-      "statement": "Schriftliche Anfrage Drucksache 19/25490, Antwort vom 27.03.2026, p. 3 (citado em documento oficial): Faixa de rodagem para o cruzamento de dois autocarros de carreira (RASt 06, citada): 6,50 m. Âmbito: Norma técnica alemã para ruas urbanas (RASt 06), citada pelo Senado de Berlim; não é lei portuguesa. Mediana medida: 4,90 m (−1,60 m).",
+      "statement": "Schriftliche Anfrage Drucksache 19/25490, Antwort vom 27.03.2026, p. 3 (citado em documento oficial): Faixa de rodagem para o cruzamento de dois autocarros de carreira (RASt 06, citada): 6,50 m. Âmbito: Diretriz técnica alemã para ruas urbanas (RASt 06), citada pelo Senado de Berlim; não é lei portuguesa. Mediana medida: 4,90 m (−1,60 m).",
       "values": {
         "value_m": 6.5,
         "difference_m": -1.6
@@ -344,7 +344,7 @@
     {
       "id": "gap_3",
       "grade": "NE",
-      "statement": "A largura dos autocarros com espelhos não foi encontrada em ficha oficial (2,90 m é pressuposto).",
+      "statement": "A largura dos autocarros com espelhos não foi encontrada em ficha oficial: a largura com espelhos usada é um pressuposto.",
       "values": {},
       "sources": [],
       "method": "",

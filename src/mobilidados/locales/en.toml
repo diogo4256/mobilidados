@@ -4,10 +4,9 @@
 [figure]
 free_width = "Free width between parking strips"
 width_m = "width (m), to scale"
-limit = "free width"
+limit = "median free width"
 mirrors = "mirrors"
-margin = "margin"
-with_mirrors = "with mirrors"
+margin = "margin {x} m ({xm} m with mirrors)"
 trips_per_hour = "trips per hour"
 hour = "hour of day"
 weekday_trips = "Scheduled trips on the street, weekday {day}"
@@ -30,19 +29,18 @@ removes = "along the stretches with parking on both sides, removes {m} m of park
 
 [ledger]
 length = "The street axis is {length} m long."
-traffic = { one = "The municipal routing network marks the street as {traffic} (edges checked at {n} point along it).", other = "The municipal routing network marks the street as {traffic} (edges checked at {n} points along it)." }
+traffic = { one = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} point checked along it.", other = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} points checked along it." }
 free = "Where parking strips are mapped on both sides ({metres} m of the street), the mapped free width between them is {fmin}–{fmax} m (median {fmed} m)."
 strips = "The mapped parking strips are {sl} m ({side_l}) and {sr} m ({side_r}) wide (medians)."
 routes_scheduled = { one = "Route {routes} is scheduled along the street.", other = "Routes {routes} are scheduled along the street." }
 trips = { one = "{n} trip {heading}", other = "{n} trips {heading}" }
 routes = "{scheduled} On {day}: {trips_up} and {trips_down} (at most {max_up} and {max_down} per hour)."
-vehicle_body = "Reference vehicle '{label}': body width {w} m ({src})."
-vehicle_mirrors = "Width with mirrors of '{label}' taken as {w} m ({src})."
-budget = "With both strips occupied and parked vehicles inside them, two buses need {bb} m (bodies only; {bbm} m with mirrors) against a median free width of {fmed} m: margin {mbb} m. A bus and a car need {bc} m: margin {mbc} m ({mbcm} m with the car's mirrors)."
+vehicle_body = "Reference vehicle: {label}. Body width {w} m ({src})."
+vehicle_mirrors = "Reference vehicle: {label}. Width with mirrors taken as {w} m ({src})."
+budget = "With both strips occupied and parked vehicles inside them, two buses need at least {bb} m (bodies only, with no gap between them; {bbm} m with mirrors) against a median free width of {fmed} m: margin {mbb} m. A bus and a car need at least {bc} m: margin {mbc} m ({mbcm} m with the car's mirrors)."
 meetings = { one = "{n} meeting", other = "{n} meetings" }
 meetings_narrow = { one = "{n} falls within the sections with parking on both sides", other = "{n} fall within the sections with parking on both sides" }
-encounters = "The timetable implies {meetings} per weekday between buses in opposite directions on the street (constant-speed model at {speeds} km/h); {narrow}."
-encounters_check = "At {kmh} km/h, the slowest speed implied by the {day} schedule between stops (a lower bound), the model gives {per_day}."
+encounters = "The timetable implies {meetings} on {day} between buses in opposite directions on the street (constant-speed model at {speeds} km/h); {narrow}."
 runtimes = "Scheduled time from stop {a} to the next stop ({b}, {d} m in a straight line): median {m_all} s over all trips in the feed (at least {k_all} km/h) and {m_day} s on {day} (at least {k_day} km/h)."
 reports_attributed = { one = "{n} report in category '{flt}' was attributed to the street", other = "{n} reports in category '{flt}' were attributed to the street" }
 street_rank = { one = "rank {rank} of {total} street of at least {minlen} m in the surrounding area", other = "rank {rank} of {total} streets of at least {minlen} m in the surrounding area" }
@@ -51,10 +49,41 @@ area_streets = { one = "Of {n} street with scheduled buses in the surrounding ar
 area_pattern = { one = "{n} is two-way and combines parking on both sides with a free width below {thr} m over at least {minm} m ({names})", other = "{n} are two-way and combine parking on both sides with a free width below {thr} m over at least {minm} m ({names})" }
 area = "{streets}, {pattern}; of these, {nb} with buses in both directions: {names2}."
 standard = "{doc}, p. {page} ({kind}): {label}: {value} m. Scope: {scope}. Measured median: {fmed} m ({diff} m)."
-without_parking = "Without the parking on the {side_l} side, the free width would range from {lmin} to {lmax} m (median {lmed} m); without the parking on the {side_r} side, from {rmin} to {rmax} m (median {rmed} m); without parking on either side, median {bmed} m. Two buses need {bb} m ({bbm} m with mirrors): with parking on one side only, the margin would be {m1} m ({m1m} m with mirrors)."
+without_parking = "Without the parking on the {side_l} side, the free width would range from {lmin} to {lmax} m (median {lmed} m); without the parking on the {side_r} side, from {rmin} to {rmax} m (median {rmed} m); without parking on either side, median {bmed} m. Two buses need at least {bb} m ({bbm} m with mirrors): with parking on one side only, the margin would be {m1} m ({m1m} m with mirrors)."
 parking_removed = "Removing the parking on one side, along the stretches with parking on both sides, would remove {m} m of mapped parking ({places}); on both sides, {m2} m ({places2}). Places counted at {space} m each (an assumption). Along the whole street, the mapped parking measures {wl} m on the {side_l} side and {wr} m on the {side_r} side."
 places = { one = "about {n} place", other = "about {n} places" }
 places_range = "about {lo} to {hi} places"
+
+# How each statement of the ledger was obtained.
+[method]
+length = "Axis polyline length (projected CRS)."
+traffic = "Identify on the municipal routing network at stations along the axis."
+free_width = "Transects every {step} m; widths read from mapped polygons only."
+parking_strips = "Mapped area, not parked vehicles."
+transit = "Trips counted at a reference stop per direction; timetable, not observed operation."
+runtimes = "Arrival at the next stop minus departure from the reference stop; straight-line distance between stops."
+width_budget = "Static envelope (sum of widths), not a swept-path simulation."
+without_parking = "Free width plus the mapped parking strip(s) on the same transect, at every station with parking on both sides."
+parking_removed = "Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the longest and the shortest space length; the whole-street lengths are parking_strip_lengths.csv."
+encounters = "Presence-interval overlap at constant speed from scheduled times; timetable, not observation."
+occurrences = "Nearest-street attribution of geolocated open-data records."
+area_pattern = "Stations every {step} m on every street axis with buses, measured with the scan's own transect half-width and tolerances, not the case street's; traffic direction from the routing network at one station per street."
+
+# Limits of each statement of the ledger. A caveat made of several parts joins several of these sentences.
+[caveat]
+free_filter = { one = "Only transects with parking mapped on both sides and a free width of at most {max} m count: {k} of the {n} transects with parking on both sides is wider and was left out.", other = "Only transects with parking mapped on both sides and a free width of at most {max} m count: {k} of the {n} transects with parking on both sides are wider and were left out." }
+survey = "Cartography: {survey}."
+budget_inside = "Assumes parked vehicles stay inside the mapped strips; overhang_sensitivity.csv shows how much the margin shrinks if they do not."
+budget_spread = "Bodies only, the margin between two buses is {fmin} m at the minimum free width, {fmed} m at the median and {fp95} m at the 95th percentile."
+budget_share = "At {pct}% of the transects counted, the free width is below the {bb} m taken by two bus bodies."
+mirrors_clear = "Mirrors: bus × bus counts the four bus mirrors; bus × car counts only the car's, because the bus's mirrors are assumed to pass above the car (an assumption)."
+mirrors_all = "Mirrors: every vehicle's mirrors count."
+without_parking = "Assumes the strip's space becomes carriageway and nothing else takes it; it measures an option, it is not a design."
+parking_removed = "Mapped parking area, not counted spaces: entrances and other gaps inside the strips are not subtracted. The length of a space is an assumption."
+encounters_model = "Meeting points come from a constant-speed model without dwell times at stops: a meeting a few metres from the edge of a section may fall inside it."
+encounters_check = "At {kmh} km/h, the lowest of the stop-to-stop speeds on {day} (straight-line distance over the median scheduled time), the model gives {per_day}."
+occurrences = "A report is not a proven infraction; counts are small. The ranking divides the reports counted within the attribution window (a rectangle reaching {w} m beyond the street) by each street's full length, including any part outside the window: this favours streets that lie wholly inside the window, such as the case street."
+area_pattern = "The thresholds ({thr} m of free width, over {minm} m) are parameters of this analysis, not values from a design document."
 
 [kind]
 reference_profile = "reference profile"

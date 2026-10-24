@@ -4,10 +4,9 @@
 [figure]
 free_width = "Largura livre entre o estacionamento dos dois lados"
 width_m = "largura (m), à escala"
-limit = "largura livre"
+limit = "largura livre mediana"
 mirrors = "espelhos"
-margin = "folga"
-with_mirrors = "com espelhos"
+margin = "folga {x} m ({xm} m com espelhos)"
 trips_per_hour = "viagens por hora"
 hour = "hora do dia"
 weekday_trips = "Viagens previstas no horário, dia útil de {day}"
@@ -30,19 +29,18 @@ removes = "nos troços com estacionamento dos dois lados, retira {m} m de estaci
 
 [ledger]
 length = "O eixo da rua tem {length} m."
-traffic = { one = "Segundo a rede viária da Câmara, a rua tem {traffic} (verificado em {n} ponto ao longo da rua).", other = "Segundo a rede viária da Câmara, a rua tem {traffic} (verificado em {n} pontos ao longo da rua)." }
+traffic = { one = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} ponto verificado ao longo da rua, a circulação é permitida em ambos os sentidos.", other = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos." }
 free = "Nos troços com estacionamento cartografado dos dois lados ({metres} m da rua), a largura livre entre eles vai de {fmin} a {fmax} m (mediana de {fmed} m)."
 strips = "O estacionamento cartografado ocupa {sl} m do lado {side_l} e {sr} m do lado {side_r} (medianas)."
 routes_scheduled = { one = "Segundo o horário, a carreira {routes} passa nesta rua.", other = "Segundo o horário, as carreiras {routes} passam nesta rua." }
 trips = { one = "{n} viagem {heading}", other = "{n} viagens {heading}" }
 routes = "{scheduled} Em {day}: {trips_up} e {trips_down} (no máximo {max_up} e {max_down} por hora)."
-vehicle_body = "Veículo de referência «{label}»: carroçaria com {w} m de largura ({src})."
-vehicle_mirrors = "Largura de «{label}» com espelhos assumida em {w} m ({src})."
-budget = "Com o estacionamento ocupado dos dois lados e os carros dentro dos lugares, dois autocarros precisam de {bb} m (só a carroçaria; {bbm} m com espelhos) e a largura livre mediana é de {fmed} m: folga de {mbb} m. Um autocarro e um ligeiro precisam de {bc} m: folga de {mbc} m ({mbcm} m contando com o espelho do ligeiro)."
+vehicle_body = "Veículo de referência: {label}. Carroçaria com {w} m de largura ({src})."
+vehicle_mirrors = "Veículo de referência: {label}. Largura com espelhos assumida em {w} m ({src})."
+budget = "Com o estacionamento ocupado dos dois lados e os carros dentro dos lugares, dois autocarros precisam de pelo menos {bb} m (só a carroçaria, sem espaço nenhum entre eles; {bbm} m com espelhos) e a largura livre mediana é de {fmed} m: folga de {mbb} m. Um autocarro e um ligeiro precisam de pelo menos {bc} m: folga de {mbc} m ({mbcm} m contando com os espelhos do ligeiro)."
 meetings = { one = "{n} encontro", other = "{n} encontros" }
 meetings_narrow = { one = "{n} acontece nos troços com estacionamento dos dois lados", other = "{n} acontecem nos troços com estacionamento dos dois lados" }
-encounters = "Segundo o horário, há {meetings} por dia útil entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de {speeds} km/h); {narrow}."
-encounters_check = "A {kmh} km/h, a velocidade mais baixa entre paragens que o horário de {day} permite (é um mínimo), o modelo dá {per_day}."
+encounters = "Segundo o horário, em {day} há {meetings} entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de {speeds} km/h); {narrow}."
 runtimes = "Tempo previsto da paragem {a} à seguinte ({b}, a {d} m em linha reta): mediana de {m_all} s em todas as viagens do horário (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h)."
 reports_attributed = { one = "Foi atribuída à rua {n} ocorrência da categoria «{flt}»", other = "Foram atribuídas à rua {n} ocorrências da categoria «{flt}»" }
 street_rank = { one = "{rank}.ª de {total} rua com pelo menos {minlen} m na envolvente", other = "{rank}.ª de {total} ruas com pelo menos {minlen} m na envolvente" }
@@ -51,10 +49,41 @@ area_streets = { one = "De {n} rua da zona com autocarros no horário", other = 
 area_pattern = { one = "{n} tem dois sentidos e estacionamento dos dois lados, com menos de {thr} m de largura livre em pelo menos {minm} m ({names})", other = "{n} têm dois sentidos e estacionamento dos dois lados, com menos de {thr} m de largura livre em pelo menos {minm} m ({names})" }
 area = "{streets}, {pattern}; destas, {nb} com autocarros nos dois sentidos: {names2}."
 standard = "{doc}, p. {page} ({kind}): {label}: {value} m. Âmbito: {scope}. Mediana medida: {fmed} m ({diff} m)."
-without_parking = "Sem o estacionamento do lado {side_l}, a largura livre passaria a ir de {lmin} a {lmax} m (mediana de {lmed} m); sem o do lado {side_r}, de {rmin} a {rmax} m (mediana de {rmed} m); sem estacionamento nenhum, mediana de {bmed} m. Dois autocarros precisam de {bb} m ({bbm} m com espelhos): só com estacionamento de um lado, a folga seria de {m1} m ({m1m} m com espelhos)."
+without_parking = "Sem o estacionamento do lado {side_l}, a largura livre passaria a ir de {lmin} a {lmax} m (mediana de {lmed} m); sem o do lado {side_r}, de {rmin} a {rmax} m (mediana de {rmed} m); sem estacionamento nenhum, mediana de {bmed} m. Dois autocarros precisam de pelo menos {bb} m ({bbm} m com espelhos): só com estacionamento de um lado, a folga seria de {m1} m ({m1m} m com espelhos)."
 parking_removed = "Retirar o estacionamento de um lado, nos troços com estacionamento dos dois lados, retiraria {m} m de estacionamento cartografado ({places}); dos dois lados, {m2} m ({places2}). Lugares contados a {space} m cada (pressuposto). Em toda a rua, o estacionamento cartografado mede {wl} m do lado {side_l} e {wr} m do lado {side_r}."
 places = { one = "cerca de {n} lugar", other = "cerca de {n} lugares" }
 places_range = "cerca de {lo} a {hi} lugares"
+
+# Como cada afirmação do registo foi obtida.
+[method]
+length = "Comprimento do eixo da rua, em coordenadas projetadas."
+traffic = "Consulta à rede viária municipal em pontos ao longo do eixo."
+free_width = "Perfis transversais a cada {step} m; as larguras são lidas só nos polígonos cartografados."
+parking_strips = "Área cartografada, não carros estacionados."
+transit = "Viagens contadas numa paragem de referência em cada sentido; é o horário, não a operação observada."
+runtimes = "Chegada à paragem seguinte menos partida da paragem de referência; distância em linha reta entre as duas."
+width_budget = "Soma das larguras dos veículos lado a lado (envelope estático), sem simular a trajetória nem as curvas."
+without_parking = "Largura livre mais a faixa (ou as faixas) de estacionamento cartografada no mesmo perfil, em cada perfil com estacionamento dos dois lados."
+parking_removed = "Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua vêm de parking_strip_lengths.csv."
+encounters = "Sobreposição dos intervalos em que cada autocarro está na rua, a velocidade constante e com as horas do horário; é o horário, não uma observação."
+occurrences = "Cada ocorrência georreferenciada dos dados abertos é atribuída ao eixo de rua mais próximo."
+area_pattern = "Perfis a cada {step} m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua."
+
+# Limites de cada afirmação do registo. Uma ressalva composta junta várias destas frases.
+[caveat]
+free_filter = { one = "Só contam os perfis com estacionamento cartografado dos dois lados e até {max} m de largura livre: {k} dos {n} perfis com estacionamento dos dois lados tem mais largura livre e ficou de fora.", other = "Só contam os perfis com estacionamento cartografado dos dois lados e até {max} m de largura livre: {k} dos {n} perfis com estacionamento dos dois lados têm mais largura livre e ficaram de fora." }
+survey = "Cartografia: {survey}."
+budget_inside = "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas."
+budget_spread = "Só com a carroçaria, a folga entre dois autocarros é de {fmin} m na largura livre mínima, {fmed} m na mediana e {fp95} m no percentil 95."
+budget_share = "Em {pct}% dos perfis contados, a largura livre fica abaixo dos {bb} m que ocupam duas carroçarias de autocarro."
+mirrors_clear = "Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto)."
+mirrors_all = "Espelhos: contam os de todos os veículos."
+without_parking = "Admite que o espaço do estacionamento passa para a faixa de rodagem e que nada mais o ocupa; mede uma opção, não é um projeto."
+parking_removed = "Área de estacionamento cartografada, não lugares contados: entradas e outras interrupções dentro das faixas não são descontadas. O comprimento de um lugar é um pressuposto."
+encounters_model = "Os pontos de encontro saem de um modelo de velocidade constante, sem tempo parado nas paragens: um encontro a poucos metros do limite de um troço pode acontecer dentro dele."
+encounters_check = "A {kmh} km/h, a mais baixa das velocidades entre paragens em {day} (distância em linha reta a dividir pelo tempo mediano do horário), o modelo dá {per_day}."
+occurrences = "Uma ocorrência não é uma infração provada e as contagens são pequenas. A ordenação divide as ocorrências contadas dentro da janela de atribuição (um retângulo que vai {w} m além da rua) pelo comprimento total de cada rua, incluindo a parte fora da janela: isso favorece as ruas que cabem inteiras na janela, como a deste caso."
+area_pattern = "Os limiares ({thr} m de largura livre, {minm} m de extensão) são parâmetros escolhidos para esta análise, não valores de um documento técnico."
 
 [kind]
 reference_profile = "perfil de referência"

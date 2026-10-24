@@ -5,6 +5,7 @@ cached Lisbon sources, so the pipeline, the ledger, the figures and the area sca
 """
 
 import json
+import shutil
 
 import pandas as pd
 import pytest
@@ -207,8 +208,14 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
 
     assert findings["length"]["statement"] == "The street axis is 200.00 m long."
     assert findings["traffic"]["values"] == {"traffic": "two-way"}
-    assert "two-way traffic (edges checked at 3 points" in findings["traffic"]["statement"]
+    assert "two-way traffic: an edge is open in both directions at 3 of 3 points checked" in findings["traffic"]["statement"]
     assert "is 4.90–4.90 m (median 4.90 m)" in findings["free_width"]["statement"]
+    # the caveat states which stations count; the case's city profile gives no survey or accuracy note to add
+    assert findings["free_width"]["method"] == "Transects every 1 m; widths read from mapped polygons only."
+    assert findings["free_width"]["caveat"] == (
+        "Only transects with parking mapped on both sides and a free width of at most 7.00 m count: "
+        "0 of the 110 transects with parking on both sides are wider and were left out."
+    )
     assert "2.00 m (north) and 2.00 m (south)" in findings["parking_strips"]["statement"]
     assert findings["transit"]["values"] == {
         "trips_up": 2,
@@ -221,8 +228,13 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     assert findings["transit"]["statement"].startswith(
         "Routes 10, 20 are scheduled along the street. On 2026-10-27: 2 trips east and 1 trip west ("
     )
-    assert "implies 1 meeting per weekday" in findings["encounters"]["statement"]
+    assert "implies 1 meeting on 2026-10-27 between buses" in findings["encounters"]["statement"]
     assert "; 0–1 fall within the sections with parking on both sides." in findings["encounters"]["statement"]
+    assert findings["encounters"]["caveat"] == (
+        "Meeting points come from a constant-speed model without dwell times at stops: a meeting a few metres from the edge "
+        "of a section may fall inside it. At 12.0 km/h, the lowest of the stop-to-stop speeds on 2026-10-27 (straight-line "
+        "distance over the median scheduled time), the model gives 1."
+    )
     assert findings["area_pattern"]["statement"].startswith(
         "Of 1 street with scheduled buses in the surrounding area, 1 is two-way and combines parking on both sides"
     )
@@ -234,6 +246,20 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
         "bus_car_margin_mirrors_m": 0.3,
     }
     assert "margin −0.20 m" in findings["width_budget"]["statement"]
+    assert "two buses need at least 5.10 m (bodies only, with no gap between them;" in findings["width_budget"]["statement"]
+    budget = findings["width_budget"]["caveat"]
+    assert budget.startswith("Assumes parked vehicles stay inside the mapped strips; overhang_sensitivity.csv")
+    # the spread of the bus x bus margin over width_budget.csv's free widths (the same 4.90 m everywhere here)
+    assert "the margin between two buses is −0.20 m at the minimum free width, −0.20 m at the median and −0.20 m at the 95th" in budget
+    assert "At 100% of the transects counted, the free width is below the 5.10 m taken by two bus bodies." in budget
+    # bus_eu_max's mirrors pass above a car (mirrors_clear_cars): only the car's count in bus x car
+    assert "bus × bus counts the four bus mirrors; bus × car counts only the car's" in budget
+    # the rate divides the reports in the window by each street's whole length
+    assert findings["occurrences"]["caveat"].startswith("A report is not a proven infraction; counts are small.")
+    assert "(a rectangle reaching 300 m beyond the street) by each street's full length" in findings["occurrences"]["caveat"]
+    assert "favours streets that lie wholly inside the window, such as the case street" in findings["occurrences"]["caveat"]
+    assert "same width method" not in findings["area_pattern"]["method"]
+    assert findings["area_pattern"]["caveat"].endswith("are parameters of this analysis, not values from a design document.")
     # the strip given back to the carriageway is added on every transect: 4.90 m free + 2.00 m strip(s)
     assert findings["without_parking"]["values"] == {
         "without_L_median_m": 6.9,
@@ -301,6 +327,19 @@ def test_a_partial_run_reads_the_tables_an_earlier_run_wrote(case, results):
     (results / "findings.json").unlink()
     run(case, stages=["ledger"], offline=True)
     assert (results / "findings.json").read_bytes() == before
+
+
+def test_the_free_width_caveat_counts_the_stations_left_out_for_being_wider(case, results, tmp_path):
+    # three stations with parking on both sides made wider than profiles.narrow_max_m, as geometry.classify leaves them out
+    shutil.copytree(results / "tables", tmp_path / "tables")
+    profiles = pd.read_csv(tmp_path / "tables" / "profiles.csv")
+    wider = profiles.index[profiles["class"] == "two_strips"][:3]
+    profiles.loc[wider, "free_width"] = 7.5
+    profiles.loc[wider, "class"] = "other"
+    profiles.to_csv(tmp_path / "tables" / "profiles.csv", index=False)
+    run(Case.load(case.root, results_dir=tmp_path), stages=["ledger"], offline=True)
+    free = next(f for f in json.loads((tmp_path / "findings.json").read_text(encoding="utf-8"))["findings"] if f["id"] == "free_width")
+    assert free["caveat"].endswith("3 of the 110 transects with parking on both sides are wider and were left out.")
 
 
 def test_a_street_name_that_is_not_in_the_axes_is_reported_in_one_line(tmp_path, capsys):

@@ -149,10 +149,11 @@ def measure_profiles(
 
 
 TWO_STRIPS, ONE_STRIP, OTHER = "two_strips", "one_strip", "other"
+MIN_STRIP_M = 0.5  # a mapped parking strip narrower than this at a station does not count as parking there
 
 
 def classify(
-    df: pd.DataFrame, blocks: list[Block], narrow_max: float = 7.0, one_strip_max: float = 12.5, min_strip: float = 0.5
+    df: pd.DataFrame, blocks: list[Block], narrow_max: float = 7.0, one_strip_max: float = 12.5, min_strip: float = MIN_STRIP_M
 ) -> pd.DataFrame:
     """Label stations: ``two_strips`` = parking mapped on both sides with a narrow free width between them."""
     df = df.copy()
@@ -208,7 +209,7 @@ def narrow_sections(df: pd.DataFrame, step: float) -> list[tuple[float, float, s
 
 
 def strip_lengths(
-    df: pd.DataFrame, blocks: list[Block], step: float, stall_lengths: tuple[float, ...], min_strip: float = 0.5
+    df: pd.DataFrame, blocks: list[Block], step: float, stall_lengths: tuple[float, ...], min_strip: float = MIN_STRIP_M
 ) -> pd.DataFrame:
     """Mapped parking-strip length per side and block, and the stall count it implies for given stall lengths
     (``profiles.parking_space_m``)."""
