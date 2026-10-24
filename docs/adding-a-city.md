@@ -12,6 +12,9 @@ complete example. It needs:
 | `[source_templates.*]` | how to fetch each source: kind, URL, CRS, licence as the publisher states it |
 | shared settings (optional) | method parameters, vehicles, design references, the sources every case uses, and the known gaps every case shares (listed after a case's own) |
 
+A case can change any value it inherits but cannot remove an inherited section: shared settings are for what every
+case of the city has (in Lisbon, buses and citizens' reports).
+
 Data that change over time (a GTFS feed and its service day, yearly files) go in a dated file that extends the
 profile, such as `cities/lisboa-2026-10.toml`. Cases extend the dated file. When newer data come out, add another
 dated file and point new cases at it: a case that already has results keeps the file it was run with, so it

@@ -77,3 +77,14 @@ and = " e "
 question_both = "A faixa livre entre as duas faixas de estacionamento deixa cruzar dois autocarros programados nos dois sentidos?"
 question_one = "A faixa livre entre as duas faixas de estacionamento deixa espaço para um autocarro programado e um ligeiro lado a lado?"
 gap_meeting = "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário."
+header = """
+# Rascunho feito por `mobilidados new-case` a partir de {model}, em {date}. Confirme antes de usar:
+# - [case] o título;
+# - [street] os quarteirões, cortados onde outros eixos encontram a rua e com os nomes completos dessas ruas; os
+#   sentidos e os lados, pontos cardeais tirados da orientação do eixo ({bearing}° a partir do norte da
+#   quadrícula), que podem pedir juízo;
+# - [transit] as carreiras que percorrem a rua no dia de serviço e, para cada carreira e sentido, a paragem junto
+#   à rua servida pela maioria das viagens;
+# - [case] a pergunta, escrita para autocarros nos dois sentidos ou num só, conforme o horário.
+# O resto (dados fixados, veículos, parâmetros, lacunas comuns) é herdado, tal como em {model}.
+"""

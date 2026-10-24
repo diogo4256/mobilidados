@@ -77,3 +77,13 @@ and = " and "
 question_both = "Does the free width between the two parking strips let two scheduled buses pass each other in opposite directions?"
 question_one = "Does the free width between the two parking strips leave room for a scheduled bus and a car side by side?"
 gap_meeting = "No field observation of two buses meeting on this street: encounters are timetable estimates."
+header = """
+# Draft made by `mobilidados new-case` from {model} on {date}. Check before use:
+# - [case] title;
+# - [street] blocks: cut where other axes meet the street, labelled with their full names; headings and
+#   sides: compass labels from the axis bearing ({bearing}° from grid north), which may need judgement;
+# - [transit] routes and reference_stops: the routes that run along the street on the service day, and for
+#   each route and direction the stop near the street that most of its trips serve;
+# - [case] question: written for buses in both directions or in one, as the timetable shows.
+# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {model}.
+"""

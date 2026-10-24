@@ -117,13 +117,14 @@ concessions, quotation marks, "rule"/"minimum" for a recommendation) with no AI 
 1. If your city already has a case, the street's name is enough:
 
    ```bash
-   uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge      # once: the GTFS feed the case uses
+   uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge --only carris_gtfs   # once: the feed the case uses
    uv run mobilidados new-case "Rua Teixeira de Pascoais" --like cases/lisboa-rua-ricardo-jorge
    uv run mobilidados fetch cases/lisboa-rua-teixeira-de-pascoais
    uv run mobilidados run cases/lisboa-rua-teixeira-de-pascoais
    ```
 
-   `new-case` finds the street in the municipal axes layer, cuts it into blocks at the cross streets, finds the
+   The name need not be spelled exactly: when no axis has that name, `new-case` looks for similar names and
+   suggests them. It finds the street in the municipal axes layer, cuts it into blocks at the cross streets, finds the
    bus routes that run along it in the timetable and writes `case.toml`. Everything else (sources, feed,
    vehicles, parameters) comes from the `--like` case. The top of the file lists what to check before use.
 2. If not, write a city profile: [docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md) (`mobilidados discover` can draft it).

@@ -15,6 +15,9 @@ streetfit.
   name: the axis from the municipal layer, blocks cut at the cross streets, direction and side labels from the
   bearing, check points and traffic-direction stations away from the junctions, and the bus routes and
   reference stops from the model case's GTFS feed. Sources, pins, vehicles and parameters are the model case's.
+  A name that matches no axis is looked up by its most distinctive word: a single match that differs only in case
+  or accents is used, otherwise the error suggests the closest names. The draft's header, which lists what to
+  check, is in the case's language.
   Drafting Rua Ricardo Jorge from its own case gives the same blocks, routes and reference stops as the
   hand-written case.
 - The free width without the mapped parking on one side, or on both, at the same stations as the measured free

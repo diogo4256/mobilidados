@@ -19,12 +19,15 @@ The draft is a starting point: its header lists what a person must check before 
 from __future__ import annotations
 
 import datetime as dt
+import difflib
 import json
+import logging
 import math
 import os
 import re
 import tomllib
 import unicodedata
+from dataclasses import dataclass
 from itertools import pairwise
 from pathlib import Path
 from typing import Any, get_args
@@ -38,6 +41,8 @@ from .config import ArcgisQuery, Case, Lang, MobilidadosError
 from .i18n import t
 from .sources import raw_path
 
+log = logging.getLogger(__name__)
+
 AXIS_MARGIN_M = 150.0  # around the street's axis: the case's cartography and axes
 AREA_MARGIN_M = 1200.0  # around the street's axis: the area scan
 CUT_TOLERANCE_M = 5.0  # cross streets closer than this along the axis are one cut; nearer an end, they label it
@@ -45,6 +50,40 @@ STATION_SPACING_M = 25.0  # traffic-direction stations along the axis
 STATION_END_M = 10.0  # stations keep this far from each end and each junction, where the identify would also find the cross street
 COMPASS = {"pt": ["N", "NE", "E", "SE", "S", "SO", "O", "NO"], "en": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]}
 ENDS = {"pt": ("início", "fim"), "en": ("start", "end")}
+# words that do not tell one street from another, left out when looking for a street by a name that does not match
+GENERIC_WORDS = {"RUA", "R", "AVENIDA", "AV", "TRAVESSA", "TV", "LARGO", "LG", "PRACA", "PC", "CALCADA", "ESTRADA", "BECO",
+                 "ALAMEDA", "AL", "DE", "DA", "DO", "DAS", "DOS", "E"}  # fmt: skip
+SUGGESTIONS = 5
+
+
+def normalise(text: str) -> str:
+    """Upper case, without accents or punctuation, single spaces: how two spellings of a street name are compared."""
+    ascii_ = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return " ".join(re.sub(r"[^A-Za-z0-9]+", " ", ascii_).upper().split())
+
+
+def find_axis(src: ArcgisQuery, name_field: str, street: str, crs: int) -> tuple[str, LineString]:
+    """The street's name as the axes layer spells it, and its axis.
+
+    A name that matches no axis exactly is looked up by its most distinctive word; a single axis name equal to it
+    but for case and accents is used, otherwise the closest names are suggested in the error.
+    """
+    quoted = street.replace("'", "''")
+    found = arcgis.query_layer(src.url, None, in_sr=src.envelope_sr, out_sr=crs, where=f"{name_field} = '{quoted}'")["features"]
+    if not found:
+        words = normalise(street).split()
+        word = max([w for w in words if w not in GENERIC_WORDS] or words or [""], key=len)
+        pattern = re.sub("[AEIOU]", "_", word)  # '_' matches one character, accented or not
+        like = arcgis.query_layer(src.url, None, in_sr=src.envelope_sr, out_sr=crs, where=f"UPPER({name_field}) LIKE '%{pattern}%'")
+        names = sorted({str(f["attributes"][name_field]) for f in like["features"] if f["attributes"].get(name_field)})
+        same = [n for n in names if normalise(n) == normalise(street)]
+        if len(same) != 1:
+            close = sorted(names, key=lambda n: -difflib.SequenceMatcher(None, normalise(n), normalise(street)).ratio())
+            hint = f"; did you mean: {', '.join(repr(n) for n in close[:SUGGESTIONS])}?" if close else ""
+            raise MobilidadosError(f"no axis named {street!r} in field {name_field}{hint}")
+        log.info("using %r, as the axes layer spells it", same[0])
+        street, found = same[0], [f for f in like["features"] if f["attributes"].get(name_field) == same[0]]
+    return street, geometry.street_axis(found, name_field, street)
 
 
 def slug(text: str) -> str:
@@ -154,16 +193,23 @@ def envelope_around(axis: LineString, margin: float, crs: int) -> list[float]:
     return [round(lon0, 4), round(lat0, 4), round(lon1, 4), round(lat1, 4)]
 
 
-def draft(like: Case, street: str, out_dir: Path) -> dict[str, Any]:
-    """The case.toml data for ``street``, derived from the model case ``like`` and the city's data."""
+@dataclass(frozen=True)
+class Draft:
+    data: dict[str, Any]  # the case.toml content
+    out_dir: Path
+    bearing_deg: float
+
+
+def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
+    """The case for ``street``, derived from the model case ``like`` and the city's data. ``out_dir`` defaults to
+    ``<city>-<street>`` next to the model case, named as the axes layer spells the street."""
     cfg = like.config
     axes_src = like.source(cfg.profiles.axes)
     if not isinstance(axes_src, ArcgisQuery):
         raise MobilidadosError(f"{like.id}: the axes source {cfg.profiles.axes!r} is not an ArcGIS layer, so streets cannot be looked up")
     name_field = cfg.axes.name_field
-    quoted = street.replace("'", "''")
-    found = arcgis.query_layer(axes_src.url, None, in_sr=axes_src.envelope_sr, out_sr=like.crs, where=f"{name_field} = '{quoted}'")
-    axis = geometry.street_axis(found["features"], name_field, street)
+    street, axis = find_axis(axes_src, name_field, street, like.crs)
+    out_dir = out_dir or like.root.parent / f"{cfg.city.id}-{slug(street)}"
     env, area_env = envelope_around(axis, AXIS_MARGIN_M, like.crs), envelope_around(axis, AREA_MARGIN_M, like.crs)
     nearby = arcgis.query_layer(axes_src.url, tuple(env), in_sr=4326, out_sr=like.crs)["features"]
     lang = like.lang
@@ -180,7 +226,6 @@ def draft(like: Case, street: str, out_dir: Path) -> dict[str, Any]:
     }
     data.pop("known_gaps", None)  # the model case's own gaps are about its street; the city's are inherited
     data["street"] = {"name": street, "headings": headings, "sides": sides, "blocks": street_blocks}
-    data["_bearing"] = bearing(axis)
     step = cfg.profiles.step_m
     data.setdefault("profiles", {})["check_points_s"] = [on_grid((b["start"] + b["end"]) / 2, step) for b in street_blocks]
     if cfg.direction:
@@ -204,7 +249,7 @@ def draft(like: Case, street: str, out_dir: Path) -> dict[str, Any]:
     if cfg.area_scan:
         for sid in (cfg.area_scan.cartography, cfg.area_scan.axes):
             sources.setdefault(sid, {})["envelope"] = area_env
-    return data
+    return Draft(data, out_dir, bearing(axis))
 
 
 # --- TOML ---------------------------------------------------------------------------------------------------
@@ -254,26 +299,19 @@ def dumps(data: dict[str, Any], header: str) -> str:
 
 def write(like: Case, street: str, out_dir: Path | None = None) -> Path:
     """Write ``<out_dir>/case.toml`` for ``street`` and check that it loads. Returns the case directory."""
-    out_dir = out_dir or like.root.parent / f"{like.config.city.id}-{slug(street)}"
-    if (out_dir / "case.toml").exists():
-        raise MobilidadosError(f"{out_dir / 'case.toml'} already exists")
-    data = draft(like, street, out_dir)
-    bearing_deg = data.pop("_bearing")
-    header = (
-        f"# Draft made by `mobilidados new-case` from {like.id} on {dt.date.today().isoformat()}. Check before use:\n"
-        "# - [case] title;\n"
-        "# - [street] blocks: cut where other axes meet the street, labelled with their full names; headings and\n"
-        f"#   sides: compass labels from the axis bearing ({bearing_deg:.0f}° from grid north), which may need judgement;\n"
-        "# - [transit] routes and reference_stops: the routes that run along the street on the service day, and for\n"
-        "#   each route and direction the stop near the street that most of its trips serve;\n"
-        "# - [case] question: written for buses in both directions or in one, as the timetable shows.\n"
-        f"# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {like.id}.\n"
-    )
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "case.toml").write_text(dumps(data, header), encoding="utf-8")
+    d = draft(like, street, out_dir)
+    path = d.out_dir / "case.toml"
+    if path.exists():
+        raise MobilidadosError(f"{path} already exists")
+    header = t("draft.header", like.lang, model=like.id, date=dt.date.today().isoformat(), bearing=f"{d.bearing_deg:.0f}")
+    created = not d.out_dir.exists()
+    d.out_dir.mkdir(parents=True, exist_ok=True)
+    path.write_text(dumps(d.data, header), encoding="utf-8")
     try:
-        Case.load(out_dir)
+        Case.load(d.out_dir)
     except MobilidadosError:
-        (out_dir / "case.toml").unlink()
+        path.unlink()
+        if created:
+            d.out_dir.rmdir()
         raise
-    return out_dir
+    return d.out_dir

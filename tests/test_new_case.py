@@ -1,5 +1,7 @@
 """Drafting a case for another street from an existing case: the street's axis, blocks, labels and buses."""
 
+import logging
+import re
 import tomllib
 
 import pytest
@@ -55,7 +57,11 @@ def city_layer(monkeypatch):
     def query_layer(url, envelope, in_sr, out_sr, where="1=1"):
         calls.append((envelope, where))
         assert out_sr == CRS
-        feats = [f for f in CITY_AXES if where == "1=1" or f"= '{f['attributes']['NAME']}'" in where]
+        if "LIKE" in where:  # the lookup by the most distinctive word; the drafter ranks what comes back
+            word = where.split("'%")[1].split("%'")[0]
+            feats = [f for f in CITY_AXES if re.search(word.replace("_", "."), new_case.normalise(f["attributes"]["NAME"]))]
+        else:
+            feats = [f for f in CITY_AXES if where == "1=1" or f"= '{f['attributes']['NAME']}'" in where]
         return layer_file("Axes", feats)
 
     monkeypatch.setattr(new_case.arcgis, "query_layer", query_layer)
@@ -164,3 +170,41 @@ def test_drafting_refuses_to_overwrite_and_reports_a_street_without_buses(tmp_pa
     assert not (tmp_path / "b" / "case.toml").exists()
     with pytest.raises(MobilidadosError, match="no axis named 'Rua Nenhuma'"):
         write(like, "Rua Nenhuma", tmp_path / "c")
+
+
+def test_a_name_spelled_differently_is_matched_or_answered_with_suggestions(tmp_path, city_layer, caplog):
+    caplog.set_level(logging.INFO, logger="mobilidados.new_case")
+    like = Case.load(write_case(tmp_path / "like"))
+    out = write(like, "rua do téste", tmp_path / "x")  # only case and accents differ: the layer's spelling is used
+    assert Case.load(out).config.street.name == "Rua do Teste"
+    assert "using 'Rua do Teste', as the axes layer spells it" in caplog.text
+    with pytest.raises(MobilidadosError, match=r"no axis named 'R\. Teste' in field NAME; did you mean: 'Rua do Teste'\?"):
+        write(like, "R. Teste", tmp_path / "y")
+    with pytest.raises(MobilidadosError, match=r"no axis named 'Rua Nenhuma' in field NAME$"):
+        write(like, "Rua Nenhuma", tmp_path / "z")
+
+
+def test_the_default_folder_is_named_after_the_layers_spelling(tmp_path, city_layer):
+    like = Case.load(write_case(tmp_path / "like"))
+    assert write(like, "RUA DO TESTE") == tmp_path / "example-rua-do-teste"
+
+
+def test_the_draft_header_is_in_the_cases_language(tmp_path, city_layer):
+    like = Case.load(write_case(tmp_path / "like"))
+    assert new_case.dumps({}, new_case.t("draft.header", "pt", model="m", date="d", bearing="9")).startswith(
+        "# Rascunho feito por `mobilidados new-case` a partir de m, em d. Confirme antes de usar:"
+    )
+    text = (write(like, "Rua do Teste", tmp_path / "x") / "case.toml").read_text(encoding="utf-8")
+    assert text.startswith("# Draft made by `mobilidados new-case` from synthetic-street on ")  # the synthetic case is in English
+
+
+def test_a_draft_that_does_not_load_leaves_nothing_behind(tmp_path, city_layer, monkeypatch):
+    like = Case.load(write_case(tmp_path / "like"))
+
+    def refuse(case_dir, results_dir=None):
+        raise MobilidadosError("invalid configuration")
+
+    monkeypatch.setattr(new_case.Case, "load", refuse)
+    with pytest.raises(MobilidadosError, match="invalid configuration"):
+        write(like, "Rua do Teste", tmp_path / "new")
+    assert not (tmp_path / "new").exists()
