@@ -9,11 +9,11 @@ Parte dos dados que as câmaras e os operadores já publicam e chega a factos qu
 cada número refaz-se a partir das fontes e cada afirmação diz em que se apoia. Assim, um morador, uma
 associação, um jornalista ou um vereador pode levar um pedido à Câmara com factos, e não só com impressões.
 
-A primeira ferramenta responde a uma pergunta: **o estacionamento deixa espaço para dois autocarros se
-cruzarem?** Mede a rua de lado a lado na cartografia de pormenor da Câmara, vai ao horário publicado pelo
-operador (GTFS) buscar as carreiras que lá passam, compara a largura que o estacionamento deixa livre com a
-largura dos veículos que ali se cruzam e com as normas de desenho de rua publicadas, e reúne tudo numa **lista
-de factos apurados**: cada número, em que se apoia, de onde vem e que reservas tem.
+A primeira ferramenta responde a uma pergunta: **o estacionamento deixa espaço para dois autocarros se cruzarem?**
+Mede a rua de lado a lado na cartografia de pormenor da Câmara, vai ao horário publicado pelo operador (GTFS)
+buscar as carreiras que lá passam, compara a largura que o estacionamento deixa livre com a largura dos veículos
+que ali se cruzam e com as referências de desenho de rua publicadas, e reúne tudo numa **lista de factos
+apurados**: cada número, em que se apoia, de onde vem e que reservas tem.
 
 Nasceu de um caso concreto, uma rua de Lisboa, que está incluído na íntegra como exemplo.
 
@@ -25,8 +25,13 @@ os números por trás dela, com a respetiva fonte, estão na [lista de factos ap
 
 ## De onde vêm os dados
 
-Só se usam ficheiros e serviços que uma entidade pública ou um operador põe à disposição de qualquer pessoa, sem
-registo nem palavra-passe. Em cada caso, o ficheiro `sources.lock.json` guarda, para cada dado, o endereço, a
+Só se usam ficheiros e serviços a que qualquer pessoa pode aceder sem registo nem palavra-passe. No caso de Lisboa,
+a cartografia, os eixos de via e as ocorrências Na Minha Rua vêm dos serviços de informação geográfica e do portal
+de dados abertos da Câmara. O horário GTFS é uma cópia do ficheiro publicado pela Carris, guardada no arquivo da
+Mobility Database, de onde é descarregado; essa cópia fica fixada pela impressão digital (SHA-256). O sentido de
+trânsito é consultado num serviço do Lisboa Interativa, o visualizador de mapas que a Câmara disponibiliza ao
+público, com acesso de convidado. Esse serviço não declara licença, e o seu endereço inclui a data de uma cópia de
+segurança, pelo que pode mudar. Em cada caso, o ficheiro `sources.lock.json` guarda, para cada dado, o endereço, a
 data em que foi obtido, a impressão digital (SHA-256) e a licença, ou a indicação de que o editor não declara
 nenhuma. O que não tem licença declarada é usado, mas não é redistribuído. Quem quiser pode ir buscar os mesmos
 ficheiros e confirmar os mesmos resultados.
@@ -41,7 +46,7 @@ flowchart LR
   G[Horários GTFS] --> T[Carreiras, viagens por hora,<br>cruzamentos previstos]
   P --> E[Repartição da largura<br>autocarro e autocarro, autocarro e ligeiro]
   T --> E
-  S[Normas de desenho<br>com página e âmbito] --> L
+  S[Referências de desenho<br>com página e âmbito] --> L
   O[Ocorrências<br>Na Minha Rua] --> L
   E --> L[Factos apurados<br>M · D · I · P · NE]
   D --> L
@@ -58,7 +63,7 @@ flowchart LR
 | `encounters` | autocarros em sentidos opostos que, segundo o horário, se cruzam na rua, e em que ponto |
 | `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
 | `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
-| `standards` | largura medida comparada com as normas de desenho de rua, cada uma com página e âmbito |
+| `standards` | largura medida comparada com as referências de desenho de rua, cada uma com página e âmbito |
 | `ledger` | `findings.md` / `findings.json`: cada afirmação com a sua base, fontes, método e reservas |
 
 ## O que (ainda) não faz
@@ -103,9 +108,9 @@ Zenodo); `mobilidados fetch CASO --from-dir PASTA` volta a pô-los no sítio.
 
 ## Ferramentas com IA (opcionais)
 
-`pip install 'mobilidados[agents]'` acrescenta três ferramentas que usam o Claude. Em todas, **o modelo propõe
-e o código confirma**: nada do que o modelo diz passa a contar como prova por si só. Mais pormenores em
-[docs/ai-tools.md](https://github.com/diogo4256/mobilidados/blob/main/docs/ai-tools.md).
+`pip install 'mobilidados[agents]'` acrescenta as ferramentas da tabela abaixo, que usam o Claude. Em todas, **o
+modelo propõe e o código confirma**: nada do que o modelo diz passa a contar como prova por si só. Mais pormenores
+em [docs/ai-tools.md](https://github.com/diogo4256/mobilidados/blob/main/docs/ai-tools.md).
 
 | Comando | O que o modelo faz | O que o código confirma a seguir |
 | --- | --- | --- |
@@ -114,7 +119,8 @@ e o código confirma**: nada do que o modelo diz passa a contar como prova por s
 | `mobilidados discover --city X --start URL` | percorre o portal de cartografia ou de dados abertos de um município (só endereços autorizados, só leitura) e propõe um perfil de cidade | cada camada proposta é consultada outra vez: os campos existem e os códigos aparecem mesmo na zona de teste |
 
 `mobilidados lint rascunho.md` faz, sem IA nenhuma, as verificações automáticas de uma carta: generalizações,
-concessões feitas à partida, aspas, e "regra" ou "mínimo" usados para o que é só uma recomendação.
+concessões feitas à partida, aspas, e palavras como "norma", "regra" ou "obrigatório" usadas para o que é só uma
+recomendação.
 
 ## Analisar a sua rua
 
@@ -141,7 +147,7 @@ A documentação técnica está, por agora, em inglês.
 
 ```text
 src/mobilidados/          biblioteca e comandos (agents/ = ferramentas opcionais com IA)
-src/mobilidados/data/     catálogo de veículos e normas de desenho de rua, com fonte
+src/mobilidados/data/     catálogo de veículos e de referências de desenho de rua, com fonte
 src/mobilidados/locales/  textos das figuras, da lista de factos e dos relatórios, um ficheiro por língua
 cities/                   perfis de cidade (serviços, códigos, licenças, parâmetros) e dados datados (horário, ocorrências)
 cases/<caso>/             case.toml, sources.lock.json, results/ (no repositório), data/raw/ (fora dele)

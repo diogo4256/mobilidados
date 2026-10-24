@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 
 from mobilidados import cli
-from mobilidados.config import Case
+from mobilidados.config import Case, Config
 from mobilidados.direction import directions
 from mobilidados.pipeline import run
 
@@ -75,7 +75,7 @@ def test_every_stage_writes_its_outputs(results):
     assert {p.stem for p in (results / "tables").glob("*.csv")} == TABLES
     for name in ("free_width_profile", "width_budget", "trips_per_hour", "area_streets"):
         assert (results / "figures" / f"{name}.png").read_bytes().startswith(PNG_SIGNATURE)
-    for name in ("findings.json", "findings.md", "street_axis.geojson"):
+    for name in ("config.json", "findings.json", "findings.md", "street_axis.geojson"):
         assert (results / name).stat().st_size > 0
 
 
@@ -273,6 +273,12 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     assert "## Attribution" in report
     locked = json.loads((results / "findings.json").read_text(encoding="utf-8"))["sources"]
     assert sorted(locked) == ["area_axes", "area_cartography", "cartography", "feed", "network_identify", "reports", "street_axes"]
+
+
+def test_the_run_records_the_configuration_it_used(case, results):
+    text = (results / "config.json").read_text(encoding="utf-8")
+    assert text.endswith("}\n")
+    assert Config.model_validate(json.loads(text)) == case.config  # every resolved value, defaults included
 
 
 def test_the_cached_sources_match_the_lock(case, results, capsys):

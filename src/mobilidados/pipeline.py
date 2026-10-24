@@ -85,10 +85,11 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
     stale = check_pins(case)
     if stale:
         raise MobilidadosError(
-            f"cached files do not match the sha256 pinned in case.toml: {stale}. "
+            f"cached files do not match the sha256 pinned in the case's configuration: {stale}. "
             "Restore the pinned files (fetch --from-dir) or update the pin deliberately."
         )
     r = Run(case, offline=offline)
+    write_config(case)
     if stages is None:  # a full run replaces every output, so nothing from an earlier configuration lingers
         for pattern in ("tables/*.csv", "figures/*.png"):
             for old in case.results_dir.glob(pattern):
@@ -99,6 +100,16 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
     if not offline:
         lock_identify_caches(case)
     return r
+
+
+def write_config(case: Case) -> Path:
+    """Write the resolved, validated configuration to ``results/config.json``, so a run records the parameters it
+    used even when they come from a city profile that later changes."""
+    path = case.results_dir / "config.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(case.config.model_dump(mode="json"), sort_keys=True, ensure_ascii=False, indent=2)
+    path.write_text(text + "\n", encoding="utf-8")
+    return path
 
 
 # --- stages -----------------------------------------------------------------------------------------

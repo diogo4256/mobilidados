@@ -22,7 +22,8 @@ def test_case_loads(case_dir):
 @pytest.mark.data
 @pytest.mark.parametrize("case_dir", CASES, ids=lambda p: p.name)
 def test_results_reproduce(case_dir, tmp_path):
-    """Re-run the case from the locked cache into a scratch folder and compare every table with the committed one."""
+    """Re-run the case from the locked cache into a scratch folder and compare every table, the findings and the
+    recorded configuration with the committed ones."""
     case = Case.load(case_dir)
     if any(s != "ok" for *_, s in Lock(case.lock_path).verify(case.raw_dir)):
         pytest.skip("cached sources missing or different from the lock (run `mobilidados fetch`)")
@@ -36,3 +37,4 @@ def test_results_reproduce(case_dir, tmp_path):
         pd.testing.assert_frame_equal(new, old, check_exact=False, rtol=0, atol=1e-9, obj=name)
     findings = [json.loads((d / "findings.json").read_text(encoding="utf-8"))["findings"] for d in (tmp_path, case.results_dir)]
     assert findings[0] == findings[1]
+    assert (tmp_path / "config.json").read_text(encoding="utf-8") == (case.results_dir / "config.json").read_text(encoding="utf-8")

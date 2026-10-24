@@ -17,7 +17,7 @@ RULES: dict[str, dict[str, list[tuple[str, str]]]] = {
             (r"\bnunca\b", "«nunca»: é verificável?"),
             (r"\btodos os dias\b", "«todos os dias»: é observado ou estimado?"),
             (r"\bconstantemente\b", "«constantemente»: quantifique"),
-            (r"\bimposs[íi]vel\b", "«impossível»: o que a medição mostra é uma folga negativa, diga o número"),
+            (r"\bimposs[íi]ve(?:l|is)\b", "«impossível»: o que a medição mostra é uma folga negativa, diga o número"),
         ],
         "en": [
             (r"\balways\b", "'always': describe what was observed, and when"),
@@ -53,10 +53,13 @@ RULES: dict[str, dict[str, list[tuple[str, str]]]] = {
     },
     "normative_word": {
         "pt": [
-            (r"\b(?:norma|regra|obrigat[óo]ri[oa])\b", "um manual de recomendações não é norma: «perfil de referência» ou «recomendação»"),
-            (r"\bm[íi]nimo legal\b", "confirme a fonte legal exata"),
+            (
+                r"\b(?:normas?|regras?|obrigat[óo]ri[oa]s?)\b",
+                "um manual de recomendações não é norma: «perfil de referência» ou «recomendação»",
+            ),
+            (r"\bm[íi]nimos? lega(?:l|is)\b", "confirme a fonte legal exata"),
         ],
-        "en": [(r"\b(?:mandatory|regulation requires)\b", "a design manual is guidance: say 'reference profile' or 'recommendation'")],
+        "en": [(r"\b(?:mandatory|regulations? requires?)\b", "a design manual is guidance: say 'reference profile' or 'recommendation'")],
     },
 }
 QUOTE = re.compile(r"[«\"“]([^»\"”]{12,})[»\"”]")
