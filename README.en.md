@@ -2,16 +2,18 @@
 
 *[Português](https://github.com/diogo4256/mobilidados/blob/main/README.md) · English*
 
-**Mobility claims grounded in open data, in Portugal, starting with Lisbon.** mobilidados turns the data that
-municipalities and operators already publish into findings a public body can check for itself: every number
+**Mobility claims grounded in open data, in Portugal, starting with Lisbon.** mobilidados exists to improve
+mobility, and public transport is part of the solution. Its tools measure how a street's space is shared out and
+how much is left for people on foot, by bus or by bike. They turn the data that municipalities and operators
+already publish into findings a public body can check for itself: every number
 reproducible from its sources, and every statement graded by how well it is supported. A citizen, an
 association, a journalist or a councillor can then make a request that rests on facts, not impressions.
 
-The first tool answers one question: **does the street fit the buses scheduled on it?** It measures a street's
-cross-section from the municipality's own large-scale cartography, finds the bus routes scheduled on it in the
-operator's GTFS feed, compares the free width with the vehicles that must pass each other there and with
-published design references, and writes a **findings ledger**: every number, its evidence grade, its sources and
-its caveats.
+The first tool answers one question: **does on-street parking leave room for buses to pass each other?** It
+measures a street's cross-section from the municipality's own large-scale cartography, finds the bus routes
+scheduled on it in the operator's GTFS feed, compares the free width that parking leaves with the vehicles that
+must pass each other there and with published design references, and writes a **findings ledger**: every number,
+its evidence grade, its sources and its caveats.
 
 It started as one person's case about one street in Lisbon. The case is included in full as the worked example.
 
@@ -54,7 +56,7 @@ flowchart LR
 | `envelope` | margins for bus × bus, bus × car, car × car, with and without mirrors; overhang sensitivity |
 | `encounters` | buses in opposite directions predicted to meet on the street, and where |
 | `occurrences` | geolocated citizen reports per 100 m of street, compared with neighbouring streets |
-| `area` | every street with buses in the surrounding area, scanned for the same pattern |
+| `area` | the streets with buses in the surrounding area where parking squeezes their passage in the same way |
 | `standards` | measured width against design references, each with its page and scope |
 | `ledger` | `findings.md` / `findings.json`: every statement with grade, sources, method and caveats |
 
@@ -64,8 +66,8 @@ flowchart LR
   widths, not swept paths. A narrow free width is a reason to ask for an inspection, not proof of an
   infraction. The ledger lists what was not verified (grade NE) for each case.
 * Only Lisbon has a city profile. Other municipalities need one ([docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md)).
-* Street width and bus traffic are the only topic so far. Other mobility questions (sidewalks, crossings, stops,
-  cycle lanes) are welcome as new tools that follow the same evidence standard.
+* The room that parking leaves for buses is the only topic so far. Other mobility questions (sidewalks,
+  crossings, stops, cycle lanes) are welcome as new tools that follow the same evidence standard.
 
 ## Evidence standard
 

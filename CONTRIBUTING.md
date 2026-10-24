@@ -65,6 +65,6 @@ builds the package, checks that the wheel installs, makes a GitHub release with 
 publishes to PyPI through trusted publishing (no token is stored). Publication can be made to wait for a
 maintainer's approval by adding required reviewers to the `pypi` environment in the repository settings.
 
-`README.md` (Portuguese) and `README.en.md` (English) say the same; a change to one goes into both. Their links are
-absolute because PyPI shows `README.md` as the project page. They point to `main`, so the page of an older release
-links to the current files.
+`README.md` (Portuguese) and `README.en.md` (English) say the same, each written in its own language rather than
+translated sentence by sentence; a change to one goes into both. Their links are absolute because PyPI shows
+`README.md` as the project page. They point to `main`, so the page of an older release links to the current files.

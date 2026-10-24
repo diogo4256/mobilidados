@@ -2,32 +2,35 @@
 
 *Português · [English](https://github.com/diogo4256/mobilidados/blob/main/README.en.md)*
 
-**Reivindicações de mobilidade fundamentadas em dados abertos, em Portugal, a começar por Lisboa.** O
-mobilidados transforma os dados que câmaras e operadores já publicam em constatações que uma entidade pública
-pode verificar por si: cada número é reprodutível a partir das fontes e cada afirmação tem um grau de evidência.
-Um cidadão, uma associação, um jornalista ou um vereador pode assim fazer um pedido assente em factos, não em
-impressões.
+**Dados abertos ao serviço da mobilidade, em Portugal, a começar por Lisboa.** O mobilidados quer melhorar a
+forma como nos deslocamos na cidade, e o transporte público é parte da resposta. As suas ferramentas medem como
+está repartido o espaço da rua e quanto sobra para quem anda a pé, de autocarro ou de bicicleta.
 
-A primeira ferramenta responde a uma pergunta: **a rua tem largura para os autocarros que lá passam?** Mede o
-perfil transversal da rua na cartografia de grande escala da própria câmara, encontra no GTFS do operador as
-carreiras que lá circulam, compara a faixa livre com os veículos que se têm de cruzar e com as referências de
-projeto publicadas, e escreve um **registo de constatações**: cada número, o seu grau de evidência, as fontes e
-as ressalvas.
+Parte dos dados que as câmaras e os operadores já publicam e chega a factos que a própria Câmara pode confirmar:
+cada número refaz-se a partir das fontes e cada afirmação diz em que se apoia. Assim, um morador, uma
+associação, um jornalista ou um vereador pode levar um pedido à Câmara com factos, e não só com impressões.
 
-Começou como o caso de uma pessoa sobre uma rua de Lisboa. O caso está incluído na íntegra como exemplo.
+A primeira ferramenta responde a uma pergunta: **o estacionamento deixa espaço para dois autocarros se
+cruzarem?** Mede a rua de lado a lado na cartografia de pormenor da Câmara, vai ao horário publicado pelo
+operador (GTFS) buscar as carreiras que lá passam, compara a largura que o estacionamento deixa livre com a
+largura dos veículos que ali se cruzam e com as normas de desenho de rua publicadas, e reúne tudo numa **lista
+de factos apurados**: cada número, em que se apoia, de onde vem e que reservas tem.
 
-![Orçamento de largura da Rua Ricardo Jorge, Lisboa](https://raw.githubusercontent.com/diogo4256/mobilidados/main/cases/lisboa-rua-ricardo-jorge/results/figures/width_budget.png)
+Nasceu de um caso concreto, uma rua de Lisboa, que está incluído na íntegra como exemplo.
 
-*Rua Ricardo Jorge (Lisboa): a faixa livre cartografada entre as duas faixas de estacionamento, comparada com a
-largura dos veículos que ali se têm de cruzar. A figura é gerada pela execução; todos os números por trás dela,
-com grau e fonte, estão no [registo de constatações](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/findings.md).*
+![Repartição da largura na Rua Ricardo Jorge, Lisboa](https://raw.githubusercontent.com/diogo4256/mobilidados/main/cases/lisboa-rua-ricardo-jorge/results/figures/width_budget.png)
 
-## Dados públicos, com proveniência
+*Rua Ricardo Jorge (Lisboa): a largura que fica livre entre o estacionamento dos dois lados, tal como está
+cartografado, ao lado da largura dos veículos que ali se têm de cruzar. A figura sai da própria análise; todos
+os números por trás dela, com a respetiva fonte, estão na [lista de factos apurados](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/findings.md).*
 
-Cada dado de entrada é um ficheiro ou serviço que uma entidade pública ou um operador disponibiliza a qualquer
-pessoa, sem autenticação. Cada caso regista em `sources.lock.json` de onde veio cada dado, quando, o seu SHA-256 e
-a sua licença, ou que o editor não indica nenhuma; os dados sem licença indicada são usados mas não
-redistribuídos. Qualquer pessoa pode obter os mesmos ficheiros e verificar os mesmos resultados.
+## De onde vêm os dados
+
+Só se usam ficheiros e serviços que uma entidade pública ou um operador põe à disposição de qualquer pessoa, sem
+registo nem palavra-passe. Em cada caso, o ficheiro `sources.lock.json` guarda, para cada dado, o endereço, a
+data em que foi obtido, a impressão digital (SHA-256) e a licença, ou a indicação de que o editor não declara
+nenhuma. O que não tem licença declarada é usado, mas não é redistribuído. Quem quiser pode ir buscar os mesmos
+ficheiros e confirmar os mesmos resultados.
 
 ## O que faz
 
@@ -36,111 +39,113 @@ flowchart LR
   A[Cartografia<br>municipal] --> P[Perfis<br>transversais]
   B[Eixos de via] --> P
   C[Rede viária] --> D[Sentido de trânsito]
-  G[GTFS] --> T[Carreiras, viagens por hora,<br>cruzamentos no horário]
-  P --> E[Orçamento de largura<br>autocarro × autocarro, autocarro × ligeiro]
+  G[Horários GTFS] --> T[Carreiras, viagens por hora,<br>cruzamentos previstos]
+  P --> E[Repartição da largura<br>autocarro e autocarro, autocarro e ligeiro]
   T --> E
-  S[Referências de projeto<br>com página e âmbito] --> L
-  O[Ocorrências em<br>dados abertos] --> L
-  E --> L[Registo de constatações<br>M · D · I · P · NE]
+  S[Normas de desenho<br>com página e âmbito] --> L
+  O[Ocorrências<br>Na Minha Rua] --> L
+  E --> L[Factos apurados<br>M · D · I · P · NE]
   D --> L
   L --> R[findings.md / .json<br>figuras, tabelas]
-  L -. verifica .-> X[Rascunho de carta]
+  L -. confere .-> X[Rascunho de carta]
 ```
 
-| Etapa | Resultado |
+| Etapa | O que produz |
 | --- | --- |
-| `profiles` | faixa livre, faixas de estacionamento, largura entre lancis e passeios ao longo da rua; resumo por quarteirão |
-| `direction` | sentido único ou duplo, a partir da rede viária municipal |
-| `transit` | carreiras que percorrem a rua, sentido, viagens por hora num dia de serviço, tempos entre paragens no horário |
-| `envelope` | folgas para autocarro × autocarro, autocarro × ligeiro e ligeiro × ligeiro, com e sem espelhos; sensibilidade ao balanço |
-| `encounters` | autocarros em sentidos opostos que, pelo horário, se cruzam na rua, e onde |
-| `occurrences` | ocorrências georreferenciadas por 100 m de rua, comparadas com as ruas vizinhas |
-| `area` | todas as ruas com autocarros na zona envolvente, analisadas para o mesmo padrão |
-| `standards` | largura medida face às referências de projeto, cada uma com página e âmbito |
-| `ledger` | `findings.md` / `findings.json`: cada afirmação com grau, fontes, método e ressalvas |
+| `profiles` | largura livre, estacionamento de cada lado, largura entre lancis e passeios ao longo da rua; resumo por quarteirão |
+| `direction` | sentido único ou duplo, segundo a rede viária da Câmara |
+| `transit` | carreiras que passam na rua, em que sentido, quantas viagens por hora num dia de serviço, tempos previstos entre paragens |
+| `envelope` | folgas para dois autocarros, autocarro e ligeiro, e dois ligeiros, com e sem espelhos; efeito de carros estacionados que ficam fora do lugar |
+| `encounters` | autocarros em sentidos opostos que, segundo o horário, se cruzam na rua, e em que ponto |
+| `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
+| `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
+| `standards` | largura medida comparada com as normas de desenho de rua, cada uma com página e âmbito |
+| `ledger` | `findings.md` / `findings.json`: cada afirmação com a sua base, fontes, método e reservas |
 
 ## O que (ainda) não faz
 
-* Lê áreas cartografadas, não carros estacionados; usa o horário, não a operação observada; e compara larguras
-  estáticas, não trajetórias de varrimento. Uma faixa livre estreita é razão para pedir uma vistoria, não prova
-  de uma infração. O registo lista, para cada caso, o que não foi verificado (grau NE).
-* Só Lisboa tem perfil de cidade. Outros municípios precisam de um ([docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md)).
-* Por agora, o único tema é a largura das ruas face ao tráfego de autocarros. Outras questões de mobilidade
-  (passeios, atravessamentos, paragens, ciclovias) são bem-vindas como novas ferramentas, com o mesmo padrão de
-  evidência.
+* Lê os lugares de estacionamento desenhados na cartografia, não os carros que lá estão; usa o horário, não o
+  que os autocarros fazem na realidade; e compara larguras, sem simular o espaço que um autocarro varre numa
+  curva. Uma rua estreita é motivo para pedir uma vistoria, não prova de que há uma infração. Para cada caso, a
+  lista de factos diz o que ficou por verificar (NE).
+* Por agora só há perfil de cidade para Lisboa. Os outros concelhos precisam do seu ([docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md)).
+* Por agora só trata do espaço que o estacionamento deixa aos autocarros. Outras questões de mobilidade
+  (passeios, passadeiras, paragens, ciclovias) são bem-vindas como novas ferramentas, com o mesmo rigor.
 
-## Padrão de evidência
+## Em que se apoia cada afirmação
 
-Cada afirmação do registo tem um grau ([docs/evidence-standard.md](https://github.com/diogo4256/mobilidados/blob/main/docs/evidence-standard.md)):
+Cada facto da lista traz uma letra que diz em que se apoia ([docs/evidence-standard.md](https://github.com/diogo4256/mobilidados/blob/main/docs/evidence-standard.md)):
 
-| Grau | Significado |
+| Letra | Quer dizer |
 | --- | --- |
-| **M** | medido ou contado em dados oficiais (cartografia, GTFS, dados abertos) |
-| **D** | escrito num documento oficial (lei, manual, ficha técnica), com página |
-| **I** | inferência a partir de M/D/P (um modelo, um cálculo) |
-| **P** | pressuposto, declarado como tal (por exemplo, uma largura de espelho que ninguém publica) |
-| **NE** | não encontrado / não verificado, o que não é o mesmo que "não existe" |
+| **M** | medido ou contado em dados oficiais (cartografia, horários, dados abertos) |
+| **D** | escrito num documento oficial (lei, manual, ficha técnica), com a página |
+| **I** | inferido a partir de M, D ou P (um modelo, uma conta) |
+| **P** | pressuposto, assumido como tal (por exemplo, a largura com espelhos, que ninguém publica) |
+| **NE** | não encontrado ou não verificado, o que não quer dizer que não exista |
 
-## Começar
+## Como usar
 
 ```bash
 git clone https://github.com/diogo4256/mobilidados.git && cd mobilidados
 uv sync                      # ou: python -m venv .venv && .venv/bin/pip install -e .
-uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge     # descarrega as fontes, escreve sources.lock.json
-uv run mobilidados verify cases/lisboa-rua-ricardo-jorge    # confere cada ficheiro com o registo (sha256)
-uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # escreve results/
-git diff --exit-code cases/lisboa-rua-ricardo-jorge/results/tables   # igual à execução de referência?
+uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge     # descarrega as fontes e escreve sources.lock.json
+uv run mobilidados verify cases/lisboa-rua-ricardo-jorge    # confere cada ficheiro com a impressão digital guardada
+uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # escreve os resultados em results/
+git diff --exit-code cases/lisboa-rua-ricardo-jorge/results/tables   # dá o mesmo que a análise de referência?
 ```
 
-Os serviços municipais estão em produção, por isso um `fetch` novo pode diferir da execução de referência: o
-`verify` diz que ficheiros mudaram. Um caso fixa o seu GTFS por SHA-256 e recusa correr com outro, a não ser que
-se mude essa fixação de propósito; o caso de Lisboa descarrega o GTFS do arquivo da Mobility Database, para que o
-ficheiro exato continue disponível. `mobilidados snapshot CASO PASTA` copia para uma pasta os dados cuja licença
-permite redistribuição, para arquivo (por exemplo no Zenodo); `mobilidados fetch CASO --from-dir PASTA` repõe-nos.
+Os serviços da Câmara vão sendo atualizados, por isso um `fetch` feito hoje pode não dar exatamente o mesmo que
+a análise de referência; o `verify` diz que ficheiros mudaram. Cada caso fixa o horário GTFS que usou, pela
+impressão digital, e recusa correr com outro, a não ser que se mude isso de propósito. No caso de Lisboa, o
+horário vem do arquivo da Mobility Database, onde o ficheiro exato continua disponível. `mobilidados snapshot
+CASO PASTA` copia para uma pasta os dados que a licença deixa redistribuir, para os guardar (por exemplo no
+Zenodo); `mobilidados fetch CASO --from-dir PASTA` volta a pô-los no sítio.
 
 ## Ferramentas com IA (opcionais)
 
-`pip install 'mobilidados[agents]'` acrescenta três ferramentas baseadas no Claude. Em todas, **o modelo propõe
-e código simples verifica**: o que o modelo produz nunca se torna evidência por si só. Ver
+`pip install 'mobilidados[agents]'` acrescenta três ferramentas que usam o Claude. Em todas, **o modelo propõe
+e o código confirma**: nada do que o modelo diz passa a contar como prova por si só. Mais pormenores em
 [docs/ai-tools.md](https://github.com/diogo4256/mobilidados/blob/main/docs/ai-tools.md).
 
-| Comando | O que o modelo faz | O que o código depois verifica |
+| Comando | O que o modelo faz | O que o código confirma a seguir |
 | --- | --- | --- |
-| `mobilidados check-claims CASO rascunho.md` | um agente com ferramentas de pesquisa no registo e nas fontes extrai cada afirmação de um rascunho de carta e avalia-a | as citações têm de estar textualmente na fonte, perto da linha indicada; os números têm de bater com a constatação citada; tudo o que está entre aspas tem de ser citação literal |
-| `mobilidados extract-standard manual.pdf --pages N` | lê uma página de um manual, incluindo cotas impressas dentro dos desenhos | cada valor é procurado no texto do PDF e em OCR de várias passagens (Tesseract); as somas são recalculadas; os valores não confirmados ficam assinalados para uma pessoa, com a imagem da página |
-| `mobilidados discover --city X --start URL` | explora o portal SIG / de dados abertos de um município (servidores autorizados, só leitura) e propõe um perfil de cidade | cada camada proposta é consultada de novo: os campos existem e os códigos de classe ocorrem na área de teste |
+| `mobilidados check-claims CASO rascunho.md` | lê um rascunho de carta, separa cada afirmação e procura-a na lista de factos e nas fontes | as citações têm de estar tal e qual na fonte, perto da linha indicada; os números têm de bater com o facto citado; o que está entre aspas tem de ser citação literal |
+| `mobilidados extract-standard manual.pdf --pages N` | lê uma página de um manual, incluindo as cotas dos desenhos | cada valor é procurado no texto do PDF e por reconhecimento ótico de caracteres (Tesseract), em várias passagens; as somas são refeitas; o que não se confirma fica marcado para uma pessoa ver, com a imagem da página |
+| `mobilidados discover --city X --start URL` | percorre o portal de cartografia ou de dados abertos de um município (só endereços autorizados, só leitura) e propõe um perfil de cidade | cada camada proposta é consultada outra vez: os campos existem e os códigos aparecem mesmo na zona de teste |
 
-`mobilidados lint rascunho.md` faz a parte determinística das verificações de cartas (generalizações, concessões
-antecipadas, aspas, "regra"/"mínimo" para uma recomendação), sem IA nenhuma.
+`mobilidados lint rascunho.md` faz, sem IA nenhuma, as verificações automáticas de uma carta: generalizações,
+concessões feitas à partida, aspas, e "regra" ou "mínimo" usados para o que é só uma recomendação.
 
-## Juntar a sua rua
+## Analisar a sua rua
 
 1. Se a sua cidade já tem perfil em [`cities/`](https://github.com/diogo4256/mobilidados/tree/main/cities), copie
    [`cases/lisboa-rua-ricardo-jorge/case.toml`](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/case.toml), mude o nome da rua,
-   o envelope, os quarteirões, as carreiras e as paragens de referência, e faça `fetch` e `run`.
-2. Se não tem, escreva um perfil de cidade: [docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md) (o `mobilidados discover` pode fazer um rascunho).
+   a zona, os quarteirões, as carreiras e as paragens de referência, e corra `fetch` e `run`.
+2. Se não tem, comece pelo perfil da cidade: [docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md) (o `mobilidados discover` pode fazer um primeiro rascunho).
 
-Método e limites: [docs/methodology.md](https://github.com/diogo4256/mobilidados/blob/main/docs/methodology.md). Escrever a uma entidade pública com os resultados:
-[docs/writing-to-public-bodies.md](https://github.com/diogo4256/mobilidados/blob/main/docs/writing-to-public-bodies.md). A documentação
-técnica está em inglês.
+O método e os seus limites estão em [docs/methodology.md](https://github.com/diogo4256/mobilidados/blob/main/docs/methodology.md); conselhos para escrever à
+Câmara ou a outra entidade com estes resultados, em [docs/writing-to-public-bodies.md](https://github.com/diogo4256/mobilidados/blob/main/docs/writing-to-public-bodies.md).
+A documentação técnica está, por agora, em inglês.
 
 ## Organização do repositório
 
 ```text
-src/mobilidados/          biblioteca e linha de comandos (agents/ = ferramentas opcionais com IA)
-src/mobilidados/data/     catálogo de veículos e referências de projeto (com grau e fonte)
-src/mobilidados/locales/  textos das figuras, do registo e dos relatórios, um ficheiro por língua
-cities/                   perfis de cidade: serviços, códigos de classe, licenças
+src/mobilidados/          biblioteca e comandos (agents/ = ferramentas opcionais com IA)
+src/mobilidados/data/     catálogo de veículos e normas de desenho de rua, com fonte
+src/mobilidados/locales/  textos das figuras, da lista de factos e dos relatórios, um ficheiro por língua
+cities/                   perfis de cidade: serviços, códigos, licenças
 cases/<caso>/             case.toml, sources.lock.json, results/ (no repositório), data/raw/ (fora dele)
-docs/                     padrão de evidência, metodologia, ferramentas com IA, nova cidade, cartas a entidades
-tests/                    testes unitários (dados sintéticos) e teste de reprodução dos casos
+docs/                     método, ferramentas com IA, nova cidade, cartas a entidades públicas
+tests/                    testes com dados fictícios e teste que refaz cada caso
 ```
 
 ## Agradecimentos
 
 Às entidades que publicam os dados em que este trabalho assenta: a Câmara Municipal de Lisboa (cartografia,
-eixos de via, rede viária e as ocorrências Na Minha Rua), a Carris (GTFS) e a
-[Mobility Database](https://mobilitydatabase.org), que arquiva os GTFS e permite repetir uma análise passada.
+eixos de via, rede viária e ocorrências Na Minha Rua), a Carris (horários GTFS) e a
+[Mobility Database](https://mobilitydatabase.org), que guarda os horários antigos e permite repetir uma análise
+feita no passado.
 
 ## Contacto
 
@@ -148,8 +153,8 @@ Diogo Adegas, <diogo.adegas@gmail.com> (também para questões do código de con
 
 ## Contribuir, licença, citação
 
-Contribuições são bem-vindas, sobretudo novas cidades e novos casos: ver [CONTRIBUTING.md](https://github.com/diogo4256/mobilidados/blob/main/CONTRIBUTING.md) e o
-[código de conduta](https://github.com/diogo4256/mobilidados/blob/main/CODE_OF_CONDUCT.md). O código está sob [Apache-2.0](https://github.com/diogo4256/mobilidados/blob/main/LICENSES/Apache-2.0.txt); a documentação e os
-resultados sob [CC-BY-4.0](https://github.com/diogo4256/mobilidados/blob/main/LICENSES/CC-BY-4.0.txt); os dados de terceiros mantêm a sua licença, registada por
-fonte no `sources.lock.json` de cada caso (ver [REUSE.toml](https://github.com/diogo4256/mobilidados/blob/main/REUSE.toml)). Os dados brutos de terceiros não são
-redistribuídos aqui. Para citar: [CITATION.cff](https://github.com/diogo4256/mobilidados/blob/main/CITATION.cff).
+Todas as contribuições são bem-vindas, sobretudo novas cidades e novos casos: ver [CONTRIBUTING.md](https://github.com/diogo4256/mobilidados/blob/main/CONTRIBUTING.md) e o
+[código de conduta](https://github.com/diogo4256/mobilidados/blob/main/CODE_OF_CONDUCT.md). O código está sob a licença [Apache-2.0](https://github.com/diogo4256/mobilidados/blob/main/LICENSES/Apache-2.0.txt); a documentação e os
+resultados, sob [CC-BY-4.0](https://github.com/diogo4256/mobilidados/blob/main/LICENSES/CC-BY-4.0.txt). Os dados de terceiros mantêm a licença de origem, registada
+para cada fonte no `sources.lock.json` do caso (ver [REUSE.toml](https://github.com/diogo4256/mobilidados/blob/main/REUSE.toml)), e os ficheiros originais não são
+redistribuídos aqui. Para citar o projeto: [CITATION.cff](https://github.com/diogo4256/mobilidados/blob/main/CITATION.cff).

@@ -11,7 +11,8 @@ streetfit.
 
 ### Added
 
-- `README.md` is in Portuguese and `README.en.md` in English. Both state what the tools do not do yet.
+- `README.md` is in Portuguese and `README.en.md` in English. Both state the project's purpose (better mobility, with
+  public transport as part of the solution) and what the tools do not do yet.
 - A pushed tag `vX.Y.Z` makes a GitHub release with the changelog's section as notes and publishes the
   package to PyPI (`.github/workflows/release.yml`). The steps are in `CONTRIBUTING.md`.
 
