@@ -1,4 +1,5 @@
 # Mensagens do streetfit, português. Cada chave existe em todas as línguas (tests/test_i18n.py verifica chaves e {marcadores}).
+# Uma mensagem cuja redação depende de uma contagem é uma tabela com as formas `one` e `other` (ver streetfit/i18n.py).
 
 [figure]
 free_width = "Faixa livre entre as faixas de estacionamento"
@@ -27,18 +28,26 @@ pattern_one_way = "sentido único, estacionamento dos dois lados, estreita"
 
 [ledger]
 length = "O eixo da rua tem {length} m."
-traffic = "A rede viária municipal marca a rua como de {traffic} (arestas verificadas em {n} pontos ao longo da rua)."
+traffic = { one = "A rede viária municipal marca a rua como de {traffic} (arestas verificadas em {n} ponto ao longo da rua).", other = "A rede viária municipal marca a rua como de {traffic} (arestas verificadas em {n} pontos ao longo da rua)." }
 free = "Onde há faixas de estacionamento cartografadas dos dois lados ({metres} m da rua), a faixa livre cartografada entre elas mede {fmin}–{fmax} m (mediana {fmed} m)."
 strips = "As faixas de estacionamento cartografadas têm {sl} m (lado {side_l}) e {sr} m (lado {side_r}) (medianas)."
-routes = "As carreiras {routes} estão programadas ao longo da rua. Em {day}: {n_up} viagens {up} e {n_down} viagens {down} (no máximo {max_up} e {max_down} por hora)."
+routes_scheduled = { one = "A carreira {routes} está programada ao longo da rua.", other = "As carreiras {routes} estão programadas ao longo da rua." }
+trips = { one = "{n} viagem {heading}", other = "{n} viagens {heading}" }
+routes = "{scheduled} Em {day}: {trips_up} e {trips_down} (no máximo {max_up} e {max_down} por hora)."
 vehicle_body = "Veículo de referência «{label}»: largura da carroçaria {w} m ({src})."
 vehicle_mirrors = "Largura com espelhos de «{label}» considerada {w} m ({src})."
 budget = "Com as duas faixas ocupadas e os veículos estacionados dentro delas, dois autocarros precisam de {bb} m (só carroçaria; {bbm} m com espelhos) para uma faixa livre mediana de {fmed} m: folga {mbb} m. Um autocarro e um ligeiro precisam de {bc} m: folga {mbc} m ({mbcm} m com o espelho do ligeiro)."
-encounters = "O horário implica {nrange} encontros por dia útil entre autocarros em sentidos opostos na rua (modelo de velocidade constante a {speeds} km/h); {nnarrow} caem nos troços com estacionamento dos dois lados."
+meetings = { one = "{n} encontro", other = "{n} encontros" }
+meetings_narrow = { one = "{n} cai nos troços com estacionamento dos dois lados", other = "{n} caem nos troços com estacionamento dos dois lados" }
+encounters = "O horário implica {meetings} por dia útil entre autocarros em sentidos opostos na rua (modelo de velocidade constante a {speeds} km/h); {narrow}."
 encounters_check = "A {kmh} km/h, a velocidade mais baixa implícita no horário de {day} entre paragens (um mínimo), o modelo dá {per_day}."
 runtimes = "Tempo programado da paragem {a} à seguinte ({b}, {d} m em linha reta): mediana de {m_all} s em todas as viagens do feed (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h)."
-occurrences = "Foram atribuídas à rua {n} ocorrências da categoria «{flt}» ({period}, a ≤{d} m do eixo): {rate} por 100 m, {rank}.ª de {total} ruas com pelo menos {minlen} m na envolvente."
-area = "Das {total} ruas com autocarros programados na envolvente, {k} são de dois sentidos e combinam estacionamento dos dois lados com uma faixa livre inferior a {thr} m em pelo menos {minm} m ({names}); destas, {nb} com autocarros nos dois sentidos: {names2}."
+reports_attributed = { one = "Foi atribuída à rua {n} ocorrência da categoria «{flt}»", other = "Foram atribuídas à rua {n} ocorrências da categoria «{flt}»" }
+street_rank = { one = "{rank}.ª de {total} rua com pelo menos {minlen} m na envolvente", other = "{rank}.ª de {total} ruas com pelo menos {minlen} m na envolvente" }
+occurrences = "{attributed} ({period}, a ≤{d} m do eixo): {rate} por 100 m, {ranking}."
+area_streets = { one = "De {n} rua com autocarros programados na envolvente", other = "Das {n} ruas com autocarros programados na envolvente" }
+area_pattern = { one = "{n} é de dois sentidos e combina estacionamento dos dois lados com uma faixa livre inferior a {thr} m em pelo menos {minm} m ({names})", other = "{n} são de dois sentidos e combinam estacionamento dos dois lados com uma faixa livre inferior a {thr} m em pelo menos {minm} m ({names})" }
+area = "{streets}, {pattern}; destas, {nb} com autocarros nos dois sentidos: {names2}."
 standard = "{doc}, p. {page} ({kind}): {label}: {value} m. Âmbito: {scope}. Mediana medida: {fmed} m ({diff} m)."
 
 [kind]
@@ -57,7 +66,7 @@ sources = "Fontes"
 origin = "origem"
 retrieved = "obtido"
 licence = "licença"
-files = "{n} ficheiros, p. ex. {example}"
+files = { one = "{n} ficheiro, p. ex. {example}", other = "{n} ficheiros, p. ex. {example}" }
 attribution = "Atribuição"
 transformed = "Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo streetfit; não são publicações da entidade de origem, que não as subscreve."
 and = " e "

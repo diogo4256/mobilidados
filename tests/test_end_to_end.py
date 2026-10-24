@@ -214,6 +214,16 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
         "max_down_per_hour": 1,
         "service_date": "2026-10-27",
     }
+    # a count of 1 is singular, a count of several (or a range) plural, and each clause agrees with its own count
+    assert findings["transit"]["statement"].startswith(
+        "Routes 10, 20 are scheduled along the street. On 2026-10-27: 2 trips east and 1 trip west ("
+    )
+    assert "implies 1 meeting per weekday" in findings["encounters"]["statement"]
+    assert "; 0–1 fall within the sections with parking on both sides." in findings["encounters"]["statement"]
+    assert findings["area_pattern"]["statement"].startswith(
+        "Of 1 street with scheduled buses in the surrounding area, 1 is two-way and combines parking on both sides"
+    )
+    assert findings["occurrences"]["statement"].startswith("5 reports in category 'Parking' were attributed to the street")
     assert findings["width_budget"]["values"] == {
         "bus_bus_margin_m": -0.2,
         "bus_bus_margin_mirrors_m": -1.0,

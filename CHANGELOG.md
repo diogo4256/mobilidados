@@ -28,6 +28,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - The claim checker's read tool returned one line more than it told the model.
 - The dates of the citizen reports were parsed across all files at once, so a file whose date format differed
   from the first file's lost its dates without a message. Each file is now parsed on its own.
+- Generated text agrees with its counts: "1 trip", "1 meeting", "Of 1 street, 1 is two-way", and in Portuguese
+  "Foi atribuída à rua 1 ocorrência". A message whose wording depends on a count is a table with `one` and
+  `other` forms in `locales/<lang>.toml`, and `i18n.t(..., count=n)` picks the form; a sentence with several
+  counts is composed from messages that each follow one count. Texts for counts above one are unchanged, so the
+  Lisbon results are too.
 
 ## [0.2.0] - 2026-10-24
 

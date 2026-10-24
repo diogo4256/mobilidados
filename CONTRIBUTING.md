@@ -15,7 +15,9 @@ method on different cartography and makes the tool useful to more people.
 * **Vehicles**: add entries to `src/streetfit/data/vehicles.toml` with a source and an evidence grade.
   Catalogue text in other languages goes in a `translations.<lang>` table after the entry.
 * **A language**: copy `src/streetfit/locales/en.toml` to `<lang>.toml`, translate the values (keep the
-  `{placeholders}`) and add the code to `Lang` in `src/streetfit/config.py`; a test checks that every key and
+  `{placeholders}`), add the code to `Lang` in `src/streetfit/config.py` and its plural rule to `PLURAL_RULES` in
+  `src/streetfit/i18n.py`. A message that depends on a count is a table with the forms `one` and `other`
+  (`one` is the singular; write both, with the same placeholders in each). A test checks that every key, form and
   placeholder is there.
 * **Code**: new source kinds (WFS, OGC API Features, OpenStreetMap), swept-path analysis, orthophoto checks.
 

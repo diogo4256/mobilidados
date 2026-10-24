@@ -10,6 +10,7 @@ reports should quote the ledger, and ``streetfit check-claims`` verifies drafts 
 from __future__ import annotations
 
 import json
+import math
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
@@ -23,6 +24,11 @@ from .provenance import Lock
 
 if TYPE_CHECKING:
     from .pipeline import Run
+
+
+def range_count(values: list[int]) -> float:
+    """The count that picks the plural form of the range ``min–max`` printed for ``values`` (sorted, distinct)."""
+    return values[0] if len(values) == 1 else math.inf  # a range of different numbers is plural
 
 
 class Finding(BaseModel):
@@ -66,7 +72,7 @@ def build(r: Run) -> list[Finding]:
             Finding(
                 id="traffic",
                 grade="M",
-                statement=say("traffic", traffic=t(f"traffic.{traffic}", lang), n=edges.s_m.nunique()),
+                statement=say("traffic", count=edges.s_m.nunique(), traffic=t(f"traffic.{traffic}", lang), n=edges.s_m.nunique()),
                 values={"traffic": traffic},
                 sources=[cfg.direction.source],
                 method="Identify on the routing network at stations along the axis.",
@@ -127,12 +133,10 @@ def build(r: Run) -> list[Finding]:
                 grade="M",
                 statement=say(
                     "routes",
-                    routes=", ".join(tr.routes),
+                    scheduled=say("routes_scheduled", count=len(tr.routes), routes=", ".join(tr.routes)),
                     day=tr.service_date,
-                    n_up=trips["trips_up"],
-                    n_down=trips["trips_down"],
-                    up=up,
-                    down=down,
+                    trips_up=say("trips", count=trips["trips_up"], n=trips["trips_up"], heading=up),
+                    trips_down=say("trips", count=trips["trips_down"], n=trips["trips_down"], heading=down),
                     max_up=trips["max_up_per_hour"],
                     max_down=trips["max_down_per_hour"],
                 ),
@@ -242,9 +246,9 @@ def build(r: Run) -> list[Finding]:
                 grade="I",
                 statement=say(
                     "encounters",
-                    nrange="–".join(map(str, counts)),
+                    meetings=say("meetings", count=range_count(counts), n="–".join(map(str, counts))),
                     speeds="/".join(f"{v:g}" for v in assumed.speed_kmh),
-                    nnarrow="–".join(map(str, in_narrow)),
+                    narrow=say("meetings_narrow", count=range_count(in_narrow), n="–".join(map(str, in_narrow))),
                 ),
                 values={"per_day": counts, "in_narrow_sections": in_narrow},
                 sources=["transit", "free_width"],
@@ -268,14 +272,11 @@ def build(r: Run) -> list[Finding]:
                     grade="M",
                     statement=say(
                         "occurrences",
-                        n=int(row[f"{fname}_n"]),
-                        flt=frx.lstrip("^"),
+                        attributed=say("reports_attributed", count=int(row[f"{fname}_n"]), n=int(row[f"{fname}_n"]), flt=frx.lstrip("^")),
                         period=f"{dated.first_date.min()} – {dated.last_date.max()}",
                         d=f"{o.max_dist_m:g}",
                         rate=n(row[f"{fname}_per_100m"]),
-                        rank=rank,
-                        total=len(occ),
-                        minlen=f"{o.min_street_length_m:g}",
+                        ranking=say("street_rank", count=len(occ), rank=rank, total=len(occ), minlen=f"{o.min_street_length_m:g}"),
                     ),
                     values={"n": int(row[f"{fname}_n"]), "per_100m": float(row[f"{fname}_per_100m"]), "rank": rank, "of": len(occ)},
                     sources=[o.source],
@@ -299,11 +300,15 @@ def build(r: Run) -> list[Finding]:
                     grade="M",
                     statement=say(
                         "area",
-                        total=len(area),
-                        k=len(k),
-                        thr=n(a.threshold_m, 1),
-                        minm=f"{a.min_pattern_m:g}",
-                        names=and_.join(k.street),
+                        streets=say("area_streets", count=len(area), n=len(area)),
+                        pattern=say(
+                            "area_pattern",
+                            count=len(k),
+                            n=len(k),
+                            thr=n(a.threshold_m, 1),
+                            minm=f"{a.min_pattern_m:g}",
+                            names=and_.join(k.street),
+                        ),
                         nb=len(both),
                         names2=and_.join(both.street) or "—",
                     ),
@@ -377,7 +382,7 @@ def markdown(case: Case, findings: list[Finding], lock: Lock) -> str:
     for sid, e in sorted(lock.entries.items()):
         source = case.config.sources.get(sid)
         urls = _urls(source) if source else []
-        origin = f"<{urls[0]}>" if len(urls) == 1 else say("files", n=len(urls), example=f"<{urls[0]}>") if urls else ""
+        origin = f"<{urls[0]}>" if len(urls) == 1 else say("files", count=len(urls), n=len(urls), example=f"<{urls[0]}>") if urls else ""
         files = sorted(e.get("files", {}).items())
         shas = "<br>".join(f"`{m['sha256'][:12]}…` {p}" for p, m in files[:3]) + (f"<br>+{len(files) - 3}" if len(files) > 3 else "")
         licence = source.licence if source else e.get("licence", "")
