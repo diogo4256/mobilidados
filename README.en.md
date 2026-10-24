@@ -95,6 +95,9 @@ uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # writes results/
 git diff --exit-code cases/lisboa-rua-ricardo-jorge/results/tables   # identical to the reference run?
 ```
 
+The package is also on [PyPI](https://pypi.org/project/mobilidados/) (`pip install mobilidados`), but the cases
+and the city profiles live in this repository: to reproduce a case or start another, clone it as above.
+
 Municipal services are live, so a fresh `fetch` can differ from the reference run: `verify` tells you which
 files changed. A case pins its GTFS feed by SHA-256 and refuses to run on a different one unless you change
 the pin on purpose; the Lisbon case downloads its feed from the Mobility Database archive, so the exact file

@@ -5,6 +5,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The READMEs say the package is on PyPI and that the cases and city profiles stay in the repository.
+
 ## [0.3.0] - 2026-10-24
 
 The project is now called **mobilidados**: tools for data-based mobility claims in Portugal, starting with
