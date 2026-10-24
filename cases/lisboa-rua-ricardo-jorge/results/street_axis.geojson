@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"name": "Rua Ricardo Jorge", "length_m": 209.25}, "geometry": {"type": "LineString", "coordinates": [[-9.14008, 38.7567452], [-9.1391495, 38.757044], [-9.138399, 38.7572927], [-9.138016, 38.7574075], [-9.1378474, 38.7574482]]}}]}

@@ -1,0 +1,446 @@
+{
+  "case": {
+    "id": "lisboa-rua-ricardo-jorge",
+    "title": "Rua Ricardo Jorge (Alvalade, Lisboa)",
+    "language": "pt",
+    "reference_run": "2026-10-20",
+    "question": "A faixa livre entre as duas faixas de estacionamento deixa cruzar dois autocarros programados nos dois sentidos?"
+  },
+  "findings": [
+    {
+      "id": "length",
+      "grade": "M",
+      "statement": "O eixo da rua tem 209,25 m.",
+      "values": {
+        "length_m": 209.25
+      },
+      "sources": [
+        "street_axes"
+      ],
+      "method": "Axis polyline length (projected CRS).",
+      "caveat": ""
+    },
+    {
+      "id": "traffic",
+      "grade": "M",
+      "statement": "A rede viária municipal marca a rua como de dois sentidos (arestas verificadas em 8 pontos ao longo da rua).",
+      "values": {
+        "traffic": "two-way"
+      },
+      "sources": [
+        "network_identify"
+      ],
+      "method": "Identify on the routing network at stations along the axis.",
+      "caveat": ""
+    },
+    {
+      "id": "free_width",
+      "grade": "M",
+      "statement": "Onde há faixas de estacionamento cartografadas dos dois lados (116 m da rua), a faixa livre cartografada entre elas mede 4,78–5,68 m (mediana 4,90 m).",
+      "values": {
+        "min_m": 4.78,
+        "median_m": 4.9,
+        "max_m": 5.68,
+        "p5_m": 4.81,
+        "p95_m": 5.08,
+        "metres_two_strips": "116"
+      },
+      "sources": [
+        "cartography",
+        "street_axes"
+      ],
+      "method": "Transects every 0.5 m, widths read from mapped polygons only.",
+      "caveat": "Planimetric accuracy assumed ≤0.30 m per edge (DGT figure for plan-scale cartography, as quoted in a 2025 DGT opinion); the 1:1000 RMSE itself was not found."
+    },
+    {
+      "id": "parking_strips",
+      "grade": "M",
+      "statement": "As faixas de estacionamento cartografadas têm 2,01 m (lado NO) e 2,01 m (lado SE) (medianas).",
+      "values": {
+        "left_m": 2.01,
+        "right_m": 2.01
+      },
+      "sources": [
+        "cartography"
+      ],
+      "method": "Mapped area, not parked vehicles.",
+      "caveat": ""
+    },
+    {
+      "id": "transit",
+      "grade": "M",
+      "statement": "As carreiras 744, 46B estão programadas ao longo da rua. Em 2026-10-27: 56 viagens SO→NE e 76 viagens NE→SO (no máximo 4 e 6 por hora).",
+      "values": {
+        "trips_up": 56,
+        "trips_down": 76,
+        "max_up_per_hour": 4,
+        "max_down_per_hour": 6,
+        "service_date": "2026-10-27"
+      },
+      "sources": [
+        "carris_gtfs"
+      ],
+      "method": "Trips counted at a reference stop per direction; timetable, not observed operation.",
+      "caveat": ""
+    },
+    {
+      "id": "vehicle_carris_man_city_gold_body",
+      "grade": "D",
+      "statement": "Veículo de referência «Carris MAN 18.310 / Caetano City Gold (12 m)»: largura da carroçaria 2,50 m (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643).",
+      "values": {
+        "width_m": 2.5
+      },
+      "sources": [
+        "Carris fleet sheet (carris.pt > Descubra > Frota), vehicle 2643"
+      ],
+      "method": "",
+      "caveat": ""
+    },
+    {
+      "id": "vehicle_carris_man_city_gold_mirrors",
+      "grade": "P",
+      "statement": "Largura com espelhos de «Carris MAN 18.310 / Caetano City Gold (12 m)» considerada 2,90 m (pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro).",
+      "values": {
+        "width_m": 2.9
+      },
+      "sources": [
+        "Assumption: no official mirror width published; +0.40 m as in the Mercedes-Benz eCitaro sheet"
+      ],
+      "method": "",
+      "caveat": ""
+    },
+    {
+      "id": "vehicle_car_typical_body",
+      "grade": "P",
+      "statement": "Veículo de referência «Ligeiro típico»: largura da carroçaria 1,80 m (pressuposto: largura típica de um ligeiro europeu; a validar no local).",
+      "values": {
+        "width_m": 1.8
+      },
+      "sources": [
+        "Assumption: typical European passenger car body width; validate in the field"
+      ],
+      "method": "",
+      "caveat": ""
+    },
+    {
+      "id": "vehicle_car_typical_mirrors",
+      "grade": "P",
+      "statement": "Largura com espelhos de «Ligeiro típico» considerada 2,05 m (pressuposto: largura típica com espelhos abertos; a validar no local).",
+      "values": {
+        "width_m": 2.05
+      },
+      "sources": [
+        "Assumption: typical width with mirrors unfolded; validate in the field"
+      ],
+      "method": "",
+      "caveat": ""
+    },
+    {
+      "id": "width_budget",
+      "grade": "I",
+      "statement": "Com as duas faixas ocupadas e os veículos estacionados dentro delas, dois autocarros precisam de 5,00 m (só carroçaria; 5,80 m com espelhos) para uma faixa livre mediana de 4,90 m: folga −0,10 m. Um autocarro e um ligeiro precisam de 4,30 m: folga +0,60 m (+0,35 m com o espelho do ligeiro).",
+      "values": {
+        "bus_bus_margin_m": -0.1,
+        "bus_bus_margin_mirrors_m": -0.9,
+        "bus_car_margin_m": 0.6,
+        "bus_car_margin_mirrors_m": 0.35
+      },
+      "sources": [
+        "free_width",
+        "vehicle_carris_man_city_gold_body",
+        "vehicle_carris_man_city_gold_mirrors",
+        "vehicle_car_typical_body"
+      ],
+      "method": "Static envelope (sum of widths), not a swept-path simulation.",
+      "caveat": "Assumes parked vehicles stay inside the mapped strips; see overhang_sensitivity.csv."
+    },
+    {
+      "id": "encounters",
+      "grade": "I",
+      "statement": "O horário implica 6–7 encontros por dia útil entre autocarros em sentidos opostos na rua (modelo de velocidade constante a 15/20 km/h); 1–2 caem nos troços com estacionamento dos dois lados.",
+      "values": {
+        "per_day": [
+          6,
+          7
+        ],
+        "in_narrow_sections": [
+          1,
+          2
+        ]
+      },
+      "sources": [
+        "transit",
+        "free_width"
+      ],
+      "method": "Presence-interval overlap at constant speed from scheduled times; timetable, not observation.",
+      "caveat": ""
+    },
+    {
+      "id": "occurrences",
+      "grade": "M",
+      "statement": "Foram atribuídas à rua 6 ocorrências da categoria «Estacionamento abusivo» (2017-05-05 – 2026-05-31, a ≤12 m do eixo): 2,87 por 100 m, 1.ª de 25 ruas com pelo menos 100 m na envolvente.",
+      "values": {
+        "n": 6,
+        "per_100m": 2.87,
+        "rank": 1,
+        "of": 25
+      },
+      "sources": [
+        "na_minha_rua"
+      ],
+      "method": "Nearest-street attribution of geolocated open-data records.",
+      "caveat": "A report is not a proven infraction; counts are small."
+    },
+    {
+      "id": "area_pattern",
+      "grade": "M",
+      "statement": "Das 69 ruas com autocarros programados na envolvente, 2 são de dois sentidos e combinam estacionamento dos dois lados com uma faixa livre inferior a 5,5 m em pelo menos 30 m (Rua Ricardo Jorge e Rua Teixeira de Pascoais); destas, 1 com autocarros nos dois sentidos: Rua Ricardo Jorge.",
+      "values": {
+        "two_way_streets": [
+          "Rua Ricardo Jorge",
+          "Rua Teixeira de Pascoais"
+        ],
+        "with_buses_both_directions": [
+          "Rua Ricardo Jorge"
+        ]
+      },
+      "sources": [
+        "area_cartography",
+        "area_axes",
+        "area_network_identify",
+        "carris_gtfs"
+      ],
+      "method": "Stations every 3 m on every street axis with buses; same width method as the case street; traffic direction from the routing network at one station per street.",
+      "caveat": ""
+    },
+    {
+      "id": "standard_cml_manual_two_way_profile",
+      "grade": "D",
+      "statement": "Lisboa: o Desenho da Rua – Manual de espaço público, p. 152 (perfil de referência): Rua de dois sentidos, duas vias, estacionamento longitudinal dos dois lados: largura entre as faixas de estacionamento: 6,80 m. Âmbito: Ruas de dois sentidos com duas vias de trânsito e estacionamento dos dois lados. Mediana medida: 4,90 m (−1,90 m).",
+      "values": {
+        "value_m": 6.8,
+        "difference_m": -1.9
+      },
+      "sources": [
+        "cml_manual_two_way_profile"
+      ],
+      "method": "",
+      "caveat": "0,40 m (sobrelargura) + 3,00 m + 3,00 m + 0,40 m (sobrelargura) = 6,80 m; nota ao desenho: sem sobrelargura, a largura recomendada por via é 3,25 m, ou seja 6,50 m"
+    },
+    {
+      "id": "standard_rast06_bus_bus",
+      "grade": "D",
+      "statement": "Schriftliche Anfrage Drucksache 19/25490, Antwort vom 27.03.2026, p. 3 (citado em documento oficial): Faixa de rodagem para o cruzamento de dois autocarros de carreira (RASt 06, citada): 6,50 m. Âmbito: Norma técnica alemã para ruas urbanas (RASt 06), citada pelo Senado de Berlim; não é lei portuguesa. Mediana medida: 4,90 m (−1,60 m).",
+      "values": {
+        "value_m": 6.5,
+        "difference_m": -1.6
+      },
+      "sources": [
+        "rast06_bus_bus"
+      ],
+      "method": "",
+      "caveat": "Espaço livre de 7,50 m (7,00 m em condições restritas) com distâncias de segurança, donde 6,50 m de faixa de rodagem; 6,00 m é referido como mínimo da RASt 06"
+    },
+    {
+      "id": "gap_1",
+      "grade": "NE",
+      "statement": "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário.",
+      "values": {},
+      "sources": [],
+      "method": "",
+      "caveat": ""
+    },
+    {
+      "id": "gap_2",
+      "grade": "NE",
+      "statement": "A Carris não publica atrasos nem incidentes por rua.",
+      "values": {},
+      "sources": [],
+      "method": "",
+      "caveat": ""
+    },
+    {
+      "id": "gap_3",
+      "grade": "NE",
+      "statement": "A largura dos autocarros com espelhos não foi encontrada em ficha oficial (2,90 m é pressuposto).",
+      "values": {},
+      "sources": [],
+      "method": "",
+      "caveat": ""
+    },
+    {
+      "id": "gap_4",
+      "grade": "NE",
+      "statement": "A posição real dos carros estacionados (sobressaída das faixas) não foi medida no local.",
+      "values": {},
+      "sources": [],
+      "method": "",
+      "caveat": ""
+    }
+  ],
+  "sources": {
+    "area_axes": {
+      "envelope": [
+        -9.156,
+        38.744,
+        -9.127,
+        38.766
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "not stated by the service",
+      "retrieved_utc": "2026-10-22 (file time)",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+      "files": {
+        "area_axes.json": {
+          "bytes": 423141,
+          "sha256": "0bbc8dd0c85c831c5c9c3509ffe393a08412a8818d6372ceaf218b651837e7d4"
+        }
+      }
+    },
+    "area_cartography": {
+      "envelope": [
+        -9.156,
+        38.744,
+        -9.127,
+        38.766
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
+      "retrieved_utc": "2026-10-22 (file time)",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "files": {
+        "area_cartography.json": {
+          "bytes": 10615087,
+          "sha256": "2693bdbdf020503f810f74e95003cf8d9588a34ac21f38880b49d8eb0e0800fe"
+        }
+      }
+    },
+    "area_network_identify": {
+      "kind": "arcgis_identify",
+      "layers": "all:203",
+      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+      "retrieved_utc": "2026-10-24T13:06:42+00:00",
+      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify",
+      "files": {
+        "area_network_identify.json": {
+          "bytes": 34530,
+          "sha256": "e21fdddff4b2603758a1d15941ca5c9f8da3a9f222b16214db04479aac080e42"
+        }
+      }
+    },
+    "carris_gtfs": {
+      "kind": "http_file",
+      "licence": "not stated at the download endpoint (not redistributed)",
+      "retrieved_utc": "2026-10-20 (feed files dated 2026-10-19)",
+      "url": "https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS",
+      "files": {
+        "carris_gtfs.zip": {
+          "bytes": 47948626,
+          "sha256": "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7"
+        }
+      }
+    },
+    "cartography": {
+      "envelope": [
+        -9.1425,
+        38.7555,
+        -9.1355,
+        38.759
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
+      "retrieved_utc": "2026-10-20T16:15:44+00:00",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "where": "1=1",
+      "files": {
+        "cartography.json": {
+          "bytes": 5471735,
+          "sha256": "d6fb67b9b3d77e35958fd4b38a87e5feba2f460fc5dec0085ab1b203ba23396f"
+        }
+      }
+    },
+    "na_minha_rua": {
+      "kind": "http_files",
+      "licence": "CC-BY (dados.gov.pt record 'Ocorrências \"Na Minha Rua Lx\"')",
+      "retrieved_utc": "2026-10-22 (file times)",
+      "files": {
+        "na_minha_rua/2017.csv": {
+          "bytes": 10793626,
+          "sha256": "5be40828a57b9fa0d9c33ed00253fc45f9cdfc3de2f1229e0132c996de2cd11d"
+        },
+        "na_minha_rua/2018.csv": {
+          "bytes": 19143401,
+          "sha256": "ef31c04e2e6779f0d89d4fd00abdc1f85ab1fa07d053222774f726ee863acdf1"
+        },
+        "na_minha_rua/2019.csv": {
+          "bytes": 19327391,
+          "sha256": "dd1283b12cc57dbfc4653dcfdfdedbe015078664cc8bc9c2c66789b99d475d5a"
+        },
+        "na_minha_rua/2020.csv": {
+          "bytes": 19912185,
+          "sha256": "c70bd513b22179c4d488ea043832f1352fbda88f551c2bd8074eaa978488b1f2"
+        },
+        "na_minha_rua/2021.csv": {
+          "bytes": 21268362,
+          "sha256": "5f23760d38024cf85cd06286d2e51d8af3ba71377e2149aedfa55eba93f05249"
+        },
+        "na_minha_rua/2022.csv": {
+          "bytes": 17676757,
+          "sha256": "7328acfb5afa44fdf7dd1997587628c1e9e0a3a69e78f26d4b344040c0e80224"
+        },
+        "na_minha_rua/2023.csv": {
+          "bytes": 20000512,
+          "sha256": "185acb57d460dbe6cbcdf12bb76dede50734d9b6cf66de1e427341d3292c4743"
+        },
+        "na_minha_rua/2024.csv": {
+          "bytes": 21512420,
+          "sha256": "9a93ade1f35dc0ff842c354df473ca1e30c7f0769de46a4e34c1e960b82570d3"
+        },
+        "na_minha_rua/2025.csv": {
+          "bytes": 22759427,
+          "sha256": "441ed827a9f1eb8e673121e6d3cae552e8be64be2c58a981d507315745eacd10"
+        },
+        "na_minha_rua/2026_1s.csv": {
+          "bytes": 9614193,
+          "sha256": "6d8abc0ecf0f06087c87da31ec26011eef81f018def4e204b39fa8b6e5d9ade4"
+        }
+      }
+    },
+    "network_identify": {
+      "kind": "arcgis_identify",
+      "layers": "all:203",
+      "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+      "retrieved_utc": "2026-10-24T13:06:42+00:00",
+      "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify",
+      "files": {
+        "network_identify.json": {
+          "bytes": 3860,
+          "sha256": "71a5fe259fc789c008d92691732c6ae67f5f8a94cfe1e54ab2c8a99cce6e6d05"
+        }
+      }
+    },
+    "street_axes": {
+      "envelope": [
+        -9.1425,
+        38.7555,
+        -9.1355,
+        38.759
+      ],
+      "envelope_sr": 4326,
+      "kind": "arcgis_query",
+      "licence": "not stated by the service",
+      "retrieved_utc": "2026-10-20 (same fetch run as cartography)",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+      "where": "1=1",
+      "files": {
+        "street_axes.json": {
+          "bytes": 33483,
+          "sha256": "b266ddefc9cab4eca0324f257031054492bc76582c1eca148e194581bc9c4323"
+        }
+      }
+    }
+  }
+}

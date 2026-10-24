@@ -1,0 +1,6 @@
+route_short_name,route_long_name,direction_id,shape_id,length_in_buffer_m,heading,s_first,s_last,n_trips_in_feed
+46B,Entrecampos / circulação R. Murtas,0,239_0_CIRC_shp,227.1,-1,204.1,1.0,84
+717,Pç. Chile - Fetais,0,170_0_ASC_shp,24.0,0,1.0,1.0,923
+717,Pç. Chile - Fetais,1,170_0_DESC_shp,24.0,0,1.0,1.0,901
+744,Restauradores - Moscavide,0,200_0_ASC_shp,231.0,1,1.0,204.1,438
+744,Restauradores - Moscavide,1,200_0_DESC_shp,227.2,-1,204.1,1.0,437

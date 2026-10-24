@@ -1,0 +1,92 @@
+# Design references for carriageway width. Each entry is a *reference* with an explicit scope, never a
+# universal rule: before comparing a street against an entry, check that the street falls within `scope`.
+#
+#   kind = "reference_profile"  a recommended cross-section in a design manual (not binding)
+#   kind = "conditional_value"  a value the document allows only under the stated conditions
+#   kind = "secondary_citation" an official document quoting a standard we have not read ourselves
+#
+# `document_sha256` lets anyone check they are reading the same file. `page` is the printed page number;
+# `pdf_page` is the 1-based page index in the PDF. Quotes are in the PDF text layer unless quote_location = "image".
+
+[documents.cml_manual_2018]
+title = "Lisboa: o Desenho da Rua – Manual de espaço público"
+publisher = "Câmara Municipal de Lisboa"
+year = 2018
+isbn = "978-972-8403-46-1"
+url = "https://recrutamento.cm-lisboa.pt/cmlisboa-wirerecruit/uploads/writer_file/document/161/manual_de_espaco_publico.pdf"
+document_sha256 = "5d540643094ed4a92094b8063c3a338b4a17e6ef52545abf9319f9aa363ee5bb"
+nature = "Municipal manual of recommendations and good practice (not a regulation)"
+url_checked = "2026-10-24: downloaded file matches document_sha256"
+
+[documents.berlin_s19_25490]
+title = "Schriftliche Anfrage Drucksache 19/25490, Antwort vom 27.03.2026"
+publisher = "Abgeordnetenhaus Berlin (answer by the Senate administration)"
+year = 2026
+url = "https://pardok.parlament-berlin.de/starweb/adis/citat/VT/19/SchrAnfr/S19-25490.pdf"
+document_sha256 = "89da5cda9d621a40906f971b94d876806ded2d272097087a67282d4b0d3f5aa1"
+nature = "Official parliamentary answer citing the German RASt 06 guideline"
+url_checked = "2026-10-24: downloaded file matches document_sha256"
+
+[[references]]
+id = "cml_manual_two_way_profile"
+label_pt = "Rua de dois sentidos, duas vias, estacionamento longitudinal dos dois lados: largura entre as faixas de estacionamento"
+scope_pt = "Ruas de dois sentidos com duas vias de trânsito e estacionamento dos dois lados"
+derivation_pt = "0,40 m (sobrelargura) + 3,00 m + 3,00 m + 0,40 m (sobrelargura) = 6,80 m; nota ao desenho: sem sobrelargura, a largura recomendada por via é 3,25 m, ou seja 6,50 m"
+document = "cml_manual_2018"
+page = 152
+pdf_page = 194
+kind = "reference_profile"
+value_m = 6.80
+also_m = 6.50
+label = "Two-way street, two traffic lanes, longitudinal parking both sides: width between the parking strips"
+derivation = "0.40 m (extra width) + 3.00 m + 3.00 m + 0.40 m (extra width) = 6.80 m; note to the drawing: without the extra width the recommended lane width is 3.25 m, i.e. 6.50 m"
+scope = "Two-way streets with two traffic lanes and parking on both sides"
+quote_location = "image"  # printed under the drawing, absent from the PDF text layer
+quote = "Na inexistência de sobrelargura a largura recomendada para as vias é de 3.25 metros (salvo casos particulares)."
+extraction = "Values read from the cross-section drawing (raster image, not in the PDF text layer); the note is printed under the drawing. Verified by eye on 2026-10-24."
+
+[[references]]
+id = "cml_manual_lane_2_75_no_buses"
+label_pt = "Rua de dois sentidos: 2 vias de 2,75 m"
+scope_pt = "Só com tráfego muito reduzido (até 300 veículos na hora de ponta) E onde não circulem autocarros"
+derivation_pt = "2,75 m por via de trânsito"
+document = "cml_manual_2018"
+page = 156
+pdf_page = 198
+kind = "conditional_value"
+value_m = 5.50
+label = "Two-way street: 2 x 2.75 m lanes"
+derivation = "2.75 m per traffic lane"
+scope = "Only with very low traffic (no more than 300 vehicles in the peak hour) AND where buses do not run"
+quote = "onde não circulem autocarros, uma largura de 2,75 m por via de trânsito poderá ser considerada ajustada"
+
+[[references]]
+id = "cml_manual_pinch_point"
+label_pt = "Estrangulamento de acalmia numa rua de dois sentidos e duas vias (largura no estrangulamento)"
+scope_pt = "Pontos de estrangulamento localizados (acalmia), não um troço contínuo de rua"
+derivation_pt = "2,75 m + 2,75 m; pode descer a 3,00 m quando o estrangulamento corresponde a uma via"
+document = "cml_manual_2018"
+page = 192
+pdf_page = 234
+kind = "conditional_value"
+value_m = 5.50
+label = "Traffic-calming pinch point in a two-way, two-lane street (minimum at the pinch)"
+derivation = "2.75 m + 2.75 m; may go down to 3.00 m when the pinch is meant to be one lane wide"
+scope = "Localised pinch points (traffic calming), not a continuous street section"
+quote = "a sua largura seja não inferior a 5,50 m (2,75 m + 2,75 m), em ruas com duas vias e dois sentidos de circulação"
+
+[[references]]
+id = "rast06_bus_bus"
+label_pt = "Faixa de rodagem para o cruzamento de dois autocarros de carreira (RASt 06, citada)"
+scope_pt = "Norma técnica alemã para ruas urbanas (RASt 06), citada pelo Senado de Berlim; não é lei portuguesa"
+derivation_pt = "Espaço livre de 7,50 m (7,00 m em condições restritas) com distâncias de segurança, donde 6,50 m de faixa de rodagem; 6,00 m é referido como mínimo da RASt 06"
+document = "berlin_s19_25490"
+page = 3
+pdf_page = 4
+kind = "secondary_citation"
+value_m = 6.50
+also_m = 6.00
+label = "Carriageway for two scheduled buses meeting (RASt 06, as cited)"
+derivation = "Clear space 7.50 m (7.00 m when constrained) including safety distances, giving a 6.50 m standard carriageway; 6.00 m is mentioned as the RASt 06 minimum"
+scope = "German urban street guideline (RASt 06) as quoted by the Berlin Senate; not Portuguese law"
+quote = "Daraus resultiert ein Verkehrsraum von 6,50 m als Regelmaß bei Linienbusverkehr."

@@ -1,0 +1,19 @@
+name: New city
+description: Help add a city profile (cartography, street axes, GTFS, licences)
+labels: [city]
+body:
+  - type: input
+    id: city
+    attributes: {label: City}
+    validations: {required: true}
+  - type: textarea
+    id: services
+    attributes:
+      label: Services
+      description: GIS service URLs, open-data catalogue, GTFS feed, and the licence each publisher states.
+  - type: checkboxes
+    id: parking
+    attributes:
+      label: Cartography
+      options:
+        - label: On-street parking is mapped as its own polygon class

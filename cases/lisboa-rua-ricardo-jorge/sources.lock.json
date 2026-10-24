@@ -1,0 +1,165 @@
+{
+  "area_axes": {
+    "envelope": [
+      -9.156,
+      38.744,
+      -9.127,
+      38.766
+    ],
+    "envelope_sr": 4326,
+    "files": {
+      "area_axes.json": {
+        "bytes": 423141,
+        "sha256": "0bbc8dd0c85c831c5c9c3509ffe393a08412a8818d6372ceaf218b651837e7d4"
+      }
+    },
+    "kind": "arcgis_query",
+    "licence": "not stated by the service",
+    "retrieved_utc": "2026-10-22 (file time)",
+    "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79"
+  },
+  "area_cartography": {
+    "envelope": [
+      -9.156,
+      38.744,
+      -9.127,
+      38.766
+    ],
+    "envelope_sr": 4326,
+    "files": {
+      "area_cartography.json": {
+        "bytes": 10615087,
+        "sha256": "2693bdbdf020503f810f74e95003cf8d9588a34ac21f38880b49d8eb0e0800fe"
+      }
+    },
+    "kind": "arcgis_query",
+    "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
+    "retrieved_utc": "2026-10-22 (file time)",
+    "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53"
+  },
+  "area_network_identify": {
+    "files": {
+      "area_network_identify.json": {
+        "bytes": 34530,
+        "sha256": "e21fdddff4b2603758a1d15941ca5c9f8da3a9f222b16214db04479aac080e42"
+      }
+    },
+    "kind": "arcgis_identify",
+    "layers": "all:203",
+    "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+    "retrieved_utc": "2026-10-24T13:06:42+00:00",
+    "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+  },
+  "carris_gtfs": {
+    "files": {
+      "carris_gtfs.zip": {
+        "bytes": 47948626,
+        "sha256": "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7"
+      }
+    },
+    "kind": "http_file",
+    "licence": "not stated at the download endpoint (not redistributed)",
+    "retrieved_utc": "2026-10-20 (feed files dated 2026-10-19)",
+    "url": "https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS"
+  },
+  "cartography": {
+    "envelope": [
+      -9.1425,
+      38.7555,
+      -9.1355,
+      38.759
+    ],
+    "envelope_sr": 4326,
+    "files": {
+      "cartography.json": {
+        "bytes": 5471735,
+        "sha256": "d6fb67b9b3d77e35958fd4b38a87e5feba2f460fc5dec0085ab1b203ba23396f"
+      }
+    },
+    "kind": "arcgis_query",
+    "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
+    "retrieved_utc": "2026-10-20T16:15:44+00:00",
+    "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+    "where": "1=1"
+  },
+  "na_minha_rua": {
+    "files": {
+      "na_minha_rua/2017.csv": {
+        "bytes": 10793626,
+        "sha256": "5be40828a57b9fa0d9c33ed00253fc45f9cdfc3de2f1229e0132c996de2cd11d"
+      },
+      "na_minha_rua/2018.csv": {
+        "bytes": 19143401,
+        "sha256": "ef31c04e2e6779f0d89d4fd00abdc1f85ab1fa07d053222774f726ee863acdf1"
+      },
+      "na_minha_rua/2019.csv": {
+        "bytes": 19327391,
+        "sha256": "dd1283b12cc57dbfc4653dcfdfdedbe015078664cc8bc9c2c66789b99d475d5a"
+      },
+      "na_minha_rua/2020.csv": {
+        "bytes": 19912185,
+        "sha256": "c70bd513b22179c4d488ea043832f1352fbda88f551c2bd8074eaa978488b1f2"
+      },
+      "na_minha_rua/2021.csv": {
+        "bytes": 21268362,
+        "sha256": "5f23760d38024cf85cd06286d2e51d8af3ba71377e2149aedfa55eba93f05249"
+      },
+      "na_minha_rua/2022.csv": {
+        "bytes": 17676757,
+        "sha256": "7328acfb5afa44fdf7dd1997587628c1e9e0a3a69e78f26d4b344040c0e80224"
+      },
+      "na_minha_rua/2023.csv": {
+        "bytes": 20000512,
+        "sha256": "185acb57d460dbe6cbcdf12bb76dede50734d9b6cf66de1e427341d3292c4743"
+      },
+      "na_minha_rua/2024.csv": {
+        "bytes": 21512420,
+        "sha256": "9a93ade1f35dc0ff842c354df473ca1e30c7f0769de46a4e34c1e960b82570d3"
+      },
+      "na_minha_rua/2025.csv": {
+        "bytes": 22759427,
+        "sha256": "441ed827a9f1eb8e673121e6d3cae552e8be64be2c58a981d507315745eacd10"
+      },
+      "na_minha_rua/2026_1s.csv": {
+        "bytes": 9614193,
+        "sha256": "6d8abc0ecf0f06087c87da31ec26011eef81f018def4e204b39fa8b6e5d9ade4"
+      }
+    },
+    "kind": "http_files",
+    "licence": "CC-BY (dados.gov.pt record 'Ocorrências \"Na Minha Rua Lx\"')",
+    "retrieved_utc": "2026-10-22 (file times)"
+  },
+  "network_identify": {
+    "files": {
+      "network_identify.json": {
+        "bytes": 3860,
+        "sha256": "71a5fe259fc789c008d92691732c6ae67f5f8a94cfe1e54ab2c8a99cce6e6d05"
+      }
+    },
+    "kind": "arcgis_identify",
+    "layers": "all:203",
+    "licence": "not stated (Lisboa Interativa public viewer, guest access)",
+    "retrieved_utc": "2026-10-24T13:06:42+00:00",
+    "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+  },
+  "street_axes": {
+    "envelope": [
+      -9.1425,
+      38.7555,
+      -9.1355,
+      38.759
+    ],
+    "envelope_sr": 4326,
+    "files": {
+      "street_axes.json": {
+        "bytes": 33483,
+        "sha256": "b266ddefc9cab4eca0324f257031054492bc76582c1eca148e194581bc9c4323"
+      }
+    },
+    "kind": "arcgis_query",
+    "licence": "not stated by the service",
+    "retrieved_utc": "2026-10-20 (same fetch run as cartography)",
+    "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+    "where": "1=1"
+  }
+}

@@ -1,0 +1,129 @@
+extends = "../../cities/lisboa.toml"
+
+[case]
+id = "lisboa-rua-ricardo-jorge"
+title = "Rua Ricardo Jorge (Alvalade, Lisboa)"
+language = "pt"
+reference_run = "2026-10-20"
+question = "A faixa livre entre as duas faixas de estacionamento deixa cruzar dois autocarros programados nos dois sentidos?"
+
+[street]
+name = "Rua Ricardo Jorge"
+headings = { "+" = "SO→NE", "-" = "NE→SO" }   # s = 0 at Av. do Rio de Janeiro (SW), increasing to the NE
+sides = { L = "NO", R = "SE" }                  # left / right of the direction of increasing s
+blocks = [
+  { id = "B1", from = 0.0, to = 87.42, label = "Av. do Rio de Janeiro → R. Cor. Marques Leitão" },
+  { id = "B2", from = 87.42, to = 158.27, label = "R. Cor. Marques Leitão → R. Constantino Fernandes" },
+  { id = "B3", from = 158.27, to = 209.25, label = "R. Constantino Fernandes → R. Carlos Mayer" },
+]
+
+[profiles]
+step_m = 0.5
+half_width_m = 25
+narrow_max_m = 7.0
+check_points_s = [60.0, 122.0, 180.0]
+
+[direction]
+source = "network_identify"
+stations_s = [10, 30, 60, 80, 120, 150, 180, 200]
+
+[transit]
+source = "carris_gtfs"
+service_date = 2026-10-27        # a Tuesday within the feed's validity
+routes = ["744", "46B"]
+speeds_kmh = [15, 20]            # scheduled stop-to-stop times give 15–20 km/h (scheduled_runtimes.csv)
+buffer_m = 12
+reference_stops = [
+  { route = "744", direction_id = "0", stop_id = "11315", s_m = 33.6, heading = 1 },   # on the street
+  { route = "744", direction_id = "1", stop_id = "11318", s_m = 202.5, heading = -1 },  # R. Reinaldo Ferreira, 16 m from the NE end
+  { route = "46B", direction_id = "0", stop_id = "11318", s_m = 202.5, heading = -1 },
+]
+
+[envelope]
+bus = "carris_man_city_gold"
+car = "car_typical"
+scenarios = [
+  ["carris_man_city_gold"],
+  ["carris_man_city_gold", "car_typical"],
+  ["carris_man_city_gold", "carris_man_city_gold"],
+  ["car_typical", "car_typical"],
+]
+
+[occurrences]
+source = "na_minha_rua"
+window_m = 300
+max_dist_m = 12
+min_street_length_m = 100
+filters = { abusive_parking = "^Estacionamento abusivo" }
+
+[area_scan]
+step_m = 3
+threshold_m = 5.5
+reference_m = 6.5
+min_pattern_m = 30
+identify_source = "area_network_identify"
+
+[standards]
+compare = ["cml_manual_two_way_profile", "rast06_bus_bus"]
+
+[[known_gaps]]
+pt = "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário."
+en = "No field observation of two buses meeting on this street: encounters are timetable estimates."
+
+[[known_gaps]]
+pt = "A Carris não publica atrasos nem incidentes por rua."
+en = "Carris does not publish delays or incidents per street."
+
+[[known_gaps]]
+pt = "A largura dos autocarros com espelhos não foi encontrada em ficha oficial (2,90 m é pressuposto)."
+en = "No official mirror width was found for the buses (2.90 m is an assumption)."
+
+[[known_gaps]]
+pt = "A posição real dos carros estacionados (sobressaída das faixas) não foi medida no local."
+en = "The actual position of parked cars (overhang beyond the strips) was not measured on site."
+
+# --- sources ---------------------------------------------------------------------------------------
+[sources.cartography]
+template = "cml_cartography_polygons"
+envelope = [-9.1425, 38.7555, -9.1355, 38.7590]
+
+[sources.street_axes]
+template = "cml_street_axes"
+envelope = [-9.1425, 38.7555, -9.1355, 38.7590]
+
+[sources.network_identify]
+template = "lxi_network_identify"
+tolerance = 6
+
+[sources.carris_gtfs]
+template = "carris_gtfs"
+sha256 = "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7"
+feed = "Carris GTFS as published on 2026-10-19"
+
+[sources.na_minha_rua]
+template = "cml_na_minha_rua"
+files = [
+  { name = "2017.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/d66d2141-5a5e-4725-9593-ac2da4e65f17/download/2017.csv" },
+  { name = "2018.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/d2cc80e2-8c42-4f05-ba9a-8a6b3093900f/download/2018.csv" },
+  { name = "2019.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/555479f0-cece-4094-a2a4-47c14c284e06/download/2019.csv" },
+  { name = "2020.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/6088d980-bb5d-4ade-af38-58bfb5587e50/download/2020.csv" },
+  { name = "2021.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/c3d13f68-a546-450f-83d8-99574623d7fc/download/2021.csv" },
+  { name = "2022.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/0d7c76f3-f206-47b7-be82-0a76bb79ba54/download/2022.csv" },
+  { name = "2023.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/ffe6d37a-0a45-49ee-bbe9-9b5d5209753b/download/2023.csv" },
+  { name = "2024.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/a67f2c0c-89b9-4911-a8d7-146137976b42/download/2024.csv" },
+  { name = "2025.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/6434e62b-eb7d-4d2c-95d8-a19bc8bd1755/download/2025.csv" },
+  { name = "2026_1s.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/e77c5e16-70c2-492a-96ef-fc5bdadf387c/download/20261s.csv" },
+]
+
+[sources.area_cartography]
+template = "cml_cartography_polygons"
+envelope = [-9.1560, 38.7440, -9.1270, 38.7660]
+where = "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea')"
+
+[sources.area_axes]
+template = "cml_street_axes"
+envelope = [-9.1560, 38.7440, -9.1270, 38.7660]
+
+[sources.area_network_identify]
+template = "lxi_network_identify"
+tolerance = 3

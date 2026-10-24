@@ -1,0 +1,19 @@
+name: New case
+description: Propose a street to analyse (in a city that has, or will have, a profile)
+labels: [case]
+body:
+  - type: input
+    id: street
+    attributes: {label: Street and city, placeholder: "Rua X, Porto"}
+    validations: {required: true}
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What should the analysis answer? Keep it to what can be checked with data.
+    validations: {required: true}
+  - type: textarea
+    id: data
+    attributes:
+      label: Data you know of
+      description: Cartography, GTFS feed, open data, documents. Links only; do not upload personal data.

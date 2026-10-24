@@ -1,0 +1,70 @@
+street,metres_with_buses,buses_per_day,buses_both_directions,routes,free_width_median_m,free_width_p10_m,pct_parking_both_sides,metres_below_6.5m,metres_with_pattern,traffic
+Rua Vitor Hugo,189,170,False,705 718 793,5.07,5.0,75,141,141,one-way
+Rua Ricardo Jorge,204,132,True,46B 744,5.06,4.89,57,117,117,two-way
+Rua Augusto Gil,321,29,False,49B,4.2,3.67,32,228,93,one-way
+Rua Teixeira de Pascoais,240,72,False,727,5.72,5.22,79,213,84,two-way
+Avenida São João de Deus,534,29,False,49B 705 718 793,6.57,3.84,23,234,81,one-way
+Avenida de Roma,4164,219,False,206 46B 49B 717 722 727 731 735 736 750 755 767 783,9.63,6.06,2,711,78,one-way
+Rua Reinaldo Ferreira,252,76,False,46B 744,8.96,4.95,32,78,78,one-way
+Avenida Frei Miguel Contreiras,660,76,False,727,5.42,3.48,11,429,72,one-way
+Rua Marquês do Soveral,183,77,False,46B 744,7.47,4.85,26,57,48,one-way
+Rua Particular do Hospital Júlio de Matos,396,21,False,46B,5.36,3.06,1,216,3,two-way
+Alameda das Linhas de Torres,3300,714,True,206 207 45B 701 717 736 747 750 767 796 798,10.2,5.63,0,648,0,one-way
+Rua das Murtas,1476,21,False,46B,7.12,3.38,10,498,0,one-way
+Rua Eduardo de Noronha,531,21,False,46B,5.6,5.48,6,456,0,one-way
+Alameda da Universidade,1419,255,False,206 46B 717 731 735 736 738 750 755 767 783,9.04,3.4,0,348,0,one-way
+Avenida da República,5037,495,False,207 46B 52B 701 722 727 732 736 738 744 749 754 783 798,13.25,6.46,0,324,0,one-way
+Rua Silva e Albuquerque,477,21,False,46B,5.65,5.55,0,255,0,two-way
+Avenida Marechal Gomes da Costa,6738,165,False,208 708 731 750,11.75,7.89,0,234,0,one-way
+Rua Carlos de Seixas,267,21,False,46B,5.55,5.46,0,225,0,one-way
+Avenida Professor Gama Pinto,1647,249,False,701 731 732 735 738 749 754 755,7.12,6.38,0,222,0,one-way
+Avenida dos Estados Unidos da América,4608,168,False,206 46B 705 708 717 722 727 735 736 744 749 767,11.33,6.8,0,222,0,one-way
+Avenida Álvaro Pais,1230,59,False,701 731 732 749 754,10.75,6.32,0,189,0,one-way
+Alameda das Comunidades Portuguesas,1269,208,False,208 705 722 744 783,11.7,4.44,0,183,0,one-way
+Rua Alexandre Rey Colaço,186,21,False,46B,5.53,5.49,0,177,0,one-way
+Rua Jorge Afonso,228,59,False,52B 731,5.76,3.91,0,159,0,one-way
+Campo Grande,4929,333,False,206 207 45B 46B 701 717 727 731 732 735 736 738 744 747 749 750 754 755 767 778 783 796 798,12.92,8.86,0,144,0,one-way
+Rua Sarmento de Beires,834,29,False,49B,10.08,5.73,28,141,0,one-way
+Rua Sousa Lopes,870,134,True,52B 731 749,10.63,6.32,6,129,0,one-way
+Rua Domingos Bontempo,156,21,False,46B,5.51,5.46,0,120,0,one-way
+Rua João Villaret,144,29,False,49B,4.63,4.57,0,117,0,one-way
+Avenida Cinco de Outubro,345,17,False,749,11.33,6.08,0,63,0,one-way
+Rua Carlos Reis,120,59,False,731,5.3,3.38,0,63,0,one-way
+Rua João Palma Ferreira,384,128,True,208 31B 32B 755 794,10.6,5.37,0,63,0,one-way
+Rua Guilhermina Suggia,288,72,False,727,6.61,6.46,67,60,0,two-way
+Avenida Dom Rodrigo da Cunha,816,179,True,46B 705 708 722 755,13.21,9.71,52,48,0,one-way
+Avenida das Forças Armadas,4014,43,False,207 46B 52B 701 727 731 732 736 738 744 749 754 783 798,11.78,9.1,0,48,0,one-way
+Avenida do Rio de Janeiro,1011,294,True,46B 717 731 744 750 755 783,12.89,10.09,47,39,0,two-way
+Rua Pardal Monteiro,435,346,True,208 31B 32B 755 794,14.16,6.65,0,39,0,one-way
+Praça de Alvalade,594,140,False,206 735 736 755 767,11.34,7.02,0,33,0,one-way
+Rua Carlos Mayer,213,21,False,46B 744,9.77,6.49,21,33,0,two-way
+Rua Manuel Marques,327,83,False,206 45B 798,6.91,6.49,18,33,0,one-way
+Rua Luís Cristino da Silva,1047,346,True,208 31B 32B 755 794,13.28,12.61,0,27,0,
+Avenida Avelino Teixeira da Mota,924,149,True,208 31B 32B 755 793 794,15.13,6.64,0,24,0,
+Avenida do Brasil,2802,527,True,206 208 46B 705 708 717 722 731 735 736 738 744 750 755 767 783,12.36,11.95,0,21,0,
+Avenida José Régio,945,158,True,705 708 722 755 794,7.29,7.08,0,15,0,
+Avenida Cidade do Porto,372,110,False,208 722 744 783,12.28,7.0,0,12,0,
+Avenida Santa Joana Princesa,324,158,True,755,14.71,14.13,14,9,0,
+Avenida Almirante Gago Coutinho,4863,146,False,206 208 49B 705 708 717 718 722 735 749 755 793,9.54,8.99,0,6,0,
+Avenida Padre Manuel da Nóbrega,351,199,False,49B 705 718 793,12.1,8.98,13,6,0,
+Rua Agostinho Neto,834,119,True,206 45B 798,9.34,7.06,21,6,0,
+Avenida Marechal António de Spínola,5748,39,False,208 31B 32B 705 708 717 718 722 749 755 793 794,15.32,9.91,0,3,0,
+Rua Alferes Malheiro,117,77,False,46B 744,12.72,6.69,0,3,0,
+Avenida General Norton de Matos,4200,86,False,45B 750,14.19,10.55,0,0,0,
+Avenida Marechal Craveiro Lopes,63,208,False,206 207 208 46B 701 705 717 722 736 744 750 767 783 798,17.99,6.78,0,0,0,
+Avenida da Igreja,378,158,True,755,14.8,10.81,37,0,0,
+Eixo Central,1860,59,False,206 207 717 798,10.18,9.55,0,0,0,
+Largo Frei Heitor Pinto,234,79,False,717 744 755,11.44,8.19,32,0,0,
+Praça do Aeroporto,303,268,False,208 705 708 722 731 744 750 783,25.63,17.38,0,0,0,
+Rotunda 2,132,77,False,52B 731 749,14.62,13.52,0,0,0,
+Rua 1 ao Tunel do Rego,600,40,False,52B 731 749,7.7,7.57,0,0,0,
+Rua Actor António Silva,159,661,False,206 207 45B 701 717 736 747 767 778 796 798,13.46,10.98,0,0,0,
+Rua Carlos Malheiro Dias,129,21,False,46B,9.01,8.92,35,0,0,
+Rua Conde de Arnoso,156,21,False,46B 755,14.91,14.31,0,0,0,
+Rua Diogo de Macedo,168,162,True,52B 731 749,9.0,8.19,26,0,0,
+Rua Doutor Gama Barros,54,72,False,727,7.0,6.96,0,0,0,
+Rua Interior ao Aeroporto da Portela,207,208,False,208 705 722 744 783,7.12,6.94,0,0,0,
+Rua José da Costa Pedreira,282,45,True,45B,12.48,12.11,21,0,0,
+Rua João de Deus Ramos,120,77,False,46B 744,12.13,11.9,0,0,0,
+Rua Moura Girão,72,72,False,727,10.52,8.86,0,0,0,
+Rua da Cruz Vermelha,54,59,False,731,14.07,13.88,0,0,0,

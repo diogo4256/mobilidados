@@ -1,0 +1,49 @@
+# Vehicle catalogue. Every width carries an evidence grade (docs/evidence-standard.md) and its source.
+# Add vehicles here (shared) or in a case's [vehicles.<id>] table (case-specific).
+
+[vehicles.bus_eu_max]
+label = "Bus at the EU/PT legal maximum width"
+category = "bus"
+width_body_m = 2.55
+grade_body = "D"
+source_body = "Directive 96/53/EC Annex I 1.2; PT: Decreto-Lei 132/2017, art. 3.º n.º 3 a)"
+width_mirrors_m = 2.95
+grade_mirrors = "P"
+source_mirrors = "Assumption: +0.40 m for mirrors, as in the Mercedes-Benz eCitaro technical sheet"
+mirrors_clear_cars = true
+
+[vehicles.bus_eu_max.pt]
+label = "Autocarro com a largura máxima legal (UE/PT)"
+source_body = "Diretiva 96/53/CE, Anexo I 1.2; Decreto-Lei 132/2017, art. 3.º n.º 3 a)"
+source_mirrors = "Pressuposto: +0,40 m para os espelhos, como na ficha técnica do Mercedes-Benz eCitaro"
+
+[vehicles.carris_man_city_gold]
+label = "Carris MAN 18.310 / Caetano City Gold (12 m)"
+category = "bus"
+width_body_m = 2.50
+grade_body = "D"
+source_body = "Carris fleet sheet (carris.pt > Descubra > Frota), vehicle 2643"
+width_mirrors_m = 2.90
+grade_mirrors = "P"
+source_mirrors = "Assumption: no official mirror width published; +0.40 m as in the Mercedes-Benz eCitaro sheet"
+mirrors_clear_cars = true
+
+[vehicles.carris_man_city_gold.pt]
+label = "Carris MAN 18.310 / Caetano City Gold (12 m)"
+source_body = "ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643"
+source_mirrors = "pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro"
+
+[vehicles.car_typical]
+label = "Typical passenger car"
+category = "car"
+width_body_m = 1.80
+grade_body = "P"
+source_body = "Assumption: typical European passenger car body width; validate in the field"
+width_mirrors_m = 2.05
+grade_mirrors = "P"
+source_mirrors = "Assumption: typical width with mirrors unfolded; validate in the field"
+
+[vehicles.car_typical.pt]
+label = "Ligeiro típico"
+source_body = "pressuposto: largura típica de um ligeiro europeu; a validar no local"
+source_mirrors = "pressuposto: largura típica com espelhos abertos; a validar no local"

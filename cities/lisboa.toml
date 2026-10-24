@@ -1,0 +1,69 @@
+# City profile: Lisboa (Câmara Municipal de Lisboa open GIS services).
+# Everything a Lisbon case shares. A case only adds its street, envelope and parameters.
+
+[city]
+id = "lisboa"
+name = "Lisboa"
+country = "PT"
+crs = 3763  # ETRS89 / PT-TM06 (metres)
+
+[cartography]
+# 1:1000 municipal cartography, polygon layer. Class codes from the CML object catalogue
+# (https://dados.cm-lisboa.pt/dataset/80d8abc8-9d7a-4b2e-a4b6-d683862a69e3, "Catálogo de objetos").
+class_field = "LAYER"
+road = ["10010306_RuaAvenidaRotundaPracaLargoPasseio", "10010307_Arruamentos"]
+parking = ["10100104_ParqueEstacionamentoArea"]
+sidewalk = ["87000501_Passeio"]
+plot = ["06020103_Predio", "06020206_Logradouro", "06020201_Garagem", "06020203_ArrecadacaoAnexo",
+        "06000000_ConstrucoesEmGeral", "06020102_VivendaCasa", "06020106_CorpoRecuado", "06020111_CorpoBalancado",
+        "06020112_CorpoElevado", "06020202_TelheiroAlpendre"]
+survey = "Aerial photogrammetry May 2016; restitution and field completion 2020; homologated by DGT (dados.gov.pt record)"
+accuracy_note = "Planimetric accuracy assumed ≤0.30 m per edge (DGT figure for plan-scale cartography, as quoted in a 2025 DGT opinion); the 1:1000 RMSE itself was not found."
+
+[axes]
+name_field = "DESIGNACAO"
+
+[network]
+# Lisboa Interativa routing network "Sentidos de Trânsito" (map service 43, layer 203)
+edge = "[EID]"
+direction = "[Direction]"
+status = "Oneway"
+open_value = "Traversable"
+
+[source_templates.cml_cartography_polygons]
+kind = "arcgis_query"
+url = "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53"
+envelope_sr = 4326
+out_sr = 3763
+licence = "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)"
+attribution = "© Câmara Municipal de Lisboa"
+
+[source_templates.cml_street_axes]
+kind = "arcgis_query"
+url = "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79"
+envelope_sr = 4326
+out_sr = 3763
+licence = "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)"
+attribution = "© Câmara Municipal de Lisboa"
+
+[source_templates.lxi_network_identify]
+kind = "arcgis_identify"
+url = "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+layers = "all:203"
+sr = 3763
+tolerance = 3
+licence = "not stated (Lisboa Interativa public viewer, guest access)"
+note = "The site name embeds a backup date (22Set26) and may be renamed; list current sites at https://websig.cm-lisboa.pt/MuniSIG/REST/sites"
+
+[source_templates.carris_gtfs]
+kind = "http_file"
+url = "https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS"
+suffix = ".zip"
+licence = "not stated at the download endpoint (not redistributed)"
+note = "Always serves the current feed; a case pins the feed it used with sha256."
+
+[source_templates.cml_na_minha_rua]
+kind = "http_files"
+licence = "CC-BY (dados.gov.pt record 'Ocorrências \"Na Minha Rua Lx\"')"
+attribution = "© Câmara Municipal de Lisboa"
+columns = { lat = "latitude", lon = "longitude", date = "dt_registo", category = "tipologia" }

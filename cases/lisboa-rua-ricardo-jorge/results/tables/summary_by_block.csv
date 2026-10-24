@@ -1,0 +1,5 @@
+block,n_stations,s_min,s_max,free_min,free_p5,free_median,free_p95,free_max,strip_L_median,strip_R_median,kerb_to_kerb_min,kerb_to_kerb_median,kerb_to_kerb_max,to_plot_L_median,to_plot_R_median
+B1,71,41.0,76.0,4.78,4.79,4.87,4.94,4.95,2.02,2.03,8.79,8.94,8.97,5.55,5.2
+B2,108,95.5,149.0,4.89,4.89,4.9,4.91,4.91,2.0,2.0,8.87,8.91,8.93,5.74,5.41
+B3,56,166.5,194.0,4.99,5.0,5.04,5.11,5.68,2.01,1.95,8.97,9.0,10.07,5.26,5.41
+all,235,41.0,194.0,4.78,4.81,4.9,5.08,5.68,2.01,2.01,8.79,8.92,10.07,5.6,5.4

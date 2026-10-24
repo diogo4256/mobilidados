@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Downloaded source data: never committed (licences vary; see sources.lock.json)
+cases/*/data/
+
+# Outputs of the AI tools (may contain drafts with personal data)
+*_review/
+*.draft.toml
+check-claims*.json
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
