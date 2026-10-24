@@ -5,6 +5,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- The figures no longer depend on the machine that draws them. They start from matplotlib's own defaults, so a
+  local `matplotlibrc` (another font, for example) no longer changes them, and a figure whose pixels are unchanged
+  keeps its file, since the PNG compression differs from one platform to another. Running the figures stage
+  anywhere now leaves the committed figures as they are when nothing changed. The figures stage also removes the
+  figures an earlier configuration made, which a full run used to do.
+
 ## [0.3.0] - 2026-10-24
 
 The project is now called **mobilidados**: tools for data-based mobility claims in Portugal, starting with

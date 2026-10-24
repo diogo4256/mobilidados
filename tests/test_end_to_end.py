@@ -7,8 +7,10 @@ cached Lisbon sources, so the pipeline, the ledger, the figures and the area sca
 import json
 import shutil
 
+import matplotlib
 import pandas as pd
 import pytest
+from PIL import Image
 
 from mobilidados import cli
 from mobilidados.config import Case, Config
@@ -359,6 +361,21 @@ def test_a_full_run_removes_the_outputs_of_an_earlier_configuration(case, tmp_pa
     assert not (tmp_path / "tables" / "left_over.csv").exists()
     assert not (tmp_path / "figures" / "left_over.png").exists()
     assert (tmp_path / "tables" / "street.csv").exists()
+
+
+def test_figures_do_not_depend_on_the_machine_that_draws_them(case, results, tmp_path):
+    shutil.copytree(results, tmp_path, dirs_exist_ok=True)
+    figures = tmp_path / "figures"
+    same = figures / "width_budget.png"
+    Image.open(same).save(same, compress_level=1)  # the same pixels compressed otherwise, as another platform writes them
+    recompressed = same.read_bytes()
+    (figures / "trips_per_hour.png").write_bytes((figures / "free_width_profile.png").read_bytes())  # a changed figure
+    (figures / "left_over.png").write_bytes(PNG_SIGNATURE)
+    with matplotlib.rc_context({"font.family": "serif", "font.size": 14}):  # a machine's own matplotlib settings
+        run(Case.load(case.root, results_dir=tmp_path), stages=["figures"], offline=True)
+    assert same.read_bytes() == recompressed
+    assert (figures / "trips_per_hour.png").read_bytes() == (results / "figures" / "trips_per_hour.png").read_bytes()
+    assert not (figures / "left_over.png").exists()
 
 
 def test_a_case_with_only_the_required_sections_reports_only_the_measurements(tmp_path):
