@@ -19,9 +19,9 @@ from shapely import STRtree
 from shapely.geometry import LineString
 
 from .config import Network
+from .direction import directions, edges_at
 from .geometry import Profiler
 from .gtfs import Feed, active_service_ids
-from .network import directions, edges_at
 from .sources import IdentifyCache
 
 

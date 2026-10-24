@@ -1,12 +1,8 @@
-"""Configuration errors are caught when a case is loaded, with a message that names the problem."""
-
-import string
-import typing
+"""Case configuration: errors are caught on load, with a message that names the problem; city profiles; packaged catalogues."""
 
 import pytest
 
-from streetfit.config import ArcgisQuery, Case, Lang, StreetfitError, standards_catalogue, vehicle_catalogue
-from streetfit.i18n import messages
+from streetfit.config import ArcgisQuery, Case, StreetfitError, standards_catalogue, vehicle_catalogue
 
 FEED = "[sources.feed]\nkind = 'http_file'\nurl = 'https://example.org/gtfs.zip'\nlicence = 'x'\n"
 STOP_20 = "{ route = '20', direction_id = 0, stop_id = 's', s_m = 0, heading = 1 }"
@@ -67,15 +63,10 @@ def test_packaged_catalogues_are_valid_and_translated():
         assert r.text("label", "pt") != r.label, f"{r.id}: no Portuguese label"
 
 
-def test_every_message_exists_in_every_language_with_the_same_placeholders():
-    def fields(s: str) -> set[str]:
-        return {f for _, f, _, _ in string.Formatter().parse(s) if f}
-
-    en = messages("en")
-    for lang in typing.get_args(Lang):
-        other = messages(lang)
-        assert other.keys() == en.keys(), f"{lang}: keys differ from en"
-        assert all(fields(other[k]) == fields(en[k]) for k in en), f"{lang}: placeholders differ from en"
+def test_vehicle_catalogue_is_graded():
+    for v in vehicle_catalogue().values():
+        assert v.grade_body in {"M", "D", "I", "P"}
+        assert v.grade_mirrors in {"M", "D", "I", "P"}
 
 
 def test_an_unknown_source_id_is_an_error_listing_the_known_ones(make_case):

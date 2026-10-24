@@ -1,4 +1,4 @@
-"""The ArcGIS REST client against a fake server: which requests it makes, and what it returns."""
+"""The ArcGIS REST client against a fake server (requests made, results returned) and ESRI JSON to shapely conversion."""
 
 import json
 
@@ -8,6 +8,9 @@ from streetfit import arcgis
 
 LAYER = "https://gis.example.org/arcgis/rest/services/Base/MapServer/53"
 ENVELOPE = (-9.2, 38.7, -9.1, 38.8)
+
+# ESRI rings: exterior clockwise, hole counter-clockwise
+OUTER = [[0, 0], [0, 10], [10, 10], [10, 0], [0, 0]]
 
 
 class Response:
@@ -90,3 +93,25 @@ def test_identify_asks_for_a_map_extent_with_the_aspect_of_the_image(monkeypatch
     assert ((x0 + x1) / 2, (y0 + y1) / 2) == (1000.0, 2000.0)
     assert (x1 - x0) / 2 == 160.0
     assert (p["layers"], p["tolerance"], p["sr"]) == ("all:203", 3, 3763)
+
+
+def test_esri_ring_orientation_and_holes():
+    hole = [[2, 2], [4, 2], [4, 4], [2, 4], [2, 2]]
+    assert arcgis.to_polygon({"rings": [OUTER, hole]}).area == pytest.approx(100 - 4)
+
+
+def test_hole_touching_its_exterior_is_kept():
+    hole = [[0, 0], [3, 1], [1, 3], [0, 0]]  # touches the exterior at its corner (0, 0)
+    p = arcgis.to_polygon({"rings": [OUTER, hole]})
+    assert p.is_valid
+    assert p.area == pytest.approx(100 - 4)
+
+
+def test_hole_inside_an_island_inside_a_hole():
+    hole = [[1, 1], [9, 1], [9, 9], [1, 9], [1, 1]]
+    island = [[3, 3], [3, 7], [7, 7], [7, 3], [3, 3]]
+    hole_in_island = [[4, 4], [6, 4], [6, 6], [4, 6], [4, 4]]
+    p = arcgis.to_polygon({"rings": [OUTER, hole, island, hole_in_island]})
+    assert p.geom_type == "MultiPolygon"
+    assert p.is_valid
+    assert p.area == pytest.approx((100 - 64) + (16 - 4))

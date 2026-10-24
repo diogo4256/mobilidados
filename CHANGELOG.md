@@ -12,6 +12,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - The package ships `py.typed`, so type checkers use its annotations.
 - Limits, tolerances and timeouts that were bare numbers in the code are named constants or parameters.
 - `streetfit verify` lists every file that does not match the lock, whatever the number of files.
+- The module `streetfit.network` is now `streetfit.direction`, after the stage it implements (`network` read as
+  network access). `python -m streetfit` works.
 
 ### Fixed
 

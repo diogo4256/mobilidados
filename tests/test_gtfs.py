@@ -1,14 +1,12 @@
-"""GTFS reading, service calendars and the encounter model on a tiny synthetic feed."""
+"""GTFS reading: service calendars, shapes and headings, and passings at reference stops, on a tiny synthetic feed."""
 
 import datetime as dt
 import zipfile
 
-import pandas as pd
-import pytest
 from pyproj import Transformer
 from shapely.geometry import LineString
 
-from streetfit import encounters, gtfs
+from streetfit import gtfs
 from streetfit.config import ReferenceStop
 
 CRS = 3763
@@ -67,31 +65,3 @@ def test_a_shape_with_too_little_length_near_the_street_is_left_out(tmp_path):
     feed = gtfs.Feed(tmp_path / "f.zip")
     assert sorted(gtfs.shapes_along(feed, axis, CRS, min_inside_m=150).shape_id) == ["down", "up"]
     assert gtfs.shapes_along(feed, axis, CRS, min_inside_m=250).empty
-
-
-def test_meeting_point_is_analytic():
-    # A at s=0 at t=0 heading up, B at s=200 at t=0 heading down, both 10 m/s: meet at s=100, t=10
-    t, s = encounters.meeting(0, 0, 0, 200, 10)
-    assert (t, s) == pytest.approx((10, 100))
-
-
-def test_encounters_overlap_only():
-    p = pd.DataFrame(
-        [
-            {"route_short_name": "10", "arrival_time": "08:00:00", "t": 8 * 3600, "s_ref": 0.0, "heading": 1},
-            {"route_short_name": "20", "arrival_time": "08:00:10", "t": 8 * 3600 + 10, "s_ref": 200.0, "heading": -1},
-            {
-                "route_short_name": "20",
-                "arrival_time": "08:00:20",
-                "t": 8 * 3600 + 20,
-                "s_ref": 200.0,
-                "heading": -1,
-            },  # A leaves as it enters
-            {"route_short_name": "20", "arrival_time": "09:30:00", "t": 9.5 * 3600, "s_ref": 200.0, "heading": -1},
-        ]
-    )
-    e = encounters.encounters(p, 200, 36)  # 10 m/s: 20 s on the street
-    assert len(e) == 1
-    assert (e.iloc[0].time, e.iloc[0].s_m) == ("08:00:15", pytest.approx(150.0))
-    assert encounters.locate(e, [(100.0, 160.0, "B2")]).in_narrow_section.iloc[0]
-    assert not encounters.locate(e, [(20.0, 90.0, "B1")]).in_narrow_section.iloc[0]

@@ -21,7 +21,7 @@ from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge, unary_union
 
-from . import area_scan, encounters, envelope, figures, geometry, gtfs, ledger, network, occurrences, standards
+from . import area_scan, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
 from .arcgis import to_line
 from .config import ArcgisQuery, Case, Config, HttpFiles, StreetfitError
 from .sources import IdentifyCache, check_pins, load_json, lock_identify_caches, raw_path
@@ -148,7 +148,7 @@ def stage_direction(r: Run) -> None:
     if d is None or net is None:
         return
     cache = IdentifyCache(r.case, d.source, offline=r.offline)
-    edges = network.edges_along(r.axis, cache, net, d.stations_s)
+    edges = direction.edges_along(r.axis, cache, net, d.stations_s)
     cache.save()
     r.save("traffic_direction_edges", edges)
 

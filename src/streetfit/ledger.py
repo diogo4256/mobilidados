@@ -15,10 +15,10 @@ from typing import TYPE_CHECKING, Any
 from pydantic import BaseModel
 
 from .config import AnySource, Case, Grade, HttpFiles, standards_catalogue
+from .direction import directions
 from .envelope import widths
 from .gtfs import ALL_TRIPS
 from .i18n import num, t
-from .network import directions
 from .provenance import Lock
 
 if TYPE_CHECKING:

@@ -1,4 +1,4 @@
-# streetfit messages, English. Every key must exist in every language (tests/test_config.py checks keys and {placeholders}).
+# streetfit messages, English. Every key must exist in every language (tests/test_i18n.py checks keys and {placeholders}).
 
 [figure]
 free_width = "Free width between parking strips"

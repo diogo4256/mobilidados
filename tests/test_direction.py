@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from streetfit.network import directions
+from streetfit.direction import directions
 
 OPEN = "Traversable"
 

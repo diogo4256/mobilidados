@@ -1,4 +1,4 @@
-# Mensagens do streetfit, português. Cada chave existe em todas as línguas (tests/test_config.py verifica chaves e {marcadores}).
+# Mensagens do streetfit, português. Cada chave existe em todas as línguas (tests/test_i18n.py verifica chaves e {marcadores}).
 
 [figure]
 free_width = "Faixa livre entre as faixas de estacionamento"

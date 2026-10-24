@@ -1,10 +1,9 @@
-"""Cross-section measurement on a synthetic street with known widths, and ESRI JSON geometry conversion."""
+"""Cross-section measurement on a synthetic street with known widths."""
 
 import pytest
 from shapely import affinity
 from shapely.geometry import LineString, box
 
-from streetfit.arcgis import to_polygon
 from streetfit.config import Block
 from streetfit.geometry import TWO_STRIPS, classify, measure_profiles, narrow_sections, strip_lengths, summarize_blocks
 
@@ -72,29 +71,3 @@ def test_classify_summary_and_sections():
     assert summarize_blocks(df, blocks).set_index("block").loc["all", "free_median"] == pytest.approx(4.90)
     assert [b for _, _, b in narrow_sections(df, 1.0)] == ["A", "B"]
     assert strip_lengths(df, blocks, 1.0).set_index("block").loc["all", "strip_L_length_m"] == pytest.approx(61.0)
-
-
-# ESRI rings: exterior clockwise, hole counter-clockwise
-OUTER = [[0, 0], [0, 10], [10, 10], [10, 0], [0, 0]]
-
-
-def test_esri_ring_orientation_and_holes():
-    hole = [[2, 2], [4, 2], [4, 4], [2, 4], [2, 2]]
-    assert to_polygon({"rings": [OUTER, hole]}).area == pytest.approx(100 - 4)
-
-
-def test_hole_touching_its_exterior_is_kept():
-    hole = [[0, 0], [3, 1], [1, 3], [0, 0]]  # touches the exterior at its corner (0, 0)
-    p = to_polygon({"rings": [OUTER, hole]})
-    assert p.is_valid
-    assert p.area == pytest.approx(100 - 4)
-
-
-def test_hole_inside_an_island_inside_a_hole():
-    hole = [[1, 1], [9, 1], [9, 9], [1, 9], [1, 1]]
-    island = [[3, 3], [3, 7], [7, 7], [7, 3], [3, 3]]
-    hole_in_island = [[4, 4], [6, 4], [6, 6], [4, 6], [4, 4]]
-    p = to_polygon({"rings": [OUTER, hole, island, hole_in_island]})
-    assert p.geom_type == "MultiPolygon"
-    assert p.is_valid
-    assert p.area == pytest.approx((100 - 64) + (16 - 4))

@@ -1,7 +1,9 @@
 config:
   MD013: false        # line length: prose is wrapped by hand, tables are long
   MD033: false        # inline HTML: <sub>, <br> in generated tables
+  MD024:
+    siblings_only: true   # Keep a Changelog repeats Added / Changed / Fixed under each version
 ignores:
   - CODE_OF_CONDUCT.md   # upstream text, kept verbatim
-  - .venv/**
+  - .venv*/**
   - cases/*/data/**

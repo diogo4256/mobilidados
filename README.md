@@ -109,12 +109,13 @@ The ledger lists what was not verified (grade NE) for each case.
 ## Repository layout
 
 ```text
-src/streetfit/        library and CLI (agents/ = optional AI tools)
-src/streetfit/data/   vehicle catalogue and design references (graded, with sources)
-cities/               city profiles: services, class codes, licences
-cases/<case>/         case.toml, sources.lock.json, results/ (committed), data/raw/ (not committed)
-docs/                 evidence standard, methodology, AI tools, adding a city, writing to public bodies
-tests/                unit tests (synthetic data) and the case reproduction test
+src/streetfit/          library and CLI (agents/ = optional AI tools)
+src/streetfit/data/     vehicle catalogue and design references (graded, with sources)
+src/streetfit/locales/  message catalogues for figures, ledger and reports, one file per language
+cities/                 city profiles: services, class codes, licences
+cases/<case>/           case.toml, sources.lock.json, results/ (committed), data/raw/ (not committed)
+docs/                   evidence standard, methodology, AI tools, adding a city, writing to public bodies
+tests/                  unit tests (synthetic data) and the case reproduction test
 ```
 
 ## Contact

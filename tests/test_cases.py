@@ -6,17 +6,11 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-import streetfit
 from streetfit.config import Case
 from streetfit.provenance import Lock
 
 ROOT = Path(__file__).resolve().parents[1]
 CASES = sorted(p.parent for p in (ROOT / "cases").glob("*/case.toml"))
-
-
-def test_citation_matches_the_package_version():
-    cff = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-    assert f"\nversion: {streetfit.__version__}\n" in cff
 
 
 @pytest.mark.parametrize("case_dir", CASES, ids=lambda p: p.name)

@@ -37,7 +37,7 @@ them is tested by `overhang_sensitivity.csv` and can be checked on orthophotos o
 `cartography.accuracy_note` and repeated as a caveat in the ledger. A width is measured between two edges, so
 its uncertainty combines both: report ranges, not single decimals, when this matters.
 
-## Traffic direction (`network.py`)
+## Traffic direction (`direction.py`)
 
 An ArcGIS `identify` on the municipal routing network at `direction.stations_s` returns, per network edge and
 direction, whether travel is allowed. The street is two-way if some edge is open in both directions.
