@@ -4,6 +4,9 @@ A static envelope model, not a swept-path simulation: it compares the measured f
 the vehicles' widths, assuming parked cars stay inside their mapped strips. Mirrors are counted unless a
 vehicle's mirrors sit above the other vehicle's body (``mirrors_clear_cars``: a bus mirror passes over a car).
 The vehicles come from ``data/vehicles.toml`` and the case's own ``[vehicles.<id>]`` (see ``Config.all_vehicles``).
+
+``without_parking`` measures the alternative: the free width if the mapped parking on one side, or on both, were
+given back to the carriageway.
 """
 
 from __future__ import annotations
@@ -11,6 +14,7 @@ from __future__ import annotations
 import pandas as pd
 
 from .config import Vehicle
+from .geometry import TWO_STRIPS
 
 
 def widths(a: Vehicle, b: Vehicle | None, with_mirrors: bool) -> float:
@@ -49,6 +53,22 @@ def width_budget(free: dict[str, float], vehicles: dict[str, Vehicle], scenarios
                     }
                 )
     return pd.DataFrame(rows)
+
+
+def without_parking(profiles: pd.DataFrame) -> pd.DataFrame:
+    """Free width at the two-strip stations if the strip on side L, on side R or on both became carriageway.
+
+    Per station, the free width plus the strip(s) on that station; the quantiles are over the same stations as the
+    measured free width, so the two can be compared directly.
+    """
+    d = profiles[profiles["class"] == TWO_STRIPS]
+    options = {"L": d.free_width + d.strip_L, "R": d.free_width + d.strip_R, "both": d.free_width + d.strip_L + d.strip_R}
+    return pd.DataFrame(
+        [
+            {"without": side, "free_min": round(w.min(), 2), "free_median": round(w.median(), 2), "free_max": round(w.max(), 2)}
+            for side, w in options.items()
+        ]
+    )
 
 
 def overhang_sensitivity(

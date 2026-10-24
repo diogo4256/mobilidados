@@ -84,6 +84,15 @@ each graded D (published) or P (assumed). This is a static envelope, not a swept
 width a vehicle needs when turning and the safety distance a driver keeps, so it is favourable to the
 narrow street.
 
+## Without parking (`envelope.py`)
+
+The same stations, with the space of the mapped parking given back to the carriageway: on each station with
+parking on both sides, the free width plus the strip on side L, plus the strip on side R, or plus both
+(`without_parking.csv`). The ledger states the resulting widths and the bus × bus margin with parking on one
+side only (the narrower of the two options). It measures an option, it is not a design: it assumes nothing else
+(trees, bins, loading bays, bike parking) takes the space. The scenario is not compared with the design
+references, because a reference's scope may assume the parking that the scenario removes.
+
 ## Citizen reports (`occurrences.py`)
 
 Geolocated records (Lisbon: *Na Minha Rua*) within `occurrences.window_m` of the street are attributed to the

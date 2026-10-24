@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 INK, MUTED, GRID = "#1f2933", "#6b7280", "#d9dee5"
 FREE, BUS, BUS2, CAR, STRIP, ALERT = "#c9ced6", "#e8915b", "#c8553d", "#5b8fc9", "#8fbfe0", "#b42318"
+FREE_ALT = "#a8cfa0"  # the free width an alternative layout would leave
 
 STYLE: dict[Any, Any] = {
     "font.size": 10,
@@ -73,7 +74,10 @@ def width_budget(run: Run, lang: Lang) -> Figure:
     def cat(v: Vehicle) -> str:
         return t(v.category, lang) if v.category in ("bus", "car") else v.category
 
+    wp = run.table("without_parking").set_index("without")
+    one_side = float(wp.loc[["L", "R"], "free_median"].min())
     rows = [
+        (t("without_one_side", lang), [(one_side, FREE_ALT, f"{num(one_side, lang)} m")], 0.0, ""),
         (t("free_width_short", lang), [(free, FREE, f"{num(free, lang)} m")], 0.0, ""),
         (
             f"{cat(bus)} × {cat(car)}",
@@ -86,12 +90,12 @@ def width_budget(run: Run, lang: Lang) -> Figure:
             f"{cat(bus)} × {cat(bus)}",
             [(bus.width_body_m, BUS, num(bus.width_body_m, lang)), (bus.width_body_m, BUS2, num(bus.width_body_m, lang))],
             2 * (bus.width_mirrors_m - bus.width_body_m),
-            f"{num(2 * bus.width_body_m, lang)} m · {t('with_mirrors', lang)} {num(2 * bus.width_mirrors_m, lang)} m: {t('does_not_fit', lang)}"
+            t("short_by", lang, x=num(2 * bus.width_body_m - free, lang), xm=num(2 * bus.width_mirrors_m - free, lang))
             if 2 * bus.width_body_m > free
             else "",
         ),
     ]
-    fig = Figure(figsize=(10, 3.6))
+    fig = Figure(figsize=(10, 4.4))
     ax = fig.subplots()
     for i, (lab, parts, mir, note) in enumerate(rows):
         y, x = len(rows) - 1 - i, 0.0
@@ -106,7 +110,7 @@ def width_budget(run: Run, lang: Lang) -> Figure:
         ax.text(-0.1, y, lab, ha="right", va="center", fontsize=10, color=INK)
     ax.axvline(free, color=ALERT, lw=1.6, ls="--")
     ax.text(free + 0.05, len(rows) - 0.4, f"{t('limit', lang)} {num(free, lang)} m", color=ALERT, fontsize=10, va="center")
-    ax.set_xlim(0, max(6.2, 2 * bus.width_mirrors_m + 0.2))
+    ax.set_xlim(0, max(6.2, 2 * bus.width_mirrors_m + 0.2, one_side + 0.6))
     ax.set_ylim(-0.9, len(rows) - 0.3)
     ax.set_yticks([])
     ax.set_xlabel(t("width_m", lang))

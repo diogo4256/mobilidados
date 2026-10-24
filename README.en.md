@@ -53,7 +53,7 @@ flowchart LR
 | `profiles` | free width, parking strips, kerb-to-kerb, sidewalks at stations along the street; per-block summary |
 | `direction` | one-way / two-way from the municipal routing network |
 | `transit` | routes running along the street, heading, trips per hour on a service day, scheduled stop-to-stop times |
-| `envelope` | margins for bus × bus, bus × car, car × car, with and without mirrors; overhang sensitivity |
+| `envelope` | margins for bus × bus, bus × car, car × car, with and without mirrors; overhang sensitivity; free width without the parking on one side or both |
 | `encounters` | buses in opposite directions predicted to meet on the street, and where |
 | `occurrences` | geolocated citizen reports per 100 m of street, compared with neighbouring streets |
 | `area` | the streets with buses in the surrounding area where parking squeezes their passage in the same way |

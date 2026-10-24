@@ -11,6 +11,9 @@ streetfit.
 
 ### Added
 
+- The free width without the mapped parking on one side, or on both, at the same stations as the measured free
+  width (`without_parking.csv`), with a ledger finding and a bar in the width figure. Defined in
+  `docs/methodology.md`. The existing tables and values are unchanged.
 - `README.md` is in Portuguese and `README.en.md` in English. Both state the project's purpose (better mobility, with
   public transport as part of the solution) and what the tools do not do yet.
 - A pushed tag `vX.Y.Z` makes a GitHub release with the changelog's section as notes and publishes the
@@ -23,6 +26,9 @@ streetfit.
   User-Agent sent to data providers. The repository moved to `diogo4256/mobilidados`; GitHub redirects the old
   address. The texts generated in `findings.md` and on the figures name mobilidados; tables and findings are
   unchanged.
+- The Portuguese texts of the ledger and the figures are rewritten in plain Portuguese (for example "Cada
+  afirmação diz em que se apoia", "mediana de 4,90 m"). The width figure says how much width is missing
+  ("faltam 0,10 m") instead of "não cabe".
 - README links are absolute, so they work on PyPI as well as on GitHub.
 - Dependency lower bounds are the oldest versions that pass the test suite, and a `lowest` CI job installs
   exactly them. `urllib3` is declared, since mobilidados imports it directly.

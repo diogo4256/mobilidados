@@ -1,54 +1,56 @@
-# Mensagens do mobilidados, português. Cada chave existe em todas as línguas (tests/test_i18n.py verifica chaves e {marcadores}).
+# Textos do mobilidados em português. Cada chave existe em todas as línguas (tests/test_i18n.py verifica chaves e {marcadores}).
 # Uma mensagem cuja redação depende de uma contagem é uma tabela com as formas `one` e `other` (ver mobilidados/i18n.py).
 
 [figure]
-free_width = "Faixa livre entre as faixas de estacionamento"
+free_width = "Largura livre entre o estacionamento dos dois lados"
 width_m = "largura (m), à escala"
-limit = "limite"
+limit = "largura livre"
 mirrors = "espelhos"
-does_not_fit = "não cabe"
 margin = "folga"
 with_mirrors = "com espelhos"
 trips_per_hour = "viagens por hora"
 hour = "hora do dia"
-weekday_trips = "Viagens programadas na rua, dia útil {day}"
+weekday_trips = "Viagens previstas no horário, dia útil de {day}"
 along = "distância ao longo da rua (m)"
-strips = "Faixas de estacionamento cartografadas (esq. / dir.)"
+strips = "Estacionamento cartografado (esq. / dir.)"
 profile_title = "Perfil cartografado ao longo da rua"
-area_title = "Ruas com autocarros na zona: faixa livre vs. autocarros por dia"
+area_title = "Ruas com autocarros na zona: largura livre e autocarros por dia"
 buses_day = "autocarros por dia útil"
-median_free = "faixa livre mediana (m)"
+median_free = "largura livre mediana (m)"
 parking_both = "estacionamento dos dois lados"
-free_width_short = "Faixa livre"
-data_credit = "Dados: {sources}; adaptados. Análise: mobilidados."
+free_width_short = "Largura livre"
+data_credit = "Dados: {sources}, adaptados. Análise: mobilidados."
 bus = "autocarro"
 car = "ligeiro"
 pattern_two_way = "dois sentidos, estacionamento dos dois lados, estreita"
 pattern_one_way = "sentido único, estacionamento dos dois lados, estreita"
+without_one_side = "Sem estacionamento de um lado"
+short_by = "faltam {x} m ({xm} m com espelhos)"
 
 [ledger]
 length = "O eixo da rua tem {length} m."
-traffic = { one = "A rede viária municipal marca a rua como de {traffic} (arestas verificadas em {n} ponto ao longo da rua).", other = "A rede viária municipal marca a rua como de {traffic} (arestas verificadas em {n} pontos ao longo da rua)." }
-free = "Onde há faixas de estacionamento cartografadas dos dois lados ({metres} m da rua), a faixa livre cartografada entre elas mede {fmin}–{fmax} m (mediana {fmed} m)."
-strips = "As faixas de estacionamento cartografadas têm {sl} m (lado {side_l}) e {sr} m (lado {side_r}) (medianas)."
-routes_scheduled = { one = "A carreira {routes} está programada ao longo da rua.", other = "As carreiras {routes} estão programadas ao longo da rua." }
+traffic = { one = "Segundo a rede viária da Câmara, a rua tem {traffic} (verificado em {n} ponto ao longo da rua).", other = "Segundo a rede viária da Câmara, a rua tem {traffic} (verificado em {n} pontos ao longo da rua)." }
+free = "Nos troços com estacionamento cartografado dos dois lados ({metres} m da rua), a largura livre entre eles vai de {fmin} a {fmax} m (mediana de {fmed} m)."
+strips = "O estacionamento cartografado ocupa {sl} m do lado {side_l} e {sr} m do lado {side_r} (medianas)."
+routes_scheduled = { one = "Segundo o horário, a carreira {routes} passa nesta rua.", other = "Segundo o horário, as carreiras {routes} passam nesta rua." }
 trips = { one = "{n} viagem {heading}", other = "{n} viagens {heading}" }
 routes = "{scheduled} Em {day}: {trips_up} e {trips_down} (no máximo {max_up} e {max_down} por hora)."
-vehicle_body = "Veículo de referência «{label}»: largura da carroçaria {w} m ({src})."
-vehicle_mirrors = "Largura com espelhos de «{label}» considerada {w} m ({src})."
-budget = "Com as duas faixas ocupadas e os veículos estacionados dentro delas, dois autocarros precisam de {bb} m (só carroçaria; {bbm} m com espelhos) para uma faixa livre mediana de {fmed} m: folga {mbb} m. Um autocarro e um ligeiro precisam de {bc} m: folga {mbc} m ({mbcm} m com o espelho do ligeiro)."
+vehicle_body = "Veículo de referência «{label}»: carroçaria com {w} m de largura ({src})."
+vehicle_mirrors = "Largura de «{label}» com espelhos assumida em {w} m ({src})."
+budget = "Com o estacionamento ocupado dos dois lados e os carros dentro dos lugares, dois autocarros precisam de {bb} m (só a carroçaria; {bbm} m com espelhos) e a largura livre mediana é de {fmed} m: folga de {mbb} m. Um autocarro e um ligeiro precisam de {bc} m: folga de {mbc} m ({mbcm} m contando com o espelho do ligeiro)."
 meetings = { one = "{n} encontro", other = "{n} encontros" }
-meetings_narrow = { one = "{n} cai nos troços com estacionamento dos dois lados", other = "{n} caem nos troços com estacionamento dos dois lados" }
-encounters = "O horário implica {meetings} por dia útil entre autocarros em sentidos opostos na rua (modelo de velocidade constante a {speeds} km/h); {narrow}."
-encounters_check = "A {kmh} km/h, a velocidade mais baixa implícita no horário de {day} entre paragens (um mínimo), o modelo dá {per_day}."
-runtimes = "Tempo programado da paragem {a} à seguinte ({b}, {d} m em linha reta): mediana de {m_all} s em todas as viagens do feed (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h)."
+meetings_narrow = { one = "{n} acontece nos troços com estacionamento dos dois lados", other = "{n} acontecem nos troços com estacionamento dos dois lados" }
+encounters = "Segundo o horário, há {meetings} por dia útil entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de {speeds} km/h); {narrow}."
+encounters_check = "A {kmh} km/h, a velocidade mais baixa entre paragens que o horário de {day} permite (é um mínimo), o modelo dá {per_day}."
+runtimes = "Tempo previsto da paragem {a} à seguinte ({b}, a {d} m em linha reta): mediana de {m_all} s em todas as viagens do horário (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h)."
 reports_attributed = { one = "Foi atribuída à rua {n} ocorrência da categoria «{flt}»", other = "Foram atribuídas à rua {n} ocorrências da categoria «{flt}»" }
 street_rank = { one = "{rank}.ª de {total} rua com pelo menos {minlen} m na envolvente", other = "{rank}.ª de {total} ruas com pelo menos {minlen} m na envolvente" }
 occurrences = "{attributed} ({period}, a ≤{d} m do eixo): {rate} por 100 m, {ranking}."
-area_streets = { one = "De {n} rua com autocarros programados na envolvente", other = "Das {n} ruas com autocarros programados na envolvente" }
-area_pattern = { one = "{n} é de dois sentidos e combina estacionamento dos dois lados com uma faixa livre inferior a {thr} m em pelo menos {minm} m ({names})", other = "{n} são de dois sentidos e combinam estacionamento dos dois lados com uma faixa livre inferior a {thr} m em pelo menos {minm} m ({names})" }
+area_streets = { one = "De {n} rua da zona com autocarros no horário", other = "Das {n} ruas da zona com autocarros no horário" }
+area_pattern = { one = "{n} tem dois sentidos e estacionamento dos dois lados, com menos de {thr} m de largura livre em pelo menos {minm} m ({names})", other = "{n} têm dois sentidos e estacionamento dos dois lados, com menos de {thr} m de largura livre em pelo menos {minm} m ({names})" }
 area = "{streets}, {pattern}; destas, {nb} com autocarros nos dois sentidos: {names2}."
 standard = "{doc}, p. {page} ({kind}): {label}: {value} m. Âmbito: {scope}. Mediana medida: {fmed} m ({diff} m)."
+without_parking = "Sem o estacionamento do lado {side_l}, a largura livre passaria a ir de {lmin} a {lmax} m (mediana de {lmed} m); sem o do lado {side_r}, de {rmin} a {rmax} m (mediana de {rmed} m); sem estacionamento nenhum, mediana de {bmed} m. Dois autocarros precisam de {bb} m ({bbm} m com espelhos): só com estacionamento de um lado, a folga seria de {m1} m ({m1m} m com espelhos)."
 
 [kind]
 reference_profile = "perfil de referência"
@@ -61,12 +63,12 @@ one-way = "sentido único"
 "?" = "sentido desconhecido"
 
 [report]
-intro = "Gerado por `mobilidados run` a partir das tabelas em `tables/`. Cada afirmação tem um grau de evidência: **M** medido em dados oficiais · **D** texto de documento oficial · **I** inferência · **P** pressuposto · **NE** não encontrado / não verificado (≠ não existe)."
+intro = "Gerado por `mobilidados run` a partir das tabelas em `tables/`. Cada afirmação diz em que se apoia: **M** medido em dados oficiais · **D** escrito em documento oficial · **I** inferido · **P** pressuposto · **NE** não encontrado ou não verificado (≠ não existe)."
 sources = "Fontes"
 origin = "origem"
 retrieved = "obtido"
 licence = "licença"
 files = { one = "{n} ficheiro, p. ex. {example}", other = "{n} ficheiros, p. ex. {example}" }
 attribution = "Atribuição"
-transformed = "Os dados foram transformados: as tabelas e figuras são medições, contagens e agregações derivadas pelo mobilidados; não são publicações da entidade de origem, que não as subscreve."
+transformed = "Os dados foram trabalhados: as tabelas e as figuras são medições, contagens e agregações feitas pelo mobilidados; não são publicações da entidade de origem, que não as subscreve."
 and = " e "
