@@ -11,6 +11,8 @@ streetfit.
 
 ### Added
 
+- Each run writes the resolved configuration it used to `results/config.json`, so a change to a city profile shows
+  up as a diff in every case that uses it, and the reproduction test compares it.
 - `mobilidados new-case "<street>" --like <case>` drafts a case for another street of the same city from its
   name: the axis from the municipal layer, blocks cut at the cross streets, direction and side labels from the
   bearing, check points and traffic-direction stations away from the junctions, and the bus routes and
@@ -33,6 +35,11 @@ streetfit.
 
 ### Changed
 
+- The documentation calls the municipal manual and the German guideline design references, not norms; it says
+  exactly where each input comes from (the GTFS feed from the Mobility Database archive, the traffic direction
+  from the Lisboa Interativa public viewer in guest access, whose address carries a backup date); it states the
+  roles of public bodies no further than is certain; and the Lisbon case's README points to the layered settings.
+- `mobilidados lint` also flags plural forms of normative words ("normas", "regras", "obrigatórios").
 - Lisbon's settings are in three layers: `cities/lisboa.toml` (services, classes and the method parameters every
   case shares), `cities/lisboa-2026-10.toml` (the GTFS feed, service day and Na Minha Rua files pinned in October
   2026) and each case, which keeps only its street. Newer data go in a new dated file, so a case with results

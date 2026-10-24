@@ -85,7 +85,7 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
     stale = check_pins(case)
     if stale:
         raise MobilidadosError(
-            f"cached files do not match the sha256 pinned in case.toml: {stale}. "
+            f"cached files do not match the sha256 pinned in the case's configuration: {stale}. "
             "Restore the pinned files (fetch --from-dir) or update the pin deliberately."
         )
     r = Run(case, offline=offline)
