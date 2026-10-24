@@ -38,6 +38,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("verify", help="check cached sources against sources.lock.json")
     p.add_argument("case")
 
+    p = sub.add_parser("snapshot", help="copy the redistributable cached sources into a folder for archiving")
+    p.add_argument("case")
+    p.add_argument("out", type=Path)
+
     p = sub.add_parser("lint", help="flag generalisations, hedges and quotes in a draft letter (no AI)")
     p.add_argument("draft", type=Path)
     p.add_argument("--lang", default="pt")
@@ -80,6 +84,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{status:8s} {sid:24s} {f}")
         print(f"{len(rows) - len(bad)}/{len(rows)} files match the lock")
         return 1 if bad else 0
+    elif a.cmd == "snapshot":
+        from .sources import snapshot
+
+        snapshot(Case.load(a.case), a.out)
     elif a.cmd == "lint":
         from .lint import lint_text
 

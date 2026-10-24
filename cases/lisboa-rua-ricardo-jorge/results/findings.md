@@ -14,6 +14,10 @@ Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação t
   <sub>Mapped area, not parked vehicles.</sub>
 - **[M]** As carreiras 744, 46B estão programadas ao longo da rua. Em 2026-10-27: 56 viagens SO→NE e 76 viagens NE→SO (no máximo 4 e 6 por hora).  
   <sub>Trips counted at a reference stop per direction; timetable, not observed operation.</sub>
+- **[M]** Tempo programado da paragem 11315 à seguinte (11317 Esc. Padre António Vieira, 321 m em linha reta): mediana de 65 s em todas as viagens do feed (pelo menos 17,8 km/h) e de 82 s em 2026-10-27 (pelo menos 14,1 km/h).  
+  <sub>Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.</sub>
+- **[M]** Tempo programado da paragem 11318 à seguinte (11314 Bombeiros Alvalade, 222 m em linha reta): mediana de 50 s em todas as viagens do feed (pelo menos 16,0 km/h) e de 63 s em 2026-10-27 (pelo menos 12,7 km/h).  
+  <sub>Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.</sub>
 - **[D]** Veículo de referência «Carris MAN 18.310 / Caetano City Gold (12 m)»: largura da carroçaria 2,50 m (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643).
 - **[P]** Largura com espelhos de «Carris MAN 18.310 / Caetano City Gold (12 m)» considerada 2,90 m (pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro).
 - **[P]** Veículo de referência «Ligeiro típico»: largura da carroçaria 1,80 m (pressuposto: largura típica de um ligeiro europeu; a validar no local).
@@ -21,7 +25,7 @@ Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação t
 - **[I]** Com as duas faixas ocupadas e os veículos estacionados dentro delas, dois autocarros precisam de 5,00 m (só carroçaria; 5,80 m com espelhos) para uma faixa livre mediana de 4,90 m: folga −0,10 m. Um autocarro e um ligeiro precisam de 4,30 m: folga +0,60 m (+0,35 m com o espelho do ligeiro).  
   <sub>Static envelope (sum of widths), not a swept-path simulation. · Assumes parked vehicles stay inside the mapped strips; see overhang_sensitivity.csv.</sub>
 - **[I]** O horário implica 6–7 encontros por dia útil entre autocarros em sentidos opostos na rua (modelo de velocidade constante a 15/20 km/h); 1–2 caem nos troços com estacionamento dos dois lados.  
-  <sub>Presence-interval overlap at constant speed from scheduled times; timetable, not observation.</sub>
+  <sub>Presence-interval overlap at constant speed from scheduled times; timetable, not observation. · A 12,7 km/h, a velocidade mais baixa implícita no horário de 2026-10-27 entre paragens (um mínimo), o modelo dá 7.</sub>
 - **[M]** Foram atribuídas à rua 6 ocorrências da categoria «Estacionamento abusivo» (2017-05-05 – 2026-05-31, a ≤12 m do eixo): 2,87 por 100 m, 1.ª de 25 ruas com pelo menos 100 m na envolvente.  
   <sub>Nearest-street attribution of geolocated open-data records. · A report is not a proven infraction; counts are small.</sub>
 - **[M]** Das 69 ruas com autocarros programados na envolvente, 2 são de dois sentidos e combinam estacionamento dos dois lados com uma faixa livre inferior a 5,5 m em pelo menos 30 m (Rua Ricardo Jorge e Rua Teixeira de Pascoais); destas, 1 com autocarros nos dois sentidos: Rua Ricardo Jorge.  
@@ -38,12 +42,12 @@ Gerado por `streetfit run` a partir das tabelas em `tables/`. Cada afirmação t
 ## Fontes
 
 | id | origem | obtido | licença | sha256 |
-|---|---|---|---|---|
-| area_axes | https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79 | 2026-10-22 | not stated by the service | `0bbc8dd0c85c…` area_axes.json |
-| area_cartography | https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53 | 2026-10-22 | CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated) | `2693bdbdf020…` area_cartography.json |
-| area_network_identify | https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `e21fdddff4b2…` area_network_identify.json |
-| carris_gtfs | https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS | 2026-10-20 | not stated at the download endpoint (not redistributed) | `c7550ea2d2f0…` carris_gtfs.zip |
-| cartography | https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53 | 2026-10-20 | CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated) | `d6fb67b9b3d7…` cartography.json |
+| --- | --- | --- | --- | --- |
+| area_axes | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79> | 2026-10-24 | not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified) | `3096da389677…` area_axes.json |
+| area_cartography | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53> | 2026-10-24 | CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated) | `6d49fe735c72…` area_cartography.json |
+| area_network_identify | <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify> | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `0f584f1874ef…` area_network_identify.json |
+| carris_gtfs | <https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip> | 2026-10-24 | not stated at the download endpoint (not redistributed) | `c7550ea2d2f0…` carris_gtfs.zip |
+| cartography | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53> | 2026-10-24 | CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated) | `87c633260730…` cartography.json |
 | na_minha_rua |  | 2026-10-22 | CC-BY (dados.gov.pt record 'Ocorrências "Na Minha Rua Lx"') | `5be40828a57b…` na_minha_rua/2017.csv<br>`ef31c04e2e67…` na_minha_rua/2018.csv<br>`dd1283b12cc5…` na_minha_rua/2019.csv<br>+7 |
-| network_identify | https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `71a5fe259fc7…` network_identify.json |
-| street_axes | https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79 | 2026-10-20 | not stated by the service | `b266ddefc9ca…` street_axes.json |
+| network_identify | <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify> | 2026-10-24 | not stated (Lisboa Interativa public viewer, guest access) | `71a5fe259fc7…` network_identify.json |
+| street_axes | <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79> | 2026-10-24 | not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified) | `902bbeda01db…` street_axes.json |

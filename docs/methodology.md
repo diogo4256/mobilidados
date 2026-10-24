@@ -52,13 +52,16 @@ Each scheduled vehicle crosses the whole street at a constant speed `v`, passing
 scheduled time. Vehicles in opposite directions meet if their presence intervals on the street overlap; the
 meeting time and point follow from equal positions:
 
-```
+```text
 t* = (s_b - s_a + v (t_a + t_b)) / (2 v)        s* = s_a + v (t* - t_a)
 ```
 
-for A heading +1 at `s_a` at `t_a` and B heading −1 at `s_b` at `t_b`. Results are given for two speeds
-(15 and 20 km/h in the Lisbon case, consistent with the scheduled stop-to-stop times) and flagged when the
-meeting point falls inside a two-strip section. It is an estimate of how often the situation arises, graded I.
+for A heading +1 at `s_a` at `t_a` and B heading −1 at `s_b` at `t_b`. Results are given for the case's speeds
+(15 and 20 km/h in Lisbon) and flagged when the meeting point falls inside a two-strip section. Slower buses
+stay longer on the street and meet more often, so the pipeline also reports the count at the slowest
+stop-to-stop speed implied by the service day's schedule (straight-line distance over median scheduled time, a
+lower bound): in Lisbon 12.7 km/h gives 7, the top of the 6–7 range. It is an estimate of how often the
+situation arises, graded I.
 
 ## Width budget (`envelope.py`)
 

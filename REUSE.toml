@@ -1,7 +1,7 @@
 version = 1
 
 [[annotations]]
-path = ["src/**", "tests/**", "pyproject.toml", "uv.lock", "Makefile", ".github/**", ".gitignore", ".pre-commit-config.yaml", "cities/**", "cases/*/case.toml", "REUSE.toml"]
+path = ["src/**", "tests/**", "pyproject.toml", "uv.lock", "Makefile", ".github/**", ".gitignore", ".pre-commit-config.yaml", ".markdownlint-cli2.yaml", "cities/**", "cases/*/case.toml", "REUSE.toml"]
 SPDX-FileCopyrightText = "2026 streetfit contributors"
 SPDX-License-Identifier = "Apache-2.0"
 

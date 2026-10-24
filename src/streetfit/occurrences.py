@@ -51,7 +51,7 @@ def rates_by_street(
         out[f"{name}_per_100m"] = (out[f"{name}_n"] / out.length_m * 100).round(2)
     out = out[out.length_m >= min_length]
     first = next(iter(filters))
-    return out.sort_values(f"{first}_per_100m", ascending=False).reset_index(drop=True)
+    return out.sort_values([f"{first}_per_100m", "street"], ascending=[False, True]).reset_index(drop=True)
 
 
 def yearly_counts(points: pd.DataFrame, street: str, rx: str, max_dist: float = 12.0) -> pd.Series:

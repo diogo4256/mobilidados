@@ -8,7 +8,7 @@ against those grades.
 ## Grades
 
 | Grade | Use it for | Example |
-|---|---|---|
+| --- | --- | --- |
 | **M** measured | values computed or counted directly from official data | "the mapped free width between the parking strips is 4.78–5.68 m" (municipal 1:1000 cartography) |
 | **D** document | what an official document says, with page | "the manual's two-way profile gives 6.80 m between parking strips (p. 152)" |
 | **I** inference | results of a model or a calculation on M/D/P inputs | "the timetable implies 6–7 meetings per weekday between buses in opposite directions" |

@@ -3,7 +3,7 @@
 A city profile (`cities/<city>.toml`) holds what every street in that city shares. It needs:
 
 | Section | What | Lisbon example |
-|---|---|---|
+| --- | --- | --- |
 | `[city]` | id, name, a projected CRS in metres | EPSG:3763 (ETRS89 / PT-TM06) |
 | `[cartography]` | the class field and class codes for `road`, `parking`, `sidewalk`, `plot` in a large-scale polygon layer | `LAYER`; `10100104_ParqueEstacionamentoArea` for parking |
 | `[axes]` | the street-name field of the street-axis layer | `DESIGNACAO` |
@@ -23,10 +23,12 @@ Check the cartography's survey date and stated accuracy, and record them in `[ca
 ## Steps
 
 1. Find the services (by hand or with `streetfit discover`, see [ai-tools.md](ai-tools.md)):
+
    ```bash
    streetfit discover --city Porto --start https://<gis-host>/arcgis/rest/services https://<open-data-host>/api/3 \
        --bbox -8.62,41.15,-8.60,41.16
    ```
+
 2. Write `cities/<city>.toml`; record each source's licence exactly as the publisher states it. If it is not
    stated, write "not stated", and do not commit the raw data.
 3. Create a case (`cases/<city>-<street>/case.toml`) with `extends = "../../cities/<city>.toml"`.

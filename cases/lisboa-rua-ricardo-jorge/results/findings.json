@@ -84,6 +84,36 @@
       "caveat": ""
     },
     {
+      "id": "runtime_11315",
+      "grade": "M",
+      "statement": "Tempo programado da paragem 11315 à seguinte (11317 Esc. Padre António Vieira, 321 m em linha reta): mediana de 65 s em todas as viagens do feed (pelo menos 17,8 km/h) e de 82 s em 2026-10-27 (pelo menos 14,1 km/h).",
+      "values": {
+        "dist_straight_m": 321,
+        "median_s_all": 65.0,
+        "median_s_day": 82.0
+      },
+      "sources": [
+        "carris_gtfs"
+      ],
+      "method": "Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.",
+      "caveat": ""
+    },
+    {
+      "id": "runtime_11318",
+      "grade": "M",
+      "statement": "Tempo programado da paragem 11318 à seguinte (11314 Bombeiros Alvalade, 222 m em linha reta): mediana de 50 s em todas as viagens do feed (pelo menos 16,0 km/h) e de 63 s em 2026-10-27 (pelo menos 12,7 km/h).",
+      "values": {
+        "dist_straight_m": 222,
+        "median_s_all": 50.0,
+        "median_s_day": 63.0
+      },
+      "sources": [
+        "carris_gtfs"
+      ],
+      "method": "Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.",
+      "caveat": ""
+    },
+    {
       "id": "vehicle_carris_man_city_gold_body",
       "grade": "D",
       "statement": "Veículo de referência «Carris MAN 18.310 / Caetano City Gold (12 m)»: largura da carroçaria 2,50 m (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643).",
@@ -173,7 +203,7 @@
         "free_width"
       ],
       "method": "Presence-interval overlap at constant speed from scheduled times; timetable, not observation.",
-      "caveat": ""
+      "caveat": "A 12,7 km/h, a velocidade mais baixa implícita no horário de 2026-10-27 entre paragens (um mínimo), o modelo dá 7."
     },
     {
       "id": "occurrences",
@@ -280,6 +310,7 @@
   ],
   "sources": {
     "area_axes": {
+      "copyrightText": "",
       "envelope": [
         -9.156,
         38.744,
@@ -288,17 +319,20 @@
       ],
       "envelope_sr": 4326,
       "kind": "arcgis_query",
-      "licence": "not stated by the service",
-      "retrieved_utc": "2026-10-22 (file time)",
+      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
+      "n_features": 268,
+      "retrieved_utc": "2026-10-24T15:47:00+00:00",
       "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
+      "where": "1=1",
       "files": {
         "area_axes.json": {
-          "bytes": 423141,
-          "sha256": "0bbc8dd0c85c831c5c9c3509ffe393a08412a8818d6372ceaf218b651837e7d4"
+          "bytes": 423717,
+          "sha256": "3096da389677413398f863b4888d326765a725d71c9007dc427f6fc3f18bea1a"
         }
       }
     },
     "area_cartography": {
+      "copyrightText": "",
       "envelope": [
         -9.156,
         38.744,
@@ -308,12 +342,14 @@
       "envelope_sr": 4326,
       "kind": "arcgis_query",
       "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
-      "retrieved_utc": "2026-10-22 (file time)",
+      "n_features": 1457,
+      "retrieved_utc": "2026-10-24T15:46:48+00:00",
       "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "where": "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea')",
       "files": {
         "area_cartography.json": {
-          "bytes": 10615087,
-          "sha256": "2693bdbdf020503f810f74e95003cf8d9588a34ac21f38880b49d8eb0e0800fe"
+          "bytes": 10616313,
+          "sha256": "6d49fe735c72ed8ad166ca1d477cef81674b38fbc6f4345b2c820f29f6351fef"
         }
       }
     },
@@ -321,20 +357,20 @@
       "kind": "arcgis_identify",
       "layers": "all:203",
       "licence": "not stated (Lisboa Interativa public viewer, guest access)",
-      "retrieved_utc": "2026-10-24T13:06:42+00:00",
+      "retrieved_utc": "2026-10-24T15:49:12+00:00",
       "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify",
       "files": {
         "area_network_identify.json": {
           "bytes": 34530,
-          "sha256": "e21fdddff4b2603758a1d15941ca5c9f8da3a9f222b16214db04479aac080e42"
+          "sha256": "0f584f1874ef4dabdbae6bf1045419c96005b4cdd7e35043c4b01f833dd34840"
         }
       }
     },
     "carris_gtfs": {
       "kind": "http_file",
       "licence": "not stated at the download endpoint (not redistributed)",
-      "retrieved_utc": "2026-10-20 (feed files dated 2026-10-19)",
-      "url": "https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS",
+      "retrieved_utc": "2026-10-24T15:46:42+00:00",
+      "url": "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip",
       "files": {
         "carris_gtfs.zip": {
           "bytes": 47948626,
@@ -343,6 +379,7 @@
       }
     },
     "cartography": {
+      "copyrightText": "",
       "envelope": [
         -9.1425,
         38.7555,
@@ -352,13 +389,14 @@
       "envelope_sr": 4326,
       "kind": "arcgis_query",
       "licence": "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)",
-      "retrieved_utc": "2026-10-20T16:15:44+00:00",
+      "n_features": 911,
+      "retrieved_utc": "2026-10-24T15:50:29+00:00",
       "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
       "where": "1=1",
       "files": {
         "cartography.json": {
-          "bytes": 5471735,
-          "sha256": "d6fb67b9b3d77e35958fd4b38a87e5feba2f460fc5dec0085ab1b203ba23396f"
+          "bytes": 5471743,
+          "sha256": "87c633260730017e4a00be84e34da7ff7dbc74658caab4c0177f1bee5a4c9cd3"
         }
       }
     },
@@ -413,7 +451,7 @@
       "kind": "arcgis_identify",
       "layers": "all:203",
       "licence": "not stated (Lisboa Interativa public viewer, guest access)",
-      "retrieved_utc": "2026-10-24T13:06:42+00:00",
+      "retrieved_utc": "2026-10-24T15:49:12+00:00",
       "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify",
       "files": {
         "network_identify.json": {
@@ -423,6 +461,7 @@
       }
     },
     "street_axes": {
+      "copyrightText": "",
       "envelope": [
         -9.1425,
         38.7555,
@@ -431,14 +470,15 @@
       ],
       "envelope_sr": 4326,
       "kind": "arcgis_query",
-      "licence": "not stated by the service",
-      "retrieved_utc": "2026-10-20 (same fetch run as cartography)",
+      "licence": "not stated by the service (CML MapaBase; the open 'Rede Viária' dataset is CC0, identity with this layer not verified)",
+      "n_features": 26,
+      "retrieved_utc": "2026-10-24T15:50:35+00:00",
       "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79",
       "where": "1=1",
       "files": {
         "street_axes.json": {
-          "bytes": 33483,
-          "sha256": "b266ddefc9cab4eca0324f257031054492bc76582c1eca148e194581bc9c4323"
+          "bytes": 33491,
+          "sha256": "902bbeda01dbe1ace471da6b1c0d27b4b34554c50fb1848dbcef5d07594ada2a"
         }
       }
     }

@@ -6,6 +6,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 ## [0.1.0] - 2026-10-24
 
 ### Added
+
 - Pipeline: cross-section profiles from municipal cartography, traffic direction, GTFS routes and trips per
   hour, timetable encounters, width budget, citizen-report rates, area scan, design-reference comparison,
   figures and an evidence-graded findings ledger.

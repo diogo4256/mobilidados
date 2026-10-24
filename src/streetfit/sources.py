@@ -42,14 +42,16 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
     snapshot_meta = json.loads((from_dir / "_snapshot.json").read_text()) if from_dir and (from_dir / "_snapshot.json").exists() else {}
     for sid in only or case.source_ids():
         src = case.source(sid)
-        if src["kind"] == "arcgis_identify":
-            continue  # filled during the analysis, locked by `lock_identify_caches`
         dest = raw_path(case, sid)
+        if src["kind"] == "arcgis_identify" and not (from_dir and (from_dir / dest.name).exists()):
+            continue  # filled during the analysis (unless a snapshot has it), locked by `lock_identify_caches`
         if dest.exists() and not refresh:
             log(f"  cached   {sid}")
             continue
         if from_dir is not None:
             origin = from_dir / dest.name
+            if not origin.exists():
+                raise FileNotFoundError(f"{sid}: {origin} not in the snapshot; fetch it without --from-dir")
             if origin.is_dir():
                 shutil.copytree(origin, dest, dirs_exist_ok=True)
             else:
@@ -61,7 +63,31 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
             meta = _download(src, dest)
             log(f"  fetched  {sid}")
         lock.record(sid, _files_of(dest), case.raw_dir, **{k: v for k, v in meta.items() if k != "files"})
-    lock.save()
+        lock.save()  # after each source, so a failure further on does not lose what was already fetched
+
+
+def snapshot(case: Case, out_dir: Path, log=print) -> list[str]:
+    """Copy the cached sources that may be redistributed (``redistributable = true``) into ``out_dir``, with their
+    lock metadata in ``_snapshot.json``, ready to archive (e.g. on Zenodo) and restore with ``fetch --from-dir``.
+    Returns the ids of the sources left out, which a user of the snapshot fetches from their origin."""
+    lock = Lock(case.lock_path)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    meta, skipped = {}, []
+    for sid in case.source_ids():
+        src, p = case.source(sid), raw_path(case, sid)
+        if not src.get("redistributable", False) or not p.exists():
+            skipped.append(sid)
+            continue
+        if p.is_dir():
+            shutil.copytree(p, out_dir / p.name, dirs_exist_ok=True)
+        else:
+            shutil.copy2(p, out_dir / p.name)
+        meta[sid] = lock.entries.get(sid, {}) | {"licence": src.get("licence"), "attribution": src.get("attribution", "")}
+        log(f"  added    {sid}")
+    (out_dir / "_snapshot.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    for sid in skipped:
+        log(f"  left out {sid} (not marked redistributable)")
+    return skipped
 
 
 def _download(src: dict, dest: Path) -> dict:

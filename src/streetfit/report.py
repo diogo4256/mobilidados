@@ -77,6 +77,16 @@ TXT = {
         "pt": "O horário implica {nrange} encontros por dia útil entre autocarros em sentidos opostos na rua (modelo "
         "de velocidade constante a {speeds} km/h); {nnarrow} caem nos troços com estacionamento dos dois lados.",
     },
+    "encounters_check": {
+        "en": "At {kmh} km/h, the slowest speed implied by the {day} schedule between stops (a lower bound), the model gives {per_day}.",
+        "pt": "A {kmh} km/h, a velocidade mais baixa implícita no horário de {day} entre paragens (um mínimo), o modelo dá {per_day}.",
+    },
+    "runtimes": {
+        "en": "Scheduled time from stop {a} to the next stop ({b}, {d} m in a straight line): median {m_all} s over all trips in "
+        "the feed (at least {k_all} km/h) and {m_day} s on {day} (at least {k_day} km/h).",
+        "pt": "Tempo programado da paragem {a} à seguinte ({b}, {d} m em linha reta): mediana de {m_all} s em todas as viagens "
+        "do feed (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h).",
+    },
     "occurrences": {
         "en": "{n} reports in category '{flt}' were attributed to the street ({period}, within {d} m of the axis): "
         "{rate} per 100 m, rank {rank} of {total} streets of at least {minlen} m in the surrounding area.",
@@ -214,6 +224,35 @@ def build(run) -> list[Finding]:
             )
         )
 
+    (rt,) = _tables(run, "scheduled_runtimes")
+    if rt is not None:
+        for ref, g in rt.groupby("ref_stop", sort=True):
+            all_, day = g[g.scope == "all trips in the feed"].iloc[0], g[g.scope != "all trips in the feed"].iloc[0]
+            F.append(
+                Finding(
+                    f"runtime_{ref}",
+                    "M",
+                    L(
+                        "runtimes",
+                        a=ref,
+                        b=f"{all_.next_stop} {all_.next_stop_name}",
+                        d=int(all_.dist_straight_m),
+                        m_all=f"{all_.median_s:g}",
+                        k_all=n(all_.kmh_at_median_min, 1),
+                        m_day=f"{day.median_s:g}",
+                        k_day=n(day.kmh_at_median_min, 1),
+                        day=c.section("transit")["service_date"],
+                    ),
+                    {
+                        "dist_straight_m": int(all_.dist_straight_m),
+                        "median_s_all": float(all_.median_s),
+                        "median_s_day": float(day.median_s),
+                    },
+                    [c.section("transit")["source"]],
+                    "Arrival at the next stop minus departure from the reference stop; straight-line distance between stops.",
+                )
+            )
+
     e = c.section("envelope")
     veh = envelope.load_vehicles(c.cfg.get("vehicles"))
     for vid in dict.fromkeys([e["bus"], e["car"]]):
@@ -288,6 +327,9 @@ def build(run) -> list[Finding]:
                 {"per_day": counts, "in_narrow_sections": nn},
                 ["transit", "free_width"],
                 "Presence-interval overlap at constant speed from scheduled times; timetable, not observation.",
+                L("encounters_check", kmh=n(chk["kmh"], 1), per_day=chk["per_day"], day=c.section("transit")["service_date"])
+                if (chk := run.facts.get("encounters_at_schedule_speed"))
+                else "",
             )
         )
 
@@ -440,10 +482,11 @@ def markdown(c, findings: list[Finding], lock: Lock) -> str:
         + " | "
         + ("licença" if pt else "licence")
         + " | sha256 |",
-        "|---|---|---|---|---|",
+        "| --- | --- | --- | --- | --- |",
     ]
     for sid, e in sorted(lock.entries.items()):
-        origin = e.get("url") or ", ".join(sorted(e.get("urls", {}).values()))[:120]
+        urls = sorted(e.get("urls", {}).values())
+        origin = f"<{e['url']}>" if e.get("url") else (f"{len(urls)} files, e.g. <{urls[0]}>" if urls else "")
         shas = "<br>".join(f"`{m['sha256'][:12]}…` {p}" for p, m in sorted(e.get("files", {}).items())[:3])
         more = len(e.get("files", {})) - 3
         if more > 0:

@@ -36,7 +36,7 @@ flowchart LR
 ```
 
 | Stage | Output |
-|---|---|
+| --- | --- |
 | `profiles` | free width, parking strips, kerb-to-kerb, sidewalks, every 0.5 m along the street; per-block summary |
 | `direction` | one-way / two-way from the municipal routing network |
 | `transit` | routes running along the street, heading, trips per hour on a service day, scheduled stop-to-stop times |
@@ -52,7 +52,7 @@ flowchart LR
 Every statement in the ledger carries one grade ([docs/evidence-standard.md](docs/evidence-standard.md)):
 
 | Grade | Meaning |
-|---|---|
+| --- | --- |
 | **M** | measured or counted from official data (cartography, GTFS, open data) |
 | **D** | stated in an official document (law, manual, technical sheet), with page |
 | **I** | inference from M/D/P (a model, a calculation) |
@@ -70,9 +70,11 @@ uv run streetfit run cases/lisboa-rua-ricardo-jorge       # writes results/
 git diff --exit-code cases/lisboa-rua-ricardo-jorge/results/tables   # identical to the reference run?
 ```
 
-The municipal services are live and some always serve the latest data (the GTFS feed in particular), so a
-fresh `fetch` can differ from the reference run. `verify` tells you which files changed; the case pins the
-GTFS feed it used by SHA-256 and refuses to run on a different one unless you update the pin on purpose.
+Municipal services are live, so a fresh `fetch` can differ from the reference run: `verify` tells you which
+files changed. A case pins its GTFS feed by SHA-256 and refuses to run on a different one unless you change
+the pin on purpose; the Lisbon case downloads its feed from the Mobility Database archive, so the exact file
+stays available. `streetfit snapshot CASE DIR` copies the inputs whose licence allows redistribution into a
+folder for archiving (e.g. on Zenodo); `streetfit fetch CASE --from-dir DIR` restores them.
 
 ## AI-assisted tools (optional)
 
@@ -80,7 +82,7 @@ GTFS feed it used by SHA-256 and refuses to run on a different one unless you up
 plain code verifies**: a model output never becomes evidence by itself. See [docs/ai-tools.md](docs/ai-tools.md).
 
 | Command | What the model does | What code then checks |
-|---|---|---|
+| --- | --- | --- |
 | `streetfit check-claims CASE draft.md` | an agent with search tools over the ledger and source texts extracts each claim in a draft letter and judges it | quotes must be verbatim in the cited source near the cited line; numbers must match the cited finding; anything in quotation marks must be a literal quote |
 | `streetfit extract-standard manual.pdf --pages 194` | reads a manual page, including dimensions printed inside drawings | each value is looked for in the PDF text layer and in multi-pass OCR (Tesseract); sums are recomputed; unconfirmed values are flagged for a human, with the page image |
 | `streetfit discover --city X --start URL` | explores a municipality's GIS/open-data portal (allow-listed hosts, read-only) and proposes a city profile | every proposed layer is re-queried: fields exist, class codes occur in the test area |
@@ -106,7 +108,7 @@ The ledger lists what was not verified (grade NE) for each case.
 
 ## Repository layout
 
-```
+```text
 src/streetfit/        library and CLI (agents/ = optional AI tools)
 src/streetfit/data/   vehicle catalogue and design references (graded, with sources)
 cities/               city profiles: services, class codes, licences

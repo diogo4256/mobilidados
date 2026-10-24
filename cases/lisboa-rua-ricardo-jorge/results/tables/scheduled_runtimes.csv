@@ -1,5 +1,5 @@
-ref_stop,next_stop,n,median_s,p10_s,p90_s,scope
-11315,11317,438,65.0,53.0,82.0,all trips in the feed
-11315,11317,56,82.0,65.0,105.0,trips on 2026-10-27
-11318,11314,437,50.0,41.0,63.0,all trips in the feed
-11318,11314,55,63.0,46.0,83.0,trips on 2026-10-27
+ref_stop,next_stop,next_stop_name,dist_straight_m,n,median_s,p10_s,p90_s,kmh_at_median_min,scope
+11315,11317,Esc. Padre António Vieira,321,438,65.0,53.0,82.0,17.8,all trips in the feed
+11315,11317,Esc. Padre António Vieira,321,56,82.0,65.0,105.0,14.1,trips on 2026-10-27
+11318,11314,Bombeiros Alvalade,222,437,50.0,41.0,63.0,16.0,all trips in the feed
+11318,11314,Bombeiros Alvalade,222,55,63.0,46.0,83.0,12.7,trips on 2026-10-27

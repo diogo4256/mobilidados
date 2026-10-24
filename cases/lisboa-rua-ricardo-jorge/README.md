@@ -8,13 +8,13 @@ programados se cruzem em sentidos opostos?
 
 ## Result (reference run, sources retrieved 2026-10-20/22)
 
-| | |
-|---|---|
+| Item | Value |
+| --- | --- |
 | Street | 209.25 m, two-way (municipal routing network) |
 | Free width between the mapped parking strips | **4.78–5.68 m, median 4.90 m**, over 116 m of the street (strips ≈2.0 m each side) |
 | Scheduled buses | routes 744 (both directions) and 46B (one direction); on Tue 2026-10-27: 56 trips SW→NE, 76 NE→SW |
 | Width budget (bodies) | bus × bus: 5.00 m needed, margin **−0.10 m** (−0.90 m with mirrors); bus × car: +0.60 m (+0.35 m with the car's mirrors) |
-| Timetable | 6–7 meetings per weekday between buses in opposite directions on the street (estimate) |
+| Timetable | 6–7 meetings per weekday between buses in opposite directions on the street (estimate at 15–20 km/h; 7 at the 12.7 km/h implied by the weekday schedule) |
 | CML design manual (2018), p. 152 | reference profile for a two-way street with parking on both sides: 6.80 m between the strips (6.50 m without extra width) |
 | Area | of 69 streets with buses nearby, 2 are two-way with two-sided parking and a free width < 5.5 m; only this one has buses in both directions |
 
@@ -31,10 +31,17 @@ streetfit verify cases/lisboa-rua-ricardo-jorge
 streetfit run cases/lisboa-rua-ricardo-jorge
 ```
 
-The GTFS feed is pinned by SHA-256 to the file published on 2026-10-19; the Carris endpoint always serves the
-current feed, so a later download will not match. The raw inputs are not redistributed (the GTFS licence is not
-stated at the endpoint); `sources.lock.json` lists every input with its checksum, so a copy obtained elsewhere
-can be verified with `streetfit fetch --from-dir <dir>` followed by `streetfit verify`.
+Every input can be obtained by anyone and checked against `sources.lock.json`:
+
+* **GTFS:** the Carris endpoint only serves the current feed, but the feed used here (published 2026-10-19) is
+  archived byte-for-byte by the [Mobility Database](https://mobilitydatabase.org/feeds/gtfs/mdb-2929)
+  (dataset `mdb-2929-202610200105`, same SHA-256), and the case downloads it from there.
+* **CML cartography and street axes:** fetched live. On 2026-10-24 they were identical, feature by feature, to
+  the 2026-10-20 download used by the original analysis; the lock records the 2026-10-24 files. If the CML
+  updates its cartography, `verify` reports it and the results may change.
+* **Na Minha Rua occurrences** (CC-BY): fetched live from dados.cm-lisboa.pt; the lock records the files of
+  2026-10-22. `streetfit snapshot` can package these and the cartography (both CC-BY) for an archive.
+* **Routing-network answers** (traffic direction): cached in `data/raw/*identify.json` after the first run.
 
 ## Provenance of this case
 

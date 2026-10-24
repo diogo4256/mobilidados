@@ -1,0 +1,7 @@
+config:
+  MD013: false        # line length: prose is wrapped by hand, tables are long
+  MD033: false        # inline HTML: <sub>, <br> in generated tables
+ignores:
+  - CODE_OF_CONDUCT.md   # upstream text, kept verbatim
+  - .venv/**
+  - cases/*/data/**

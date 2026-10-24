@@ -37,6 +37,7 @@ envelope_sr = 4326
 out_sr = 3763
 licence = "CC-BY (dados.gov.pt record of 'Cartografia Numérica Vetorial'; version not stated)"
 attribution = "© Câmara Municipal de Lisboa"
+redistributable = true
 
 [source_templates.cml_street_axes]
 kind = "arcgis_query"
@@ -66,4 +67,5 @@ note = "Always serves the current feed; a case pins the feed it used with sha256
 kind = "http_files"
 licence = "CC-BY (dados.gov.pt record 'Ocorrências \"Na Minha Rua Lx\"')"
 attribution = "© Câmara Municipal de Lisboa"
+redistributable = true
 columns = { lat = "latitude", lon = "longitude", date = "dt_registo", category = "tipologia" }

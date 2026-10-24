@@ -10,13 +10,18 @@ Language models are good at reading messy documents, drawings and APIs, and at n
 also make things up. So nothing a model says enters the evidence chain directly:
 
 | Tool | Model output | Deterministic check | If the check fails |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `check-claims` | per-claim verdict with evidence quotes | the claim is in the draft; each quote is verbatim in the cited document near the cited line; cited findings exist; the claim's numbers are in the cited finding; quoted passages in the draft are literal | a "supported" verdict becomes `needs_human`, with the reason |
 | `extract-standard` | values printed on a page, what they measure, scope, component sums | each value is searched in the PDF text layer and in pooled OCR; sums are recomputed | the value is marked `vision_only`, and the page image is saved for a person to read |
 | `discover` | a draft city profile | each proposed layer is fetched again: fields exist, class codes occur in the test area | the check result is written at the top of the draft |
 
-The deterministic halves are unit-tested without network access (`tests/test_agents_offline.py`); the
-end-to-end tests run only with credentials (`pytest -m live`).
+Tests, from cheapest to most complete:
+
+* `tests/test_agents_offline.py`: the deterministic checks, with fabricated model outputs.
+* `tests/test_agents_sdk.py`: each tool end to end through the real Anthropic SDK against a mock HTTP transport.
+  It asserts the requests (model, effort, structured-output schema, fallback beta, tools, PDF and image blocks),
+  runs the tool-runner loop with our tools, and feeds the parsed responses into the checks. No key, no network.
+* `tests/test_agents_live.py`: the real API (`pytest -m live`, needs `ANTHROPIC_API_KEY`).
 
 ## `streetfit check-claims CASE draft.md [--corpus source.pdf ...] [--out report.json]`
 

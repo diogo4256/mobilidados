@@ -229,7 +229,7 @@ def to_markdown(claims: list[dict]) -> str:
         "unsupported": "UNSUPPORTED",
         "needs_human": "CHECK",
     }
-    lines = ["| | claim | problem / checks | suggestion |", "|---|---|---|---|"]
+    lines = ["| | claim | problem / checks | suggestion |", "| --- | --- | --- | --- |"]
     for c in claims:
         prob = "; ".join(x for x in [c.get("problem", "")] + c.get("checks", []) if x)
         cell = lambda s: re.sub(r"\s+", " ", s).replace("|", "\\|")  # noqa: E731

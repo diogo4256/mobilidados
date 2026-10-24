@@ -31,7 +31,8 @@ stations_s = [10, 30, 60, 80, 120, 150, 180, 200]
 source = "carris_gtfs"
 service_date = 2026-10-27        # a Tuesday within the feed's validity
 routes = ["744", "46B"]
-speeds_kmh = [15, 20]            # scheduled stop-to-stop times give 15–20 km/h (scheduled_runtimes.csv)
+speeds_kmh = [15, 20]            # stop-to-stop medians imply >=16–18 km/h over the whole feed, >=13–14 km/h on the
+                                 # service day (scheduled_runtimes.csv); the ledger also reports the count at the latter
 buffer_m = 12
 reference_stops = [
   { route = "744", direction_id = "0", stop_id = "11315", s_m = 33.6, heading = 1 },   # on the street
@@ -97,8 +98,11 @@ tolerance = 6
 
 [sources.carris_gtfs]
 template = "carris_gtfs"
+# The Carris endpoint only serves the current feed. The feed used here (published 2026-10-19, valid to
+# 2026-11-03) is archived byte-for-byte by the Mobility Database (feed mdb-2929, dataset of 2026-10-20).
+url = "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
 sha256 = "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7"
-feed = "Carris GTFS as published on 2026-10-19"
+feed = "Carris GTFS as published on 2026-10-19 (origin: https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS)"
 
 [sources.na_minha_rua]
 template = "cml_na_minha_rua"

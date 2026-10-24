@@ -149,8 +149,10 @@ def trips_per_hour(passings: pd.DataFrame) -> pd.DataFrame:
     return tab.reindex(columns=[1, -1], fill_value=0)
 
 
-def scheduled_runtimes(feed: Feed, trips: pd.DataFrame, ref_stop: str) -> dict:
-    """Scheduled time from ``ref_stop`` to the most common next stop (median, p10, p90 in seconds)."""
+def scheduled_runtimes(feed: Feed, trips: pd.DataFrame, ref_stop: str, crs: int) -> dict:
+    """Scheduled time from ``ref_stop`` to the most common next stop (median, p10, p90 in seconds), the straight-line
+    distance between the two stops and the speed it implies at the median time (a lower bound: the route is longer
+    than the straight line)."""
     st = feed.stop_times(set(trips.trip_id)).sort_values(["trip_id", "stop_sequence"])
     st["t_arr"], st["t_dep"] = st.arrival_time.map(seconds), st.departure_time.map(seconds)
     rows = []
@@ -162,11 +164,19 @@ def scheduled_runtimes(feed: Feed, trips: pd.DataFrame, ref_stop: str) -> dict:
     r = pd.DataFrame(rows)
     nxt = r.next_stop.value_counts().index[0]
     sel = r[r.next_stop == nxt].dt_s
+    stops = feed.table("stops", dtype={"stop_id": str}).set_index("stop_id")
+    (x0, x1), (y0, y1) = Transformer.from_crs(4326, crs, always_xy=True).transform(
+        stops.loc[[ref_stop, nxt], "stop_lon"].values, stops.loc[[ref_stop, nxt], "stop_lat"].values
+    )
+    dist = float(np.hypot(x1 - x0, y1 - y0))
     return {
         "ref_stop": ref_stop,
         "next_stop": nxt,
+        "next_stop_name": stops.loc[nxt, "stop_name"],
+        "dist_straight_m": round(dist),
         "n": len(sel),
         "median_s": float(sel.median()),
         "p10_s": float(sel.quantile(0.1)),
         "p90_s": float(sel.quantile(0.9)),
+        "kmh_at_median_min": round(dist / float(sel.median()) * 3.6, 1),
     }

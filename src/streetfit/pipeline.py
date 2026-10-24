@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 from pyproj import Transformer
+from shapely.ops import linemerge, unary_union
 
 from . import area_scan, encounters, envelope, figures, geometry, gtfs, network, occurrences, report, standards
 from .arcgis import features, to_line
@@ -38,12 +39,13 @@ class Run:
 
     # --- shared inputs ----------------------------------------------------------------------------
     def axes(self, source: str = "street_axes") -> dict:
+        """Street name -> axis, sorted by name. Features sharing a name (a street split into several) are merged."""
         name_field = self.case.cfg["axes"]["name_field"]
-        out = {}
+        parts: dict[str, list] = {}
         for f in features(load_json(self.case, source)):
             if f.get("geometry"):
-                out[f["attributes"][name_field]] = to_line(f["geometry"])
-        return out
+                parts.setdefault(f["attributes"][name_field], []).append(to_line(f["geometry"]))
+        return {k: v[0] if len(v) == 1 else linemerge(unary_union(v)) for k, v in sorted(parts.items())}
 
     def axis(self):
         cfg = self.case.cfg
@@ -165,8 +167,8 @@ def stage_transit(r: Run) -> None:
     on_routes = trips[trips.route_short_name.isin(t["routes"])]
     for ref in sorted({str(s["stop_id"]) for s in t["reference_stops"]}):
         day_trips = on_routes[on_routes.trip_id.isin(passings[passings.ref_stop == ref].trip_id)]
-        runtimes.append(gtfs.scheduled_runtimes(feed, on_routes, ref) | {"scope": "all trips in the feed"})
-        runtimes.append(gtfs.scheduled_runtimes(feed, day_trips, ref) | {"scope": f"trips on {day}"})
+        runtimes.append(gtfs.scheduled_runtimes(feed, on_routes, ref, c.crs) | {"scope": "all trips in the feed"})
+        runtimes.append(gtfs.scheduled_runtimes(feed, day_trips, ref, c.crs) | {"scope": f"trips on {day}"})
     r.save("scheduled_runtimes", pd.DataFrame(runtimes))
 
 
@@ -191,6 +193,12 @@ def stage_encounters(r: Run) -> None:
     detail = pd.concat([encounters.locate(encounters.encounters(passings, length, v), narrow) for v in speeds], ignore_index=True)
     r.save("encounters_detail", detail)
     r.save("encounters_by_pair", detail.groupby(["speed_kmh", "pair"]).size().rename("encounters_per_day").reset_index())
+    # sensitivity: the slowest stop-to-stop speed implied by the service day's schedule (slower buses meet more often)
+    _load_tables(r, "scheduled_runtimes")
+    day_rows = r.tables["scheduled_runtimes"].query("scope != 'all trips in the feed'")
+    if len(day_rows):
+        v = float(day_rows.kmh_at_median_min.min())
+        r.facts["encounters_at_schedule_speed"] = {"kmh": v, "per_day": len(encounters.encounters(passings, length, v))}
 
 
 def stage_occurrences(r: Run) -> None:
