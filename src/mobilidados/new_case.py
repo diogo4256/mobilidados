@@ -13,7 +13,9 @@ gaps are inherited, not copied. What depends on the street is derived from the d
   the stop near the street served by most of that direction's trips;
 * the question and the gap about buses meeting, which depend on whether buses run both ways.
 
-The draft is a starting point: its header lists what a person must check before the case is used.
+The draft is a starting point: its header lists what a person must check before the case is used, and states what
+the draft assumed: the reference stops and their distance from the axis, compass labels that could be read either
+way, and a question that supposes two-way traffic or two lanes when the buses run one way.
 """
 
 from __future__ import annotations
@@ -38,7 +40,7 @@ from shapely.geometry import LineString
 
 from . import arcgis, geometry, gtfs
 from .config import ArcgisQuery, Case, Lang, MobilidadosError
-from .i18n import t
+from .i18n import num, t
 from .sources import raw_path
 
 log = logging.getLogger(__name__)
@@ -48,6 +50,8 @@ AREA_MARGIN_M = 1200.0  # around the street's axis: the area scan
 CUT_TOLERANCE_M = 5.0  # cross streets closer than this along the axis are one cut; nearer an end, they label it
 STATION_SPACING_M = 25.0  # traffic-direction stations along the axis
 STATION_END_M = 10.0  # stations keep this far from each end and each junction, where the identify would also find the cross street
+STOP_RADIUS_M = 40.0  # reference stops are looked for this far from the axis
+COMPASS_MARGIN_DEG = 10.0  # a bearing this close to the boundary between two compass points reads as either
 COMPASS = {"pt": ["N", "NE", "E", "SE", "S", "SO", "O", "NO"], "en": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]}
 ENDS = {"pt": ("início", "fim"), "en": ("start", "end")}
 # words that do not tell one street from another, left out when looking for a street by a name that does not match
@@ -102,11 +106,28 @@ def bearing(axis: LineString) -> float:
     return math.degrees(math.atan2(x1 - x0, y1 - y0)) % 360
 
 
-def directions(axis: LineString, lang: str) -> tuple[dict[str, str], dict[str, str]]:
+def labels(bearing_deg: float, lang: str) -> tuple[dict[str, str], dict[str, str]]:
     """Labels of the two directions of travel (increasing / decreasing s) and of the two sides (left / right)."""
-    b = bearing(axis)
+    b = bearing_deg
     forward, back = compass(b, lang), compass(b + 180, lang)
     return {"+": f"{back}→{forward}", "-": f"{forward}→{back}"}, {"L": compass(b - 90, lang), "R": compass(b + 90, lang)}
+
+
+def directions(axis: LineString, lang: str) -> tuple[dict[str, str], dict[str, str]]:
+    return labels(bearing(axis), lang)
+
+
+def other_reading(bearing_deg: float) -> tuple[float, float] | None:
+    """When the bearing is within COMPASS_MARGIN_DEG of a boundary between two compass points (22.5° + k·45°), the
+    boundary and the bearing of the point across it, whose labels read the street as well; otherwise None."""
+    b = bearing_deg % 360
+    boundary = 22.5 + 45 * round((b - 22.5) / 45)
+    if abs(b - boundary) > COMPASS_MARGIN_DEG:
+        return None
+    lower, upper = boundary - 22.5, boundary + 22.5
+    drafted = round(b / 45) % 8  # the point compass() gives
+    other = upper if round(lower / 45) % 8 == drafted else lower
+    return boundary % 360, other % 360
 
 
 def crossings(axis: LineString, features: list[dict[str, Any]], name_field: str, name: str) -> list[tuple[float, str]]:
@@ -154,7 +175,11 @@ def stations(length: float, junctions: list[float]) -> list[float]:
 
 
 def transit(feed: gtfs.Feed, axis: LineString, crs: int, day: dt.date, buffer_m: float) -> tuple[list[str], list[dict[str, Any]]]:
-    """Routes running along the street on ``day`` and one reference stop per route and direction."""
+    """Routes running along the street on ``day`` and one reference stop per route and direction.
+
+    Each stop also carries its name and its distance from the axis (``stop_name``, ``dist_m``), for the draft's
+    header; they are not part of the case.
+    """
     shapes = gtfs.shapes_along(feed, axis, crs, buffer_m=buffer_m)
     if shapes.empty:
         return [], []
@@ -162,7 +187,7 @@ def transit(feed: gtfs.Feed, axis: LineString, crs: int, day: dt.date, buffer_m:
     trips = trips[trips.service_id.isin(gtfs.active_service_ids(feed, day))]
     if trips.empty:
         return [], []
-    near = gtfs.stops_near(feed, axis, crs).set_index("stop_id")
+    near = gtfs.stops_near(feed, axis, crs, max_dist=STOP_RADIUS_M).set_index("stop_id")
     stop_times = feed.stop_times(set(trips.trip_id))
     stop_times = stop_times[stop_times.stop_id.isin(near.index)]
     refs = []
@@ -179,6 +204,8 @@ def transit(feed: gtfs.Feed, axis: LineString, crs: int, day: dt.date, buffer_m:
                 "stop_id": str(stop),
                 "s_m": float(near.loc[stop, "s_m"]),
                 "heading": int(heading),
+                "stop_name": str(near.loc[stop, "stop_name"]),
+                "dist_m": float(near.loc[stop, "dist_m"]),
             }
         )
     counts = trips.groupby("route_short_name").size().sort_values(ascending=False)
@@ -193,11 +220,17 @@ def envelope_around(axis: LineString, margin: float, crs: int) -> list[float]:
     return [round(lon0, 4), round(lat0, 4), round(lon1, 4), round(lat1, 4)]
 
 
+CASE_STOP_KEYS = ("route", "direction_id", "stop_id", "s_m", "heading")  # what a reference stop holds in case.toml
+
+
 @dataclass(frozen=True)
 class Draft:
     data: dict[str, Any]  # the case.toml content
     out_dir: Path
     bearing_deg: float
+    length_m: float = 0.0
+    stops: tuple[dict[str, Any], ...] = ()  # the reference stops, with their name and distance from the axis
+    one_way: bool = False  # buses run one way, so the question supposes a car beside the bus
 
 
 def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
@@ -230,6 +263,8 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     data.setdefault("profiles", {})["check_points_s"] = [on_grid((b["start"] + b["end"]) / 2, step) for b in street_blocks]
     if cfg.direction:
         data.setdefault("direction", {})["stations_s"] = stations(axis.length, [b["start"] for b in street_blocks[1:]])
+    stops: tuple[dict[str, Any], ...] = ()
+    one_way = False
     if cfg.transit:
         feed_path = raw_path(like, cfg.transit.source)
         if not feed_path.exists():
@@ -237,8 +272,9 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
         routes, refs = transit(gtfs.Feed(feed_path), axis, like.crs, cfg.transit.service_date, cfg.transit.buffer_m)
         if not refs:
             raise MobilidadosError(f"no bus route of the feed runs along {street!r} on {cfg.transit.service_date}")
-        data.setdefault("transit", {}).update(routes=routes, reference_stops=refs)
+        data.setdefault("transit", {}).update(routes=routes, reference_stops=[{k: r[k] for k in CASE_STOP_KEYS} for r in refs])
         both_ways = len({r["heading"] for r in refs}) == 2
+        stops, one_way = tuple(refs), not both_ways
         data["case"]["question"] = t("draft.question_both" if both_ways else "draft.question_one", lang)
         if both_ways:
             data["known_gaps"] = [{lg: t("draft.gap_meeting", lg) for lg in get_args(Lang)}]
@@ -249,7 +285,56 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     if cfg.area_scan:
         for sid in (cfg.area_scan.cartography, cfg.area_scan.axes):
             sources.setdefault(sid, {})["envelope"] = area_env
-    return Draft(data, out_dir, bearing(axis))
+    return Draft(data, out_dir, bearing(axis), axis.length, stops, one_way)
+
+
+def header(d: Draft, model: str, date: str, lang: str) -> str:
+    """The comment on top of a draft, in the case's language: what to check, and what the draft assumed."""
+    street = d.data["street"]
+    lines = [t("draft.header_intro", lang, model=model, date=date), t("draft.header_title", lang), t("draft.header_blocks", lang)]
+    near = other_reading(d.bearing_deg)
+    if near is None:
+        lines.append(t("draft.header_compass", lang, bearing=f"{d.bearing_deg:.0f}"))
+    else:
+        boundary, other = near
+        other_headings, other_sides = labels(other, lang)
+        lines.append(
+            t(
+                "draft.header_compass_boundary",
+                lang,
+                bearing=num(d.bearing_deg, lang, 1),
+                gap=num(abs((d.bearing_deg - boundary + 180) % 360 - 180), lang, 1),
+                boundary=num(boundary, lang, 1),
+                point=compass(d.bearing_deg, lang),
+                other_point=compass(other, lang),
+                headings=f"{street['headings']['+']} / {street['headings']['-']}",
+                sides=f"{street['sides']['L']} / {street['sides']['R']}",
+                other_headings=f"{other_headings['+']} / {other_headings['-']}",
+                other_sides=f"{other_sides['L']} / {other_sides['R']}",
+            )
+        )
+    if d.stops:
+        lines.append(t("draft.header_transit", lang))
+        for r in d.stops:
+            lines.append(
+                t(
+                    "draft.header_stop",
+                    lang,
+                    route=r["route"],
+                    direction_id=r["direction_id"],
+                    heading=street["headings"]["+" if r["heading"] > 0 else "-"],
+                    stop_id=r["stop_id"],
+                    name=r["stop_name"],
+                    dist=num(r["dist_m"], lang, 1),
+                    s=num(r["s_m"], lang, 1),
+                )
+            )
+        lines.append(t("draft.header_stop_note", lang, radius=f"{STOP_RADIUS_M:.0f}", length=num(d.length_m, lang, 1)))
+        lines.append(t("draft.header_question", lang))
+        if d.one_way:
+            lines.append(t("draft.header_one_way", lang))
+    lines.append(t("draft.header_inherited", lang, model=model))
+    return "\n".join(line.strip("\n") for line in lines) + "\n"
 
 
 # --- TOML ---------------------------------------------------------------------------------------------------
@@ -303,10 +388,10 @@ def write(like: Case, street: str, out_dir: Path | None = None) -> Path:
     path = d.out_dir / "case.toml"
     if path.exists():
         raise MobilidadosError(f"{path} already exists")
-    header = t("draft.header", like.lang, model=like.id, date=dt.date.today().isoformat(), bearing=f"{d.bearing_deg:.0f}")
+    text = dumps(d.data, header(d, like.id, dt.date.today().isoformat(), like.lang))
     created = not d.out_dir.exists()
     d.out_dir.mkdir(parents=True, exist_ok=True)
-    path.write_text(dumps(d.data, header), encoding="utf-8")
+    path.write_text(text, encoding="utf-8")
     try:
         Case.load(d.out_dir)
     except MobilidadosError:

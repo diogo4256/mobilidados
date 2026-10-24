@@ -105,3 +105,6 @@ It cannot:
 * The option without parking states what it removes, in metres of mapped parking and as a range of places
   over assumed space lengths, with the mapped parking along the whole street, in the ledger and on the figure
   (EMEL, residents who park).
+* A drafted case states in its header what it assumed: each reference stop with its distance from the street,
+  compass labels that could be read either way, and, where buses run one way, a question that supposes a car
+  beside the bus (claimants, services).
