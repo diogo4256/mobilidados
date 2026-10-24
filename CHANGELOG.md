@@ -5,8 +5,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- A pushed tag `vX.Y.Z` makes a GitHub release with the changelog's section as notes and publishes the
+  package to PyPI (`.github/workflows/release.yml`). The steps are in `CONTRIBUTING.md`.
+
 ### Changed
 
+- README links are absolute, so they work on PyPI as well as on GitHub.
 - Dependency lower bounds are the oldest versions that pass the test suite, and a `lowest` CI job installs
   exactly them. `urllib3` is declared, since streetfit imports it directly.
 - The package ships `py.typed`, so type checkers use its annotations.
