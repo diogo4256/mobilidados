@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import io
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import matplotlib as mpl
+import matplotlib.image
+import matplotlib.style
+import numpy as np
 from matplotlib.figure import Figure
 
 from . import envelope, i18n
@@ -40,7 +44,8 @@ def make_all(run: Run) -> None:
     out = run.case.results_dir / "figures"
     out.mkdir(parents=True, exist_ok=True)
     cfg, lang = run.cfg, run.case.lang
-    with mpl.rc_context(STYLE):
+    # matplotlib's own defaults first, so a machine's matplotlibrc (another font, another dpi) does not change the figures
+    with matplotlib.style.context(["default", STYLE]):
         figs = {"free_width_profile": profile(run, lang)}
         if cfg.envelope:
             figs["width_budget"] = width_budget(run, lang)
@@ -49,9 +54,22 @@ def make_all(run: Run) -> None:
         if cfg.area_scan and cfg.transit and (fig := area(run, lang)) is not None:
             figs["area_streets"] = fig
         note = credit(run.case)
+        for old in out.glob("*.png"):
+            if old.stem not in figs:  # made by an earlier configuration
+                old.unlink()
         for name, f in figs.items():
             f.text(0.995, 0.005, note, ha="right", va="bottom", fontsize=6.5, color=MUTED)
-            f.savefig(out / f"{name}.png", dpi=160)
+            save(f, out / f"{name}.png")
+
+
+def save(fig: Figure, path: Path) -> None:
+    """Write a figure, leaving the file as it is when its pixels are the same: the PNG compression differs from one
+    platform to another, so the same figure drawn on another machine would otherwise show up as changed."""
+    png = io.BytesIO()
+    fig.savefig(png, format="png", dpi=160)
+    if path.exists() and np.array_equal(matplotlib.image.imread(path), matplotlib.image.imread(io.BytesIO(png.getvalue()))):
+        return
+    path.write_bytes(png.getvalue())
 
 
 def credit(case: Case) -> str:
