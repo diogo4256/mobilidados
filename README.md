@@ -2,9 +2,8 @@
 
 *Português · [English](https://github.com/diogo4256/mobilidados/blob/main/README.en.md)*
 
-**Dados abertos ao serviço da mobilidade, em Portugal, a começar por Lisboa.** O mobilidados quer melhorar a
-forma como nos deslocamos na cidade, e o transporte público é parte da resposta. As suas ferramentas medem como
-está repartido o espaço da rua e quanto sobra para quem anda a pé, de autocarro ou de bicicleta.
+**Ferramentas para reivindicações de mobilidade baseadas em dados, em Portugal, a começar por Lisboa.** O
+mobilidados quer melhorar a forma como nos deslocamos na cidade, e o transporte público é parte da resposta.
 
 Parte dos dados que as câmaras e os operadores já publicam e chega a factos que a própria Câmara pode confirmar:
 cada número refaz-se a partir das fontes e cada afirmação diz em que se apoia. Assim, um morador, uma

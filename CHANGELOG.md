@@ -5,8 +5,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-The project is now called **mobilidados**, a toolset for mobility claims grounded in open data, in Portugal,
-starting with Lisbon. The street-width audit is its first tool. Versions 0.1.0 and 0.2.0 were released as
+The project is now called **mobilidados**: tools for data-based mobility claims in Portugal, starting with
+Lisbon. The street-width audit is its first tool. Versions 0.1.0 and 0.2.0 were released as
 streetfit.
 
 ### Added
@@ -29,6 +29,9 @@ streetfit.
 - The Portuguese texts of the ledger and the figures are rewritten in plain Portuguese (for example "Cada
   afirmação diz em que se apoia", "mediana de 4,90 m"). The width figure says how much width is missing
   ("faltam 0,10 m") instead of "não cabe".
+- The pull request checklist asks whether a change can affect results, and if it can, for `pytest -m data` or an
+  explanation. It no longer asks contributors for `make reproduce`, which depends on live services and on a
+  cache only the maintainer has.
 - README links are absolute, so they work on PyPI as well as on GitHub.
 - Dependency lower bounds are the oldest versions that pass the test suite, and a `lowest` CI job installs
   exactly them. `urllib3` is declared, since mobilidados imports it directly.

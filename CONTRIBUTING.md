@@ -29,7 +29,10 @@ method on different cartography and makes the tool useful to more people.
    (`cases/*/data/` is git-ignored); commit derived results and the lock file.
 3. **No personal data.** Do not commit letters with names or addresses, citizens' individual reports, or
    anything identifying a private person. Aggregates only.
-4. **Reproducible.** `make reproduce CASE=cases/<case>` must leave `results/tables` unchanged.
+4. **Reproducible.** `pytest -m data` re-runs every case from its locked sources and must leave the committed
+   tables and findings unchanged, unless the pull request explains the change. The sources are cached outside
+   the repository (`mobilidados fetch` fills the cache, and the live services may have changed since), so the
+   maintainer runs this check before merging anything that touches `src/`, `cities/` or a case.
 5. **AI output is a proposal.** Code that uses a model must verify its output deterministically before it is
    used (see [docs/ai-tools.md](docs/ai-tools.md)).
 
@@ -39,7 +42,7 @@ method on different cartography and makes the tool useful to more people.
 uv sync --extra agents
 uv run pre-commit install     # optional: ruff, formatting and REUSE checks before each commit
 make lint test                # what CI runs: ruff, mypy, pytest
-make reproduce                # re-runs the Lisbon case from its sources (downloads them first)
+make reproduce                # downloads the Lisbon sources again and re-runs the case (verify says what changed)
 ```
 
 Tests: unit tests use synthetic data and need no network; warnings fail them, so deprecations surface early. `pytest -m data` re-runs every case from its cache
