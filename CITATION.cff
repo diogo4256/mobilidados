@@ -5,6 +5,7 @@ type: software
 authors:
   - given-names: Diogo
     family-names: Adegas
+    email: diogo.adegas@gmail.com
 version: 0.1.0
 date-released: "2026-10-24"
 license: Apache-2.0

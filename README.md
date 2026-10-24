@@ -117,6 +117,10 @@ docs/                 evidence standard, methodology, AI tools, adding a city, w
 tests/                unit tests (synthetic data) and the case reproduction test
 ```
 
+## Contact
+
+Diogo Adegas, <diogo.adegas@gmail.com> (also for code-of-conduct reports).
+
 ## Contributing, licence, citation
 
 Contributions are welcome, especially new cities and cases: see [CONTRIBUTING.md](CONTRIBUTING.md) and the
