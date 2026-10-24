@@ -5,6 +5,8 @@ default in `src/mobilidados/config.py`) or an argument of the function that appl
 `geometry.measure_profiles`). Values are not repeated here, so this text cannot disagree with the code; a case's
 ledger states the values it used where they matter.
 
+Every run writes the resolved configuration it used (case, city profile and defaults) to `results/config.json`.
+
 ## Street axis and stations
 
 The street is the polyline of the municipal street-axis layer with the case's street name (one feature,

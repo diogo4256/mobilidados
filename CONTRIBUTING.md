@@ -37,7 +37,10 @@ whose data is used, and what a toolset like this can and cannot do.
 4. **Reproducible.** `pytest -m data` re-runs every case from its locked sources and must leave the committed
    tables and findings unchanged, unless the pull request explains the change. The sources are cached outside
    the repository (`mobilidados fetch` fills the cache, and the live services may have changed since), so the
-   maintainer runs this check before merging anything that touches `src/`, `cities/` or a case.
+   maintainer runs this check before merging anything that touches `src/`, `cities/` or a case. A run also
+   writes the resolved configuration it used to `results/config.json`, which is committed and checked in the
+   same way: method parameters live in city profiles that several cases share, so a change to a city profile
+   shows up as a diff in the `config.json` of each case that uses it.
 5. **AI output is a proposal.** Code that uses a model must verify its output deterministically before it is
    used (see [docs/ai-tools.md](docs/ai-tools.md)).
 
