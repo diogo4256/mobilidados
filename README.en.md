@@ -113,9 +113,19 @@ concessions, quotation marks, "rule"/"minimum" for a recommendation) with no AI 
 
 ## Add your street
 
-1. If your city already has a profile in [`cities/`](https://github.com/diogo4256/mobilidados/tree/main/cities), copy
-   [`cases/lisboa-rua-ricardo-jorge/case.toml`](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/case.toml), change the street
-   name, envelope, blocks, routes and reference stops, then `fetch` and `run`.
+1. If your city already has a case, the street's name is enough:
+
+   ```bash
+   uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge --only carris_gtfs   # once: the feed the case uses
+   uv run mobilidados new-case "Rua Teixeira de Pascoais" --like cases/lisboa-rua-ricardo-jorge
+   uv run mobilidados fetch cases/lisboa-rua-teixeira-de-pascoais
+   uv run mobilidados run cases/lisboa-rua-teixeira-de-pascoais
+   ```
+
+   The name need not be spelled exactly: when no axis has that name, `new-case` looks for similar names and
+   suggests them. It finds the street in the municipal axes layer, cuts it into blocks at the cross streets, finds the
+   bus routes that run along it in the timetable and writes `case.toml`. Everything else (sources, feed,
+   vehicles, parameters) comes from the `--like` case. The top of the file lists what to check before use.
 2. If not, write a city profile: [docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md) (`mobilidados discover` can draft it).
 
 Method and limits: [docs/methodology.md](https://github.com/diogo4256/mobilidados/blob/main/docs/methodology.md). Writing to a public body with the results:
@@ -127,7 +137,7 @@ Method and limits: [docs/methodology.md](https://github.com/diogo4256/mobilidado
 src/mobilidados/          library and CLI (agents/ = optional AI tools)
 src/mobilidados/data/     vehicle catalogue and design references (graded, with sources)
 src/mobilidados/locales/  message catalogues for figures, ledger and reports, one file per language
-cities/                   city profiles: services, class codes, licences
+cities/                   city profiles (services, class codes, licences, parameters) and dated data (feed, reports)
 cases/<case>/             case.toml, sources.lock.json, results/ (committed), data/raw/ (not committed)
 docs/                     evidence standard, methodology, AI tools, adding a city, writing to public bodies
 tests/                    unit tests (synthetic data) and the case reproduction test

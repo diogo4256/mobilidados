@@ -286,7 +286,7 @@ def test_a_street_name_that_is_not_in_the_axes_is_reported_in_one_line(tmp_path,
     root = write_case(tmp_path / "wrong", street_name="Rua Inexistente")
     assert cli.main(["run", str(root), "--stages", "profiles", "--offline"]) == 2
     err = capsys.readouterr().err
-    assert err.startswith("error: expected exactly one axis named 'Rua Inexistente'")
+    assert err.startswith("error: no axis named 'Rua Inexistente'")
     assert len(err.splitlines()) == 1
 
 

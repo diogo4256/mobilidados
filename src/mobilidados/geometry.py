@@ -18,19 +18,25 @@ import pandas as pd
 from shapely import STRtree
 from shapely.geometry import LineString, MultiLineString
 from shapely.geometry.base import BaseGeometry
+from shapely.ops import linemerge
 
 from .arcgis import to_line, to_polygon
 from .config import Block, MobilidadosError
 
 
 def street_axis(features: Iterable[dict], name_field: str, name: str) -> LineString:
-    """The axis polyline of a named street (must be a single feature with a simple line)."""
+    """The axis polyline of a named street. A street stored as several features or parts is joined when the pieces
+    form one continuous line; a street that branches or has gaps is an error."""
     found = [f for f in features if f["attributes"].get(name_field) == name]
-    if len(found) != 1:
-        raise MobilidadosError(f"expected exactly one axis named {name!r} in field {name_field}, found {len(found)}")
-    line = to_line(found[0]["geometry"])
-    if isinstance(line, MultiLineString):
-        raise MobilidadosError(f"axis {name!r} is a multi-part line; split the case into one case per part")
+    if not found:
+        raise MobilidadosError(f"no axis named {name!r} in field {name_field}")
+    lines = [to_line(f["geometry"]) for f in found]
+    parts = [p for g in lines for p in (g.geoms if isinstance(g, MultiLineString) else [g])]
+    line = parts[0] if len(parts) == 1 else linemerge(MultiLineString(parts))
+    if not isinstance(line, LineString):
+        raise MobilidadosError(
+            f"the axis of {name!r} is not one continuous line (it branches or has gaps); split the case into one case per part"
+        )
     return line
 
 

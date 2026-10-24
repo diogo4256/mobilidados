@@ -60,6 +60,11 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--pages", required=True, help="comma-separated PDF page numbers, counted from 1")
     p.add_argument("--out", type=Path)
 
+    p = sub.add_parser("new-case", help="draft a case for another street from an existing case of the same city")
+    p.add_argument("street", help="the street's name as in the city's axes layer, e.g. 'Rua Teixeira de Pascoais'")
+    p.add_argument("--like", type=Path, required=True, help="an existing case of the same city to copy the rest from")
+    p.add_argument("--out", type=Path, help="case directory (default: next to --like, named <city>-<street>)")
+
     p = sub.add_parser("discover", help="AI agent that proposes a city profile from a GIS/open-data portal")
     p.add_argument("--city", required=True)
     p.add_argument("--start", nargs="+", required=True, help="start URLs (ArcGIS services directory, CKAN/udata API)")
@@ -101,6 +106,11 @@ def _dispatch(a: argparse.Namespace) -> int:
             print(f"{status:8s} {sid:24s} {f}")
         print(f"{len(rows) - len(bad)}/{len(rows)} files match the lock")
         return 1 if bad else 0
+    elif a.cmd == "new-case":
+        from .new_case import write
+
+        out = write(Case.load(a.like), a.street, a.out)
+        print(f"wrote {out / 'case.toml'}: check the points listed at its top, then\n  mobilidados fetch {out}\n  mobilidados run {out}")
     elif a.cmd == "snapshot":
         from .sources import snapshot
 

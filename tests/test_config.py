@@ -73,3 +73,11 @@ def test_an_unknown_source_id_is_an_error_listing_the_known_ones(make_case):
     with pytest.raises(MobilidadosError, match="unknown source 'nope'") as err:
         Case.load(make_case()).source("nope")
     assert "['cartography', 'street_axes']" in str(err.value)
+
+
+def test_known_gaps_of_the_city_and_of_the_case_are_both_listed_the_case_first(make_case, tmp_path):
+    (tmp_path / "city.toml").write_text('[[known_gaps]]\nen = "city gap"\n', encoding="utf-8")
+    root = make_case('\n[[known_gaps]]\nen = "case gap"\n', prefix='extends = "../city.toml"\n')
+    assert [g["en"] for g in Case.load(root).config.known_gaps] == ["case gap", "city gap"]
+    plain = make_case(name="plain", prefix='extends = "../city.toml"\n')
+    assert [g["en"] for g in Case.load(plain).config.known_gaps] == ["city gap"]
