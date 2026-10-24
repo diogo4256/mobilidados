@@ -1,6 +1,6 @@
 [project]
 name = "mobilidados"
-version = "0.2.0"
+version = "0.3.0"
 description = "Tools for data-based mobility claims in Portugal, starting with Lisbon: reproducible, evidence-graded findings from open data."
 readme = "README.md"
 requires-python = ">=3.11"
