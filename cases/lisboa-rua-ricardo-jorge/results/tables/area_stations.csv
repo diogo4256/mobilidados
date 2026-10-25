@@ -4339,7 +4339,7 @@ Avenida Dom Rodrigo da Cunha,-87045.0,-100933.6,179,2,46B 755,13.22,True
 Avenida Dom Rodrigo da Cunha,-87042.1,-100934.1,179,2,46B 755,13.26,True
 Avenida Dom Rodrigo da Cunha,-87039.1,-100934.5,179,2,46B 755,13.31,True
 Avenida Dom Rodrigo da Cunha,-87036.1,-100935.0,179,2,46B 755,13.35,True
-Avenida Dom Rodrigo da Cunha,-87033.2,-100935.5,179,2,46B 755,13.39,True
+Avenida Dom Rodrigo da Cunha,-87033.2,-100935.5,179,2,46B 755,13.39,False
 Avenida Dom Rodrigo da Cunha,-87030.2,-100935.9,179,2,46B 755,13.42,False
 Avenida Dom Rodrigo da Cunha,-87027.2,-100936.4,179,2,46B 755,15.02,False
 Avenida Dom Rodrigo da Cunha,-87024.3,-100936.8,179,2,46B 755,13.46,False
@@ -10612,7 +10612,7 @@ Avenida Padre Manuel da Nóbrega,-87059.7,-102041.0,369,2,49B 705 718 793,18.56,
 Avenida Padre Manuel da Nóbrega,-87058.6,-102043.8,369,2,49B 705 718 793,11.28,False
 Avenida Padre Manuel da Nóbrega,-87057.5,-102046.5,369,2,49B 705 718 793,9.38,False
 Avenida Padre Manuel da Nóbrega,-87056.4,-102049.3,369,2,49B 705 718 793,9.16,False
-Avenida Padre Manuel da Nóbrega,-87055.3,-102052.1,369,2,49B 705 718 793,9.21,True
+Avenida Padre Manuel da Nóbrega,-87055.3,-102052.1,369,2,49B 705 718 793,9.21,False
 Avenida Padre Manuel da Nóbrega,-87054.2,-102054.9,369,2,49B 705 718 793,9.22,True
 Avenida Padre Manuel da Nóbrega,-87053.1,-102057.7,369,2,49B 705 718 793,9.23,True
 Avenida Padre Manuel da Nóbrega,-87052.0,-102060.5,369,2,49B 705 718 793,9.59,False
@@ -17164,7 +17164,7 @@ Avenida do Rio de Janeiro,-87565.4,-100624.5,204,2,46B 717,12.57,True
 Avenida do Rio de Janeiro,-87564.3,-100627.3,204,2,46B 717,12.57,True
 Avenida do Rio de Janeiro,-87563.2,-100630.1,204,2,46B 717,12.58,True
 Avenida do Rio de Janeiro,-87562.1,-100632.8,204,2,46B 717,12.58,True
-Avenida do Rio de Janeiro,-87560.9,-100635.6,204,2,46B 717,12.58,True
+Avenida do Rio de Janeiro,-87560.9,-100635.6,204,2,46B 717,12.58,False
 Avenida do Rio de Janeiro,-87559.8,-100638.4,204,2,46B 717,12.76,False
 Avenida do Rio de Janeiro,-87558.7,-100641.2,204,2,46B 717,14.52,False
 Avenida do Rio de Janeiro,-87557.6,-100644.0,204,2,46B 717,20.44,False
@@ -17240,7 +17240,7 @@ Avenida do Rio de Janeiro,-87480.1,-100835.9,294,2,717 744,12.61,True
 Avenida do Rio de Janeiro,-87479.0,-100838.7,294,2,717 744,12.61,True
 Avenida do Rio de Janeiro,-87477.8,-100841.5,294,2,717 744,12.61,True
 Avenida do Rio de Janeiro,-87476.7,-100844.2,294,2,717 744,12.62,True
-Avenida do Rio de Janeiro,-87475.5,-100847.0,294,2,717 744,12.63,True
+Avenida do Rio de Janeiro,-87475.5,-100847.0,294,2,717 744,12.63,False
 Avenida do Rio de Janeiro,-87474.3,-100849.8,294,2,717 744,12.66,True
 Avenida do Rio de Janeiro,-87473.2,-100852.5,294,2,717 744,12.69,True
 Avenida do Rio de Janeiro,-87472.0,-100855.3,294,2,717 744,12.72,True
@@ -17248,7 +17248,7 @@ Avenida do Rio de Janeiro,-87470.8,-100858.1,294,2,717 744,12.75,True
 Avenida do Rio de Janeiro,-87469.7,-100860.8,294,2,717 744,12.77,True
 Avenida do Rio de Janeiro,-87468.5,-100863.6,294,2,717 744,12.8,True
 Avenida do Rio de Janeiro,-87467.4,-100866.4,294,2,717 744,12.83,True
-Avenida do Rio de Janeiro,-87466.2,-100869.1,294,2,717 744,12.86,True
+Avenida do Rio de Janeiro,-87466.2,-100869.1,294,2,717 744,12.86,False
 Avenida do Rio de Janeiro,-87465.0,-100871.9,294,2,717 744,12.86,False
 Avenida do Rio de Janeiro,-87463.9,-100874.7,294,2,717 744,12.79,False
 Avenida do Rio de Janeiro,-87462.7,-100877.4,294,2,717 744,12.73,False
@@ -17407,7 +17407,7 @@ Avenida do Rio de Janeiro,-87301.8,-101286.4,315,2,46B 717 744,13.88,True
 Avenida do Rio de Janeiro,-87301.3,-101289.3,315,2,46B 717 744,13.85,False
 Avenida do Rio de Janeiro,-87300.7,-101292.3,315,2,46B 717 744,13.87,False
 Avenida do Rio de Janeiro,-87300.2,-101295.2,315,2,46B 717 744,15.72,False
-Avenida do Rio de Janeiro,-87299.6,-101298.2,315,2,46B 717 744,13.86,True
+Avenida do Rio de Janeiro,-87299.6,-101298.2,315,2,46B 717 744,13.86,False
 Avenida do Rio de Janeiro,-87299.1,-101301.1,315,2,46B 717 744,14.37,True
 Avenida do Rio de Janeiro,-87298.5,-101304.1,315,2,46B 717 744,14.66,True
 Avenida do Rio de Janeiro,-87298.3,-101307.0,315,2,46B 717 744,14.87,True
@@ -22429,7 +22429,7 @@ Rua Agostinho Neto,-88640.9,-99813.4,82,1,206 45B 798,7.09,True
 Rua Agostinho Neto,-88638.9,-99811.2,82,1,206 45B 798,7.09,True
 Rua Agostinho Neto,-88636.9,-99808.9,82,1,206 45B 798,7.09,True
 Rua Agostinho Neto,-88634.9,-99806.7,82,1,206 45B 798,7.09,True
-Rua Agostinho Neto,-88632.9,-99804.4,82,1,206 45B 798,7.09,True
+Rua Agostinho Neto,-88632.9,-99804.4,82,1,206 45B 798,7.09,False
 Rua Agostinho Neto,-88630.9,-99802.2,82,1,206 45B 798,7.11,False
 Rua Agostinho Neto,-88628.9,-99799.9,82,1,206 45B 798,7.12,False
 Rua Agostinho Neto,-88626.9,-99797.7,82,1,206 45B 798,7.14,False
@@ -23538,7 +23538,7 @@ Rua Guilhermina Suggia,-86871.7,-101762.5,72,1,727,6.62,True
 Rua Guilhermina Suggia,-86871.7,-101759.5,72,1,727,6.61,True
 Rua Guilhermina Suggia,-86871.7,-101756.5,72,1,727,6.61,True
 Rua Guilhermina Suggia,-86871.7,-101753.5,72,1,727,6.61,True
-Rua Guilhermina Suggia,-86871.7,-101750.5,72,1,727,8.5,True
+Rua Guilhermina Suggia,-86871.7,-101750.5,72,1,727,8.5,False
 Rua Guilhermina Suggia,-86871.6,-101747.5,72,1,727,9.02,False
 Rua Guilhermina Suggia,-86871.6,-101744.5,72,1,727,18.22,False
 Rua Guilhermina Suggia,-86871.6,-101741.5,72,1,727,9.05,False
@@ -25555,7 +25555,7 @@ Rua Sousa Lopes,-88835.3,-102048.1,134,2,52B 731 749,10.03,False
 Rua Sousa Lopes,-88835.9,-102045.2,134,2,52B 731 749,10.05,False
 Rua Sousa Lopes,-88836.5,-102042.2,134,2,52B 731 749,10.08,False
 Rua Sousa Lopes,-88837.1,-102039.3,134,2,52B 731 749,10.1,False
-Rua Sousa Lopes,-88837.8,-102036.3,134,2,52B 731 749,10.07,True
+Rua Sousa Lopes,-88837.8,-102036.3,134,2,52B 731 749,10.07,False
 Rua Sousa Lopes,-88838.4,-102033.4,134,2,52B 731 749,10.08,True
 Rua Sousa Lopes,-88839.0,-102030.5,134,2,52B 731 749,10.08,True
 Rua Sousa Lopes,-88839.6,-102027.5,134,2,52B 731 749,10.09,True
@@ -26368,7 +26368,7 @@ Rua das Murtas,-88311.8,-100733.0,21,1,46B,9.03,False
 Rua das Murtas,-88312.9,-100730.2,21,1,46B,9.02,False
 Rua das Murtas,-88314.0,-100727.4,21,1,46B,9.01,False
 Rua das Murtas,-88315.1,-100724.6,21,1,46B,9.0,False
-Rua das Murtas,-88316.2,-100721.8,21,1,46B,8.99,True
+Rua das Murtas,-88316.2,-100721.8,21,1,46B,8.99,False
 Rua das Murtas,-88317.3,-100719.0,21,1,46B,8.99,True
 Rua das Murtas,-88318.4,-100716.2,21,1,46B,8.99,True
 Rua das Murtas,-88319.5,-100713.4,21,1,46B,8.99,True

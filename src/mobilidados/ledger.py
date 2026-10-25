@@ -62,14 +62,16 @@ def build(r: Run) -> list[Finding]:
     def n(x: Any, d: int = 2, sign: bool = False) -> str:
         return num(float(x), lang, d, sign)
 
+    def seconds(x: float) -> str:
+        """A median of whole seconds: whole, or halfway between two."""
+        return n(x, 0 if float(x).is_integer() else 1)
+
     def param(x: float) -> str:
         """A parameter as it is set, without trailing zeros (``0.5``, ``3``)."""
         return f"{x:g}".replace(".", ",") if lang == "pt" else f"{x:g}"
 
     survey, accuracy = cfg.cartography.text("survey", lang), cfg.cartography.text("accuracy_note", lang)
     F: list[Finding] = []
-    allrow = r.table("summary_by_block").set_index("block").loc["all"]
-    fmed = float(allrow.free_median)
     length = float(r.table("street").length_m.iloc[0])
     F.append(
         Finding(
@@ -85,7 +87,7 @@ def build(r: Run) -> list[Finding]:
     if cfg.direction and cfg.network:
         edges = r.table("traffic_direction_edges")
         traffic = directions(edges, cfg.network.open_value)
-        points = edges.s_m.nunique()
+        points = len(cfg.direction.stations_s)  # a station where the identify found no edge is checked all the same
         two_way_at = sum(directions(g, cfg.network.open_value) == "two-way" for _, g in edges.groupby("s_m"))
         F.append(
             Finding(
@@ -98,52 +100,66 @@ def build(r: Run) -> list[Finding]:
             )
         )
 
-    narrow = r.table("narrow_sections")
-    metres = round(float((narrow.s_to - narrow.s_from).sum()), 1)
-    free = {
-        "min_m": allrow.free_min,
-        "median_m": allrow.free_median,
-        "max_m": allrow.free_max,
-        "p5_m": allrow.free_p5,
-        "p95_m": allrow.free_p95,
-    }
     # the free width counts the stations with parking on both sides and a narrow free width (geometry.classify): say
     # how many stations with parking on both sides that leaves out for being wider
     profiles = r.table("profiles")
     both_sides = (profiles.strip_L > MIN_STRIP_M) & (profiles.strip_R > MIN_STRIP_M)
     left_out = int((both_sides & (profiles["class"] != TWO_STRIPS)).sum())
-    F.append(
-        Finding(
-            id="free_width",
-            grade="M",
-            statement=say(
-                "free",
-                metres=n(metres, 0 if metres.is_integer() else 1),
-                fmin=n(allrow.free_min),
-                fmax=n(allrow.free_max),
-                fmed=n(allrow.free_median),
-            ),
-            values={k: float(v) for k, v in free.items()} | {"metres_two_strips": metres},
-            sources=[cfg.profiles.cartography, cfg.profiles.axes],
-            method=method("free_width", step=param(cfg.profiles.step_m)),
-            caveat=sentences(
-                caveat("free_filter", count=left_out, max=n(cfg.profiles.narrow_max_m), k=left_out, n=int(both_sides.sum())),
-                caveat("survey", survey=survey) if survey else "",
-                accuracy,
-            ),
-        )
-    )
+    free_filter = caveat("free_filter", count=left_out, max=n(cfg.profiles.narrow_max_m), k=left_out, n=int(both_sides.sum()))
+    free_method = method("free_width", step=param(cfg.profiles.step_m))
+    survey_note = caveat("survey", survey=survey) if survey else ""
     sides = cfg.street.sides
-    F.append(
-        Finding(
-            id="parking_strips",
-            grade="M",
-            statement=say("strips", sl=n(allrow.strip_L_median), sr=n(allrow.strip_R_median), side_l=sides["L"], side_r=sides["R"]),
-            values={"left_m": float(allrow.strip_L_median), "right_m": float(allrow.strip_R_median)},
-            sources=[cfg.profiles.cartography],
-            method=method("parking_strips"),
+    if r.two_strips:
+        allrow = r.table("summary_by_block").set_index("block").loc["all"]
+        fmed = float(allrow.free_median)
+        narrow = r.table("narrow_sections")
+        metres = round(float((narrow.s_to - narrow.s_from).sum()), 1)
+        free = {
+            "min_m": allrow.free_min,
+            "median_m": allrow.free_median,
+            "max_m": allrow.free_max,
+            "p5_m": allrow.free_p5,
+            "p95_m": allrow.free_p95,
+        }
+        F.append(
+            Finding(
+                id="free_width",
+                grade="M",
+                statement=say(
+                    "free",
+                    metres=n(metres, 0 if metres.is_integer() else 1),
+                    fmin=n(allrow.free_min),
+                    fmax=n(allrow.free_max),
+                    fmed=n(allrow.free_median),
+                ),
+                values={k: float(v) for k, v in free.items()} | {"metres_two_strips": metres},
+                sources=[cfg.profiles.cartography, cfg.profiles.axes],
+                method=free_method,
+                caveat=sentences(free_filter, survey_note, accuracy),
+            )
         )
-    )
+        F.append(
+            Finding(
+                id="parking_strips",
+                grade="M",
+                statement=say("strips", sl=n(allrow.strip_L_median), sr=n(allrow.strip_R_median), side_l=sides["L"], side_r=sides["R"]),
+                values={"left_m": float(allrow.strip_L_median), "right_m": float(allrow.strip_R_median)},
+                sources=[cfg.profiles.cartography],
+                method=method("parking_strips"),
+            )
+        )
+    else:  # nothing to measure between parking strips, so the width budget and the design references do not apply
+        F.append(
+            Finding(
+                id="free_width",
+                grade="M",
+                statement=say("free_none"),
+                values={"metres_two_strips": 0.0},
+                sources=[cfg.profiles.cartography, cfg.profiles.axes],
+                method=free_method,
+                caveat=sentences(free_filter if left_out else "", survey_note, accuracy),
+            )
+        )
 
     tr = cfg.transit
     if tr:
@@ -184,9 +200,9 @@ def build(r: Run) -> list[Finding]:
                         a=ref,
                         b=f"{whole.next_stop} {whole.next_stop_name}",
                         d=int(whole.dist_straight_m),
-                        m_all=f"{whole.median_s:g}",
+                        m_all=seconds(whole.median_s),
                         k_all=n(whole.kmh_at_median_min, 1),
-                        m_day=f"{day.median_s:g}",
+                        m_day=seconds(day.median_s),
                         k_day=n(day.kmh_at_median_min, 1),
                         day=tr.service_date,
                     ),
@@ -201,7 +217,7 @@ def build(r: Run) -> list[Finding]:
             )
 
     e = cfg.envelope
-    if e:
+    if e and r.two_strips:
         vehicles = cfg.all_vehicles()
         for vid in dict.fromkeys([e.bus, e.car]):
             v = vehicles[vid]
@@ -339,7 +355,8 @@ def build(r: Run) -> list[Finding]:
         es, ed = r.table("encounters_summary"), r.table("encounters_detail")
         assumed, schedule = es[es.basis == "assumed"], es[es.basis == "schedule"]
         counts = sorted({int(x) for x in assumed.encounters_per_day})
-        in_narrow = sorted({int(x) for x in ed.groupby("speed_kmh").in_narrow_section.sum()})
+        # every assumed speed counts, also one at which no meeting falls in a narrow section (or none happens at all)
+        in_narrow = sorted({int(x) for x in ed.groupby("speed_kmh").in_narrow_section.sum().reindex(assumed.speed_kmh, fill_value=0)})
         check = (
             caveat(
                 "encounters_check",
@@ -432,7 +449,7 @@ def build(r: Run) -> list[Finding]:
                 )
             )
 
-    for rid in cfg.standards.compare:
+    for rid in cfg.standards.compare if r.two_strips else []:
         ref, doc = standards_catalogue().reference(rid)
         F.append(
             Finding(

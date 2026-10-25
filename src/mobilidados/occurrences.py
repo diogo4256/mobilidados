@@ -101,4 +101,4 @@ def rates_by_street(
 
 def yearly_counts(points: pd.DataFrame, street: str, rx: str, max_dist: float = 12.0) -> pd.DataFrame:
     sel = points[(points.street == street) & (points.dist_m <= max_dist) & points.category.str.contains(rx, regex=True, na=False)]
-    return sel.date.dt.year.value_counts().sort_index().rename_axis("year").rename("n").reset_index()
+    return sel.date.dropna().dt.year.astype(int).value_counts().sort_index().rename_axis("year").rename("n").reset_index()

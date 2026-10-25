@@ -9,12 +9,12 @@ mirrors = "mirrors"
 margin = "margin {x} m ({xm} m with mirrors)"
 trips_per_hour = "trips per hour"
 hour = "hour of day"
-weekday_trips = "Scheduled trips on the street, weekday {day}"
+day_trips = "Scheduled trips on the street on {day}"
 along = "distance along the street (m)"
 strips = "Mapped parking strips (left / right)"
 profile_title = "Mapped cross-section along the street"
 area_title = "Streets with buses in the area: free width vs. buses per day"
-buses_day = "buses per weekday"
+buses_day = "scheduled buses on {day}"
 median_free = "median free width (m)"
 parking_both = "parking on both sides"
 free_width_short = "Free width"
@@ -31,6 +31,7 @@ removes = "along the stretches with parking on both sides, removes {m} m of park
 length = "The street axis is {length} m long."
 traffic = { one = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} point checked along it.", other = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} points checked along it." }
 free = "Where parking strips are mapped on both sides ({metres} m of the street), the mapped free width between them is {fmin}–{fmax} m (median {fmed} m)."
+free_none = "No stretch of the street with parking mapped on both sides was found, so there is no free width between parking strips to measure."
 strips = "The mapped parking strips are {sl} m ({side_l}) and {sr} m ({side_r}) wide (medians)."
 routes_scheduled = { one = "Route {routes} is scheduled along the street.", other = "Routes {routes} are scheduled along the street." }
 trips = { one = "{n} trip {heading}", other = "{n} trips {heading}" }

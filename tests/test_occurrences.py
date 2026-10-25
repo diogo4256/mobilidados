@@ -1,10 +1,11 @@
 """Loading citizen reports from CSV: rows without usable coordinates are kept, and the per-file summary shows what is located."""
 
+import pandas as pd
 import pytest
 from pyproj import Transformer
 
 from mobilidados.config import Columns
-from mobilidados.occurrences import file_summary, load_points
+from mobilidados.occurrences import file_summary, load_points, yearly_counts
 
 COLS = Columns(lat="latitude", lon="longitude", date="dt_registo", category="tipologia")
 HEADER = "latitude,longitude,dt_registo,tipologia\n"
@@ -83,3 +84,16 @@ def test_a_file_without_a_located_record_has_zero_counts_and_no_dates(tmp_path):
     assert (row.records, row.with_coordinates, row.with_date) == (2, 0, 0)
     assert (row.first_date, row.last_date) == ("", "")
     assert [str(dtype) for dtype in summary.dtypes[["records", "with_coordinates", "with_date"]]] == ["int64"] * 3
+
+
+def test_years_are_whole_numbers_when_a_report_has_no_date():
+    points = pd.DataFrame(
+        {
+            "street": ["Rua A"] * 3,
+            "dist_m": [1.0, 2.0, 3.0],
+            "category": ["Estacionamento abusivo"] * 3,
+            "date": pd.to_datetime(["2024-01-05", None, "2025-02-01"]),
+        }
+    )
+    counts = yearly_counts(points, "Rua A", "^Estacionamento")
+    assert counts.to_csv(index=False, lineterminator="\n") == "year,n\n2024,1\n2025,1\n"

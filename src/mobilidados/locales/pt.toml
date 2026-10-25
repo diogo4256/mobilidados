@@ -9,12 +9,12 @@ mirrors = "espelhos"
 margin = "folga {x} m ({xm} m com espelhos)"
 trips_per_hour = "viagens por hora"
 hour = "hora do dia"
-weekday_trips = "Viagens previstas no horário, dia útil de {day}"
+day_trips = "Viagens previstas no horário em {day}"
 along = "distância ao longo da rua (m)"
 strips = "Estacionamento cartografado (esq. / dir.)"
 profile_title = "Perfil cartografado ao longo da rua"
 area_title = "Ruas com autocarros na zona: largura livre e autocarros por dia"
-buses_day = "autocarros por dia útil"
+buses_day = "autocarros previstos em {day}"
 median_free = "largura livre mediana (m)"
 parking_both = "estacionamento dos dois lados"
 free_width_short = "Largura livre"
@@ -31,6 +31,7 @@ removes = "nos troços com estacionamento dos dois lados, retira {m} m de estaci
 length = "O eixo da rua tem {length} m."
 traffic = { one = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} ponto verificado ao longo da rua, a circulação é permitida em ambos os sentidos.", other = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos." }
 free = "Nos troços com estacionamento cartografado dos dois lados ({metres} m da rua), a largura livre entre eles vai de {fmin} a {fmax} m (mediana de {fmed} m)."
+free_none = "Não foi encontrado nenhum troço da rua com estacionamento cartografado dos dois lados, pelo que não há largura livre entre estacionamentos para medir."
 strips = "O estacionamento cartografado ocupa {sl} m do lado {side_l} e {sr} m do lado {side_r} (medianas)."
 routes_scheduled = { one = "Segundo o horário, a carreira {routes} passa nesta rua.", other = "Segundo o horário, as carreiras {routes} passam nesta rua." }
 trips = { one = "{n} viagem {heading}", other = "{n} viagens {heading}" }

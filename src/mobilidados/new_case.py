@@ -190,8 +190,14 @@ def transit(feed: gtfs.Feed, axis: LineString, crs: int, day: dt.date, buffer_m:
     near = gtfs.stops_near(feed, axis, crs, max_dist=STOP_RADIUS_M).set_index("stop_id")
     stop_times = feed.stop_times(set(trips.trip_id))
     stop_times = stop_times[stop_times.stop_id.isin(near.index)]
+    # a case has one reference stop per route and direction: a direction whose trips run along the street both ways
+    # (variants, loops) keeps the heading most of its trips have
+    key = ["route_short_name", "direction_id"]
+    main = trips.groupby(key).heading.agg(lambda h: h.value_counts().index[0]).rename("main_heading").reset_index()
+    kept = trips.merge(main, on=key)
+    kept = kept[kept.heading == kept.main_heading]
     refs = []
-    for (route, direction_id, heading), g in trips.groupby(["route_short_name", "direction_id", "heading"]):
+    for (route, direction_id, heading), g in kept.groupby(["route_short_name", "direction_id", "heading"]):
         served = stop_times[stop_times.trip_id.isin(g.trip_id)].groupby("stop_id").trip_id.nunique()
         if served.empty:
             continue
@@ -213,11 +219,12 @@ def transit(feed: gtfs.Feed, axis: LineString, crs: int, day: dt.date, buffer_m:
     return routes, refs
 
 
-def envelope_around(axis: LineString, margin: float, crs: int) -> list[float]:
+def envelope_around(axis: LineString, margin: float, crs: int, sr: int) -> list[float]:
+    """The axis's bounds widened by ``margin``, in the spatial reference ``sr`` of the query's envelope."""
     x0, y0, x1, y1 = axis.bounds
-    tr = Transformer.from_crs(crs, 4326, always_xy=True)
-    (lon0, lon1), (lat0, lat1) = tr.transform([x0 - margin, x1 + margin], [y0 - margin, y1 + margin])
-    return [round(lon0, 4), round(lat0, 4), round(lon1, 4), round(lat1, 4)]
+    tr = Transformer.from_crs(crs, sr, always_xy=True)
+    (xa, xb), (ya, yb) = tr.transform([x0 - margin, x1 + margin], [y0 - margin, y1 + margin])
+    return [round(xa, 4), round(ya, 4), round(xb, 4), round(yb, 4)]
 
 
 CASE_STOP_KEYS = ("route", "direction_id", "stop_id", "s_m", "heading")  # what a reference stop holds in case.toml
@@ -243,8 +250,15 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     name_field = cfg.axes.name_field
     street, axis = find_axis(axes_src, name_field, street, like.crs)
     out_dir = out_dir or like.root.parent / f"{cfg.city.id}-{slug(street)}"
-    env, area_env = envelope_around(axis, AXIS_MARGIN_M, like.crs), envelope_around(axis, AREA_MARGIN_M, like.crs)
-    nearby = arcgis.query_layer(axes_src.url, tuple(env), in_sr=4326, out_sr=like.crs)["features"]
+
+    def around(sid: str, margin: float) -> list[float]:
+        """The envelope of source ``sid`` around the street, in the spatial reference the source gives it in."""
+        src = like.source(sid)
+        assert isinstance(src, ArcgisQuery)  # checked when the config was loaded
+        return envelope_around(axis, margin, like.crs, src.envelope_sr)
+
+    env = around(cfg.profiles.axes, AXIS_MARGIN_M)
+    nearby = arcgis.query_layer(axes_src.url, tuple(env), in_sr=axes_src.envelope_sr, out_sr=like.crs)["features"]
     lang = like.lang
     headings, sides = directions(axis, lang)
     street_blocks = blocks(axis.length, crossings(axis, nearby, name_field, street), lang)
@@ -252,7 +266,11 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     data = tomllib.loads((like.root / "case.toml").read_text(encoding="utf-8"))
     if "extends" in data:
         city_path = (like.root / data["extends"]).resolve()
-        data["extends"] = Path(os.path.relpath(city_path, out_dir.resolve())).as_posix()
+        # relative inside the folder that holds the model case and its city file (the repository), so the draft
+        # moves with it; absolute outside it, where a relative path would break as soon as either side moved
+        shared = Path(os.path.commonpath([like.root.resolve(), city_path]))
+        inside = out_dir.resolve().is_relative_to(shared)
+        data["extends"] = Path(os.path.relpath(city_path, out_dir.resolve()) if inside else city_path).as_posix()
     data["case"] = {k: v for k, v in data["case"].items() if k not in ("reference_run", "question")} | {
         "id": out_dir.name,
         "title": f"{street} ({cfg.city.name})",
@@ -281,10 +299,10 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
 
     sources = data.setdefault("sources", {})
     for sid in (cfg.profiles.cartography, cfg.profiles.axes):
-        sources.setdefault(sid, {})["envelope"] = env
+        sources.setdefault(sid, {})["envelope"] = around(sid, AXIS_MARGIN_M)
     if cfg.area_scan:
         for sid in (cfg.area_scan.cartography, cfg.area_scan.axes):
-            sources.setdefault(sid, {})["envelope"] = area_env
+            sources.setdefault(sid, {})["envelope"] = around(sid, AREA_MARGIN_M)
     return Draft(data, out_dir, bearing(axis), axis.length, stops, one_way)
 
 

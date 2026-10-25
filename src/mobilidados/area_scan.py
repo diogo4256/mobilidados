@@ -20,7 +20,7 @@ from shapely.geometry import LineString
 
 from .config import Network
 from .direction import directions, edges_at
-from .geometry import Profiler
+from .geometry import MIN_STRIP_M, Profiler
 from .gtfs import Feed, active_service_ids
 from .sources import IdentifyCache
 
@@ -98,7 +98,8 @@ def scan(
                 n = (-tv[i][1], tv[i][0])
                 tr = LineString([(p[0] - half * n[0], p[1] - half * n[1]), (p[0] + half * n[0], p[1] + half * n[1])])
                 road = profiler.intervals(tr, p[0], p[1], n, classes["road"])
-                park = profiler.intervals(tr, p[0], p[1], n, classes["parking"])
+                # a sliver narrower than MIN_STRIP_M is not parking, as on the case street (geometry.classify)
+                park = [(lo, hi) for lo, hi in profiler.intervals(tr, p[0], p[1], n, classes["parking"]) if hi - lo > MIN_STRIP_M]
                 free = next(((lo, hi) for lo, hi in road if lo - snap <= 0 <= hi + snap), None)
                 left = right = False
                 if free:
