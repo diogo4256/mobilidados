@@ -17,7 +17,9 @@ service no longer serves it, and keeps the inputs that may be redistributed in a
   | `new` | a file the lock does not have | the case's configuration changed since it was fetched; fetch and run it |
   | `error: ...` | the service did not answer, or a pinned file is no longer served | see [A service moved or is down](#a-service-moved-or-is-down) |
 
-  Run it before using a case in a letter or an article, and from time to time for the cases already published.
+  The `sources` workflow (`.github/workflows/sources.yml`) runs it for every case once a month; a failed run, which
+  GitHub reports to the maintainers, means a source changed, moved or did not answer. Run it by hand too before
+  using a case in a letter or an article.
   The routing-network answers (`arcgis_identify` sources) are not checked: they are queried point by point during
   a run.
 * **Do the results still come out the same?** `pytest -m data` re-runs every case from its cache and compares the

@@ -9,7 +9,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 - `mobilidados verify CASE --live` downloads a case's sources again into a temporary folder and says, file by file,
   whether each service still serves what the lock records (`same`, `changed`, `new`) or did not answer, without
-  touching the cache or the lock.
+  touching the cache or the lock. A monthly workflow (`.github/workflows/sources.yml`) runs it for every case.
 - `docs/maintaining.md`: the regular checks, what to do when a source's data changes or a service moves or goes
   down, how to archive a case's inputs, and how dependencies and Python versions are kept up to date.
 
