@@ -252,7 +252,11 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     data = tomllib.loads((like.root / "case.toml").read_text(encoding="utf-8"))
     if "extends" in data:
         city_path = (like.root / data["extends"]).resolve()
-        data["extends"] = Path(os.path.relpath(city_path, out_dir.resolve())).as_posix()
+        # relative inside the folder that holds the model case and its city file (the repository), so the draft
+        # moves with it; absolute outside it, where a relative path would break as soon as either side moved
+        shared = Path(os.path.commonpath([like.root.resolve(), city_path]))
+        inside = out_dir.resolve().is_relative_to(shared)
+        data["extends"] = Path(os.path.relpath(city_path, out_dir.resolve()) if inside else city_path).as_posix()
     data["case"] = {k: v for k, v in data["case"].items() if k not in ("reference_run", "question")} | {
         "id": out_dir.name,
         "title": f"{street} ({cfg.city.name})",
