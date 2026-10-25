@@ -1,7 +1,7 @@
 """The command line: what it prints, to which stream, and the exit code, on minimal cases (no network)."""
 
-from mobilidados import cli
-from mobilidados.config import Case
+from mobilidados import cli, sources
+from mobilidados.config import Case, MobilidadosError
 from mobilidados.provenance import Lock
 from mobilidados.sources import raw_path
 
@@ -67,3 +67,36 @@ def test_snapshot_copies_the_redistributable_sources(make_case, tmp_path):
     case = locked_case(make_case)
     assert cli.main(["snapshot", str(case.root), str(tmp_path / "snap")]) == 0
     assert sorted(p.name for p in (tmp_path / "snap").iterdir()) == ["_snapshot.json", "cartography.json"]  # the axes licence is not stated
+
+
+def test_verify_live_downloads_again_and_reports_what_differs_leaving_the_cache_and_the_lock(make_case, monkeypatch, capsys):
+    case = locked_case(make_case)
+    lock, cached = case.lock_path.read_bytes(), raw_path(case, "cartography").read_bytes()
+
+    def download(src, dest):
+        if dest.stem == "street_axes":
+            raise MobilidadosError("gis.example did not answer as expected")
+        dest.write_text('{"source": "cartography, updated"}')
+        return {}
+
+    monkeypatch.setattr(sources, "_download", download)
+    assert cli.main(["verify", str(case.root), "--live"]) == 1
+    lines = [line.split(maxsplit=1) for line in capsys.readouterr().out.splitlines()]
+    assert lines == [
+        ["cartography", "cartography.json: changed"],
+        ["street_axes", "-: error: gis.example did not answer as expected"],
+        ["0/2", "files served today match the lock"],
+    ]
+    assert (case.lock_path.read_bytes(), raw_path(case, "cartography").read_bytes()) == (lock, cached)
+
+
+def test_verify_live_exits_0_when_every_source_still_serves_the_locked_files(make_case, monkeypatch, capsys):
+    case = locked_case(make_case)
+
+    def download(src, dest):
+        dest.write_text(f'{{"source": "{dest.stem}"}}')
+        return {}
+
+    monkeypatch.setattr(sources, "_download", download)
+    assert cli.main(["verify", str(case.root), "--live"]) == 0
+    assert capsys.readouterr().out.strip() == "2/2 files served today match the lock"

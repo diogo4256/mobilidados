@@ -40,6 +40,7 @@ def parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("verify", help="check cached sources against sources.lock.json")
     p.add_argument("case")
+    p.add_argument("--live", action="store_true", help="download the sources again and compare them with the lock instead")
 
     p = sub.add_parser("snapshot", help="copy the redistributable cached sources into a folder for archiving")
     p.add_argument("case")
@@ -100,6 +101,15 @@ def _dispatch(a: argparse.Namespace) -> int:
         from .provenance import Lock
 
         case = Case.load(a.case)
+        if a.live:
+            from .sources import check_live
+
+            rows = check_live(case)
+            bad = [r for r in rows if r[2] != "same"]
+            for sid, f, status in bad:
+                print(f"{sid:24s} {f or '-'}: {status}")
+            print(f"{len(rows) - len(bad)}/{len(rows)} files served today match the lock")
+            return 1 if bad else 0
         rows = Lock(case.lock_path).verify(case.raw_dir)
         bad = [r for r in rows if r[2] != "ok"]
         for sid, f, status in bad:

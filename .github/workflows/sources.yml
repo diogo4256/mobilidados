@@ -1,0 +1,34 @@
+name: sources
+
+# Once a month, check that every case's sources still serve the files its lock records (mobilidados verify
+# --live). A failed run means a source changed, moved or did not answer: see docs/maintaining.md.
+
+on:
+  schedule:
+    - cron: "17 6 3 * *" # the 3rd of each month, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          enable-cache: false
+      - run: uv sync --locked
+      - name: Every case's sources still serve its locked files
+        run: |
+          status=0
+          for case in cases/*/; do
+            printf '### %s\n\n```\n' "$case" >> "$GITHUB_STEP_SUMMARY"
+            uv run mobilidados verify "$case" --live | tee -a "$GITHUB_STEP_SUMMARY" || status=1
+            printf '```\n\n' >> "$GITHUB_STEP_SUMMARY"
+          done
+          exit "$status"

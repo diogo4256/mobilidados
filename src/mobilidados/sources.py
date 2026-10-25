@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -87,6 +88,33 @@ def snapshot(case: Case, out_dir: Path) -> list[str]:
     for sid in skipped:
         log.info("left out %s (not marked redistributable)", sid)
     return skipped
+
+
+def check_live(case: Case) -> list[tuple[str, str, str]]:
+    """Download every source again into a temporary folder and compare it with the lock, leaving the cache and the
+    lock as they are. Returns (source_id, file, status) with status ``same``, ``changed``, ``new`` (not in the lock)
+    or ``error: ...`` (the source did not answer, or a pinned file is no longer served). Identify caches are left
+    out: they are queried point by point during a run."""
+    lock = Lock(case.lock_path)
+    out = []
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        for sid, src in case.config.sources.items():
+            if isinstance(src, ArcgisIdentify):
+                continue
+            dest = base / raw_path(case, sid).relative_to(case.raw_dir)
+            log.info("checking %s", sid)  # a source that does not answer is retried for a while
+            try:
+                _download(src, dest)
+            except MobilidadosError as e:
+                out.append((sid, "", f"error: {e}"))
+                continue
+            locked = lock.entries.get(sid, {}).get("files", {})
+            for p in _files_of(dest):
+                rel = p.relative_to(base).as_posix()
+                status = "new" if rel not in locked else ("same" if sha256_file(p) == locked[rel]["sha256"] else "changed")
+                out.append((sid, rel, status))
+    return out
 
 
 def _cached(src: AnySource, dest: Path) -> bool:

@@ -53,6 +53,9 @@ make lint test                # what CI runs: ruff, mypy, pytest
 make reproduce                # downloads the Lisbon sources again and re-runs the case (verify says what changed)
 ```
 
+Keeping the published cases checkable (sources that change, move or go down; archiving a case's inputs; dependency
+and Python updates) is described in [docs/maintaining.md](docs/maintaining.md).
+
 Tests: unit tests use synthetic data and need no network; warnings fail them, so deprecations surface early. `pytest -m data` re-runs every case from its cache
 and compares with the committed results. `pytest -m live` calls the Claude API (needs credentials).
 

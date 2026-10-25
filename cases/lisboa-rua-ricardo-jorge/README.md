@@ -36,8 +36,8 @@ retrieved, from where and when:
   downloads it from the
   [Mobility Database](https://mobilitydatabase.org/feeds/gtfs/mdb-2929) archive, so the exact file stays
   available.
-* **CML cartography and street axes:** fetched live. If the CML updates them, `verify` reports which files
-  changed, and the results may change with them.
+* **CML cartography and street axes:** fetched live. If the CML updates them, `mobilidados verify --live` reports
+  which files changed, and the results may change with them.
 * **Na Minha Rua occurrences** (CC-BY): fetched live from dados.cm-lisboa.pt. `mobilidados snapshot` can package
   these and the cartography (both CC-BY) for an archive.
 * **Routing-network answers** (traffic direction): queried from the services behind the Lisboa Interativa
