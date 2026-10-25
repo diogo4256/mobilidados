@@ -11,6 +11,25 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Cases on other streets no longer break or mislead where the Lisbon case did not reach. None of these changes a
+  Lisbon number:
+  - buses in one direction only, or no meeting at an assumed speed: the encounters statement gives 0 instead of
+    an empty count;
+  - a street without parking mapped on both sides runs to the end and says so, without a width budget or design
+    references, which compare a free width it does not have;
+  - a reference stop that no trip serves on the service day, with a following stop, is an error naming the
+    route, direction, stop and day, instead of a Python traceback;
+  - a profile step that is not a multiple of 10 cm keeps its stretches and check points, and a check point
+    beyond the axis is an error naming it;
+  - a trip that serves its reference stop twice (a loop) is counted once, and two reference stops for the same
+    route and direction are a configuration error; `new-case` keeps the heading most of a direction's trips have;
+  - the area scan and `new-case` read and write envelopes in the spatial reference their source states;
+  - "em k de n pontos" counts every configured traffic station, also one the routing network gave no answer
+    for; runtime medians and years print as numbers of the case's language;
+  - the trips-per-hour figure names the service day without calling it a weekday.
+- A run stops when a cached file differs from the sha256 in `sources.lock.json`, which the ledger publishes. A
+  missing file is not an error, since a partial run may not need it. An identify cache is locked with the time
+  its content last changed.
 - The figures no longer depend on the machine that draws them. They start from matplotlib's own defaults, so a
   local `matplotlibrc` (another font, for example) no longer changes them, and a figure whose pixels are unchanged
   keeps its file, since the PNG compression differs from one platform to another. Running the figures stage
