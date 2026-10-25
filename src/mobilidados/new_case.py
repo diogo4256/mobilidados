@@ -190,8 +190,14 @@ def transit(feed: gtfs.Feed, axis: LineString, crs: int, day: dt.date, buffer_m:
     near = gtfs.stops_near(feed, axis, crs, max_dist=STOP_RADIUS_M).set_index("stop_id")
     stop_times = feed.stop_times(set(trips.trip_id))
     stop_times = stop_times[stop_times.stop_id.isin(near.index)]
+    # a case has one reference stop per route and direction: a direction whose trips run along the street both ways
+    # (variants, loops) keeps the heading most of its trips have
+    key = ["route_short_name", "direction_id"]
+    main = trips.groupby(key).heading.agg(lambda h: h.value_counts().index[0]).rename("main_heading").reset_index()
+    kept = trips.merge(main, on=key)
+    kept = kept[kept.heading == kept.main_heading]
     refs = []
-    for (route, direction_id, heading), g in trips.groupby(["route_short_name", "direction_id", "heading"]):
+    for (route, direction_id, heading), g in kept.groupby(["route_short_name", "direction_id", "heading"]):
         served = stop_times[stop_times.trip_id.isin(g.trip_id)].groupby("stop_id").trip_id.nunique()
         if served.empty:
             continue

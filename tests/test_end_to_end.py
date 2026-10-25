@@ -13,7 +13,7 @@ import pytest
 from PIL import Image
 
 from mobilidados import cli
-from mobilidados.config import Case, Config
+from mobilidados.config import Case, Config, MobilidadosError
 from mobilidados.direction import directions
 from mobilidados.pipeline import run
 from mobilidados.sources import raw_path
@@ -444,6 +444,15 @@ def test_a_street_with_parking_on_one_side_only_reports_what_does_not_need_both(
     )
     assert {"traffic", "transit", "runtime_S1", "encounters"} <= set(findings)
     assert not {"parking_strips", "width_budget", "without_parking", "parking_removed", "standard_rast06_bus_bus"} & set(findings)
+
+
+def test_a_service_date_without_buses_is_an_error_before_any_passing_is_written(tmp_path):
+    root = write_case(tmp_path / "saturday")
+    edit(root, "service_date = 2026-10-27", "service_date = 2026-10-31")  # a Saturday: no service in the feed
+    case = Case.load(root)
+    with pytest.raises(MobilidadosError, match=r"^route 10 direction 0: no trip serves stop S1 on 2026-10-31 with a following stop"):
+        run(case, offline=True)
+    assert not (case.results_dir / "tables" / "passings.csv").exists()
 
 
 def test_runtime_medians_are_printed_as_numbers_of_the_cases_language(tmp_path):

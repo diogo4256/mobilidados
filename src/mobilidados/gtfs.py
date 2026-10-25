@@ -17,7 +17,7 @@ import pandas as pd
 from pyproj import Transformer
 from shapely.geometry import LineString, Point
 
-from .config import ReferenceStop
+from .config import MobilidadosError, ReferenceStop
 
 ALL_TRIPS = "all trips in the feed"  # scope label of the whole-feed rows in scheduled_runtimes
 
@@ -136,9 +136,16 @@ def reference_passings(feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame
     sel = trips[[(rt, d) in keyed for rt, d in zip(trips.route_short_name, trips.direction_id, strict=True)]]
     sel = sel[sel.service_id.isin(active)]
     st = stop_times[stop_times.trip_id.isin(sel.trip_id)]
+    last = st.groupby("trip_id").stop_sequence.max()
     rows = []
     for (rt, d), ref in keyed.items():
-        t = sel[(sel.route_short_name == rt) & (sel.direction_id == d)].merge(st[st.stop_id == ref.stop_id], on="trip_id")
+        at_ref = st[st.stop_id == ref.stop_id].sort_values("stop_sequence").drop_duplicates("trip_id")  # a loop passes once
+        t = sel[(sel.route_short_name == rt) & (sel.direction_id == d)].merge(at_ref, on="trip_id")
+        if not (t.stop_sequence < t.trip_id.map(last)).any():  # scheduled_runtimes needs the next stop
+            raise MobilidadosError(
+                f"route {rt} direction {d}: no trip serves stop {ref.stop_id} on {day} with a following stop; "
+                "check reference_stops and service_date"
+            )
         rows.append(t.assign(ref_stop=ref.stop_id, s_ref=ref.s_m, heading=ref.heading))
     out = pd.concat(rows, ignore_index=True)
     out["t"] = out.arrival_time.map(seconds)

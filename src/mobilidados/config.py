@@ -388,6 +388,10 @@ class Config(Model):
             stray = sorted({r.route for r in self.transit.reference_stops} - set(self.transit.routes))
             if stray:
                 errors.append(f"transit.reference_stops use routes not in transit.routes: {stray}")
+            keys = [(r.route, r.direction_id) for r in self.transit.reference_stops]
+            twice = sorted({k for k in keys if keys.count(k) > 1})
+            if twice:
+                errors.append(f"transit.reference_stops give more than one stop for the same (route, direction_id): {twice}")
         if self.occurrences:
             need(self.occurrences.source, "http_files", "occurrences.source")
             src = self.sources.get(self.occurrences.source)

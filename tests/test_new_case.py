@@ -1,5 +1,6 @@
 """Drafting a case for another street from an existing case: the street's axis, blocks, labels and buses."""
 
+import datetime as dt
 import logging
 import re
 import tomllib
@@ -7,10 +8,10 @@ import tomllib
 import pytest
 from shapely.geometry import LineString
 
-from mobilidados import new_case
+from mobilidados import gtfs, new_case
 from mobilidados.config import ArcgisQuery, Case, MobilidadosError
 from mobilidados.new_case import blocks, compass, directions, other_reading, slug, stations, write
-from tests.builders import CRS, LENGTH, at_origin, esri_path, layer_file, write_case
+from tests.builders import CRS, LENGTH, at_origin, esri_path, layer_file, make_feed, write_case
 
 
 def test_directions_and_sides_follow_the_axis_bearing():
@@ -270,6 +271,15 @@ def test_a_draft_for_buses_one_way_says_the_question_may_not_apply(tmp_path, cit
         "Se a rua tiver um só sentido e uma só via, a pergunta não se aplica tal como está: "
         "reescreva-a depois de o `mobilidados run` mostrar o sentido do trânsito." in pt
     )
+
+
+def test_a_direction_whose_trips_run_the_street_both_ways_gets_one_reference_stop(tmp_path):
+    # a variant of route 10, direction 0, that runs the street the other way (west)
+    axis = make_feed(
+        tmp_path / "f.zip", more_trips="A,WK,a3,0,down\n", more_stop_times="a3,10:00:00,10:00:00,S2,1\na3,10:01:00,10:01:00,S1,2\n"
+    )
+    _, refs = new_case.transit(gtfs.Feed(tmp_path / "f.zip"), axis, CRS, dt.date(2026, 10, 27), buffer_m=12)
+    assert [(r["route"], r["direction_id"], r["heading"]) for r in refs] == [("10", 0, 1), ("20", 1, -1)]  # most trips run east
 
 
 def test_a_bearing_near_a_compass_boundary_is_named_with_both_readings(tmp_path, city_layer, monkeypatch):

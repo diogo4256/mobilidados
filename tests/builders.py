@@ -42,13 +42,14 @@ def street(free=4.90, strip=2.0, walk=2.5, length=100.0, strip_from=20.0, strip_
     return LineString([(0, 0), (length, 0)]), polys
 
 
-def make_feed(path):
-    """Two routes along a 200 m street in Lisbon's projected CRS; route B only on Tuesdays via calendar_dates."""
+def make_feed(path, more_trips="", more_stop_times=""):
+    """Two routes along a 200 m street in Lisbon's projected CRS; route B only on Tuesdays via calendar_dates.
+    ``more_trips`` and ``more_stop_times`` are rows added to trips.txt and stop_times.txt."""
     to_ll = Transformer.from_crs(CRS, 4326, always_xy=True)
     (lon0, lon1), (lat0, lat1) = to_ll.transform([-87500, -87300], [-100700, -100700])
     files = {
         "routes.txt": "route_id,route_short_name,route_long_name,route_type\nA,10,Up,3\nB,20,Down,3\n",
-        "trips.txt": "route_id,service_id,trip_id,direction_id,shape_id\nA,WK,a1,0,up\nA,WK,a2,0,up\nB,X,b1,1,down\n",
+        "trips.txt": "route_id,service_id,trip_id,direction_id,shape_id\nA,WK,a1,0,up\nA,WK,a2,0,up\nB,X,b1,1,down\n" + more_trips,
         "calendar.txt": "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
         "WK,1,1,1,1,1,0,0,20260101,20261231\n",
         "calendar_dates.txt": "service_id,date,exception_type\nX,20261027,1\nWK,20261028,2\n",
@@ -58,7 +59,7 @@ def make_feed(path):
         "stop_times.txt": "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n"
         "a1,08:00:00,08:00:00,S1,1\na1,08:01:00,08:01:00,S2,2\n"
         "a2,09:00:00,09:00:00,S1,1\na2,09:01:00,09:01:00,S2,2\n"
-        "b1,08:00:20,08:00:20,S2,1\nb1,08:01:20,08:01:20,S1,2\n",
+        "b1,08:00:20,08:00:20,S2,1\nb1,08:01:20,08:01:20,S1,2\n" + more_stop_times,
     }
     with zipfile.ZipFile(path, "w") as z:
         for name, text in files.items():
