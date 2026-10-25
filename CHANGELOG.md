@@ -34,6 +34,9 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - A run stops when a cached file differs from the sha256 in `sources.lock.json`, which the ledger publishes. A
   missing file is not an error, since a partial run may not need it. An identify cache is locked with the time
   its content last changed.
+- A `new-case` draft written outside the folder that holds the model case and its city file (with `--out`)
+  extends the city file by its absolute path. Before, it got a relative path such as
+  `../../../../home/user/mobilidados/cities/lisboa.toml`, which broke as soon as either side moved.
 - The figures no longer depend on the machine that draws them. They start from matplotlib's own defaults, so a
   local `matplotlibrc` (another font, for example) no longer changes them, and a figure whose pixels are unchanged
   keeps its file, since the PNG compression differs from one platform to another. Running the figures stage

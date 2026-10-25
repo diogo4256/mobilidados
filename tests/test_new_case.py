@@ -214,6 +214,18 @@ def test_a_draft_writes_its_envelopes_in_the_spatial_reference_it_inherits(tmp_p
     assert city_layer[1][0] == pytest.approx(src.envelope)  # the axes around the street are queried with the same envelope
 
 
+def test_a_draft_outside_the_repository_extends_the_city_file_by_absolute_path(tmp_path, tmp_path_factory, city_layer):
+    root = write_case(tmp_path / "like")
+    split(root)
+    like = Case.load(root)
+    inside = tomllib.loads((write(like, "Rua do Teste", tmp_path / "a") / "case.toml").read_text(encoding="utf-8"))
+    assert inside["extends"] == "../city.toml"
+    elsewhere = tmp_path_factory.mktemp("elsewhere") / "b"
+    outside = tomllib.loads((write(like, "Rua do Teste", elsewhere) / "case.toml").read_text(encoding="utf-8"))
+    assert outside["extends"] == (tmp_path / "city.toml").resolve().as_posix()
+    assert Case.load(elsewhere).source("feed") == like.source("feed")
+
+
 def test_drafting_refuses_to_overwrite_and_reports_a_street_without_buses(tmp_path, city_layer):
     like = Case.load(write_case(tmp_path / "like"))
     out = write(like, "Rua do Teste", tmp_path / "a")
