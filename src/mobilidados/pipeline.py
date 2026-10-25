@@ -24,7 +24,7 @@ from shapely.ops import linemerge, unary_union
 from . import area_scan, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
 from .arcgis import to_line
 from .config import ArcgisQuery, Case, Config, HttpFiles, MobilidadosError
-from .sources import IdentifyCache, check_pins, load_json, lock_identify_caches, raw_path
+from .sources import IdentifyCache, check_lock, check_pins, load_json, lock_identify_caches, raw_path
 
 log = logging.getLogger(__name__)
 
@@ -94,6 +94,12 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
         raise MobilidadosError(
             f"cached files do not match the sha256 pinned in the case's configuration: {stale}. "
             "Restore the pinned files (fetch --from-dir) or update the pin deliberately."
+        )
+    changed = check_lock(case)
+    if changed:
+        raise MobilidadosError(
+            f"cached files do not match the sha256 recorded in sources.lock.json: {changed}. "
+            "Restore the locked files (fetch --from-dir) or fetch them again (fetch --refresh) to update the lock."
         )
     r = Run(case, offline=offline)
     write_config(case)

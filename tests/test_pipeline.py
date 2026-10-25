@@ -5,6 +5,8 @@ import pytest
 
 from mobilidados.config import Case, MobilidadosError
 from mobilidados.pipeline import Run, run
+from mobilidados.provenance import Lock
+from mobilidados.sources import raw_path
 
 PINNED_FEED = '[sources.feed]\nkind = "http_file"\nurl = "https://example.org/gtfs.zip"\nsha256 = "{}"\nlicence = "x"\n'
 
@@ -36,3 +38,19 @@ def test_a_cached_file_that_differs_from_its_pin_stops_the_run(make_case):
     (case.raw_dir / "feed.zip").write_bytes(b"not the pinned feed")
     with pytest.raises(MobilidadosError, match="do not match the sha256 pinned"):
         run(case, stages=["standards"])
+
+
+def test_a_cached_file_that_differs_from_the_lock_stops_the_run_and_a_missing_one_does_not(make_case):
+    case = Case.load(make_case())
+    case.raw_dir.mkdir(parents=True)
+    lock = Lock(case.lock_path)
+    for sid in ("cartography", "street_axes"):
+        raw_path(case, sid).write_text('{"features": []}', encoding="utf-8")
+        lock.record(sid, [raw_path(case, sid)], case.raw_dir, retrieved_utc="2026-10-24T12:00:00+00:00")
+    lock.save()
+    raw_path(case, "cartography").write_text('{"features": [{}]}', encoding="utf-8")  # changed since it was locked
+    raw_path(case, "street_axes").unlink()  # not fetched here: a partial run may not need it
+    with pytest.raises(MobilidadosError, match=r"do not match the sha256 recorded in sources.lock.json: \['cartography.json'\]"):
+        run(case, stages=["standards"])
+    raw_path(case, "cartography").write_text('{"features": []}', encoding="utf-8")
+    run(case, stages=["standards"])

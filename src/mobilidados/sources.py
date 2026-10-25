@@ -136,6 +136,14 @@ def check_pins(case: Case) -> list[str]:
     return bad
 
 
+def check_lock(case: Case) -> list[str]:
+    """Cached files whose sha256 differs from the one in the lock, which the ledger publishes. A missing file is not
+    listed (a partial run may lack sources it does not read), nor an identify cache: it grows during an online run
+    and is locked at its end."""
+    identify = {sid for sid, src in case.config.sources.items() if isinstance(src, ArcgisIdentify)}
+    return [rel for sid, rel, status in Lock(case.lock_path).verify(case.raw_dir) if status == "changed" and sid not in identify]
+
+
 def lock_identify_caches(case: Case) -> None:
     lock = Lock(case.lock_path)
     for sid, src in case.config.sources.items():
@@ -148,7 +156,7 @@ def lock_identify_caches(case: Case) -> None:
                 kind=src.kind,
                 url=src.url,
                 layers=src.layers,
-                retrieved_utc=lock.entries.get(sid, {}).get("retrieved_utc") or now_utc(),
+                retrieved_utc=now_utc(),  # kept, with the whole entry, while the cache does not change
                 licence=src.licence,
             )
     lock.save()
