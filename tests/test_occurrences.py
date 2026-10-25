@@ -96,4 +96,4 @@ def test_years_are_whole_numbers_when_a_report_has_no_date():
         }
     )
     counts = yearly_counts(points, "Rua A", "^Estacionamento")
-    assert counts.to_csv(index=False) == "year,n\n2024,1\n2025,1\n"
+    assert counts.to_csv(index=False, lineterminator="\n") == "year,n\n2024,1\n2025,1\n"
