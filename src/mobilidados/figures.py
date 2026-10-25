@@ -47,7 +47,7 @@ def make_all(run: Run) -> None:
     # matplotlib's own defaults first, so a machine's matplotlibrc (another font, another dpi) does not change the figures
     with matplotlib.style.context(["default", STYLE]):
         figs = {"free_width_profile": profile(run, lang)}
-        if cfg.envelope:
+        if cfg.envelope and run.two_strips:
             figs["width_budget"] = width_budget(run, lang)
         if cfg.transit:
             figs["trips_per_hour"] = trips_per_hour(run, lang)
@@ -185,7 +185,7 @@ def profile(run: Run, lang: Lang) -> Figure:
     ax.plot(p.s, p.free_width, color=INK, lw=1.4, label=t("free_width", lang))
     ax.plot(p.s, p.strip_L, color=STRIP, lw=1, label=t("strips", lang))
     ax.plot(p.s, p.strip_R, color=STRIP, lw=1, ls="--")
-    if run.cfg.standards.compare:
+    if run.cfg.standards.compare and run.two_strips:
         for v in sorted(set(run.table("standards_comparison").value_m)):
             ax.axhline(v, color=ALERT, lw=0.8, ls=":")
             ax.text(p.s.max(), v + 0.08, f"{num(v, lang)} m", color=ALERT, ha="right", fontsize=8)

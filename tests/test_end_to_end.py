@@ -429,6 +429,23 @@ def test_a_traffic_station_without_an_answer_still_counts_as_checked(tmp_path):
     assert "an edge is open in both directions at 2 of 3 points checked" in ledger_of(case)["traffic"]["statement"]
 
 
+def test_a_street_with_parking_on_one_side_only_reports_what_does_not_need_both(tmp_path):
+    case = Case.load(write_case(tmp_path / "one-side", parking_both_sides=False))
+    run(case, offline=True)
+    tables = {p.stem for p in (case.results_dir / "tables").glob("*.csv")}
+    assert tables == TABLES - {"width_budget", "overhang_sensitivity", "without_parking", "standards_comparison"}
+    assert pd.read_csv(case.results_dir / "tables" / "summary_by_block.csv").empty  # the header only
+    assert not (case.results_dir / "figures" / "width_budget.png").exists()
+    findings = ledger_of(case)
+    assert findings["length"]["statement"] == "The street axis is 200.00 m long."
+    assert findings["free_width"]["grade"] == "M"
+    assert findings["free_width"]["statement"] == (
+        "No stretch of the street with parking mapped on both sides was found, so there is no free width between parking strips to measure."
+    )
+    assert {"traffic", "transit", "runtime_S1", "encounters"} <= set(findings)
+    assert not {"parking_strips", "width_budget", "without_parking", "parking_removed", "standard_rast06_bus_bus"} & set(findings)
+
+
 def test_runtime_medians_are_printed_as_numbers_of_the_cases_language(tmp_path):
     root = write_case(tmp_path / "pt")
     edit(root, 'language = "en"', 'language = "pt"')

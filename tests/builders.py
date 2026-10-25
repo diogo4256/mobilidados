@@ -237,7 +237,7 @@ TWO_WAY = [
 ]
 
 
-def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = True) -> Path:
+def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = True, parking_both_sides: bool = True) -> Path:
     """Write a complete case into ``root`` (the folder is created): ``case.toml``, the cached sources and the lock.
 
     Rua do Teste is 200 m long. It is a 4.90 m road with 2.00 m parking strips on both sides between 40.5 m and
@@ -246,6 +246,7 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
     case's ``min_street_length_m``. The reports (two files, each with its own date format) are mostly parking
     reports on Rua do Teste. With ``optional=False`` the case has only the sections every case needs (no transit,
     direction, envelope, occurrences, area scan or design references); the cached sources are written all the same.
+    With ``parking_both_sides=False`` the strip on the south side is not mapped.
     """
     root.mkdir()
     to_ll = Transformer.from_crs(CRS, 4326, always_xy=True)
@@ -264,6 +265,8 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
         raw_path(case, source).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
     _, local = street(length=LENGTH, strip_from=40.5, strip_to=150.5)
+    if not parking_both_sides:
+        del local[2]  # the south strip
     features = [
         {"attributes": {"OBJECTID": i, "LAYER": cls}, "geometry": esri_polygon(at_origin(g))} for i, (cls, g) in enumerate(local, 1)
     ]

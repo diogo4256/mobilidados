@@ -165,8 +165,14 @@ def classify(
     return df
 
 
+SUMMARY_COLUMNS = ["block", "n_stations", "s_min", "s_max", "free_min", "free_p5", "free_median", "free_p95", "free_max",
+                   "strip_L_median", "strip_R_median", "kerb_to_kerb_min", "kerb_to_kerb_median", "kerb_to_kerb_max",
+                   "to_plot_L_median", "to_plot_R_median"]  # fmt: skip
+
+
 def summarize_blocks(df: pd.DataFrame, blocks: list[Block]) -> pd.DataFrame:
-    """Quantiles of the two-strip stations per block and overall (the headline measurement table)."""
+    """Quantiles of the two-strip stations per block and overall (the headline measurement table). A street without
+    two-strip stations gets the header only, with no ``all`` row."""
     d = df[df["class"] == TWO_STRIPS]
     rows = []
     for label, sub in [(b.id, d[d.block == b.id]) for b in blocks] + [("all", d)]:
@@ -193,7 +199,7 @@ def summarize_blocks(df: pd.DataFrame, blocks: list[Block]) -> pd.DataFrame:
                 "to_plot_R_median": round(sub.to_plot_R.median(), 2),
             }
         )
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=SUMMARY_COLUMNS)
 
 
 def narrow_sections(df: pd.DataFrame, step: float) -> list[tuple[float, float, str]]:

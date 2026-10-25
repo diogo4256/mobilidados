@@ -57,6 +57,13 @@ class Run:
             self.tables[name] = pd.read_csv(path)
         return self.tables[name]
 
+    @property
+    def two_strips(self) -> bool:
+        """Whether the street has stations with parking mapped on both sides (``summary_by_block`` has its ``all``
+        row). Without them there is no free width between parking strips, and the width budget and the design
+        references, which compare it, do not apply."""
+        return "all" in set(self.table("summary_by_block").block)
+
     # --- shared inputs ----------------------------------------------------------------------------
     @functools.cached_property
     def axis(self) -> LineString:
@@ -189,7 +196,7 @@ def stage_transit(r: Run) -> None:
 
 def stage_envelope(r: Run) -> None:
     e = r.cfg.envelope
-    if e is None:
+    if e is None or not r.two_strips:
         return
     allrow = r.table("summary_by_block").set_index("block").loc["all"]
     free = {"min": float(allrow.free_min), "median": float(allrow.free_median), "p95": float(allrow.free_p95)}
@@ -261,7 +268,7 @@ def stage_area(r: Run) -> None:
 
 
 def stage_standards(r: Run) -> None:
-    if not r.cfg.standards.compare:
+    if not r.cfg.standards.compare or not r.two_strips:
         return
     med = float(r.table("summary_by_block").set_index("block").loc["all", "free_median"])
     r.save("standards_comparison", standards.compare(med, r.cfg.standards.compare))
