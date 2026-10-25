@@ -75,7 +75,8 @@ Archive the inputs when a case is first published, and again for each new dated 
 
 * `mobilidados run CASE` re-runs every stage; `--stages ... --offline` re-runs some of them from the cache, which is
   how a change to the ledger or the figures is applied without downloading anything.
-* A run stops when a pinned file differs from its pin.
+* A run stops when a cached file differs from the lock, and when a pinned file differs from its pin; a missing
+  file is not an error, since a partial run may not need it.
 * Figures come out the same on any machine: they start from matplotlib's defaults, and a figure whose pixels did
   not change keeps its file.
 * Commit the changed results with the change that caused them, and say in the pull request which numbers changed
