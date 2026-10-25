@@ -12,10 +12,10 @@ import pandas as pd
 import pytest
 from PIL import Image
 
-from mobilidados import cli
+from mobilidados import cli, figures
 from mobilidados.config import ArcgisQuery, Case, Config, MobilidadosError
 from mobilidados.direction import directions
-from mobilidados.pipeline import run
+from mobilidados.pipeline import Run, run
 from mobilidados.sources import raw_path
 
 from .builders import LENGTH, ORIGIN, write_case
@@ -377,6 +377,12 @@ def test_figures_do_not_depend_on_the_machine_that_draws_them(case, results, tmp
     assert same.read_bytes() == recompressed
     assert (figures / "trips_per_hour.png").read_bytes() == (results / "figures" / "trips_per_hour.png").read_bytes()
     assert not (figures / "left_over.png").exists()
+
+
+def test_the_trips_per_hour_title_names_the_service_day_whatever_its_weekday(case, results):
+    r = Run(case, offline=True)
+    assert figures.trips_per_hour(r, "en").axes[0].get_title(loc="left") == "Scheduled trips on the street on 2026-10-27"
+    assert figures.trips_per_hour(r, "pt").axes[0].get_title(loc="left") == "Viagens previstas no horário em 2026-10-27"
 
 
 def test_a_case_with_only_the_required_sections_reports_only_the_measurements(tmp_path):

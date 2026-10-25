@@ -170,7 +170,7 @@ def trips_per_hour(run: Run, lang: Lang) -> Figure:
     ax.set_ylabel(t("trips_per_hour", lang))
     ax.legend(frameon=False)
     ax.grid(axis="y", color=GRID, lw=0.6)
-    ax.set_title(t("weekday_trips", lang, day=run.cfg.transit.service_date), loc="left", fontsize=10, color=INK)
+    ax.set_title(t("day_trips", lang, day=run.cfg.transit.service_date), loc="left", fontsize=10, color=INK)
     fig.tight_layout()
     return fig
 
