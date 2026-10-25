@@ -104,8 +104,10 @@ def test_a_new_point_is_fetched_once_and_saved(make_case, monkeypatch):
     assert "1500,2500@8" in cache.data
 
 
-def test_identify_caches_are_locked_and_keep_their_first_retrieval_time(make_case, monkeypatch):
+def test_identify_caches_are_locked_with_the_time_their_content_last_changed(make_case, monkeypatch):
     monkeypatch.setattr(arcgis, "identify", lambda *a: [])
+    clock = iter(["2026-10-24T10:00:00+00:00", "2026-10-25T10:00:00+00:00", "2026-10-26T10:00:00+00:00"])
+    monkeypatch.setattr(sources, "now_utc", lambda: next(clock))
     case, cache = identify_cache(make_case)
     cache.get(1000, 2000)
     cache.save()
@@ -113,12 +115,16 @@ def test_identify_caches_are_locked_and_keep_their_first_retrieval_time(make_cas
     first = Lock(case.lock_path).entries["identify"]
     assert first["layers"] == "all:1"
     assert list(first["files"]) == ["identify.json"]
+    assert first["retrieved_utc"] == "2026-10-24T10:00:00+00:00"
+
+    lock_identify_caches(case)  # nothing new was queried
+    assert Lock(case.lock_path).entries["identify"] == first
 
     cache.get(1100, 2000)
     cache.save()
     lock_identify_caches(case)
     second = Lock(case.lock_path).entries["identify"]
-    assert second["retrieved_utc"] == first["retrieved_utc"]
+    assert second["retrieved_utc"] == "2026-10-26T10:00:00+00:00"  # the cache now holds a query made then
     assert second["files"] != first["files"]  # the new checksum
     assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
 

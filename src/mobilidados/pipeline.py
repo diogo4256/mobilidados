@@ -24,7 +24,7 @@ from shapely.ops import linemerge, unary_union
 from . import area_scan, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
 from .arcgis import to_line
 from .config import ArcgisQuery, Case, Config, HttpFiles, MobilidadosError
-from .sources import IdentifyCache, check_pins, load_json, lock_identify_caches, raw_path
+from .sources import IdentifyCache, check_lock, check_pins, load_json, lock_identify_caches, raw_path
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +57,13 @@ class Run:
             self.tables[name] = pd.read_csv(path)
         return self.tables[name]
 
+    @property
+    def two_strips(self) -> bool:
+        """Whether the street has stations with parking mapped on both sides (``summary_by_block`` has its ``all``
+        row). Without them there is no free width between parking strips, and the width budget and the design
+        references, which compare it, do not apply."""
+        return "all" in set(self.table("summary_by_block").block)
+
     # --- shared inputs ----------------------------------------------------------------------------
     @functools.cached_property
     def axis(self) -> LineString:
@@ -87,6 +94,12 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
         raise MobilidadosError(
             f"cached files do not match the sha256 pinned in the case's configuration: {stale}. "
             "Restore the pinned files (fetch --from-dir) or update the pin deliberately."
+        )
+    changed = check_lock(case)
+    if changed:
+        raise MobilidadosError(
+            f"cached files do not match the sha256 recorded in sources.lock.json: {changed}. "
+            "Restore the locked files (fetch --from-dir) or fetch them again (fetch --refresh) to update the lock."
         )
     r = Run(case, offline=offline)
     write_config(case)
@@ -127,7 +140,10 @@ def stage_profiles(r: Run) -> None:
     tr = Transformer.from_crs(c.crs, 4326, always_xy=True)
     pts = []
     for s in p.check_points_s:
-        row = df[(df.s - s).abs() < 1e-6].iloc[0]
+        i = (df.s - s).abs().idxmin()  # the station at s (check points are on the grid of stations)
+        if abs(df.s[i] - s) > p.step_m / 2:
+            raise MobilidadosError(f"profiles.check_points_s: {s} m is outside the street axis (0 to {length} m)")
+        row = df.loc[i]
         lon, lat = tr.transform(row.x, row.y)
         pts.append(
             {
@@ -189,7 +205,7 @@ def stage_transit(r: Run) -> None:
 
 def stage_envelope(r: Run) -> None:
     e = r.cfg.envelope
-    if e is None:
+    if e is None or not r.two_strips:
         return
     allrow = r.table("summary_by_block").set_index("block").loc["all"]
     free = {"min": float(allrow.free_min), "median": float(allrow.free_median), "p95": float(allrow.free_p95)}
@@ -249,7 +265,7 @@ def stage_area(r: Run) -> None:
     src = r.case.source(a.cartography)
     assert isinstance(src, ArcgisQuery)  # checked when the config was loaded
     env = src.envelope
-    (bx0, bx1), (by0, by1) = Transformer.from_crs(4326, r.case.crs, always_xy=True).transform([env[0], env[2]], [env[1], env[3]])
+    (bx0, bx1), (by0, by1) = Transformer.from_crs(src.envelope_sr, r.case.crs, always_xy=True).transform([env[0], env[2]], [env[1], env[3]])
     shapes, n_trips, route_of = area_scan.bus_shapes(r.feed, t.service_date, r.case.crs, (bx0 - 50, by0 - 50, bx1 + 50, by1 + 50))
     stations = area_scan.scan(list(r.axes(a.axes).items()), geometry.Profiler(polys), roles, shapes, n_trips, route_of, step=a.step_m)
     r.save("area_stations", stations)
@@ -261,7 +277,7 @@ def stage_area(r: Run) -> None:
 
 
 def stage_standards(r: Run) -> None:
-    if not r.cfg.standards.compare:
+    if not r.cfg.standards.compare or not r.two_strips:
         return
     med = float(r.table("summary_by_block").set_index("block").loc["all", "free_median"])
     r.save("standards_comparison", standards.compare(med, r.cfg.standards.compare))

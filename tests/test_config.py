@@ -32,6 +32,11 @@ def test_minimal_case_loads_with_defaults(make_case):
             FEED + "[transit]\nsource = 'feed'\nservice_date = 2026-10-27\nroutes = ['10']\nreference_stops = [" + STOP_20 + "]\n",
             "not in transit.routes",
         ),
+        (
+            FEED + "[transit]\nsource = 'feed'\nservice_date = 2026-10-27\nroutes = ['20']\n"
+            "reference_stops = [" + STOP_20 + ", " + STOP_20.replace("'s'", "'t'") + "]\n",
+            "more than one stop for the same (route, direction_id): [('20', 0)]",
+        ),
         (REPORTS + "[occurrences]\nsource = 'reports'\nfilters = { a = 'x' }\n", "needs `columns`"),
         ("[area_scan]\n", "[area_scan] needs [transit]"),
     ],

@@ -1,16 +1,17 @@
 """Drafting a case for another street from an existing case: the street's axis, blocks, labels and buses."""
 
+import datetime as dt
 import logging
 import re
 import tomllib
 
 import pytest
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point
 
-from mobilidados import new_case
+from mobilidados import gtfs, new_case
 from mobilidados.config import ArcgisQuery, Case, MobilidadosError
 from mobilidados.new_case import blocks, compass, directions, other_reading, slug, stations, write
-from tests.builders import CRS, LENGTH, at_origin, esri_path, layer_file, write_case
+from tests.builders import CRS, LENGTH, at_origin, esri_path, layer_file, make_feed, write_case
 
 
 def test_directions_and_sides_follow_the_axis_bearing():
@@ -199,6 +200,20 @@ def test_a_draft_from_a_case_that_extends_a_city_file_holds_only_the_street(tmp_
     assert Case.load(out).source("feed") == like.source("feed")  # the pinned feed comes from the city file
 
 
+def test_a_draft_writes_its_envelopes_in_the_spatial_reference_it_inherits(tmp_path, city_layer):
+    root = write_case(tmp_path / "like")
+    text = (root / "case.toml").read_text(encoding="utf-8")
+    (root / "case.toml").write_text(text.replace("out_sr = 3763", "envelope_sr = 3763\nout_sr = 3763"), encoding="utf-8")
+    split(root)  # the city file gives the layers' envelope_sr, the draft only their envelopes
+    out = write(Case.load(root), "Rua do Teste", tmp_path / "example-rua-do-teste")
+    src = Case.load(out).source("cartography")
+    assert isinstance(src, ArcgisQuery)
+    assert src.envelope_sr == 3763
+    x0, y0 = at_origin(Point(0, 0)).coords[0]
+    assert src.envelope == pytest.approx((x0 - 150, y0 - 150, x0 + LENGTH + 150, y0 + 150))  # new_case.AXIS_MARGIN_M around the axis
+    assert city_layer[1][0] == pytest.approx(src.envelope)  # the axes around the street are queried with the same envelope
+
+
 def test_a_draft_outside_the_repository_extends_the_city_file_by_absolute_path(tmp_path, tmp_path_factory, city_layer):
     root = write_case(tmp_path / "like")
     split(root)
@@ -282,6 +297,15 @@ def test_a_draft_for_buses_one_way_says_the_question_may_not_apply(tmp_path, cit
         "Se a rua tiver um só sentido e uma só via, a pergunta não se aplica tal como está: "
         "reescreva-a depois de o `mobilidados run` mostrar o sentido do trânsito." in pt
     )
+
+
+def test_a_direction_whose_trips_run_the_street_both_ways_gets_one_reference_stop(tmp_path):
+    # a variant of route 10, direction 0, that runs the street the other way (west)
+    axis = make_feed(
+        tmp_path / "f.zip", more_trips="A,WK,a3,0,down\n", more_stop_times="a3,10:00:00,10:00:00,S2,1\na3,10:01:00,10:01:00,S1,2\n"
+    )
+    _, refs = new_case.transit(gtfs.Feed(tmp_path / "f.zip"), axis, CRS, dt.date(2026, 10, 27), buffer_m=12)
+    assert [(r["route"], r["direction_id"], r["heading"]) for r in refs] == [("10", 0, 1), ("20", 1, -1)]  # most trips run east
 
 
 def test_a_bearing_near_a_compass_boundary_is_named_with_both_readings(tmp_path, city_layer, monkeypatch):

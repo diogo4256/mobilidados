@@ -42,13 +42,14 @@ def street(free=4.90, strip=2.0, walk=2.5, length=100.0, strip_from=20.0, strip_
     return LineString([(0, 0), (length, 0)]), polys
 
 
-def make_feed(path):
-    """Two routes along a 200 m street in Lisbon's projected CRS; route B only on Tuesdays via calendar_dates."""
+def make_feed(path, more_trips="", more_stop_times=""):
+    """Two routes along a 200 m street in Lisbon's projected CRS; route B only on Tuesdays via calendar_dates.
+    ``more_trips`` and ``more_stop_times`` are rows added to trips.txt and stop_times.txt."""
     to_ll = Transformer.from_crs(CRS, 4326, always_xy=True)
     (lon0, lon1), (lat0, lat1) = to_ll.transform([-87500, -87300], [-100700, -100700])
     files = {
         "routes.txt": "route_id,route_short_name,route_long_name,route_type\nA,10,Up,3\nB,20,Down,3\n",
-        "trips.txt": "route_id,service_id,trip_id,direction_id,shape_id\nA,WK,a1,0,up\nA,WK,a2,0,up\nB,X,b1,1,down\n",
+        "trips.txt": "route_id,service_id,trip_id,direction_id,shape_id\nA,WK,a1,0,up\nA,WK,a2,0,up\nB,X,b1,1,down\n" + more_trips,
         "calendar.txt": "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
         "WK,1,1,1,1,1,0,0,20260101,20261231\n",
         "calendar_dates.txt": "service_id,date,exception_type\nX,20261027,1\nWK,20261028,2\n",
@@ -58,7 +59,7 @@ def make_feed(path):
         "stop_times.txt": "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n"
         "a1,08:00:00,08:00:00,S1,1\na1,08:01:00,08:01:00,S2,2\n"
         "a2,09:00:00,09:00:00,S1,1\na2,09:01:00,09:01:00,S2,2\n"
-        "b1,08:00:20,08:00:20,S2,1\nb1,08:01:20,08:01:20,S1,2\n",
+        "b1,08:00:20,08:00:20,S2,1\nb1,08:01:20,08:01:20,S1,2\n" + more_stop_times,
     }
     with zipfile.ZipFile(path, "w") as z:
         for name, text in files.items():
@@ -237,7 +238,7 @@ TWO_WAY = [
 ]
 
 
-def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = True) -> Path:
+def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = True, parking_both_sides: bool = True) -> Path:
     """Write a complete case into ``root`` (the folder is created): ``case.toml``, the cached sources and the lock.
 
     Rua do Teste is 200 m long. It is a 4.90 m road with 2.00 m parking strips on both sides between 40.5 m and
@@ -246,6 +247,7 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
     case's ``min_street_length_m``. The reports (two files, each with its own date format) are mostly parking
     reports on Rua do Teste. With ``optional=False`` the case has only the sections every case needs (no transit,
     direction, envelope, occurrences, area scan or design references); the cached sources are written all the same.
+    With ``parking_both_sides=False`` the strip on the south side is not mapped.
     """
     root.mkdir()
     to_ll = Transformer.from_crs(CRS, 4326, always_xy=True)
@@ -264,6 +266,8 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
         raw_path(case, source).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
     _, local = street(length=LENGTH, strip_from=40.5, strip_to=150.5)
+    if not parking_both_sides:
+        del local[2]  # the south strip
     features = [
         {"attributes": {"OBJECTID": i, "LAYER": cls}, "geometry": esri_polygon(at_origin(g))} for i, (cls, g) in enumerate(local, 1)
     ]

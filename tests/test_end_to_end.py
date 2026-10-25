@@ -11,13 +11,16 @@ import matplotlib
 import pandas as pd
 import pytest
 from PIL import Image
+from shapely.geometry import box
 
-from mobilidados import cli
-from mobilidados.config import Case, Config
+from mobilidados import cli, figures
+from mobilidados.config import ArcgisQuery, Case, Config, MobilidadosError
 from mobilidados.direction import directions
-from mobilidados.pipeline import run
+from mobilidados.pipeline import Run, run
+from mobilidados.provenance import Lock
+from mobilidados.sources import raw_path
 
-from .builders import write_case
+from .builders import LENGTH, ORIGIN, at_origin, esri_polygon, write_case
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -378,6 +381,12 @@ def test_figures_do_not_depend_on_the_machine_that_draws_them(case, results, tmp
     assert not (figures / "left_over.png").exists()
 
 
+def test_the_trips_per_hour_title_names_the_service_day_whatever_its_weekday(case, results):
+    r = Run(case, offline=True)
+    assert figures.trips_per_hour(r, "en").axes[0].get_title(loc="left") == "Scheduled trips on the street on 2026-10-27"
+    assert figures.trips_per_hour(r, "pt").axes[0].get_title(loc="left") == "Viagens previstas no horário em 2026-10-27"
+
+
 def test_a_case_with_only_the_required_sections_reports_only_the_measurements(tmp_path):
     case = Case.load(write_case(tmp_path / "required", optional=False))
     run(case, offline=True)
@@ -392,3 +401,128 @@ def test_a_case_with_only_the_required_sections_reports_only_the_measurements(tm
     assert [p.name for p in (case.results_dir / "figures").iterdir()] == ["free_width_profile.png"]
     ledger = json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))
     assert [f["id"] for f in ledger["findings"]] == ["length", "free_width", "parking_strips", "gap_1"]
+
+
+def edit(root, old, new):
+    """Replace one passage of a synthetic case's ``case.toml``."""
+    path = root / "case.toml"
+    text = path.read_text(encoding="utf-8")
+    assert text.count(old) == 1, old
+    path.write_text(text.replace(old, new), encoding="utf-8")
+
+
+def ledger_of(case):
+    return {f["id"]: f for f in json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["findings"]}
+
+
+def test_buses_in_one_direction_only_never_meet_and_the_ledger_says_0(tmp_path):
+    root = write_case(tmp_path / "one-direction")
+    edit(root, 'routes = ["10", "20"]', 'routes = ["10"]')
+    edit(root, '  { route = "20", direction_id = 1, stop_id = "S2", s_m = 200.0, heading = -1 },\n', "")
+    case = Case.load(root)
+    run(case, offline=True)
+    encounters = ledger_of(case)["encounters"]
+    assert encounters["values"] == {"per_day": [0], "in_narrow_sections": [0]}
+    assert "implies 0 meetings on 2026-10-27" in encounters["statement"]
+    assert encounters["statement"].endswith("; 0 fall within the sections with parking on both sides.")
+
+
+def test_a_traffic_station_without_an_answer_still_counts_as_checked(tmp_path):
+    case = Case.load(write_case(tmp_path / "unanswered"))
+    cache = raw_path(case, "network_identify")
+    answers = json.loads(cache.read_text(encoding="utf-8"))
+    answers[f"{ORIGIN[0] + 190:.0f},{ORIGIN[1]:.0f}"] = []  # the identify finds no edge at the station at 190 m
+    cache.write_text(json.dumps(answers), encoding="utf-8")
+    run(case, offline=True)
+    assert "an edge is open in both directions at 2 of 3 points checked" in ledger_of(case)["traffic"]["statement"]
+
+
+def test_a_street_with_parking_on_one_side_only_reports_what_does_not_need_both(tmp_path):
+    case = Case.load(write_case(tmp_path / "one-side", parking_both_sides=False))
+    run(case, offline=True)
+    tables = {p.stem for p in (case.results_dir / "tables").glob("*.csv")}
+    assert tables == TABLES - {"width_budget", "overhang_sensitivity", "without_parking", "standards_comparison"}
+    assert pd.read_csv(case.results_dir / "tables" / "summary_by_block.csv").empty  # the header only
+    assert not (case.results_dir / "figures" / "width_budget.png").exists()
+    findings = ledger_of(case)
+    assert findings["length"]["statement"] == "The street axis is 200.00 m long."
+    assert findings["free_width"]["grade"] == "M"
+    assert findings["free_width"]["statement"] == (
+        "No stretch of the street with parking mapped on both sides was found, so there is no free width between parking strips to measure."
+    )
+    assert {"traffic", "transit", "runtime_S1", "encounters"} <= set(findings)
+    assert not {"parking_strips", "width_budget", "without_parking", "parking_removed", "standard_rast06_bus_bus"} & set(findings)
+
+
+def test_a_step_finer_than_10_cm_measures_the_same_stretches(tmp_path):
+    metres = {}
+    for step, checks in [("0.5", "[60.0, 120.0]"), ("0.25", "[60.25, 120.0]")]:
+        root = write_case(tmp_path / step, optional=False)
+        edit(root, "step_m = 1.0", f"step_m = {step}")
+        edit(root, "check_points_s = [60.0, 120.0]", f"check_points_s = {checks}")
+        case = Case.load(root)
+        run(case, offline=True)
+        metres[step] = ledger_of(case)["free_width"]["values"]["metres_two_strips"]
+        assert pd.read_csv(case.results_dir / "tables" / "check_points.csv").s_m.tolist() == json.loads(checks)
+    assert metres["0.5"] == 109.5  # strips from 40.5 m to 150.5 m, cut at the end of block B1 (100 m)
+    assert metres["0.25"] == pytest.approx(metres["0.5"], abs=0.25 + 0.05)  # one step, and the ledger's rounding to 0.1 m
+
+
+def test_a_check_point_beyond_the_axis_is_an_error_naming_it(tmp_path):
+    root = write_case(tmp_path / "beyond", optional=False)
+    edit(root, "check_points_s = [60.0, 120.0]", "check_points_s = [60.0, 250.0]")
+    with pytest.raises(MobilidadosError, match=r"check_points_s: 250.0 m is outside the street axis \(0 to 200.0 m\)"):
+        run(Case.load(root), stages=["profiles"], offline=True)
+
+
+def test_the_area_scan_reads_an_envelope_in_its_own_spatial_reference(tmp_path):
+    root = write_case(tmp_path / "projected")
+    src = Case.load(root).source("area_cartography")
+    assert isinstance(src, ArcgisQuery)
+    degrees = list(src.envelope)
+    metres = [ORIGIN[0] - 400, ORIGIN[1] - 400, ORIGIN[0] + LENGTH + 400, ORIGIN[1] + 500]  # the same area, in the case's CRS
+    edit(root, f"envelope = {degrees}\nout_sr = 3763\nwhere", f"envelope = {metres}\nenvelope_sr = 3763\nout_sr = 3763\nwhere")
+    case = Case.load(root)
+    run(case, stages=["area"], offline=True)
+    streets = pd.read_csv(case.results_dir / "tables" / "area_streets.csv")
+    assert streets[["street", "buses_per_day"]].values.tolist() == [["Rua do Teste", 3]]
+
+
+def test_the_area_scan_does_not_count_a_sliver_of_mapped_parking_as_parking(tmp_path):
+    case = Case.load(write_case(tmp_path / "sliver"))
+    path = raw_path(case, "area_cartography")
+    layer = json.loads(path.read_text(encoding="utf-8"))
+    south = next(f for f in layer["features"] if f["attributes"]["OBJECTID"] == 3)  # the south parking strip
+    south["geometry"] = esri_polygon(at_origin(box(40.5, -2.45 - 0.3, 150.5, -2.45)))  # 0.30 m wide, under MIN_STRIP_M
+    path.write_text(json.dumps(layer), encoding="utf-8")
+    lock = Lock(case.lock_path)
+    lock.record("area_cartography", [path], case.raw_dir)
+    lock.save()
+    run(case, stages=["area"], offline=True)
+    street = pd.read_csv(case.results_dir / "tables" / "area_streets.csv").iloc[0]
+    assert (street.pct_parking_both_sides, street.metres_with_pattern) == (0, 0)
+
+
+def test_a_service_date_without_buses_is_an_error_before_any_passing_is_written(tmp_path):
+    root = write_case(tmp_path / "saturday")
+    edit(root, "service_date = 2026-10-27", "service_date = 2026-10-31")  # a Saturday: no service in the feed
+    case = Case.load(root)
+    with pytest.raises(MobilidadosError, match=r"^route 10 direction 0: no trip serves stop S1 on 2026-10-31 with a following stop"):
+        run(case, offline=True)
+    assert not (case.results_dir / "tables" / "passings.csv").exists()
+
+
+def test_runtime_medians_are_printed_as_numbers_of_the_cases_language(tmp_path):
+    root = write_case(tmp_path / "pt")
+    edit(root, 'language = "en"', 'language = "pt"')
+    edit(root, 'en = "No field observation', 'pt = "Sem observação de campo."\nen = "No field observation')
+    case = Case.load(root)
+    run(case, offline=True)
+    runtimes = case.results_dir / "tables" / "scheduled_runtimes.csv"
+    rt = pd.read_csv(runtimes)
+    rt.loc[rt.ref_stop == "S1", "median_s"] = 62.5  # the median of an even number of whole seconds
+    rt.to_csv(runtimes, index=False)
+    run(case, stages=["ledger"], offline=True)
+    findings = ledger_of(case)
+    assert "mediana de 62,5 s em todas as viagens do horário" in findings["runtime_S1"]["statement"]
+    assert "mediana de 60 s em todas as viagens do horário" in findings["runtime_S2"]["statement"]
