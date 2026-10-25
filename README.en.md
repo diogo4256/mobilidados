@@ -99,7 +99,8 @@ The package is also on [PyPI](https://pypi.org/project/mobilidados/) (`pip insta
 and the city profiles live in this repository: to reproduce a case or start another, clone it as above.
 
 Municipal services are live, so a fresh `fetch` can differ from the reference run: `verify` tells you which
-files changed. A case pins its GTFS feed by SHA-256 and refuses to run on a different one unless you change
+files changed, and `verify --live` downloads the sources again and says which no longer serve the same files,
+without touching the cache. A case pins its GTFS feed by SHA-256 and refuses to run on a different one unless you change
 the pin on purpose; the Lisbon case downloads its feed from the Mobility Database archive, so the exact file
 stays available. `mobilidados snapshot CASE DIR` copies the inputs whose licence allows redistribution into a
 folder for archiving (e.g. on Zenodo); `mobilidados fetch CASE --from-dir DIR` restores them.
@@ -147,7 +148,7 @@ src/mobilidados/data/     vehicle catalogue and design references (graded, with 
 src/mobilidados/locales/  message catalogues for figures, ledger and reports, one file per language
 cities/                   city profiles (services, class codes, licences, parameters) and dated data (feed, reports)
 cases/<case>/             case.toml, sources.lock.json, results/ (committed), data/raw/ (not committed)
-docs/                     evidence standard, methodology, AI tools, adding a city, writing to public bodies, stakeholders
+docs/                     evidence standard, methodology, AI tools, adding a city, writing to public bodies, stakeholders, maintenance
 tests/                    unit tests (synthetic data) and the case reproduction test
 ```
 

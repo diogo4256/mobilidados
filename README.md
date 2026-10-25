@@ -103,7 +103,8 @@ O pacote também está no [PyPI](https://pypi.org/project/mobilidados/) (`pip in
 os perfis de cidade ficam neste repositório: para refazer um caso ou começar outro, clone-o como acima.
 
 Os serviços da Câmara vão sendo atualizados, por isso um `fetch` feito hoje pode não dar exatamente o mesmo que
-a análise de referência; o `verify` diz que ficheiros mudaram. Cada caso fixa o horário GTFS que usou, pela
+a análise de referência; o `verify` diz que ficheiros mudaram, e o `verify --live` volta a descarregar as fontes e diz quais já não
+servem os mesmos ficheiros, sem mexer na cópia guardada. Cada caso fixa o horário GTFS que usou, pela
 impressão digital, e recusa correr com outro, a não ser que se mude isso de propósito. No caso de Lisboa, o
 horário vem do arquivo da Mobility Database, onde o ficheiro exato continua disponível. `mobilidados snapshot
 CASO PASTA` copia para uma pasta os dados que a licença deixa redistribuir, para os guardar (por exemplo no
@@ -154,7 +155,7 @@ src/mobilidados/data/     catálogo de veículos e de referências de desenho de
 src/mobilidados/locales/  textos das figuras, da lista de factos e dos relatórios, um ficheiro por língua
 cities/                   perfis de cidade (serviços, códigos, licenças, parâmetros) e dados datados (horário, ocorrências)
 cases/<caso>/             case.toml, sources.lock.json, results/ (no repositório), data/raw/ (fora dele)
-docs/                     método, ferramentas com IA, nova cidade, cartas a entidades públicas, partes interessadas
+docs/                     método, ferramentas com IA, nova cidade, cartas a entidades públicas, partes interessadas, manutenção
 tests/                    testes com dados fictícios e teste que refaz cada caso
 ```
 
