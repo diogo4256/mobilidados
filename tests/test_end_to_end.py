@@ -16,8 +16,9 @@ from mobilidados import cli
 from mobilidados.config import Case, Config
 from mobilidados.direction import directions
 from mobilidados.pipeline import run
+from mobilidados.sources import raw_path
 
-from .builders import write_case
+from .builders import ORIGIN, write_case
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -392,3 +393,53 @@ def test_a_case_with_only_the_required_sections_reports_only_the_measurements(tm
     assert [p.name for p in (case.results_dir / "figures").iterdir()] == ["free_width_profile.png"]
     ledger = json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))
     assert [f["id"] for f in ledger["findings"]] == ["length", "free_width", "parking_strips", "gap_1"]
+
+
+def edit(root, old, new):
+    """Replace one passage of a synthetic case's ``case.toml``."""
+    path = root / "case.toml"
+    text = path.read_text(encoding="utf-8")
+    assert text.count(old) == 1, old
+    path.write_text(text.replace(old, new), encoding="utf-8")
+
+
+def ledger_of(case):
+    return {f["id"]: f for f in json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["findings"]}
+
+
+def test_buses_in_one_direction_only_never_meet_and_the_ledger_says_0(tmp_path):
+    root = write_case(tmp_path / "one-direction")
+    edit(root, 'routes = ["10", "20"]', 'routes = ["10"]')
+    edit(root, '  { route = "20", direction_id = 1, stop_id = "S2", s_m = 200.0, heading = -1 },\n', "")
+    case = Case.load(root)
+    run(case, offline=True)
+    encounters = ledger_of(case)["encounters"]
+    assert encounters["values"] == {"per_day": [0], "in_narrow_sections": [0]}
+    assert "implies 0 meetings on 2026-10-27" in encounters["statement"]
+    assert encounters["statement"].endswith("; 0 fall within the sections with parking on both sides.")
+
+
+def test_a_traffic_station_without_an_answer_still_counts_as_checked(tmp_path):
+    case = Case.load(write_case(tmp_path / "unanswered"))
+    cache = raw_path(case, "network_identify")
+    answers = json.loads(cache.read_text(encoding="utf-8"))
+    answers[f"{ORIGIN[0] + 190:.0f},{ORIGIN[1]:.0f}"] = []  # the identify finds no edge at the station at 190 m
+    cache.write_text(json.dumps(answers), encoding="utf-8")
+    run(case, offline=True)
+    assert "an edge is open in both directions at 2 of 3 points checked" in ledger_of(case)["traffic"]["statement"]
+
+
+def test_runtime_medians_are_printed_as_numbers_of_the_cases_language(tmp_path):
+    root = write_case(tmp_path / "pt")
+    edit(root, 'language = "en"', 'language = "pt"')
+    edit(root, 'en = "No field observation', 'pt = "Sem observação de campo."\nen = "No field observation')
+    case = Case.load(root)
+    run(case, offline=True)
+    runtimes = case.results_dir / "tables" / "scheduled_runtimes.csv"
+    rt = pd.read_csv(runtimes)
+    rt.loc[rt.ref_stop == "S1", "median_s"] = 62.5  # the median of an even number of whole seconds
+    rt.to_csv(runtimes, index=False)
+    run(case, stages=["ledger"], offline=True)
+    findings = ledger_of(case)
+    assert "mediana de 62,5 s em todas as viagens do horário" in findings["runtime_S1"]["statement"]
+    assert "mediana de 60 s em todas as viagens do horário" in findings["runtime_S2"]["statement"]

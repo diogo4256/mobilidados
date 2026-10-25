@@ -62,6 +62,10 @@ def build(r: Run) -> list[Finding]:
     def n(x: Any, d: int = 2, sign: bool = False) -> str:
         return num(float(x), lang, d, sign)
 
+    def seconds(x: float) -> str:
+        """A median of whole seconds: whole, or halfway between two."""
+        return n(x, 0 if float(x).is_integer() else 1)
+
     def param(x: float) -> str:
         """A parameter as it is set, without trailing zeros (``0.5``, ``3``)."""
         return f"{x:g}".replace(".", ",") if lang == "pt" else f"{x:g}"
@@ -85,7 +89,7 @@ def build(r: Run) -> list[Finding]:
     if cfg.direction and cfg.network:
         edges = r.table("traffic_direction_edges")
         traffic = directions(edges, cfg.network.open_value)
-        points = edges.s_m.nunique()
+        points = len(cfg.direction.stations_s)  # a station where the identify found no edge is checked all the same
         two_way_at = sum(directions(g, cfg.network.open_value) == "two-way" for _, g in edges.groupby("s_m"))
         F.append(
             Finding(
@@ -184,9 +188,9 @@ def build(r: Run) -> list[Finding]:
                         a=ref,
                         b=f"{whole.next_stop} {whole.next_stop_name}",
                         d=int(whole.dist_straight_m),
-                        m_all=f"{whole.median_s:g}",
+                        m_all=seconds(whole.median_s),
                         k_all=n(whole.kmh_at_median_min, 1),
-                        m_day=f"{day.median_s:g}",
+                        m_day=seconds(day.median_s),
                         k_day=n(day.kmh_at_median_min, 1),
                         day=tr.service_date,
                     ),
@@ -339,7 +343,8 @@ def build(r: Run) -> list[Finding]:
         es, ed = r.table("encounters_summary"), r.table("encounters_detail")
         assumed, schedule = es[es.basis == "assumed"], es[es.basis == "schedule"]
         counts = sorted({int(x) for x in assumed.encounters_per_day})
-        in_narrow = sorted({int(x) for x in ed.groupby("speed_kmh").in_narrow_section.sum()})
+        # every assumed speed counts, also one at which no meeting falls in a narrow section (or none happens at all)
+        in_narrow = sorted({int(x) for x in ed.groupby("speed_kmh").in_narrow_section.sum().reindex(assumed.speed_kmh, fill_value=0)})
         check = (
             caveat(
                 "encounters_check",
