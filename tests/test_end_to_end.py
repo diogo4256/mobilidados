@@ -11,14 +11,16 @@ import matplotlib
 import pandas as pd
 import pytest
 from PIL import Image
+from shapely.geometry import box
 
 from mobilidados import cli, figures
 from mobilidados.config import ArcgisQuery, Case, Config, MobilidadosError
 from mobilidados.direction import directions
 from mobilidados.pipeline import Run, run
+from mobilidados.provenance import Lock
 from mobilidados.sources import raw_path
 
-from .builders import LENGTH, ORIGIN, write_case
+from .builders import LENGTH, ORIGIN, at_origin, esri_polygon, write_case
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -484,6 +486,21 @@ def test_the_area_scan_reads_an_envelope_in_its_own_spatial_reference(tmp_path):
     run(case, stages=["area"], offline=True)
     streets = pd.read_csv(case.results_dir / "tables" / "area_streets.csv")
     assert streets[["street", "buses_per_day"]].values.tolist() == [["Rua do Teste", 3]]
+
+
+def test_the_area_scan_does_not_count_a_sliver_of_mapped_parking_as_parking(tmp_path):
+    case = Case.load(write_case(tmp_path / "sliver"))
+    path = raw_path(case, "area_cartography")
+    layer = json.loads(path.read_text(encoding="utf-8"))
+    south = next(f for f in layer["features"] if f["attributes"]["OBJECTID"] == 3)  # the south parking strip
+    south["geometry"] = esri_polygon(at_origin(box(40.5, -2.45 - 0.3, 150.5, -2.45)))  # 0.30 m wide, under MIN_STRIP_M
+    path.write_text(json.dumps(layer), encoding="utf-8")
+    lock = Lock(case.lock_path)
+    lock.record("area_cartography", [path], case.raw_dir)
+    lock.save()
+    run(case, stages=["area"], offline=True)
+    street = pd.read_csv(case.results_dir / "tables" / "area_streets.csv").iloc[0]
+    assert (street.pct_parking_both_sides, street.metres_with_pattern) == (0, 0)
 
 
 def test_a_service_date_without_buses_is_an_error_before_any_passing_is_written(tmp_path):

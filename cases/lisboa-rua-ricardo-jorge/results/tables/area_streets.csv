@@ -31,10 +31,10 @@ Rua João Villaret,144,29,False,49B,4.63,4.57,0,117,0,one-way
 Avenida Cinco de Outubro,345,17,False,749,11.33,6.08,0,63,0,one-way
 Rua Carlos Reis,120,59,False,731,5.3,3.38,0,63,0,one-way
 Rua João Palma Ferreira,384,128,True,208 31B 32B 755 794,10.6,5.37,0,63,0,one-way
-Rua Guilhermina Suggia,288,72,False,727,6.61,6.46,67,60,0,two-way
-Avenida Dom Rodrigo da Cunha,816,179,True,46B 705 708 722 755,13.21,9.71,52,48,0,one-way
+Rua Guilhermina Suggia,288,72,False,727,6.61,6.46,66,60,0,two-way
+Avenida Dom Rodrigo da Cunha,816,179,True,46B 705 708 722 755,13.21,9.71,51,48,0,one-way
 Avenida das Forças Armadas,4014,43,False,207 46B 52B 701 727 731 732 736 738 744 749 754 783 798,11.78,9.1,0,48,0,one-way
-Avenida do Rio de Janeiro,1011,294,True,46B 717 731 744 750 755 783,12.89,10.09,47,39,0,two-way
+Avenida do Rio de Janeiro,1011,294,True,46B 717 731 744 750 755 783,12.89,10.09,45,39,0,two-way
 Rua Pardal Monteiro,435,346,True,208 31B 32B 755 794,14.16,6.65,0,39,0,one-way
 Praça de Alvalade,594,140,False,206 735 736 755 767,11.34,7.02,0,33,0,one-way
 Rua Carlos Mayer,213,21,False,46B 744,9.77,6.49,21,33,0,two-way
@@ -46,7 +46,7 @@ Avenida José Régio,945,158,True,705 708 722 755 794,7.29,7.08,0,15,0,
 Avenida Cidade do Porto,372,110,False,208 722 744 783,12.28,7.0,0,12,0,
 Avenida Santa Joana Princesa,324,158,True,755,14.71,14.13,14,9,0,
 Avenida Almirante Gago Coutinho,4863,146,False,206 208 49B 705 708 717 718 722 735 749 755 793,9.54,8.99,0,6,0,
-Avenida Padre Manuel da Nóbrega,351,199,False,49B 705 718 793,12.1,8.98,13,6,0,
+Avenida Padre Manuel da Nóbrega,351,199,False,49B 705 718 793,12.1,8.98,12,6,0,
 Rua Agostinho Neto,834,119,True,206 45B 798,9.34,7.06,21,6,0,
 Avenida Marechal António de Spínola,5748,39,False,208 31B 32B 705 708 717 718 722 749 755 793 794,15.32,9.91,0,3,0,
 Rua Alferes Malheiro,117,77,False,46B 744,12.72,6.69,0,3,0,

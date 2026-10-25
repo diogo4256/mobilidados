@@ -26,7 +26,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
   - the area scan and `new-case` read and write envelopes in the spatial reference their source states;
   - "em k de n pontos" counts every configured traffic station, also one the routing network gave no answer
     for; runtime medians and years print as numbers of the case's language;
-  - the trips-per-hour figure names the service day without calling it a weekday.
+  - the trips-per-hour figure and the area figure name the service day without calling it a weekday.
+- The area scan no longer counts a sliver of mapped parking narrower than 0.5 m as a parking strip, the rule the
+  case street already followed. In the Lisbon area tables, the share of each street with parking on both sides
+  drops by one or two points on four streets (`pct_parking_both_sides` in `area_streets.csv`) and ten stations
+  change in `area_stations.csv`; which streets have the pattern, their metres with it, and the ledger are unchanged.
 - A run stops when a cached file differs from the sha256 in `sources.lock.json`, which the ledger publishes. A
   missing file is not an error, since a partial run may not need it. An identify cache is locked with the time
   its content last changed.

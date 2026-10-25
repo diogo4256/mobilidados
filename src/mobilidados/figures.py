@@ -199,8 +199,9 @@ def profile(run: Run, lang: Lang) -> Figure:
 
 
 def area(run: Run, lang: Lang) -> Figure | None:
-    sc = run.cfg.area_scan
+    sc, tr = run.cfg.area_scan, run.cfg.transit
     assert sc is not None
+    assert tr is not None
     a = run.table("area_streets").dropna(subset=["free_width_median_m"])
     if a.empty:
         return None
@@ -233,7 +234,7 @@ def area(run: Run, lang: Lang) -> Figure | None:
             weight="bold" if row.street == me else None,
         )
     ax.axhline(sc.reference_m, color=ALERT, lw=0.8, ls=":")
-    ax.set_xlabel(t("buses_day", lang))
+    ax.set_xlabel(t("buses_day", lang, day=tr.service_date))
     ax.set_ylabel(t("median_free", lang))
     ax.set_title(t("area_title", lang), loc="left", fontsize=10, color=INK)
     ax.legend(frameon=False, fontsize=9)
