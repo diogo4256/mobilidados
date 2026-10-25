@@ -199,6 +199,18 @@ def test_a_draft_from_a_case_that_extends_a_city_file_holds_only_the_street(tmp_
     assert Case.load(out).source("feed") == like.source("feed")  # the pinned feed comes from the city file
 
 
+def test_a_draft_outside_the_repository_extends_the_city_file_by_absolute_path(tmp_path, tmp_path_factory, city_layer):
+    root = write_case(tmp_path / "like")
+    split(root)
+    like = Case.load(root)
+    inside = tomllib.loads((write(like, "Rua do Teste", tmp_path / "a") / "case.toml").read_text(encoding="utf-8"))
+    assert inside["extends"] == "../city.toml"
+    elsewhere = tmp_path_factory.mktemp("elsewhere") / "b"
+    outside = tomllib.loads((write(like, "Rua do Teste", elsewhere) / "case.toml").read_text(encoding="utf-8"))
+    assert outside["extends"] == (tmp_path / "city.toml").resolve().as_posix()
+    assert Case.load(elsewhere).source("feed") == like.source("feed")
+
+
 def test_drafting_refuses_to_overwrite_and_reports_a_street_without_buses(tmp_path, city_layer):
     like = Case.load(write_case(tmp_path / "like"))
     out = write(like, "Rua do Teste", tmp_path / "a")
