@@ -446,6 +446,27 @@ def test_a_street_with_parking_on_one_side_only_reports_what_does_not_need_both(
     assert not {"parking_strips", "width_budget", "without_parking", "parking_removed", "standard_rast06_bus_bus"} & set(findings)
 
 
+def test_a_step_finer_than_10_cm_measures_the_same_stretches(tmp_path):
+    metres = {}
+    for step, checks in [("0.5", "[60.0, 120.0]"), ("0.25", "[60.25, 120.0]")]:
+        root = write_case(tmp_path / step, optional=False)
+        edit(root, "step_m = 1.0", f"step_m = {step}")
+        edit(root, "check_points_s = [60.0, 120.0]", f"check_points_s = {checks}")
+        case = Case.load(root)
+        run(case, offline=True)
+        metres[step] = ledger_of(case)["free_width"]["values"]["metres_two_strips"]
+        assert pd.read_csv(case.results_dir / "tables" / "check_points.csv").s_m.tolist() == json.loads(checks)
+    assert metres["0.5"] == 109.5  # strips from 40.5 m to 150.5 m, cut at the end of block B1 (100 m)
+    assert metres["0.25"] == pytest.approx(metres["0.5"], abs=0.25 + 0.05)  # one step, and the ledger's rounding to 0.1 m
+
+
+def test_a_check_point_beyond_the_axis_is_an_error_naming_it(tmp_path):
+    root = write_case(tmp_path / "beyond", optional=False)
+    edit(root, "check_points_s = [60.0, 120.0]", "check_points_s = [60.0, 250.0]")
+    with pytest.raises(MobilidadosError, match=r"check_points_s: 250.0 m is outside the street axis \(0 to 200.0 m\)"):
+        run(Case.load(root), stages=["profiles"], offline=True)
+
+
 def test_a_service_date_without_buses_is_an_error_before_any_passing_is_written(tmp_path):
     root = write_case(tmp_path / "saturday")
     edit(root, "service_date = 2026-10-27", "service_date = 2026-10-31")  # a Saturday: no service in the feed

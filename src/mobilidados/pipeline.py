@@ -134,7 +134,10 @@ def stage_profiles(r: Run) -> None:
     tr = Transformer.from_crs(c.crs, 4326, always_xy=True)
     pts = []
     for s in p.check_points_s:
-        row = df[(df.s - s).abs() < 1e-6].iloc[0]
+        i = (df.s - s).abs().idxmin()  # the station at s (check points are on the grid of stations)
+        if abs(df.s[i] - s) > p.step_m / 2:
+            raise MobilidadosError(f"profiles.check_points_s: {s} m is outside the street axis (0 to {length} m)")
+        row = df.loc[i]
         lon, lat = tr.transform(row.x, row.y)
         pts.append(
             {

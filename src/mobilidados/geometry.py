@@ -121,7 +121,7 @@ def measure_profiles(
         park = prof.intervals(transect, c.x, c.y, nrm, classes["parking"])
         side = prof.intervals(transect, c.x, c.y, nrm, classes["sidewalk"])
         plot = prof.intervals(transect, c.x, c.y, nrm, classes["plot"])
-        r: dict = {"s": round(float(s), 1), "x": round(c.x, 2), "y": round(c.y, 2)}
+        r: dict = {"s": round(float(s), 3), "x": round(c.x, 2), "y": round(c.y, 2)}
         if not road:
             r["note"] = "axis outside the mapped road polygon"
             rows.append(r)
@@ -207,7 +207,7 @@ def narrow_sections(df: pd.DataFrame, step: float) -> list[tuple[float, float, s
     d = df[df["class"] == TWO_STRIPS].sort_values("s")
     runs: list[list] = []
     for s, b in zip(d.s, d.block, strict=True):
-        if runs and abs(s - runs[-1][1] - step) < 1e-6 and runs[-1][2] == b:
+        if runs and abs(s - runs[-1][1] - step) < step / 2 and runs[-1][2] == b:
             runs[-1][1] = s
         else:
             runs.append([s, s, b])
