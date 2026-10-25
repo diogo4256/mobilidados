@@ -5,6 +5,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The README opens with what the Rua Ricardo Jorge example finds, each line with its grade, and says who the
+  tool is for and what it is not (a street design tool, a parking inventory, a bus-speed tracker).
+
 ### Fixed
 
 - `new-case --out` with a folder outside the repository writes `extends` as an absolute path to the city file,
