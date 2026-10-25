@@ -259,7 +259,7 @@ def stage_area(r: Run) -> None:
     src = r.case.source(a.cartography)
     assert isinstance(src, ArcgisQuery)  # checked when the config was loaded
     env = src.envelope
-    (bx0, bx1), (by0, by1) = Transformer.from_crs(4326, r.case.crs, always_xy=True).transform([env[0], env[2]], [env[1], env[3]])
+    (bx0, bx1), (by0, by1) = Transformer.from_crs(src.envelope_sr, r.case.crs, always_xy=True).transform([env[0], env[2]], [env[1], env[3]])
     shapes, n_trips, route_of = area_scan.bus_shapes(r.feed, t.service_date, r.case.crs, (bx0 - 50, by0 - 50, bx1 + 50, by1 + 50))
     stations = area_scan.scan(list(r.axes(a.axes).items()), geometry.Profiler(polys), roles, shapes, n_trips, route_of, step=a.step_m)
     r.save("area_stations", stations)

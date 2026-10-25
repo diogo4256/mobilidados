@@ -13,12 +13,12 @@ import pytest
 from PIL import Image
 
 from mobilidados import cli
-from mobilidados.config import Case, Config, MobilidadosError
+from mobilidados.config import ArcgisQuery, Case, Config, MobilidadosError
 from mobilidados.direction import directions
 from mobilidados.pipeline import run
 from mobilidados.sources import raw_path
 
-from .builders import ORIGIN, write_case
+from .builders import LENGTH, ORIGIN, write_case
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -465,6 +465,19 @@ def test_a_check_point_beyond_the_axis_is_an_error_naming_it(tmp_path):
     edit(root, "check_points_s = [60.0, 120.0]", "check_points_s = [60.0, 250.0]")
     with pytest.raises(MobilidadosError, match=r"check_points_s: 250.0 m is outside the street axis \(0 to 200.0 m\)"):
         run(Case.load(root), stages=["profiles"], offline=True)
+
+
+def test_the_area_scan_reads_an_envelope_in_its_own_spatial_reference(tmp_path):
+    root = write_case(tmp_path / "projected")
+    src = Case.load(root).source("area_cartography")
+    assert isinstance(src, ArcgisQuery)
+    degrees = list(src.envelope)
+    metres = [ORIGIN[0] - 400, ORIGIN[1] - 400, ORIGIN[0] + LENGTH + 400, ORIGIN[1] + 500]  # the same area, in the case's CRS
+    edit(root, f"envelope = {degrees}\nout_sr = 3763\nwhere", f"envelope = {metres}\nenvelope_sr = 3763\nout_sr = 3763\nwhere")
+    case = Case.load(root)
+    run(case, stages=["area"], offline=True)
+    streets = pd.read_csv(case.results_dir / "tables" / "area_streets.csv")
+    assert streets[["street", "buses_per_day"]].values.tolist() == [["Rua do Teste", 3]]
 
 
 def test_a_service_date_without_buses_is_an_error_before_any_passing_is_written(tmp_path):
