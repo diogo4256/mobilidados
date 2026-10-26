@@ -1,7 +1,7 @@
 """Fetch a case's sources into ``data/raw/`` and record them in ``sources.lock.json``.
 
 The source kinds are the models in :mod:`mobilidados.config`: ``arcgis_query``, ``http_file``, ``http_files`` and
-``arcgis_identify`` (point queries made during the analysis, cached in one JSON file and locked afterwards).
+``arcgis_identify`` (point queries made during the analysis, cached in one JSON file and locked as it is saved).
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
         src, dest = case.source(sid), raw_path(case, sid)
         origin = from_dir / dest.name if from_dir is not None else None
         if isinstance(src, ArcgisIdentify) and not (origin and origin.exists()):
-            continue  # filled during the analysis (unless a snapshot has it), locked by `lock_identify_caches`
+            continue  # filled during the analysis (unless a snapshot has it), locked by `IdentifyCache.save`
         if _cached(src, dest) and not refresh:
             log.info("cached   %s", sid)
             continue
@@ -186,28 +186,8 @@ def check_pins(case: Case) -> list[str]:
 
 def check_lock(case: Case) -> list[str]:
     """Cached files whose sha256 differs from the one in the lock, which the ledger publishes. A missing file is not
-    listed (a partial run may lack sources it does not read), nor an identify cache: it grows during an online run
-    and is locked at its end."""
-    identify = {sid for sid, src in case.config.sources.items() if isinstance(src, ArcgisIdentify)}
-    return [rel for sid, rel, status in Lock(case.lock_path).verify(case.raw_dir) if status == "changed" and sid not in identify]
-
-
-def lock_identify_caches(case: Case) -> None:
-    lock = Lock(case.lock_path)
-    for sid, src in case.config.sources.items():
-        p = raw_path(case, sid)
-        if isinstance(src, ArcgisIdentify) and p.exists():
-            lock.record(
-                sid,
-                [p],
-                case.raw_dir,
-                kind=src.kind,
-                url=src.url,
-                layers=src.layers,
-                retrieved_utc=now_utc(),  # kept, with the whole entry, while the cache does not change
-                licence=src.licence,
-            )
-    lock.save()
+    listed: a partial run may lack sources it does not read."""
+    return [rel for _, rel, status in Lock(case.lock_path).verify(case.raw_dir) if status == "changed"]
 
 
 def load_json(case: Case, source_id: str) -> dict[str, Any]:
@@ -225,7 +205,7 @@ class IdentifyCache:
         src = case.source(source_id)
         if not isinstance(src, ArcgisIdentify):
             raise MobilidadosError(f"source {source_id!r} is not an arcgis_identify source")
-        self.src, self.path, self.offline = src, raw_path(case, source_id), offline
+        self.case, self.source_id, self.src, self.path, self.offline = case, source_id, src, raw_path(case, source_id), offline
         self.data: dict[str, list[dict[str, Any]]] = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
         self.dirty = False
 
@@ -240,6 +220,22 @@ class IdentifyCache:
         return self.data[key]
 
     def save(self) -> None:
-        if self.dirty:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            self.path.write_text(json.dumps(self.data, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+        """Write the new answers and lock the file at once, so the lock (which the ledger publishes) never lags behind
+        the cache, even when a run stops further on. Its time is that of the last change."""
+        if not self.dirty:
+            return
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        write_atomic(self.path, json.dumps(self.data, ensure_ascii=False, sort_keys=True).encode())
+        lock = Lock(self.case.lock_path)
+        lock.record(
+            self.source_id,
+            [self.path],
+            self.case.raw_dir,
+            kind=self.src.kind,
+            url=self.src.url,
+            layers=self.src.layers,
+            retrieved_utc=now_utc(),
+            licence=self.src.licence,
+        )
+        lock.save()
+        self.dirty = False

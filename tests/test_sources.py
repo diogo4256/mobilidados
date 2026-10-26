@@ -7,7 +7,7 @@ import pytest
 from mobilidados import arcgis, sources
 from mobilidados.config import Case, MobilidadosError
 from mobilidados.provenance import DOWNLOAD_TIMEOUT_S, Lock
-from mobilidados.sources import IdentifyCache, fetch, lock_identify_caches, raw_path, snapshot
+from mobilidados.sources import IdentifyCache, fetch, raw_path, snapshot
 
 IDENTIFY = """
 [sources.identify]
@@ -104,27 +104,26 @@ def test_a_new_point_is_fetched_once_and_saved(make_case, monkeypatch):
     assert "1500,2500@8" in cache.data
 
 
-def test_identify_caches_are_locked_with_the_time_their_content_last_changed(make_case, monkeypatch):
+def test_an_identify_cache_is_locked_when_it_is_saved_with_the_time_of_its_last_change(make_case, monkeypatch):
     monkeypatch.setattr(arcgis, "identify", lambda *a: [])
-    clock = iter(["2026-10-24T10:00:00+00:00", "2026-10-25T10:00:00+00:00", "2026-10-26T10:00:00+00:00"])
+    clock = iter(["2026-10-24T10:00:00+00:00", "2026-10-25T10:00:00+00:00"])
     monkeypatch.setattr(sources, "now_utc", lambda: next(clock))
     case, cache = identify_cache(make_case)
     cache.get(1000, 2000)
     cache.save()
-    lock_identify_caches(case)
     first = Lock(case.lock_path).entries["identify"]
     assert first["layers"] == "all:1"
     assert list(first["files"]) == ["identify.json"]
     assert first["retrieved_utc"] == "2026-10-24T10:00:00+00:00"
 
-    lock_identify_caches(case)  # nothing new was queried
+    cache.get(1000, 2000)  # already cached: nothing to save, the lock stays as it is
+    cache.save()
     assert Lock(case.lock_path).entries["identify"] == first
 
     cache.get(1100, 2000)
     cache.save()
-    lock_identify_caches(case)
     second = Lock(case.lock_path).entries["identify"]
-    assert second["retrieved_utc"] == "2026-10-26T10:00:00+00:00"  # the cache now holds a query made then
+    assert second["retrieved_utc"] == "2026-10-25T10:00:00+00:00"  # the cache now holds a query made then
     assert second["files"] != first["files"]  # the new checksum
     assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
 

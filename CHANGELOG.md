@@ -46,9 +46,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
   case street already followed. In the Lisbon area tables, the share of each street with parking on both sides
   drops by one or two points on four streets (`pct_parking_both_sides` in `area_streets.csv`) and ten stations
   change in `area_stations.csv`; which streets have the pattern, their metres with it, and the ledger are unchanged.
-- A run stops when a cached file differs from the sha256 in `sources.lock.json`, which the ledger publishes. A
-  missing file is not an error, since a partial run may not need it. An identify cache is locked with the time
-  its content last changed.
+- A run stops when a cached file differs from the sha256 in `sources.lock.json`, which the ledger publishes,
+  routing-network answers (identify caches) included. A missing file is not an error, since a partial run may not
+  need it. An identify cache is locked each time new answers are saved, with the time of that change; before, it
+  was locked only when the whole run ended, after the ledger had published the previous checksum.
 - A `new-case` draft written outside the folder that holds the model case and its city file (with `--out`)
   extends the city file by its absolute path. Before, it got a relative path such as
   `../../../../home/user/mobilidados/cities/lisboa.toml`, which broke as soon as either side moved.
