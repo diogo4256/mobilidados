@@ -48,6 +48,16 @@ def http_get(url: str, params: dict[str, Any] | None = None, timeout: float = RE
     """GET with retries. A service that cannot be reached or keeps answering with an error is a MobilidadosError."""
     try:
         r = session().get(url, params=params, timeout=timeout)
+        if r.headers.get("cf-mitigated") == "challenge":  # waiting would not help: the site asks for a browser
+            raise MobilidadosError(
+                f"{urlparse(url).hostname} refused the request as automated (a Cloudflare challenge, HTTP {r.status_code}) "
+                f"({url}). Waiting will not help; see 'A service moved or is down' in docs/maintaining.md."
+            )
+        if r.status_code in (404, 410):  # waiting would not help either: the address is gone
+            raise MobilidadosError(
+                f"{urlparse(url).hostname} no longer has {url} (HTTP {r.status_code}); the service may have moved. "
+                "See 'A service moved or is down' in docs/maintaining.md."
+            )
         r.raise_for_status()
     except requests.RequestException as e:
         raise MobilidadosError(

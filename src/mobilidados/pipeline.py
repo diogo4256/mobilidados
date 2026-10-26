@@ -24,7 +24,7 @@ from shapely.ops import linemerge, unary_union
 from . import area_scan, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
 from .arcgis import to_line
 from .config import ArcgisQuery, Case, Config, HttpFiles, MobilidadosError
-from .sources import IdentifyCache, check_lock, check_pins, load_json, lock_identify_caches, raw_path
+from .sources import IdentifyCache, check_lock, check_pins, load_json, raw_path
 
 log = logging.getLogger(__name__)
 
@@ -93,13 +93,15 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
     if stale:
         raise MobilidadosError(
             f"cached files do not match the sha256 pinned in the case's configuration: {stale}. "
-            "Restore the pinned files (fetch --from-dir) or update the pin deliberately."
+            "Restore the pinned files (fetch --refresh --from-dir FOLDER) or update the pin deliberately."
         )
     changed = check_lock(case)
     if changed:
         raise MobilidadosError(
             f"cached files do not match the sha256 recorded in sources.lock.json: {changed}. "
-            "Restore the locked files (fetch --from-dir) or fetch them again (fetch --refresh) to update the lock."
+            "Restore the locked files (fetch --refresh --from-dir FOLDER), or take new data deliberately (fetch --refresh); "
+            "a routing-network cache (*identify.json) is not downloaded by fetch: delete it and run without --offline to "
+            "query the service again."
         )
     r = Run(case, offline=offline)
     write_config(case)
@@ -109,8 +111,6 @@ def run(case: Case, stages: list[str] | None = None, offline: bool = False) -> R
     for name in stages or STAGES:
         log.info("[%s]", name)
         STAGES[name](r)
-    if not offline:
-        lock_identify_caches(case)
     return r
 
 
@@ -243,7 +243,8 @@ def stage_occurrences(r: Run) -> None:
     src = r.case.source(o.source)
     assert isinstance(src, HttpFiles)
     assert src.columns is not None
-    pts = occurrences.load_points(sorted(raw_path(r.case, o.source).glob("*.csv")), src.columns, r.case.crs)
+    folder = raw_path(r.case, o.source)  # only the files the source names: anything else in the folder is not its data
+    pts = occurrences.load_points(sorted(folder / f.name for f in src.files), src.columns, r.case.crs)
     r.save("occurrences_files", occurrences.file_summary(pts))
     streets = r.axes(r.cfg.profiles.axes)
     x0, y0, x1, y1 = r.axis.bounds

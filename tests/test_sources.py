@@ -1,13 +1,14 @@
 """Fetching sources, snapshots and restoring from them, pinned downloads and the identify cache, with the network faked."""
 
 import json
+import shutil
 
 import pytest
 
 from mobilidados import arcgis, sources
 from mobilidados.config import Case, MobilidadosError
 from mobilidados.provenance import DOWNLOAD_TIMEOUT_S, Lock
-from mobilidados.sources import IdentifyCache, fetch, lock_identify_caches, raw_path, snapshot
+from mobilidados.sources import IdentifyCache, fetch, raw_path, snapshot
 
 IDENTIFY = """
 [sources.identify]
@@ -104,27 +105,26 @@ def test_a_new_point_is_fetched_once_and_saved(make_case, monkeypatch):
     assert "1500,2500@8" in cache.data
 
 
-def test_identify_caches_are_locked_with_the_time_their_content_last_changed(make_case, monkeypatch):
+def test_an_identify_cache_is_locked_when_it_is_saved_with_the_time_of_its_last_change(make_case, monkeypatch):
     monkeypatch.setattr(arcgis, "identify", lambda *a: [])
-    clock = iter(["2026-10-24T10:00:00+00:00", "2026-10-25T10:00:00+00:00", "2026-10-26T10:00:00+00:00"])
+    clock = iter(["2026-10-24T10:00:00+00:00", "2026-10-25T10:00:00+00:00"])
     monkeypatch.setattr(sources, "now_utc", lambda: next(clock))
     case, cache = identify_cache(make_case)
     cache.get(1000, 2000)
     cache.save()
-    lock_identify_caches(case)
     first = Lock(case.lock_path).entries["identify"]
     assert first["layers"] == "all:1"
     assert list(first["files"]) == ["identify.json"]
     assert first["retrieved_utc"] == "2026-10-24T10:00:00+00:00"
 
-    lock_identify_caches(case)  # nothing new was queried
+    cache.get(1000, 2000)  # already cached: nothing to save, the lock stays as it is
+    cache.save()
     assert Lock(case.lock_path).entries["identify"] == first
 
     cache.get(1100, 2000)
     cache.save()
-    lock_identify_caches(case)
     second = Lock(case.lock_path).entries["identify"]
-    assert second["retrieved_utc"] == "2026-10-26T10:00:00+00:00"  # the cache now holds a query made then
+    assert second["retrieved_utc"] == "2026-10-25T10:00:00+00:00"  # the cache now holds a query made then
     assert second["files"] != first["files"]  # the new checksum
     assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
 
@@ -176,12 +176,69 @@ def test_a_multi_file_download_that_failed_halfway_is_not_taken_as_cached(make_c
     monkeypatch.setattr(sources, "http_get", down)
     with pytest.raises(MobilidadosError, match="did not answer"):
         fetch(case, only=["reports"])
-    assert raw_path(case, "reports").is_dir()  # the folder was created before the first file failed
+    assert not raw_path(case, "reports").exists()  # a download that fails halfway leaves nothing in the cache
 
     monkeypatch.setattr(sources, "http_get", lambda url, timeout: Response())
     fetch(case, only=["reports"])
     assert sorted(p.name for p in raw_path(case, "reports").iterdir()) == ["2024.csv", "2025.csv"]
     assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
+
+
+def test_a_service_now_serving_other_data_is_refused_unless_it_is_taken_deliberately(make_case, monkeypatch):
+    class Response:
+        def __init__(self, content):
+            self.content = content
+
+    served = {"https://example.org/2024.csv": b"2024 rows", "https://example.org/2025.csv": b"2025 rows"}
+    monkeypatch.setattr(sources, "http_get", lambda url, timeout: Response(served[url]))
+    case = Case.load(make_case(DOWNLOADS))
+    fetch(case, only=["reports"])
+    locked = case.lock_path.read_bytes()
+
+    served["https://example.org/2025.csv"] = b"2025 rows, revised"
+    shutil.rmtree(raw_path(case, "reports"))  # another machine, or a lost cache, fetching the case again
+    with pytest.raises(MobilidadosError, match=r"^reports: the service now serves different data .*\['reports/2025.csv'\]"):
+        fetch(case, only=["reports"])
+    assert not raw_path(case, "reports").exists()
+    assert case.lock_path.read_bytes() == locked
+
+    fetch(case, only=["reports"], refresh=True)  # taken deliberately: the lock records the new file
+    assert (raw_path(case, "reports") / "2025.csv").read_bytes() == b"2025 rows, revised"
+    assert case.lock_path.read_bytes() != locked
+    assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
+
+
+def test_restoring_a_multi_file_source_takes_only_the_files_it_names(make_case, tmp_path):
+    case = Case.load(make_case(DOWNLOADS))
+    folder = tmp_path / "archive" / "reports"
+    folder.mkdir(parents=True)
+    for name in ("2024.csv", "2025.csv", "2099.csv", ".DS_Store"):
+        (folder / name).write_text(name)
+    fetch(case, only=["reports"], from_dir=tmp_path / "archive")
+    assert sorted(p.name for p in raw_path(case, "reports").iterdir()) == ["2024.csv", "2025.csv"]
+    (folder / "2025.csv").unlink()
+    with pytest.raises(MobilidadosError, match=r"2025.csv is not in the folder; nothing was written"):
+        fetch(case, only=["reports"], refresh=True, from_dir=tmp_path / "archive")
+
+
+def test_restoring_a_pinned_file_checks_the_pin(make_case, tmp_path):
+    pinned = "0" * 64
+    case = Case.load(
+        make_case(f'[sources.feed]\nkind = "http_file"\nurl = "https://example.org/gtfs.zip"\nsha256 = "{pinned}"\nlicence = "x"\n')
+    )
+    (tmp_path / "archive").mkdir()
+    (tmp_path / "archive" / "feed.zip").write_bytes(b"some other feed")
+    with pytest.raises(MobilidadosError, match="is not the file pinned in the case's configuration; nothing was written"):
+        fetch(case, only=["feed"], from_dir=tmp_path / "archive")
+    assert not raw_path(case, "feed").exists()
+
+
+def test_a_snapshot_of_an_empty_cache_is_refused(make_case, tmp_path):
+    case = Case.load(make_case(REDISTRIBUTABLE_IDENTIFY))
+    with pytest.raises(
+        MobilidadosError, match=r"cannot be archived: \['cartography \(not in the lock\)', 'identify \(not in the lock\)'\]"
+    ):
+        snapshot(case, tmp_path / "snap")
 
 
 def test_snapshot_roundtrip(make_case, tmp_path):
@@ -191,6 +248,7 @@ def test_snapshot_roundtrip(make_case, tmp_path):
         raw_path(src, sid).write_text(json.dumps(payload))
     lock = Lock(src.lock_path)
     lock.record("cartography", [raw_path(src, "cartography")], src.raw_dir, retrieved_utc="2026-10-24T00:00:00+00:00")
+    lock.record("identify", [raw_path(src, "identify")], src.raw_dir)  # as a run locks it when it ends
     lock.save()
 
     left_out = snapshot(src, tmp_path / "snap")
@@ -203,8 +261,46 @@ def test_snapshot_roundtrip(make_case, tmp_path):
     assert entries["cartography"]["retrieved_utc"] == "2026-10-24T00:00:00+00:00"  # original retrieval kept
     assert raw_path(dst, "identify").exists()  # identify caches restore too, so the case can run offline
     assert all(status == "ok" for *_, status in Lock(dst.lock_path).verify(dst.raw_dir))
-    with pytest.raises(MobilidadosError, match="not in the snapshot"):
+    with pytest.raises(MobilidadosError, match=r"street_axes\.json is not in the folder"):
         fetch(dst, only=["street_axes"], from_dir=tmp_path / "snap")
+
+
+def test_restoring_from_a_folder_refuses_files_that_differ_from_the_lock(make_case, tmp_path):
+    case = Case.load(make_case(REDISTRIBUTABLE_IDENTIFY))
+    case.raw_dir.mkdir(parents=True)
+    lock = Lock(case.lock_path)
+    for sid in ("cartography", "identify"):  # the sources this case may redistribute
+        raw_path(case, sid).write_text('{"features": [1]}')
+        lock.record(sid, [raw_path(case, sid)], case.raw_dir)
+    lock.save()
+    snapshot(case, tmp_path / "snap")
+    raw_path(case, "cartography").unlink()  # the cache is lost; the archive is all there is
+
+    (tmp_path / "snap" / "cartography.json").write_text('{"features": [2]}')  # not the archived file
+    with pytest.raises(
+        MobilidadosError, match=r"^cartography: \['cartography.json'\] in .* are missing, extra or different from sources.lock.json"
+    ):
+        fetch(case, only=["cartography"], from_dir=tmp_path / "snap")
+    assert not raw_path(case, "cartography").exists()
+    assert Lock(case.lock_path).entries == lock.entries
+
+    (tmp_path / "snap" / "cartography.json").write_text('{"features": [1]}')
+    fetch(case, only=["cartography"], from_dir=tmp_path / "snap")
+    assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
+
+
+def test_a_snapshot_refuses_a_cache_that_does_not_hold_the_locked_files(make_case, tmp_path):
+    case = Case.load(make_case(REDISTRIBUTABLE_IDENTIFY))
+    case.raw_dir.mkdir(parents=True)
+    raw_path(case, "cartography").write_text('{"features": [1]}')
+    lock = Lock(case.lock_path)
+    lock.record("cartography", [raw_path(case, "cartography")], case.raw_dir)
+    lock.save()
+    raw_path(case, "cartography").write_text('{"features": [2]}')  # changed since it was locked
+    raw_path(case, "identify").write_text("{}")  # never locked
+    with pytest.raises(MobilidadosError, match=r"cannot be archived: \['cartography.json \(changed\)', 'identify \(not in the lock\)'\]"):
+        snapshot(case, tmp_path / "snap")
+    assert not (tmp_path / "snap").exists()
 
 
 def test_a_changed_upstream_file_never_replaces_the_pinned_one(make_case, monkeypatch):

@@ -9,8 +9,9 @@ Every run writes the resolved configuration it used (case, city profile and defa
 
 ## Street axis and stations
 
-The street is the polyline of the municipal street-axis layer with the case's street name (one feature,
-single part). Stations are placed every `profiles.step_m` along it; `s` is the distance from the axis start.
+The street is the polyline of the municipal street-axis layer with the case's street name. A street stored as
+several features or parts is joined when the pieces form one continuous line; one that branches or has gaps is
+refused (`geometry.street_axis`). Stations are placed every `profiles.step_m` along it; `s` is the distance from the axis start.
 Left (`_L`) and right (`_R`) are relative to the direction of increasing `s`; the case names them (e.g. NW / SE)
 in `street.sides`.
 
@@ -114,8 +115,8 @@ spaces: entrances and other gaps inside them are not subtracted.
 ## Citizen reports (`occurrences.py`)
 
 Geolocated records (Lisbon: *Na Minha Rua*) within `occurrences.window_m` of the street are attributed to the
-nearest street axis within `occurrences.max_dist_m`, filtered by category with an anchored regular expression
-(`occurrences.filters`), and counted per 100 m of street. Only streets of at least
+nearest street axis within `occurrences.max_dist_m`, filtered by category with a regular expression searched in
+the category (`occurrences.filters`; Lisbon's starts with `^`, so it must match from the start), and counted per 100 m of street. Only streets of at least
 `occurrences.min_street_length_m` are ranked. `occurrences_files.csv` records, per file, how many records there
 are, how many have coordinates, how many of those have a date that parsed (each file's dates are parsed on their
 own, so files may use different formats) and the dates they span. Counts are small and a report is not a proven
@@ -128,10 +129,11 @@ inside the window, such as the case street; the ledger states this bias.
 A transect method like the case street's runs every `area_scan.step_m` along every street axis in a wider area
 where a scheduled bus shape runs along the street (within `near_m` of the axis and `max_angle` of its direction,
 in `area_scan.scan`), with its own transect half-width and tolerances (`half`, `snap`). Per street: metres with
-buses, buses per weekday, whether buses run in both directions, median and 10th-percentile free width, share of
+buses, buses on the service day, whether buses run in both directions, median and 10th-percentile free width, share of
 stations with parking on both sides, metres below `area_scan.reference_m`, metres combining two-sided parking
-with a free width below `area_scan.threshold_m`, and the traffic direction, read at one station per street
-(`area_scan.rank_streets`). Only two-way streets share the case's pattern: a one-way street needs a single
+with a free width below `area_scan.threshold_m`, and, for streets with enough metres below
+`area_scan.reference_m` (`min_below_ref_m` in `area_scan.rank_streets`), the traffic direction, read at one station
+per street. Only two-way streets share the case's pattern: a one-way street needs a single
 lane. The thresholds are parameters of the analysis, not values from a design document.
 
 ## Design references (`standards.py`)

@@ -90,7 +90,7 @@ class HttpFiles(Source):
 
 
 class ArcgisIdentify(Source):
-    """Point queries made during the analysis; cached in one JSON file and locked afterwards."""
+    """Point queries made during the analysis; cached in one JSON file, locked each time new answers are saved."""
 
     kind: Literal["arcgis_identify"]
     url: Url

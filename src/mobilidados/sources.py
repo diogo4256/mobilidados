@@ -1,7 +1,7 @@
 """Fetch a case's sources into ``data/raw/`` and record them in ``sources.lock.json``.
 
 The source kinds are the models in :mod:`mobilidados.config`: ``arcgis_query``, ``http_file``, ``http_files`` and
-``arcgis_identify`` (point queries made during the analysis, cached in one JSON file and locked afterwards).
+``arcgis_identify`` (point queries made during the analysis, cached in one JSON file and locked as it is saved).
 """
 
 from __future__ import annotations
@@ -35,7 +35,9 @@ def _files_of(path: Path) -> list[Path]:
 
 
 def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from_dir: Path | None = None) -> None:
-    """Download (or copy from ``from_dir``, e.g. an archived snapshot) every source that is not cached yet."""
+    """Download (or copy from ``from_dir``, e.g. an archived snapshot) every source that is not cached yet, or every
+    source with ``refresh``. A source the lock knows must come out as exactly the files it records, or nothing is
+    written: always from a folder, and from its service unless ``refresh`` takes the new data deliberately."""
     case.raw_dir.mkdir(parents=True, exist_ok=True)
     lock = Lock(case.lock_path)
     snapshot_meta = (
@@ -45,25 +47,62 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
         src, dest = case.source(sid), raw_path(case, sid)
         origin = from_dir / dest.name if from_dir is not None else None
         if isinstance(src, ArcgisIdentify) and not (origin and origin.exists()):
-            continue  # filled during the analysis (unless a snapshot has it), locked by `lock_identify_caches`
+            continue  # filled during the analysis (unless a snapshot has it), locked by `IdentifyCache.save`
         if _cached(src, dest) and not refresh:
             log.info("cached   %s", sid)
             continue
-        if origin is not None:
-            if not origin.exists():
-                raise MobilidadosError(f"{sid}: {origin} is not in the snapshot; fetch it without --from-dir")
-            if origin.is_dir():
-                shutil.copytree(origin, dest, dirs_exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=case.raw_dir) as tmp:  # the cache is only touched once the files pass
+            new = Path(tmp) / dest.name
+            if origin is not None:
+                _copy(src, origin, new)
+                # keep the original retrieval metadata: from the lock, else from the snapshot's _snapshot.json
+                meta = lock.entries.get(sid) or snapshot_meta.get(sid) or {"kind": src.kind, "retrieved_utc": "unknown"}
             else:
-                shutil.copy2(origin, dest)
-            log.info("copied   %s <- %s", sid, origin)
-            # keep the original retrieval metadata: from the lock, else from the snapshot's _snapshot.json
-            meta = lock.entries.get(sid) or snapshot_meta.get(sid) or {"kind": src.kind, "retrieved_utc": "unknown"}
-        else:
-            meta = _download(src, dest)
-            log.info("fetched  %s", sid)
+                meta = _download(src, new)
+            if isinstance(src, HttpFile) and src.sha256 and sha256_file(new) != src.sha256:
+                raise MobilidadosError(f"{sid}: {origin} is not the file pinned in the case's configuration; nothing was written.")
+            differ = _differences(lock, sid, new, dest.relative_to(case.raw_dir))
+            if differ and origin is not None:
+                raise MobilidadosError(
+                    f"{sid}: {differ} in {from_dir} are missing, extra or different from sources.lock.json, so this is not "
+                    "the data the case was run with; nothing was written."
+                )
+            if differ and not refresh:
+                raise MobilidadosError(
+                    f"{sid}: the service now serves different data from what sources.lock.json records ({differ}); nothing "
+                    "was written. `mobilidados verify CASE --live` lists the differences; `fetch --refresh` takes the new "
+                    "data deliberately (the lock changes, and the results may), and `fetch --refresh --from-dir FOLDER` "
+                    "restores the locked files from an archive."
+                )
+            if dest.is_dir():
+                shutil.rmtree(dest)
+            new.replace(dest)
+        log.info("%s %s", "copied  " if origin is not None else "fetched ", sid)
         lock.record(sid, _files_of(dest), case.raw_dir, **{k: v for k, v in meta.items() if k != "files"})
         lock.save()  # after each source, so a failure further on does not lose what was already fetched
+
+
+def _copy(src: AnySource, origin: Path, new: Path) -> None:
+    """Copy a source from a folder: for a multi-file source, only the files it names."""
+    if not origin.exists():
+        raise MobilidadosError(f"{origin} is not in the folder; fetch the source without --from-dir")
+    if isinstance(src, HttpFiles):
+        new.mkdir()
+        for f in src.files:
+            if not (origin / f.name).is_file():
+                raise MobilidadosError(f"{origin / f.name} is not in the folder; nothing was written")
+            shutil.copy2(origin / f.name, new / f.name)
+    else:
+        shutil.copy2(origin, new)
+
+
+def _differences(lock: Lock, sid: str, new: Path, rel: Path) -> list[str]:
+    """Files that are missing, extra or different, compared with the lock's entry for ``sid`` (none if it has no entry)."""
+    locked = {f: m["sha256"] for f, m in lock.entries.get(sid, {}).get("files", {}).items()}
+    if not locked:
+        return []
+    offered = {(rel / p.relative_to(new) if new.is_dir() else rel).as_posix(): sha256_file(p) for p in _files_of(new)}
+    return sorted(f for f in locked.keys() | offered.keys() if locked.get(f) != offered.get(f))
 
 
 def snapshot(case: Case, out_dir: Path) -> list[str]:
@@ -71,20 +110,26 @@ def snapshot(case: Case, out_dir: Path) -> list[str]:
     lock metadata in ``_snapshot.json``, ready to archive (e.g. on Zenodo) and restore with ``fetch --from-dir``.
     Returns the ids of the sources left out, which a user of the snapshot fetches from their origin."""
     lock = Lock(case.lock_path)
+    archived = sorted(sid for sid, src in case.config.sources.items() if src.redistributable)
+    # an archive is only worth anything if it holds exactly the locked files: refuse a cache with one missing or changed
+    bad = [f"{f} ({status})" for sid, f, status in lock.verify(case.raw_dir) if sid in archived and status != "ok"]
+    bad += [f"{sid} (not in the lock)" for sid in archived if sid not in lock.entries]
+    if bad:
+        raise MobilidadosError(
+            f"the cache does not hold the locked files, so it cannot be archived: {bad}. Fetch them first, or restore them "
+            "with `fetch --refresh --from-dir`; a routing-network cache is made by a run without --offline."
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
-    meta, skipped = {}, []
-    for sid, src in case.config.sources.items():
-        p = raw_path(case, sid)
-        if not src.redistributable or not p.exists():
-            skipped.append(sid)
-            continue
-        if p.is_dir():
-            shutil.copytree(p, out_dir / p.name, dirs_exist_ok=True)
-        else:
-            shutil.copy2(p, out_dir / p.name)
-        meta[sid] = lock.entries.get(sid, {}) | {"licence": src.licence, "attribution": src.attribution}
+    meta = {}
+    for sid in archived:
+        for rel in lock.entries[sid]["files"]:  # the locked files only, not whatever else the folder holds
+            (out_dir / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(case.raw_dir / rel, out_dir / rel)
+        src = case.config.sources[sid]
+        meta[sid] = lock.entries[sid] | {"licence": src.licence, "attribution": src.attribution}
         log.info("added    %s", sid)
     (out_dir / "_snapshot.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    skipped = [sid for sid in case.config.sources if sid not in archived]
     for sid in skipped:
         log.info("left out %s (not marked redistributable)", sid)
     return skipped
@@ -166,28 +211,8 @@ def check_pins(case: Case) -> list[str]:
 
 def check_lock(case: Case) -> list[str]:
     """Cached files whose sha256 differs from the one in the lock, which the ledger publishes. A missing file is not
-    listed (a partial run may lack sources it does not read), nor an identify cache: it grows during an online run
-    and is locked at its end."""
-    identify = {sid for sid, src in case.config.sources.items() if isinstance(src, ArcgisIdentify)}
-    return [rel for sid, rel, status in Lock(case.lock_path).verify(case.raw_dir) if status == "changed" and sid not in identify]
-
-
-def lock_identify_caches(case: Case) -> None:
-    lock = Lock(case.lock_path)
-    for sid, src in case.config.sources.items():
-        p = raw_path(case, sid)
-        if isinstance(src, ArcgisIdentify) and p.exists():
-            lock.record(
-                sid,
-                [p],
-                case.raw_dir,
-                kind=src.kind,
-                url=src.url,
-                layers=src.layers,
-                retrieved_utc=now_utc(),  # kept, with the whole entry, while the cache does not change
-                licence=src.licence,
-            )
-    lock.save()
+    listed: a partial run may lack sources it does not read."""
+    return [rel for _, rel, status in Lock(case.lock_path).verify(case.raw_dir) if status == "changed"]
 
 
 def load_json(case: Case, source_id: str) -> dict[str, Any]:
@@ -205,7 +230,7 @@ class IdentifyCache:
         src = case.source(source_id)
         if not isinstance(src, ArcgisIdentify):
             raise MobilidadosError(f"source {source_id!r} is not an arcgis_identify source")
-        self.src, self.path, self.offline = src, raw_path(case, source_id), offline
+        self.case, self.source_id, self.src, self.path, self.offline = case, source_id, src, raw_path(case, source_id), offline
         self.data: dict[str, list[dict[str, Any]]] = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
         self.dirty = False
 
@@ -220,6 +245,22 @@ class IdentifyCache:
         return self.data[key]
 
     def save(self) -> None:
-        if self.dirty:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            self.path.write_text(json.dumps(self.data, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+        """Write the new answers and lock the file at once, so the lock (which the ledger publishes) never lags behind
+        the cache, even when a run stops further on. Its time is that of the last change."""
+        if not self.dirty:
+            return
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        write_atomic(self.path, json.dumps(self.data, ensure_ascii=False, sort_keys=True).encode())
+        lock = Lock(self.case.lock_path)
+        lock.record(
+            self.source_id,
+            [self.path],
+            self.case.raw_dir,
+            kind=self.src.kind,
+            url=self.src.url,
+            layers=self.src.layers,
+            retrieved_utc=now_utc(),
+            licence=self.src.licence,
+        )
+        lock.save()
+        self.dirty = False

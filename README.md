@@ -93,22 +93,24 @@ Cada facto da lista traz uma letra que diz em que se apoia ([docs/evidence-stand
 ```bash
 git clone https://github.com/diogo4256/mobilidados.git && cd mobilidados
 uv sync                      # ou: python -m venv .venv && .venv/bin/pip install -e .
-uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge     # descarrega as fontes e escreve sources.lock.json
-uv run mobilidados verify cases/lisboa-rua-ricardo-jorge    # confere cada ficheiro com a impressão digital guardada
-uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # escreve os resultados em results/
-git diff --exit-code cases/lisboa-rua-ricardo-jorge/results/tables   # dá o mesmo que a análise de referência?
+uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge     # descarrega as fontes e confere-as com o sources.lock.json
+uv run mobilidados verify cases/lisboa-rua-ricardo-jorge    # confere cada ficheiro guardado com a impressão digital registada
+uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # escreve os resultados em results/ (da primeira vez, consulta a rede viária)
+git diff --exit-code cases/lisboa-rua-ricardo-jorge         # dá o mesmo que a análise de referência?
 ```
 
 O pacote também está no [PyPI](https://pypi.org/project/mobilidados/) (`pip install mobilidados`), mas os casos e
 os perfis de cidade ficam neste repositório: para refazer um caso ou começar outro, clone-o como acima.
 
-Os serviços da Câmara vão sendo atualizados, por isso um `fetch` feito hoje pode não dar exatamente o mesmo que
-a análise de referência; o `verify` diz que ficheiros mudaram, e o `verify --live` volta a descarregar as fontes e diz quais já não
-servem os mesmos ficheiros, sem mexer na cópia guardada. Cada caso fixa o horário GTFS que usou, pela
+Os serviços da Câmara vão sendo atualizados. Se uma fonte já não servir os ficheiros que a análise de referência
+usou, o `fetch` recusa-os e não escreve nada; o `verify --live` volta a descarregar as fontes e diz quais mudaram,
+sem mexer na cópia guardada, e o `fetch --refresh` aceita os dados novos de propósito (o `sources.lock.json` muda,
+e os resultados podem mudar). Cada caso fixa o horário GTFS que usou, pela
 impressão digital, e recusa correr com outro, a não ser que se mude isso de propósito. No caso de Lisboa, o
 horário vem do arquivo da Mobility Database, onde o ficheiro exato continua disponível. `mobilidados snapshot
 CASO PASTA` copia para uma pasta os dados que a licença deixa redistribuir, para os guardar (por exemplo no
-Zenodo); `mobilidados fetch CASO --from-dir PASTA` volta a pô-los no sítio.
+Zenodo); `mobilidados fetch CASO --from-dir PASTA` volta a pô-los no sítio, só se forem exatamente os ficheiros
+registados.
 
 ## Ferramentas com IA (opcionais)
 

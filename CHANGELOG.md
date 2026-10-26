@@ -19,6 +19,22 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- A case's inputs can no longer change without anyone noticing:
+  - `fetch` rewrote the lock to match whatever a service now served, so `verify` then reported nothing. It now
+    prepares each source in a temporary folder and compares it with the lock before touching the cache: from a
+    service, different data is refused unless `--refresh` takes it deliberately; from a folder (`--from-dir`), only
+    exactly the locked files, and any pin, are accepted. A download that fails halfway leaves nothing in the cache.
+  - A multi-file source takes, and the occurrences stage reads, only the files the source names; a file left in
+    its folder is not read.
+  - `snapshot` copied whatever the cache held, an empty folder included, and logged sources it had not found as
+    not redistributable. It now refuses a cache that does not hold exactly the locked files of every
+    redistributable source, and copies only those files.
+  - `verify` no longer fails on a routing-network cache that only a run makes (it lists it as `later`); the data
+    test fails, listing the files, instead of being skipped when the cache does not hold the locked ones; and
+    `make reproduce` also fails when the run changed the lock.
+- A site that refuses a request as automated (a Cloudflare challenge) and an address that no longer exists (404)
+  are reported as such, instead of as a service that may be down for a while; the run's remedies name `--refresh`
+  where it is needed.
 - The AI tools now do what the documentation promised, that nothing a model says counts as evidence by itself:
   - `check-claims` kept a "supported" verdict that no check backed (no evidence quote and no cited finding), and
     checked numbers only when the model labelled the claim a number. A supported claim now needs a verified quote
@@ -49,16 +65,17 @@ and the project uses [Semantic Versioning](https://semver.org/).
   case street already followed. In the Lisbon area tables, the share of each street with parking on both sides
   drops by one or two points on four streets (`pct_parking_both_sides` in `area_streets.csv`) and ten stations
   change in `area_stations.csv`; which streets have the pattern, their metres with it, and the ledger are unchanged.
-- A run stops when a cached file differs from the sha256 in `sources.lock.json`, which the ledger publishes. A
-  missing file is not an error, since a partial run may not need it. An identify cache is locked with the time
-  its content last changed.
+- A run stops when a cached file differs from the sha256 in `sources.lock.json`, which the ledger publishes,
+  routing-network answers (identify caches) included. A missing file is not an error, since a partial run may not
+  need it. An identify cache is locked each time new answers are saved, with the time of that change; before, it
+  was locked only when the whole run ended, after the ledger had published the previous checksum.
 - A `new-case` draft written outside the folder that holds the model case and its city file (with `--out`)
   extends the city file by its absolute path. Before, it got a relative path such as
   `../../../../home/user/mobilidados/cities/lisboa.toml`, which broke as soon as either side moved.
-- The figures no longer depend on the machine that draws them. They start from matplotlib's own defaults, so a
+- The figures no longer depend on a machine's matplotlib settings. They start from matplotlib's own defaults, so a
   local `matplotlibrc` (another font, for example) no longer changes them, and a figure whose pixels are unchanged
-  keeps its file, since the PNG compression differs from one platform to another. Running the figures stage
-  anywhere now leaves the committed figures as they are when nothing changed. The figures stage also removes the
+  keeps its file, since the PNG compression differs from one platform to another. With the locked package
+  versions, the Lisbon figures drawn on Linux and on macOS were identical pixel for pixel. The figures stage also removes the
   figures an earlier configuration made, which a full run used to do.
 
 ## [0.3.0] - 2026-10-24

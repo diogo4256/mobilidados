@@ -58,6 +58,31 @@ def test_verify_lists_only_the_files_that_differ_and_exits_1(make_case, capsys):
     assert lines[1] == "1/2 files match the lock"
 
 
+IDENTIFY = """
+[sources.identify]
+kind = "arcgis_identify"
+url = "https://example.org/MapServer/identify"
+layers = "all:1"
+sr = 3763
+licence = "x"
+"""
+
+
+def test_verify_does_not_fail_on_a_routing_network_cache_that_a_run_makes(make_case, capsys):
+    case = Case.load(make_case(IDENTIFY))
+    case.raw_dir.mkdir(parents=True)
+    lock = Lock(case.lock_path)
+    for sid in ("cartography", "identify"):
+        raw_path(case, sid).write_text("{}")
+        lock.record(sid, [raw_path(case, sid)], case.raw_dir)
+    lock.save()
+    raw_path(case, "identify").unlink()  # a fresh clone: fetch does not make it, the first online run does
+    assert cli.main(["verify", str(case.root)]) == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[0].split()[:3] == ["later", "identify", "identify.json"]
+    assert lines[1] == "1/2 files match the lock"
+
+
 def test_run_reports_an_unknown_stage_as_an_error(make_case, capsys):
     assert cli.main(["run", str(make_case()), "--stages", "nope"]) == 2
     assert capsys.readouterr().err.startswith("error: unknown stages ['nope']")

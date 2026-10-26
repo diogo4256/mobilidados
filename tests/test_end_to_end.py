@@ -13,11 +13,11 @@ import pytest
 from PIL import Image
 from shapely.geometry import box
 
-from mobilidados import cli, figures
+from mobilidados import arcgis, cli, figures
 from mobilidados.config import ArcgisQuery, Case, Config, MobilidadosError
 from mobilidados.direction import directions
 from mobilidados.pipeline import Run, run
-from mobilidados.provenance import Lock
+from mobilidados.provenance import Lock, sha256_file
 from mobilidados.sources import raw_path
 
 from .builders import LENGTH, ORIGIN, at_origin, esri_polygon, write_case
@@ -433,8 +433,45 @@ def test_a_traffic_station_without_an_answer_still_counts_as_checked(tmp_path):
     answers = json.loads(cache.read_text(encoding="utf-8"))
     answers[f"{ORIGIN[0] + 190:.0f},{ORIGIN[1]:.0f}"] = []  # the identify finds no edge at the station at 190 m
     cache.write_text(json.dumps(answers), encoding="utf-8")
+    lock = Lock(case.lock_path)
+    lock.record("network_identify", [cache], case.raw_dir)  # as the run that got that answer would have
+    lock.save()
     run(case, offline=True)
     assert "an edge is open in both directions at 2 of 3 points checked" in ledger_of(case)["traffic"]["statement"]
+
+
+def test_the_ledger_publishes_the_checksum_of_the_identify_answers_the_run_used(tmp_path, monkeypatch):
+    case = Case.load(write_case(tmp_path / "asked"))
+    cache = raw_path(case, "network_identify")
+    answers = json.loads(cache.read_text(encoding="utf-8"))
+    station = f"{ORIGIN[0] + 100:.0f},{ORIGIN[1]:.0f}"  # a traffic-direction station: this run has to ask about it
+    answer = answers.pop(station)
+    cache.write_text(json.dumps(answers), encoding="utf-8")
+    lock = Lock(case.lock_path)
+    lock.record("network_identify", [cache], case.raw_dir)
+    lock.save()
+    monkeypatch.setattr(arcgis, "identify", lambda *a: answer)
+    run(case)
+    assert station in json.loads(cache.read_text(encoding="utf-8"))
+    published = json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["sources"]["network_identify"]
+    assert published["files"]["network_identify.json"]["sha256"] == sha256_file(cache)
+
+
+def test_a_run_refuses_identify_answers_that_differ_from_the_lock(tmp_path):
+    case = Case.load(write_case(tmp_path / "edited"))
+    cache = raw_path(case, "network_identify")
+    cache.write_text(cache.read_text(encoding="utf-8").replace("Traversable", "Prohibited", 1), encoding="utf-8")
+    with pytest.raises(MobilidadosError, match=r"\['network_identify.json'\].*delete it and run without --offline"):
+        run(case, offline=True)
+
+
+def test_a_file_the_reports_source_does_not_name_is_not_read(results, tmp_path):
+    case = Case.load(write_case(tmp_path / "extra"))
+    folder = raw_path(case, "reports")
+    shutil.copy(folder / "2024.csv", folder / "2099.csv")  # left in the folder: not one of the source's files
+    run(case, offline=True)
+    for name in ("occurrences_by_street", "occurrences_by_year", "occurrences_files"):
+        assert (case.results_dir / "tables" / f"{name}.csv").read_text() == (results / "tables" / f"{name}.csv").read_text()
 
 
 def test_a_street_with_parking_on_one_side_only_reports_what_does_not_need_both(tmp_path):

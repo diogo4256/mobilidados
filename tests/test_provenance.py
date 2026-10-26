@@ -34,8 +34,9 @@ def test_http_get_applies_the_default_timeout_and_raises_on_an_error_status(monk
     seen: dict = {}
 
     class Response:
-        def __init__(self, status):
-            self.status = status
+        def __init__(self, status, headers=None):
+            self.status_code = self.status = status
+            self.headers = headers or {}
 
         def raise_for_status(self):
             if self.status >= 400:
@@ -44,6 +45,10 @@ def test_http_get_applies_the_default_timeout_and_raises_on_an_error_status(monk
     class Session:
         def get(self, url, params, timeout):
             seen.update(url=url, params=params, timeout=timeout)
+            if url.endswith("/challenged"):
+                return Response(403, {"cf-mitigated": "challenge"})
+            if url.endswith("/gone"):
+                return Response(404)
             return Response(500 if url.endswith("/broken") else 200)
 
     monkeypatch.setattr(provenance, "session", Session)
@@ -51,6 +56,12 @@ def test_http_get_applies_the_default_timeout_and_raises_on_an_error_status(monk
     assert seen == {"url": "https://example.org/ok", "params": {"f": "json"}, "timeout": REQUEST_TIMEOUT_S}
     with pytest.raises(MobilidadosError, match=r"^example.org did not answer as expected, even after retrying .*HTTP 500"):
         provenance.http_get("https://example.org/broken")
+    with pytest.raises(MobilidadosError, match=r"^example.org refused the request as automated \(a Cloudflare challenge, HTTP 403\)"):
+        provenance.http_get("https://example.org/challenged")
+    with pytest.raises(
+        MobilidadosError, match=r"^example.org no longer has https://example.org/gone \(HTTP 404\); the service may have moved"
+    ):
+        provenance.http_get("https://example.org/gone")
 
 
 def test_fetching_identical_data_again_leaves_the_lock_entry_unchanged(tmp_path):

@@ -25,8 +25,8 @@ def test_results_reproduce(case_dir, tmp_path):
     """Re-run the case from the locked cache into a scratch folder and compare every table, the findings and the
     recorded configuration with the committed ones."""
     case = Case.load(case_dir)
-    if any(s != "ok" for *_, s in Lock(case.lock_path).verify(case.raw_dir)):
-        pytest.skip("cached sources missing or different from the lock (run `mobilidados fetch`)")
+    differ = [f"{f} ({s})" for _, f, s in Lock(case.lock_path).verify(case.raw_dir) if s != "ok"]
+    assert not differ, f"the cache does not hold the locked sources, so the case cannot be re-run from it: {differ}"
     from mobilidados.pipeline import run
 
     run(Case.load(case_dir, results_dir=tmp_path), offline=True)
