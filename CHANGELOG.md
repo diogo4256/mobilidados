@@ -19,6 +19,16 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- The AI tools now do what the documentation promised, that nothing a model says counts as evidence by itself:
+  - `check-claims` kept a "supported" verdict that no check backed (no evidence quote and no cited finding), and
+    checked numbers only when the model labelled the claim a number. A supported claim now needs a verified quote
+    of at least 12 characters or a cited finding that exists, and its numbers must be in them, whatever its kind;
+    otherwise it becomes `needs_human`.
+  - `discover` followed redirects to any host. It no longer follows them: the agent is told the new address and
+    may request it if its host is allowed. The docs say class codes are only checked when `--bbox` gives a test
+    area.
+  - A cut-off answer says what can be done (a lower `MOBILIDADOS_EFFORT`, a shorter draft) instead of naming a
+    setting the command line does not have.
 - Cases on other streets no longer break or mislead where the Lisbon case did not reach. None of these changes a
   Lisbon number:
   - buses in one direction only, or no meeting at an assumed speed: the encounters statement gives 0 instead of
