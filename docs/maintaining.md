@@ -48,14 +48,20 @@ from the earlier run stay as they were, and the new results are added next to th
 1. **Find out which.** A 503 or a maintenance page from the publisher (the Lisbon portal redirects to
    `offline.cm-lisboa.pt`) means the service is down; a 404, or an address that no longer exists, means it moved.
    A Cloudflare challenge ("Just a moment...") means the request was refused as automated, which can depend on
-   where it comes from: try from another network before concluding the service is down.
+   where it comes from: `mobilidados` says so, and a browser gets through. The Lisbon portal answered this way
+   for every page in October 2026, while its file downloads gave the maintenance page.
 2. **If it moved:** find the new address of the same file, download it and compare its sha256 with the lock. If
    it is the same file, update the address in the dated city file; `results/config.json` records the change and
    the results stay the same. If it is a different file, it is new data (see above).
-3. **If it is down:** restore the inputs from the case's archive with `mobilidados fetch CASE --from-dir FOLDER`,
-   which checks each file against the lock. Without an archive, the case cannot be re-run from scratch until the
-   service is back; say so where the case is cited.
-4. **Sources whose licence is not stated** cannot be archived publicly. For the Carris GTFS, the Mobility
+3. **If it is down:** restore the inputs from the case's archive with `mobilidados fetch CASE --from-dir FOLDER`.
+   A source the lock knows is restored only if every locked file is there with the same sha256; otherwise
+   nothing is copied. Without an archive, the case cannot be re-run from scratch until the service is back; say
+   so where the case is cited.
+4. **If it refuses automated requests:** download the files in a browser into a folder laid out as the case's
+   `data/raw/` (a multi-file source in a folder named after it, such as `na_minha_rua/2017.csv`), and restore
+   them with `mobilidados fetch CASE --from-dir FOLDER --only SOURCE`, which checks them against the lock in the
+   same way.
+5. **Sources whose licence is not stated** cannot be archived publicly. For the Carris GTFS, the Mobility
    Database archive keeps the exact file the case pins. The routing-network answers are cached during the run
    and stay on the machine that ran it; if the service moves, the address in the city profile has to be updated
    (the Lisboa Interativa address embeds a backup date and changes from time to time).
@@ -63,7 +69,8 @@ from the earlier run stay as they were, and the new results are added next to th
 ## Archiving a case's inputs
 
 `mobilidados snapshot CASE FOLDER` copies the cached inputs whose licence allows redistribution
-(`redistributable = true` in the city profile), with their lock metadata in `_snapshot.json`. Publish the folder
+(`redistributable = true` in the city profile), with their lock metadata in `_snapshot.json`. It refuses a cache
+that does not hold exactly the locked files, so an archive is never missing a file. Publish the folder
 on an archive that gives a permanent identifier, such as [Zenodo](https://zenodo.org) (title naming the case and
 the date of the data, the licence of the inputs, and the attribution their publishers require), and add the DOI
 to the case's `README.md`. Anyone can then rebuild the case with `mobilidados fetch CASE --from-dir FOLDER`

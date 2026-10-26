@@ -191,6 +191,7 @@ def test_snapshot_roundtrip(make_case, tmp_path):
         raw_path(src, sid).write_text(json.dumps(payload))
     lock = Lock(src.lock_path)
     lock.record("cartography", [raw_path(src, "cartography")], src.raw_dir, retrieved_utc="2026-10-24T00:00:00+00:00")
+    lock.record("identify", [raw_path(src, "identify")], src.raw_dir)  # as a run locks it when it ends
     lock.save()
 
     left_out = snapshot(src, tmp_path / "snap")
@@ -205,6 +206,41 @@ def test_snapshot_roundtrip(make_case, tmp_path):
     assert all(status == "ok" for *_, status in Lock(dst.lock_path).verify(dst.raw_dir))
     with pytest.raises(MobilidadosError, match="not in the snapshot"):
         fetch(dst, only=["street_axes"], from_dir=tmp_path / "snap")
+
+
+def test_restoring_from_a_folder_refuses_files_that_differ_from_the_lock(make_case, tmp_path):
+    case = Case.load(make_case(REDISTRIBUTABLE_IDENTIFY))
+    case.raw_dir.mkdir(parents=True)
+    raw_path(case, "cartography").write_text('{"features": [1]}')
+    lock = Lock(case.lock_path)
+    lock.record("cartography", [raw_path(case, "cartography")], case.raw_dir)
+    lock.save()
+    snapshot(case, tmp_path / "snap")
+    raw_path(case, "cartography").unlink()  # the cache is lost; the archive is all there is
+
+    (tmp_path / "snap" / "cartography.json").write_text('{"features": [2]}')  # not the archived file
+    with pytest.raises(MobilidadosError, match=r"^cartography: \['cartography.json'\] in .* differ from sources.lock.json"):
+        fetch(case, only=["cartography"], from_dir=tmp_path / "snap")
+    assert not raw_path(case, "cartography").exists()
+    assert Lock(case.lock_path).entries == lock.entries
+
+    (tmp_path / "snap" / "cartography.json").write_text('{"features": [1]}')
+    fetch(case, only=["cartography"], from_dir=tmp_path / "snap")
+    assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
+
+
+def test_a_snapshot_refuses_a_cache_that_does_not_hold_the_locked_files(make_case, tmp_path):
+    case = Case.load(make_case(REDISTRIBUTABLE_IDENTIFY))
+    case.raw_dir.mkdir(parents=True)
+    raw_path(case, "cartography").write_text('{"features": [1]}')
+    lock = Lock(case.lock_path)
+    lock.record("cartography", [raw_path(case, "cartography")], case.raw_dir)
+    lock.save()
+    raw_path(case, "cartography").write_text('{"features": [2]}')  # changed since it was locked
+    raw_path(case, "identify").write_text("{}")  # never locked
+    with pytest.raises(MobilidadosError, match=r"cannot be archived: \['cartography.json \(changed\)', 'identify \(not in the lock\)'\]"):
+        snapshot(case, tmp_path / "snap")
+    assert not (tmp_path / "snap").exists()
 
 
 def test_a_changed_upstream_file_never_replaces_the_pinned_one(make_case, monkeypatch):

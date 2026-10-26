@@ -52,6 +52,20 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
         if origin is not None:
             if not origin.exists():
                 raise MobilidadosError(f"{sid}: {origin} is not in the snapshot; fetch it without --from-dir")
+            # a source the lock knows is restored only as the very files it records: this is how an archived case
+            # is rebuilt, and a different file is different data
+            rel = dest.relative_to(case.raw_dir)
+            offered = {(rel / p.relative_to(origin) if origin.is_dir() else rel).as_posix(): p for p in _files_of(origin)}
+            differ = sorted(
+                f
+                for f, meta in lock.entries.get(sid, {}).get("files", {}).items()
+                if f not in offered or sha256_file(offered[f]) != meta["sha256"]
+            )
+            if differ:
+                raise MobilidadosError(
+                    f"{sid}: {differ} in {from_dir} are missing or differ from sources.lock.json, so they are not the data "
+                    "the case was run with; nothing was copied. Fetch the source without --from-dir to take new data deliberately."
+                )
             if origin.is_dir():
                 shutil.copytree(origin, dest, dirs_exist_ok=True)
             else:
@@ -71,11 +85,17 @@ def snapshot(case: Case, out_dir: Path) -> list[str]:
     lock metadata in ``_snapshot.json``, ready to archive (e.g. on Zenodo) and restore with ``fetch --from-dir``.
     Returns the ids of the sources left out, which a user of the snapshot fetches from their origin."""
     lock = Lock(case.lock_path)
+    # an archive is only worth anything if it holds exactly the locked files: refuse one with a file missing or changed
+    archived = {sid for sid, src in case.config.sources.items() if src.redistributable and raw_path(case, sid).exists()}
+    bad = [f"{f} ({status})" for sid, f, status in lock.verify(case.raw_dir) if sid in archived and status != "ok"]
+    bad += [f"{sid} (not in the lock)" for sid in sorted(archived - set(lock.entries))]
+    if bad:
+        raise MobilidadosError(f"the cache does not hold the locked files, so it cannot be archived: {bad}. Fetch them first.")
     out_dir.mkdir(parents=True, exist_ok=True)
     meta, skipped = {}, []
     for sid, src in case.config.sources.items():
         p = raw_path(case, sid)
-        if not src.redistributable or not p.exists():
+        if sid not in archived:
             skipped.append(sid)
             continue
         if p.is_dir():

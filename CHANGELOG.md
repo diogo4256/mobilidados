@@ -19,6 +19,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `fetch --from-dir` restored any file it was given and rewrote the lock to match it. It now restores a source the
+  lock knows only when every locked file is in the folder with the same sha256, and copies nothing otherwise, so
+  an archive restores the data the case was run with or fails.
+- `snapshot` copied whatever the cache held, an empty folder included. It now refuses a cache that does not hold
+  exactly the locked files of the sources it archives.
+- A site that refuses a request as automated (a Cloudflare challenge) is reported as such, with how to download
+  the file by hand and restore it, instead of as a service that may be down for a while.
 - Cases on other streets no longer break or mislead where the Lisbon case did not reach. None of these changes a
   Lisbon number:
   - buses in one direction only, or no meeting at an assumed speed: the encounters statement gives 0 instead of
