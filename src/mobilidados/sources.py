@@ -209,6 +209,15 @@ def check_pins(case: Case) -> list[str]:
     return bad
 
 
+def check_cache(case: Case) -> list[tuple[str, str, str]]:
+    """Every source the case configures, against the cache and the lock: (source_id, file, status) with the lock's
+    statuses (``ok``, ``changed``, ``missing``) and ``not fetched`` for a source the lock has no entry for, so a
+    case that was never fetched does not pass for one whose files all match."""
+    lock = Lock(case.lock_path)
+    rows = lock.verify(case.raw_dir)
+    return rows + [(sid, "", "not fetched") for sid in case.config.sources if sid not in lock.entries]
+
+
 def check_lock(case: Case) -> list[str]:
     """Cached files whose sha256 differs from the one in the lock, which the ledger publishes. A missing file is not
     listed: a partial run may lack sources it does not read."""
