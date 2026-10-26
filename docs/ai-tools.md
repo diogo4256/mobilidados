@@ -14,7 +14,7 @@ also make things up. So nothing a model says enters the evidence chain directly:
 | --- | --- | --- | --- |
 | `check-claims` | per-claim verdict with evidence quotes | the claim is in the draft; each quote is verbatim in the cited document near the cited line; cited findings exist; a "supported" claim is backed by a verified quote (12 characters or more) or a cited finding, and its numbers are in that quote or finding; quoted passages in the draft (12 characters or more) are literal | a "supported" verdict becomes `needs_human`, with the reason |
 | `extract-standard` | values printed on a page, what they measure, scope, component sums | each value is searched in the PDF text layer and in pooled OCR; sums are recomputed | the value is marked `vision_only`, and the page image is saved for a person to read |
-| `discover` | a draft city profile | each proposed layer is fetched again: fields exist, class codes occur in the test area | the check result is written at the top of the draft |
+| `discover` | a draft city profile | each proposed layer is fetched again: fields exist; class codes occur in the test area (only with `--bbox`; without it, class codes are not checked) | the check result is written at the top of the draft |
 
 Tests, from cheapest to most complete:
 
@@ -52,9 +52,10 @@ review file; adding an entry to `standards.toml` remains a human decision.
 ## `mobilidados discover --city NAME --start URL [URL ...] [--hosts ...] [--bbox lon,lat,lon,lat]`
 
 An agent explores a municipality's ArcGIS REST directory and open-data catalogue (CKAN/udata APIs) with
-GET-only tools limited to allow-listed hosts and a request budget. It proposes the cartography layer and class
-codes, the street-axis layer, a traffic-direction layer, the GTFS feed, a citizen-reports dataset and the
-licence of each, with the evidence it saw. Responses from third-party servers are treated as data, never as
+GET-only tools limited to allow-listed hosts and a request budget. Redirects are not followed, since the next
+hop could leave the allowlist: the agent is told the new address and may request it if its host is allowed.
+It proposes the cartography layer and class codes, the street-axis layer, a traffic-direction layer, the GTFS
+feed, a citizen-reports dataset and the licence of each, with the evidence it saw. Responses from third-party servers are treated as data, never as
 instructions. The result is a `*.draft.toml` with the automatic checks at the top.
 
 ## Costs

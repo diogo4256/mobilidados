@@ -1,8 +1,10 @@
 """The deterministic halves of the AI tools, with the model's output faked (no API calls)."""
 
 import json
+from urllib.parse import urlparse
 
 import pytest
+import requests
 
 pytest.importorskip("anthropic")
 pytest.importorskip("pydantic")
@@ -225,10 +227,12 @@ def test_discovery_requests_are_cached_budgeted_and_time_limited(monkeypatch):
     seen = []
 
     class Session:
-        def get(self, url, params, timeout):
+        def get(self, url, params, timeout, allow_redirects):
             seen.append((url, timeout))
 
             class Response:
+                is_redirect = False
+
                 def raise_for_status(self):
                     pass
 
@@ -248,6 +252,34 @@ def test_discovery_requests_are_cached_budgeted_and_time_limited(monkeypatch):
         ("https://gis.example.org/a", source_discovery.REQUEST_TIMEOUT_S),
         ("https://gis.example.org/b", source_discovery.REQUEST_TIMEOUT_S),
     ]
+
+
+def test_discovery_does_not_follow_a_redirect_off_the_allowlist(monkeypatch):
+    seen = []
+
+    class Server(requests.adapters.BaseAdapter):
+        def send(self, request, *args, **kw):
+            seen.append(request.url)
+            r = requests.Response()
+            r.url, r.request, r._content = request.url, request, b"{}"
+            if urlparse(request.url).hostname == "gis.example.org":
+                r.status_code, r.headers["Location"] = 302, "https://evil.example.com/x"
+            else:
+                r.status_code = 200
+            return r
+
+        def close(self):
+            pass
+
+    def session():
+        s = requests.Session()
+        s.mount("https://", Server())
+        return s
+
+    monkeypatch.setattr(source_discovery, "session", session)
+    with pytest.raises(RuntimeError, match="redirected to https://evil"):
+        source_discovery.Http({"gis.example.org"}).get_json("https://gis.example.org/a")
+    assert seen == ["https://gis.example.org/a"]
 
 
 def test_long_tool_results_are_cut_before_they_reach_the_model():
