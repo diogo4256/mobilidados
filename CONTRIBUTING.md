@@ -50,7 +50,7 @@ whose data is used, and what a toolset like this can and cannot do.
 uv sync --extra agents
 uv run pre-commit install     # optional: ruff, formatting and REUSE checks before each commit
 make lint test                # what CI runs: ruff, mypy, pytest
-make reproduce                # downloads the Lisbon sources again and re-runs the case (verify says what changed)
+make reproduce                # fetches what is not cached, re-runs the case and fails if its lock or results changed
 ```
 
 Keeping the published cases checkable (sources that change, move or go down; archiving a case's inputs; dependency

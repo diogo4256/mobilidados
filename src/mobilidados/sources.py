@@ -35,7 +35,9 @@ def _files_of(path: Path) -> list[Path]:
 
 
 def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from_dir: Path | None = None) -> None:
-    """Download (or copy from ``from_dir``, e.g. an archived snapshot) every source that is not cached yet."""
+    """Download (or copy from ``from_dir``, e.g. an archived snapshot) every source that is not cached yet, or every
+    source with ``refresh``. A source the lock knows must come out as exactly the files it records, or nothing is
+    written: always from a folder, and from its service unless ``refresh`` takes the new data deliberately."""
     case.raw_dir.mkdir(parents=True, exist_ok=True)
     lock = Lock(case.lock_path)
     snapshot_meta = (
@@ -49,35 +51,58 @@ def fetch(case: Case, only: list[str] | None = None, refresh: bool = False, from
         if _cached(src, dest) and not refresh:
             log.info("cached   %s", sid)
             continue
-        if origin is not None:
-            if not origin.exists():
-                raise MobilidadosError(f"{sid}: {origin} is not in the snapshot; fetch it without --from-dir")
-            # a source the lock knows is restored only as the very files it records: this is how an archived case
-            # is rebuilt, and a different file is different data
-            rel = dest.relative_to(case.raw_dir)
-            offered = {(rel / p.relative_to(origin) if origin.is_dir() else rel).as_posix(): p for p in _files_of(origin)}
-            differ = sorted(
-                f
-                for f, meta in lock.entries.get(sid, {}).get("files", {}).items()
-                if f not in offered or sha256_file(offered[f]) != meta["sha256"]
-            )
-            if differ:
-                raise MobilidadosError(
-                    f"{sid}: {differ} in {from_dir} are missing or differ from sources.lock.json, so they are not the data "
-                    "the case was run with; nothing was copied. Fetch the source without --from-dir to take new data deliberately."
-                )
-            if origin.is_dir():
-                shutil.copytree(origin, dest, dirs_exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=case.raw_dir) as tmp:  # the cache is only touched once the files pass
+            new = Path(tmp) / dest.name
+            if origin is not None:
+                _copy(src, origin, new)
+                # keep the original retrieval metadata: from the lock, else from the snapshot's _snapshot.json
+                meta = lock.entries.get(sid) or snapshot_meta.get(sid) or {"kind": src.kind, "retrieved_utc": "unknown"}
             else:
-                shutil.copy2(origin, dest)
-            log.info("copied   %s <- %s", sid, origin)
-            # keep the original retrieval metadata: from the lock, else from the snapshot's _snapshot.json
-            meta = lock.entries.get(sid) or snapshot_meta.get(sid) or {"kind": src.kind, "retrieved_utc": "unknown"}
-        else:
-            meta = _download(src, dest)
-            log.info("fetched  %s", sid)
+                meta = _download(src, new)
+            if isinstance(src, HttpFile) and src.sha256 and sha256_file(new) != src.sha256:
+                raise MobilidadosError(f"{sid}: {origin} is not the file pinned in the case's configuration; nothing was written.")
+            differ = _differences(lock, sid, new, dest.relative_to(case.raw_dir))
+            if differ and origin is not None:
+                raise MobilidadosError(
+                    f"{sid}: {differ} in {from_dir} are missing, extra or different from sources.lock.json, so this is not "
+                    "the data the case was run with; nothing was written."
+                )
+            if differ and not refresh:
+                raise MobilidadosError(
+                    f"{sid}: the service now serves different data from what sources.lock.json records ({differ}); nothing "
+                    "was written. `mobilidados verify CASE --live` lists the differences; `fetch --refresh` takes the new "
+                    "data deliberately (the lock changes, and the results may), and `fetch --refresh --from-dir FOLDER` "
+                    "restores the locked files from an archive."
+                )
+            if dest.is_dir():
+                shutil.rmtree(dest)
+            new.replace(dest)
+        log.info("%s %s", "copied  " if origin is not None else "fetched ", sid)
         lock.record(sid, _files_of(dest), case.raw_dir, **{k: v for k, v in meta.items() if k != "files"})
         lock.save()  # after each source, so a failure further on does not lose what was already fetched
+
+
+def _copy(src: AnySource, origin: Path, new: Path) -> None:
+    """Copy a source from a folder: for a multi-file source, only the files it names."""
+    if not origin.exists():
+        raise MobilidadosError(f"{origin} is not in the folder; fetch the source without --from-dir")
+    if isinstance(src, HttpFiles):
+        new.mkdir()
+        for f in src.files:
+            if not (origin / f.name).is_file():
+                raise MobilidadosError(f"{origin / f.name} is not in the folder; nothing was written")
+            shutil.copy2(origin / f.name, new / f.name)
+    else:
+        shutil.copy2(origin, new)
+
+
+def _differences(lock: Lock, sid: str, new: Path, rel: Path) -> list[str]:
+    """Files that are missing, extra or different, compared with the lock's entry for ``sid`` (none if it has no entry)."""
+    locked = {f: m["sha256"] for f, m in lock.entries.get(sid, {}).get("files", {}).items()}
+    if not locked:
+        return []
+    offered = {(rel / p.relative_to(new) if new.is_dir() else rel).as_posix(): sha256_file(p) for p in _files_of(new)}
+    return sorted(f for f in locked.keys() | offered.keys() if locked.get(f) != offered.get(f))
 
 
 def snapshot(case: Case, out_dir: Path) -> list[str]:
@@ -85,26 +110,26 @@ def snapshot(case: Case, out_dir: Path) -> list[str]:
     lock metadata in ``_snapshot.json``, ready to archive (e.g. on Zenodo) and restore with ``fetch --from-dir``.
     Returns the ids of the sources left out, which a user of the snapshot fetches from their origin."""
     lock = Lock(case.lock_path)
-    # an archive is only worth anything if it holds exactly the locked files: refuse one with a file missing or changed
-    archived = {sid for sid, src in case.config.sources.items() if src.redistributable and raw_path(case, sid).exists()}
+    archived = sorted(sid for sid, src in case.config.sources.items() if src.redistributable)
+    # an archive is only worth anything if it holds exactly the locked files: refuse a cache with one missing or changed
     bad = [f"{f} ({status})" for sid, f, status in lock.verify(case.raw_dir) if sid in archived and status != "ok"]
-    bad += [f"{sid} (not in the lock)" for sid in sorted(archived - set(lock.entries))]
+    bad += [f"{sid} (not in the lock)" for sid in archived if sid not in lock.entries]
     if bad:
-        raise MobilidadosError(f"the cache does not hold the locked files, so it cannot be archived: {bad}. Fetch them first.")
+        raise MobilidadosError(
+            f"the cache does not hold the locked files, so it cannot be archived: {bad}. Fetch them first, or restore them "
+            "with `fetch --refresh --from-dir`; a routing-network cache is made by a run without --offline."
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
-    meta, skipped = {}, []
-    for sid, src in case.config.sources.items():
-        p = raw_path(case, sid)
-        if sid not in archived:
-            skipped.append(sid)
-            continue
-        if p.is_dir():
-            shutil.copytree(p, out_dir / p.name, dirs_exist_ok=True)
-        else:
-            shutil.copy2(p, out_dir / p.name)
-        meta[sid] = lock.entries.get(sid, {}) | {"licence": src.licence, "attribution": src.attribution}
+    meta = {}
+    for sid in archived:
+        for rel in lock.entries[sid]["files"]:  # the locked files only, not whatever else the folder holds
+            (out_dir / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(case.raw_dir / rel, out_dir / rel)
+        src = case.config.sources[sid]
+        meta[sid] = lock.entries[sid] | {"licence": src.licence, "attribution": src.attribution}
         log.info("added    %s", sid)
     (out_dir / "_snapshot.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    skipped = [sid for sid in case.config.sources if sid not in archived]
     for sid in skipped:
         log.info("left out %s (not marked redistributable)", sid)
     return skipped

@@ -89,21 +89,22 @@ Every statement in the ledger carries one grade ([docs/evidence-standard.md](htt
 ```bash
 git clone https://github.com/diogo4256/mobilidados.git && cd mobilidados
 uv sync                      # or: python -m venv .venv && .venv/bin/pip install -e .
-uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge     # downloads the sources, writes sources.lock.json
-uv run mobilidados verify cases/lisboa-rua-ricardo-jorge    # checks each file against the lock (sha256)
-uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # writes results/
-git diff --exit-code cases/lisboa-rua-ricardo-jorge/results/tables   # identical to the reference run?
+uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge     # downloads the sources and checks them against sources.lock.json
+uv run mobilidados verify cases/lisboa-rua-ricardo-jorge    # checks each cached file against the lock (sha256)
+uv run mobilidados run cases/lisboa-rua-ricardo-jorge       # writes results/ (the first time, queries the routing network)
+git diff --exit-code cases/lisboa-rua-ricardo-jorge         # identical to the reference run?
 ```
 
 The package is also on [PyPI](https://pypi.org/project/mobilidados/) (`pip install mobilidados`), but the cases
 and the city profiles live in this repository: to reproduce a case or start another, clone it as above.
 
-Municipal services are live, so a fresh `fetch` can differ from the reference run: `verify` tells you which
-files changed, and `verify --live` downloads the sources again and says which no longer serve the same files,
-without touching the cache. A case pins its GTFS feed by SHA-256 and refuses to run on a different one unless you change
+Municipal services are live. When a source no longer serves the files the reference run used, `fetch` refuses
+them and writes nothing; `verify --live` downloads the sources again and says which changed, without touching
+the cache, and `fetch --refresh` takes the new data deliberately (`sources.lock.json` changes, and the results
+may). A case pins its GTFS feed by SHA-256 and refuses to run on a different one unless you change
 the pin on purpose; the Lisbon case downloads its feed from the Mobility Database archive, so the exact file
 stays available. `mobilidados snapshot CASE DIR` copies the inputs whose licence allows redistribution into a
-folder for archiving (e.g. on Zenodo); `mobilidados fetch CASE --from-dir DIR` restores them.
+folder for archiving (e.g. on Zenodo); `mobilidados fetch CASE --from-dir DIR` restores them, only if they are exactly the locked files.
 
 ## AI-assisted tools (optional)
 

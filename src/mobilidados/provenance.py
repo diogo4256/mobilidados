@@ -51,8 +51,12 @@ def http_get(url: str, params: dict[str, Any] | None = None, timeout: float = RE
         if r.headers.get("cf-mitigated") == "challenge":  # waiting would not help: the site asks for a browser
             raise MobilidadosError(
                 f"{urlparse(url).hostname} refused the request as automated (a Cloudflare challenge, HTTP {r.status_code}) "
-                f"({url}). Download the file in a browser and restore it with `mobilidados fetch CASE --from-dir FOLDER`, "
-                "which checks it against the lock (see docs/maintaining.md)."
+                f"({url}). Waiting will not help; see 'A service moved or is down' in docs/maintaining.md."
+            )
+        if r.status_code in (404, 410):  # waiting would not help either: the address is gone
+            raise MobilidadosError(
+                f"{urlparse(url).hostname} no longer has {url} (HTTP {r.status_code}); the service may have moved. "
+                "See 'A service moved or is down' in docs/maintaining.md."
             )
         r.raise_for_status()
     except requests.RequestException as e:

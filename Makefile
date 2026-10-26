@@ -19,6 +19,6 @@ fetch:
 verify:
 	uv run mobilidados verify $(CASE)
 
-reproduce: fetch verify   ## re-run a case and fail if any committed table changes
+reproduce: fetch verify   ## re-run a case and fail if its inputs (the lock) or its committed results changed
 	uv run mobilidados run $(CASE)
-	git diff --exit-code -- $(CASE)/results/tables $(CASE)/results/findings.json
+	git diff --exit-code -- $(CASE)/sources.lock.json $(CASE)/results

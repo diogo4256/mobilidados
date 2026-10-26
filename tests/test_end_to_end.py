@@ -465,6 +465,15 @@ def test_a_run_refuses_identify_answers_that_differ_from_the_lock(tmp_path):
         run(case, offline=True)
 
 
+def test_a_file_the_reports_source_does_not_name_is_not_read(results, tmp_path):
+    case = Case.load(write_case(tmp_path / "extra"))
+    folder = raw_path(case, "reports")
+    shutil.copy(folder / "2024.csv", folder / "2099.csv")  # left in the folder: not one of the source's files
+    run(case, offline=True)
+    for name in ("occurrences_by_street", "occurrences_by_year", "occurrences_files"):
+        assert (case.results_dir / "tables" / f"{name}.csv").read_text() == (results / "tables" / f"{name}.csv").read_text()
+
+
 def test_a_street_with_parking_on_one_side_only_reports_what_does_not_need_both(tmp_path):
     case = Case.load(write_case(tmp_path / "one-side", parking_both_sides=False))
     run(case, offline=True)
