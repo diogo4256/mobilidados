@@ -41,7 +41,10 @@ def parsed(message: Any, schema: type[Output]) -> Output:
             f"the model declined the request ({getattr(details, 'category', None)}): {getattr(details, 'explanation', '')}"
         )
     if message.stop_reason == "max_tokens":
-        raise MobilidadosError("the response hit max_tokens before finishing; raise max_tokens or split the input")
+        raise MobilidadosError(
+            "the answer was cut off at the output limit before it finished; "
+            "retry with a lower MOBILIDADOS_EFFORT (e.g. medium) or, for check-claims, a shorter draft"
+        )
     out = message.parsed_output
     if not isinstance(out, schema):
         raise MobilidadosError(f"the answer does not match the {schema.__name__} schema")
