@@ -12,7 +12,7 @@ also make things up. So nothing a model says enters the evidence chain directly:
 
 | Tool | Model output | Deterministic check | If the check fails |
 | --- | --- | --- | --- |
-| `check-claims` | per-claim verdict with evidence quotes | the claim is in the draft; each quote is verbatim in the cited document near the cited line; cited findings exist; the claim's numbers are in the cited finding; quoted passages in the draft are literal | a "supported" verdict becomes `needs_human`, with the reason |
+| `check-claims` | per-claim verdict with evidence quotes | the claim is in the draft; each quote is verbatim in the cited document near the cited line; cited findings exist; a "supported" claim is backed by a verified quote (12 characters or more) or a cited finding, and its numbers are in that quote or finding; quoted passages in the draft (12 characters or more) are literal | a "supported" verdict becomes `needs_human`, with the reason |
 | `extract-standard` | values printed on a page, what they measure, scope, component sums | each value is searched in the PDF text layer and in pooled OCR; sums are recomputed | the value is marked `vision_only`, and the page image is saved for a person to read |
 | `discover` | a draft city profile | each proposed layer is fetched again: fields exist, class codes occur in the test area | the check result is written at the top of the draft |
 

@@ -7,8 +7,10 @@ It returns a structured verdict per claim with the evidence it relied on.
 Then deterministic checks run on its answer:
   * the claim text must occur in the draft,
   * every quoted piece of evidence must occur verbatim in the cited document, near the cited line,
-  * every cited finding must exist, and the claim's numbers must appear in that finding,
-  * every passage of the draft inside quotation marks must occur verbatim in some source.
+  * every cited finding must exist,
+  * a "supported" claim must be backed by a verified quote (12 characters or more) or an existing cited finding,
+    and its numbers must appear in that quote or finding,
+  * every passage of the draft inside quotation marks (12 characters or more) must occur verbatim in some source.
 A "supported" verdict that fails a check is downgraded to "needs_human" with the reason.
 """
 
@@ -49,6 +51,7 @@ class ClaimReport(BaseModel):
 
 
 MAX_TURNS = 40  # agent turns before the run stops
+MIN_QUOTE = 12  # characters; a shorter evidence quote occurs almost anywhere, so it backs nothing
 
 SYSTEM = """You check the facts in a citizen's letter to a public body before it is sent.
 
@@ -138,21 +141,27 @@ def verify(report: ClaimReport, draft: str, corpus: Corpus, findings: dict) -> l
         d, checks = c.model_dump(), []
         if not contains(draft, c.text):
             checks.append("claim text not found verbatim in the draft")
+        backing = []  # text a check confirmed: verified evidence quotes and cited findings that exist
         for ev in c.evidence:
             doc = corpus.docs.get(ev.doc_id)
             if doc is None:
                 checks.append(f"unknown document {ev.doc_id!r}")
             elif not quote_near(doc, ev.quote, ev.line):
                 checks.append(f"evidence quote not found in {ev.doc_id} near line {ev.line}")
+            elif len(normalize(ev.quote)) >= MIN_QUOTE:
+                backing.append(ev.quote)
         for fid in c.finding_ids:
             if fid not in findings:
                 checks.append(f"unknown finding {fid!r}")
-        if c.verdict == "supported" and c.kind == "number" and c.finding_ids:
-            pool = " ".join(json.dumps(findings[f]["values"]) + " " + findings[f]["statement"] for f in c.finding_ids if f in findings)
-            have = numbers(pool)
+            else:
+                backing.append(json.dumps(findings[fid]["values"]) + " " + findings[fid]["statement"])
+        if c.verdict == "supported":
+            have = numbers(" ".join(backing))
             missing = [x for x in numbers(c.text) if not any(abs(x - y) < 0.006 for y in have)]
-            if missing:
-                checks.append(f"numbers not in the cited findings: {missing}")
+            if not backing:
+                checks.append("the model's verdict is not backed: no verified evidence quote and no cited finding")
+            elif missing:
+                checks.append(f"numbers not in the cited findings or evidence quotes: {missing}")
         if checks and d["verdict"] == "supported":
             d["verdict"] = "needs_human"
         d["checks"] = checks
