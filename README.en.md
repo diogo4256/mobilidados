@@ -115,7 +115,7 @@ proposes and plain code verifies**: a model output never becomes evidence by its
 | --- | --- | --- |
 | `mobilidados check-claims CASE draft.md` | an agent with search tools over the ledger and source texts extracts each claim in a draft letter and judges it | quotes must be verbatim in the cited source near the cited line; numbers must match the cited finding; anything in quotation marks must be a literal quote |
 | `mobilidados extract-standard manual.pdf --pages N` | reads a manual page, including dimensions printed inside drawings | each value is looked for in the PDF text layer and in multi-pass OCR (Tesseract); sums are recomputed; unconfirmed values are flagged for a human, with the page image |
-| `mobilidados discover --city X --start URL` | explores a municipality's GIS/open-data portal (allow-listed hosts, read-only) and proposes a city profile | every proposed layer is re-queried: fields exist, class codes occur in the test area |
+| `mobilidados discover --city X --start URL` | explores a municipality's GIS/open-data portal (allow-listed hosts, read-only) and proposes a city profile | every proposed layer is re-queried: fields exist and, if a test area is given with `--bbox`, class codes occur in it (without `--bbox`, class codes are not checked) |
 
 `mobilidados lint draft.md` runs the deterministic part of the letter checks (generalisations, pre-emptive
 concessions, quotation marks, normative words such as "mandatory" for a recommendation) with no AI at all.

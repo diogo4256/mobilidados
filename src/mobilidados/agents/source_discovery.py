@@ -83,7 +83,10 @@ class Http:
             if self.calls >= self.max_calls:
                 raise RuntimeError("request budget exhausted")
             self.calls += 1
-            r = session().get(url, params=params, timeout=REQUEST_TIMEOUT_S)
+            # redirects are not followed: the next hop could leave the allowlist
+            r = session().get(url, params=params, timeout=REQUEST_TIMEOUT_S, allow_redirects=False)
+            if r.is_redirect:
+                raise RuntimeError(f"redirected to {r.headers['location']}; request that URL directly if its host is allowed")
             r.raise_for_status()
             self.cache[key] = r.json()
         return self.cache[key]
