@@ -24,6 +24,7 @@ jobs:
           enable-cache: false
       - run: uv sync --locked
       - name: Every case's sources still serve its locked files
+        shell: bash # -o pipefail: without it the pipe through tee would hide a failed check
         run: |
           status=0
           for case in cases/*/; do
