@@ -19,6 +19,9 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `verify` and the data test only looked at the sources the lock lists, so a case that was never fetched passed
+  `verify` ("0/0 files match the lock") and the data test then crashed on a missing file. Every source the case
+  configures is now checked, and one the lock has no entry for is reported as `not fetched`.
 - A case's inputs can no longer change without anyone noticing:
   - `fetch` rewrote the lock to match whatever a service now served, so `verify` then reported nothing. It now
     prepares each source in a temporary folder and compares it with the lock before touching the cache: from a

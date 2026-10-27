@@ -98,8 +98,6 @@ def _dispatch(a: argparse.Namespace) -> int:
 
         run(Case.load(a.case), stages=a.stages, offline=a.offline)
     elif a.cmd == "verify":
-        from .provenance import Lock
-
         case = Case.load(a.case)
         if a.live:
             from .sources import check_live
@@ -111,15 +109,16 @@ def _dispatch(a: argparse.Namespace) -> int:
             print(f"{len(rows) - len(bad)}/{len(rows)} files served today match the lock")
             return 1 if bad else 0
         from .config import ArcgisIdentify
+        from .sources import check_cache
 
-        rows = Lock(case.lock_path).verify(case.raw_dir)
+        rows = check_cache(case)
         # a routing-network cache is made by the first run without --offline, which locks what it was answered
-        later = [r for r in rows if r[2] == "missing" and isinstance(case.config.sources.get(r[0]), ArcgisIdentify)]
+        later = [r for r in rows if r[2] in ("missing", "not fetched") and isinstance(case.config.sources.get(r[0]), ArcgisIdentify)]
         bad = [r for r in rows if r[2] != "ok" and r not in later]
         for sid, f, status in bad:
-            print(f"{status:8s} {sid:24s} {f}")
+            print(f"{status:11s} {sid:24s} {f}")
         for sid, f, _ in later:
-            print(f"{'later':8s} {sid:24s} {f} (made by the first `mobilidados run` without --offline)")
+            print(f"{'later':11s} {sid:24s} {f or '-'} (made by the first `mobilidados run` without --offline)")
         print(f"{len(rows) - len(bad) - len(later)}/{len(rows)} files match the lock")
         return 1 if bad else 0
     elif a.cmd == "new-case":

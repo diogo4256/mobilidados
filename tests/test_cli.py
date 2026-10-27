@@ -72,7 +72,7 @@ def test_verify_does_not_fail_on_a_routing_network_cache_that_a_run_makes(make_c
     case = Case.load(make_case(IDENTIFY))
     case.raw_dir.mkdir(parents=True)
     lock = Lock(case.lock_path)
-    for sid in ("cartography", "identify"):
+    for sid in ("cartography", "street_axes", "identify"):
         raw_path(case, sid).write_text("{}")
         lock.record(sid, [raw_path(case, sid)], case.raw_dir)
     lock.save()
@@ -80,7 +80,15 @@ def test_verify_does_not_fail_on_a_routing_network_cache_that_a_run_makes(make_c
     assert cli.main(["verify", str(case.root)]) == 0
     lines = capsys.readouterr().out.splitlines()
     assert lines[0].split()[:3] == ["later", "identify", "identify.json"]
-    assert lines[1] == "1/2 files match the lock"
+    assert lines[1] == "2/3 files match the lock"
+
+
+def test_verify_fails_on_a_case_that_was_never_fetched(make_case, capsys):
+    case = Case.load(make_case())
+    assert cli.main(["verify", str(case.root)]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert [line.split()[:3] for line in lines[:2]] == [["not", "fetched", "cartography"], ["not", "fetched", "street_axes"]]
+    assert lines[2] == "0/2 files match the lock"
 
 
 def test_run_reports_an_unknown_stage_as_an_error(make_case, capsys):
