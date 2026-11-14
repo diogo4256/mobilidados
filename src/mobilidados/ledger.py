@@ -20,6 +20,7 @@ from .direction import directions
 from .envelope import widths
 from .geometry import MIN_STRIP_M, TWO_STRIPS
 from .gtfs import ALL_TRIPS
+from .i18n import length as street_length
 from .i18n import num, t
 from .provenance import Lock
 
@@ -65,6 +66,9 @@ def build(r: Run) -> list[Finding]:
     def seconds(x: float) -> str:
         """A median of whole seconds: whole, or halfway between two."""
         return n(x, 0 if float(x).is_integer() else 1)
+
+    def length_m(x: float) -> str:
+        return street_length(x, lang)
 
     def param(x: float) -> str:
         """A parameter as it is set, without trailing zeros (``0.5``, ``3``)."""
@@ -112,8 +116,7 @@ def build(r: Run) -> list[Finding]:
     if r.two_strips:
         allrow = r.table("summary_by_block").set_index("block").loc["all"]
         fmed = float(allrow.free_median)
-        narrow = r.table("narrow_sections")
-        metres = round(float((narrow.s_to - narrow.s_from).sum()), 1)
+        metres = r.two_strips_m
         free = {
             "min_m": allrow.free_min,
             "median_m": allrow.free_median,
@@ -127,7 +130,7 @@ def build(r: Run) -> list[Finding]:
                 grade="M",
                 statement=say(
                     "free",
-                    metres=n(metres, 0 if metres.is_integer() else 1),
+                    metres=length_m(metres),
                     fmin=n(allrow.free_min),
                     fmax=n(allrow.free_max),
                     fmed=n(allrow.free_median),
@@ -343,9 +346,9 @@ def build(r: Run) -> list[Finding]:
                 grade="I",
                 statement=say(
                     "parking_removed",
-                    m=n(one.parking_removed_m, 0),
+                    m=length_m(one.parking_removed_m),
                     places=places(one),
-                    m2=n(both.parking_removed_m, 0),
+                    m2=length_m(both.parking_removed_m),
                     places2=places(both),
                     space=n(min(spaces)) if len(set(spaces)) == 1 else f"{n(min(spaces))}–{n(max(spaces))}",
                     wl=n(whole.strip_L_length_m, 1),

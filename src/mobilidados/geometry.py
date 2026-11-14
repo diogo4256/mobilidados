@@ -202,6 +202,24 @@ def summarize_blocks(df: pd.DataFrame, blocks: list[Block]) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=SUMMARY_COLUMNS)
 
 
+def covered(s: pd.Series | list[float], step: float, length: float) -> float:
+    """The length of street the stations at ``s`` stand for: each station the ``step`` around it, half a step on
+    either side, cut at the ends of the axis.
+
+    One convention for every length the ledger gives (the stretches with parking on both sides, the parking they
+    hold, the mapped parking per side), and an unbiased one: a run of k stations shows a condition holding over at
+    least (k − 1) steps and less than (k + 1) steps; k steps is the middle of that range, so the length is neither
+    understated (which would understate the parking an option removes) nor overstated.
+    """
+    v = np.asarray(s, dtype=float)
+    return float((np.minimum(v + step / 2, length) - np.maximum(v - step / 2, 0.0)).clip(min=0.0).sum())
+
+
+def section_extent(s_from: float, s_to: float, step: float, length: float) -> tuple[float, float]:
+    """The stretch of street a section of stations from ``s_from`` to ``s_to`` stands for (see ``covered``)."""
+    return max(s_from - step / 2, 0.0), min(s_to + step / 2, length)
+
+
 def narrow_sections(df: pd.DataFrame, step: float) -> list[tuple[float, float, str]]:
     """Contiguous runs of two-strip stations as (s_from, s_to, block)."""
     d = df[df["class"] == TWO_STRIPS].sort_values("s")
@@ -215,19 +233,22 @@ def narrow_sections(df: pd.DataFrame, step: float) -> list[tuple[float, float, s
 
 
 def strip_lengths(
-    df: pd.DataFrame, blocks: list[Block], step: float, stall_lengths: tuple[float, ...], min_strip: float = MIN_STRIP_M
+    df: pd.DataFrame,
+    blocks: list[Block],
+    step: float,
+    stall_lengths: tuple[float, ...],
+    length: float,
+    min_strip: float = MIN_STRIP_M,
 ) -> pd.DataFrame:
-    """Mapped parking-strip length per side and block, and the stall count it implies for given stall lengths
-    (``profiles.parking_space_m``)."""
+    """Mapped parking-strip length per side and block (the stations with a strip, by ``covered``), and the stall
+    count it implies for given stall lengths (``profiles.parking_space_m``)."""
     rows = []
     for label, sub in [(b.id, df[df.block == b.id]) for b in blocks] + [("all", df)]:
-        r = {
-            "block": label,
-            "strip_L_length_m": round((sub.strip_L > min_strip).sum() * step, 1),
-            "strip_R_length_m": round((sub.strip_R > min_strip).sum() * step, 1),
-        }
+        left = round(covered(sub.s[sub.strip_L > min_strip], step, length), 1)
+        right = round(covered(sub.s[sub.strip_R > min_strip], step, length), 1)
+        r: dict[str, str | float] = {"block": label, "strip_L_length_m": left, "strip_R_length_m": right}
         for L in stall_lengths:
-            r[f"stalls_L_{L:g}m"] = round(r["strip_L_length_m"] / L, 1)
-            r[f"stalls_R_{L:g}m"] = round(r["strip_R_length_m"] / L, 1)
+            r[f"stalls_L_{L:g}m"] = round(left / L, 1)
+            r[f"stalls_R_{L:g}m"] = round(right / L, 1)
         rows.append(r)
     return pd.DataFrame(rows)

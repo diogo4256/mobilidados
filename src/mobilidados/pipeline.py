@@ -64,6 +64,22 @@ class Run:
         references, which compare it, do not apply."""
         return "all" in set(self.table("summary_by_block").block)
 
+    @property
+    def two_strips_m(self) -> float:
+        """The length of street with parking on both sides (the stations the free width counts), by
+        ``geometry.covered``: the free-width finding states it and the parking an option removes is measured on it."""
+        profiles = self.table("profiles")
+        two = profiles.s[profiles["class"] == geometry.TWO_STRIPS]
+        return round(geometry.covered(two, self.cfg.profiles.step_m, float(self.table("street").length_m.iloc[0])), 1)
+
+    def narrow_extents(self) -> list[tuple[float, float, str]]:
+        """The sections with parking on both sides as stretches of street (``geometry.section_extent``)."""
+        step, length = self.cfg.profiles.step_m, float(self.table("street").length_m.iloc[0])
+        return [
+            (*geometry.section_extent(a, z, step, length), b)
+            for a, z, b in self.table("narrow_sections").itertuples(index=False, name=None)
+        ]
+
     # --- shared inputs ----------------------------------------------------------------------------
     @functools.cached_property
     def axis(self) -> LineString:
@@ -135,7 +151,7 @@ def stage_profiles(r: Run) -> None:
     r.save("street", pd.DataFrame([{"name": r.cfg.street.name, "length_m": length}]))
     r.save("profiles", df)
     r.save("summary_by_block", geometry.summarize_blocks(df, r.cfg.street.blocks))
-    r.save("parking_strip_lengths", geometry.strip_lengths(df, r.cfg.street.blocks, p.step_m, tuple(p.parking_space_m)))
+    r.save("parking_strip_lengths", geometry.strip_lengths(df, r.cfg.street.blocks, p.step_m, tuple(p.parking_space_m), r.axis.length))
     r.save("narrow_sections", pd.DataFrame(geometry.narrow_sections(df, p.step_m), columns=["s_from", "s_to", "block"]))
     tr = Transformer.from_crs(c.crs, 4326, always_xy=True)
     pts = []
@@ -212,9 +228,7 @@ def stage_envelope(r: Run) -> None:
     vehicles = r.cfg.all_vehicles()
     r.save("width_budget", envelope.width_budget(free, vehicles, e.scenarios))
     r.save("overhang_sensitivity", envelope.overhang_sensitivity(free["median"], vehicles, e.scenarios))
-    narrow = r.table("narrow_sections")
-    two_strips_m = round(float((narrow.s_to - narrow.s_from).sum()), 1)  # as the free_width finding states it
-    r.save("without_parking", envelope.without_parking(r.table("profiles"), two_strips_m, r.cfg.profiles.parking_space_m))
+    r.save("without_parking", envelope.without_parking(r.table("profiles"), r.two_strips_m, r.cfg.profiles.parking_space_m))
 
 
 def stage_encounters(r: Run) -> None:
@@ -223,7 +237,7 @@ def stage_encounters(r: Run) -> None:
         return
     passings = r.table("passings").astype({"route_short_name": str, "arrival_time": str})
     length = float(r.table("street").length_m.iloc[0])
-    narrow = list(r.table("narrow_sections").itertuples(index=False, name=None))
+    narrow = r.narrow_extents()  # a meeting counts in a section over the whole stretch its stations stand for
     summary = [encounters.summary(passings, length, t.speeds_kmh, basis="assumed")]
     # sensitivity: the slowest stop-to-stop speed implied by the service day's schedule (slower buses meet more often)
     rt = r.table("scheduled_runtimes")

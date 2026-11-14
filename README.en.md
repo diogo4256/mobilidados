@@ -26,14 +26,14 @@ its grade and source, is in the [findings ledger](https://github.com/diogo4256/m
 
 On Rua Ricardo Jorge, in Alvalade, the findings ledger comes down to this:
 
-* **[M]** Along the 116 m with mapped parking on both sides, the free width between the parking strips has a
+* **[M]** Along the 117.5 m with mapped parking on both sides, the free width between the parking strips has a
   median of 4.90 m.
 * **[I]** Two buses side by side take at least 5.00 m, bodies only and with no gap between them: 0.10 m short.
 * **[D]** Lisbon's public-space manual gives 6.80 m as the reference width between the parking strips of a
   two-way street with parking on both sides (p. 152).
 * **[I]** The Carris timetable puts 6 to 7 meetings a day between buses in opposite directions on this street, 1
   to 2 of them along the stretches with parking on both sides.
-* **[I]** Without the parking on one side, the median free width would be about 6.9 m. That would remove 116 m
+* **[I]** Without the parking on one side, the median free width would be about 6.9 m. That would remove 117.5 m
   of mapped parking, about 19 to 23 places.
 * **[M]** Of the 69 streets with scheduled buses in the area, this is the only one with buses both ways, two-way
   traffic and parking on both sides leaving less than 5.5 m free over at least 30 m.

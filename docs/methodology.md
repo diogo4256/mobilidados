@@ -31,10 +31,18 @@ strips, sidewalks and plots/buildings. Intervals of the same role separated by l
 A station is `two_strips` when both strips are wider than `min_strip` and the free width is at most
 `profiles.narrow_max_m`; `one_strip` when only one side has a strip (`geometry.classify`). A transect lying
 exactly on a strip's end edge counts the strip (shared boundary). Summary statistics use `two_strips` stations
-only. Consecutive `two_strips` stations within a block form a section (`narrow_sections.csv`); the length the
-ledger gives for them is the distance from the first to the last station of each section, summed. It is not
-the station count times `profiles.step_m`, which would add one step per section, and it is not the mapped
-strip length per side in `parking_strip_lengths.csv`. The free-width finding's caveat states this filter, with
+only. Consecutive `two_strips` stations within a block form a section (`narrow_sections.csv`, which lists the
+first and last station of each).
+
+**Lengths.** Every length of street the ledger gives follows one rule (`geometry.covered`): each station stands
+for the stretch within half a step on either side of it, cut at the ends of the axis. A run of k stations shows a
+condition holding over at least (k − 1) steps and less than (k + 1) steps; k steps is the middle of that range.
+This applies to the stretches with parking on both sides (the free-width finding, and the parking an option
+removes, measured on the same stretches) and to the mapped parking per side (`parking_strip_lengths.csv`), so the
+lengths can be compared with each other. Taking the distance from the first to the last station instead would
+understate every length by one step per section, and with it the parking an option removes; the error of the rule
+used is at most half a step at each end of a section. A meeting of two buses counts as inside a section over the
+same stretch (`encounters_detail.csv`). The free-width finding's caveat states this filter, with
 the value of `profiles.narrow_max_m`, and how many stations with parking on both sides it leaves out for being
 wider, next to the cartography's survey and accuracy notes.
 

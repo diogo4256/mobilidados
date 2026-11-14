@@ -108,7 +108,7 @@ def width_budget(run: Run, lang: Lang) -> Figure:
             t("without_one_side", lang),
             [(one_side, FREE_ALT, f"{num(one_side, lang)} m")],
             0.0,
-            t("removes", lang, m=i18n.num(float(wp.loc["L", "parking_removed_m"]), lang, 0), places=places),
+            t("removes", lang, m=i18n.length(wp.loc["L", "parking_removed_m"], lang), places=places),
         ),
         (t("free_width_short", lang), [(free, FREE, f"{num(free, lang)} m")], 0.0, ""),
         (

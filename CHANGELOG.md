@@ -16,6 +16,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - The READMEs say the package is on PyPI and that the cases and city profiles stay in the repository.
+- Every length of street in the ledger follows one rule: each 0.5 m station stands for the stretch within half a
+  step of it, cut at the ends of the axis (`geometry.covered`, explained in docs/methodology.md). The stretches with
+  parking on both sides were measured from their first to their last station, one step short per section, while
+  the mapped parking per side counted a step per station; the shorter length also understated the parking an
+  option removes. In Rua Ricardo Jorge the stretches with parking on both sides measure 117.5 m (was 116 m), and
+  removing the parking on both sides would remove about 39 to 47 places (was 38 to 46); one side, 19 to 23 places,
+  as before. No width, count of meetings or other number changes. Lengths are printed to 0.1 m wherever they
+  appear, so the same length reads the same in every finding and figure.
 - The READMEs open with what the Rua Ricardo Jorge example finds, each line with its grade, and say who the
   tool is for and what it is not (a street design tool, a parking inventory, a bus-speed tracker).
 

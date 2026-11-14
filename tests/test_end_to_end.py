@@ -281,14 +281,14 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     assert findings["parking_removed"]["grade"] == "I"
     assert findings["parking_removed"]["values"] == {
         "removed_one_side_m": findings["free_width"]["values"]["metres_two_strips"],
-        "places_one_side": [18, 21],
-        "removed_both_sides_m": 216.0,
-        "places_both_sides": [36, 43],
+        "places_one_side": [18, 22],
+        "removed_both_sides_m": 220.0,
+        "places_both_sides": [36, 44],
         "parking_space_m": [5.0, 5.5, 6.0],
         "whole_street_parking_m": {"left": 110.0, "right": 110.0},
     }
     assert (
-        "would remove 108 m of mapped parking (about 18 to 21 places); on both sides, 216 m (about 36 to 43 places). "
+        "would remove 110 m of mapped parking (about 18 to 22 places); on both sides, 220 m (about 36 to 44 places). "
         "Places counted at 5.00–6.00 m each (an assumption). Along the whole street, the mapped parking measures 110.0 m"
     ) in findings["parking_removed"]["statement"]
     # a design reference keeps its stated scope: the scenario is not compared with the references
@@ -510,7 +510,9 @@ def test_a_step_finer_than_10_cm_measures_the_same_stretches(tmp_path):
         run(case, offline=True)
         metres[step] = ledger_of(case)["free_width"]["values"]["metres_two_strips"]
         assert pd.read_csv(case.results_dir / "tables" / "check_points.csv").s_m.tolist() == json.loads(checks)
-    assert metres["0.5"] == 109.5  # strips from 40.5 m to 150.5 m, cut at the end of block B1 (100 m)
+    # strips from 40.5 m to 150.5 m (110 m), with a station on each end: each station stands for half a step on
+    # either side, so the length is within half a step of the true one at each end, whatever the block boundaries
+    assert metres["0.5"] == 110.5
     assert metres["0.25"] == pytest.approx(metres["0.5"], abs=0.25 + 0.05)  # one step, and the ledger's rounding to 0.1 m
 
 

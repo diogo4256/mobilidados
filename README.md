@@ -27,7 +27,7 @@ os números por trás dela, com a respetiva fonte, estão na [lista de factos ap
 
 Na Rua Ricardo Jorge, em Alvalade, a lista de factos apurados chega a isto:
 
-* **[M]** Nos 116 m com estacionamento cartografado dos dois lados, a largura livre entre eles tem mediana de
+* **[M]** Nos 117,5 m com estacionamento cartografado dos dois lados, a largura livre entre eles tem mediana de
   4,90 m.
 * **[I]** Dois autocarros lado a lado ocupam pelo menos 5,00 m, só com a carroçaria e sem espaço nenhum entre
   eles: falta 0,10 m.
@@ -36,7 +36,7 @@ Na Rua Ricardo Jorge, em Alvalade, a lista de factos apurados chega a isto:
 * **[I]** O horário da Carris prevê 6 a 7 encontros por dia entre autocarros em sentidos opostos nesta rua, 1 a 2
   deles nos troços com estacionamento dos dois lados.
 * **[I]** Sem o estacionamento de um dos lados, a largura livre passaria a ter mediana de cerca de 6,9 m. Seriam
-  retirados 116 m de estacionamento cartografado, cerca de 19 a 23 lugares.
+  retirados 117,5 m de estacionamento cartografado, cerca de 19 a 23 lugares.
 * **[M]** Das 69 ruas da zona com autocarros no horário, só esta tem autocarros nos dois sentidos, dois sentidos
   de trânsito e estacionamento dos dois lados com menos de 5,5 m livres em pelo menos 30 m.
 
