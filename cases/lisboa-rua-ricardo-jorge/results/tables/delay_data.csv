@@ -1,0 +1,13 @@
+item,value
+first_day,2025-02-17
+last_day,2026-11-13
+holidays_left_out,18
+snapshots,107575
+working_day_snapshots,27197
+working_days,437
+covered_hours_peak,120
+covered_hours_off_peak,400
+covered_days,199
+positions_on_routes,209032
+share_too_old,0.034
+positions_used,14964

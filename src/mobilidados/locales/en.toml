@@ -27,6 +27,12 @@ without_one_side = "Without parking on one side"
 short_by = "{x} m short ({xm} m with mirrors)"
 removes = "along the stretches with parking on both sides, removes {m} m of parking ({places})"
 
+delay_title = "Time on the stretch between stops ({length} m), working days, by hour (hours with dense records)"
+delay_stretch = "on the stretch"
+delay_controls = "neighbouring stretches, same length"
+delay_s = "seconds per passage"
+delay_interval = "90% confidence interval (resampled days)"
+delay_peak = "peak"
 [ledger]
 length = "The street axis is {length} m long."
 traffic = { one = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} point checked along it.", other = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} points checked along it." }
@@ -43,6 +49,11 @@ budget = "With both strips occupied and parked vehicles inside them, two buses n
 meetings = { one = "{n} meeting", other = "{n} meetings" }
 meetings_narrow = { one = "{n} falls within the sections with parking on both sides", other = "{n} fall within the sections with parking on both sides" }
 encounters = "The timetable implies {meetings} on {day} between buses in opposite directions on the street (constant-speed model at {speeds} km/h); {narrow}."
+delay = "On the working days from {first} to {last} ({days} days), at {peak}, the difference between the time the buses of routes {routes} spent on the stretch between stops (s = {a}–{b} m, {length} m) and what the slowdown of the neighbouring stretches of the same routes, at the same hours, would predict from {off} was {pct}% (90% confidence interval: {lo}% to {hi}%). By year: {years}.{unconfirmed}"
+delay_year = "in {year}, {pct}% ({lo}% to {hi}%; {days} days)"
+delay_unconfirmed = { one = " The interval for {years} includes 0: that year's data do not confirm the excess.", other = " The intervals for {years} include 0: those years' data do not confirm the excess." }
+delay_seconds = "In the {hp} peak hours and {ho} off-peak hours in which the archive has positions at most {gap} min apart (of the peak hours, {by_year}), a bus took on average {off} s to run the stretch off-peak and {peak} s at peak, where the slowdown of the neighbouring stretches would predict {exp} s: {exc} s more per passage (90% confidence interval: {lo} to {hi} s)."
+delay_hours_year = "{n} in {year}"
 encounters_one_way = "On {day} the timetable has buses in one direction only ({heading}), so it implies no meetings between buses in opposite directions on the street."
 runtimes = "Scheduled time from stop {a} to the next stop ({b}, {d} m in a straight line): median {m_all} s over all trips in the feed (at least {k_all} km/h) and {m_day} s on {day} (at least {k_day} km/h)."
 reports_attributed = { one = "{n} report in category '{flt}' was attributed to the street", other = "{n} reports in category '{flt}' were attributed to the street" }
@@ -69,6 +80,8 @@ width_budget = "Static envelope (sum of widths), not a swept-path simulation."
 without_parking = "Free width plus the mapped parking strip(s) on the same transect, at every station with parking on both sides."
 parking_removed = "Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the longest and the shortest space length; the whole-street lengths are parking_strip_lengths.csv."
 encounters = "Presence-interval overlap at constant speed from scheduled times; timetable, not observation."
+delay = "Occupancy (Little's law): GPS positions on the stretch and on two control stretches of {cm} m, {gap} m before and after it along each route; the peak to off-peak ratio depends neither on the number of buses nor on how often positions were recorded. Confidence intervals by resampling whole days ({reps} replicates)."
+delay_seconds = "Seconds per passage: positions on the stretch divided by the passages per second, counted as trips seen within {reach} m of the stretch, only in the hours whose records are never more than {gap} min apart."
 occurrences = "Nearest-street attribution of geolocated open-data records."
 area_pattern = "Stations every {step} m on every street axis with buses, measured with the scan's own transect half-width and tolerances, not the case street's; traffic direction from the routing network at one station per street."
 
@@ -85,6 +98,15 @@ without_parking = "Assumes the strip's space becomes carriageway and nothing els
 parking_removed = "Mapped parking area, not counted spaces: entrances and other gaps inside the strips are not subtracted. The length of a space is an assumption."
 encounters_model = "Meeting points come from a constant-speed model without dwell times at stops: a meeting a few metres from the edge of a section may fall inside it."
 encounters_check = "At {kmh} km/h, the lowest of the stop-to-stop speeds on {day} (straight-line distance over the median scheduled time), the model gives {per_day}."
+delay_source = "Positions from the public archive {url} (commit {commit}), which collects the Carris real-time feed through a relay (rt.jdcp.workers.dev): not Carris's own record, and neither states a licence."
+delay_cause = "It measures where the time goes, not why: the parking, buses in the other direction, a queue from a junction or a traffic light may all contribute."
+delay_directions = "By route and direction: {list}."
+delay_direction = "{route} {heading} {pct}% ({lo}% to {hi}%)"
+delay_sensitivity = "With other reasonable choices (peak hours, distance and length of the control stretches, maximum age of positions, reach of the passage count), the ratio ranges from {lo}% to {hi}% (delay_sensitivity.csv)."
+delay_by_hour = "The excess in seconds depends strongly on the peak hour chosen: {list} (delay_sensitivity.csv); the ratio changes little."
+delay_hour = "{h}h alone, {s} s"
+delay_passages = "The passages counted are {pct}% of the timetable's on {day} at the same hours; if passages are missing, the seconds are overstated in the same proportion (the ratio does not depend on them)."
+delay_days = "Working days: Monday to Friday, without the holidays in the city profile ({n} in that period)."
 occurrences = "A report is not a proven infraction; counts are small. The ranking divides the reports counted within the attribution window (a rectangle reaching {w} m beyond the street) by each street's full length, including any part outside the window: this favours streets that lie wholly inside the window, such as the case street."
 area_pattern = "The thresholds ({thr} m of free width, over {minm} m) are parameters of this analysis, not values from a design document."
 
@@ -139,4 +161,7 @@ header_one_way = """
 #   Here buses run one way only, and the question assumes a car fits beside the bus, that is, that the street is
 #   two-way or has two lanes. If the street is one-way with a single lane, the question does not apply as
 #   written: rewrite it once `mobilidados run` shows the direction of traffic."""
+header_delay = """# - [delay] the time measured on a stretch of the street (archived GPS positions) was not copied: it depends on the
+#   street's stops and routes. To measure it, choose a stretch between stops and add [delay] and the positions
+#   source, as in docs/methodology.md;"""
 header_inherited = "# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {model}."

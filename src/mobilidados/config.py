@@ -99,7 +99,33 @@ class ArcgisIdentify(Source):
     tolerance: float = 3
 
 
-AnySource = ArcgisQuery | HttpFile | HttpFiles | ArcgisIdentify
+class GitArchive(Source):
+    """Vehicle positions from a public git repository that archives a real-time feed, one CSV per snapshot.
+
+    ``commit`` pins the archive: the files and their contents at that commit are fixed by its hash. ``fetch`` reads
+    the snapshots of ``period`` and keeps, for ``route_ids``, the positions inside ``envelope``; it writes them with
+    one row per snapshot (``mobilidados.archive``), and the lock records the sha256 of what it wrote.
+    """
+
+    kind: Literal["git_archive"]
+    url: Url
+    commit: str = Field(pattern="^[0-9a-f]{40}$")
+    path: str = Field(description="Folder of the snapshots inside the repository")
+    prefix: str = Field(description="File name before the snapshot time, e.g. 'carris_gtfsrt-'")
+    time_format: str = Field("%Y-%m-%d-%H-%M-%S", description="strftime format of the snapshot time in the file name")
+    time_zone: str = Field("UTC", description="Time zone of the snapshot time in the file name and of the vehicle timestamps")
+    period: tuple[dt.date, dt.date] = Field(description="First and last day (UTC) of the snapshots read")
+    route_ids: list[str] = Field(min_length=1)
+    envelope: tuple[float, float, float, float] = Field(description="lon_min, lat_min, lon_max, lat_max of the positions kept")
+
+    @model_validator(mode="after")
+    def _period_in_order(self) -> GitArchive:
+        if self.period[0] > self.period[1]:
+            raise ValueError(f"period {self.period[0]} to {self.period[1]}: the first day comes after the last")
+        return self
+
+
+AnySource = ArcgisQuery | HttpFile | HttpFiles | ArcgisIdentify | GitArchive
 
 
 # --- catalogues (packaged in mobilidados/data, extendable per case) -------------------------------------
@@ -212,6 +238,7 @@ class City(Model):
     name: str
     country: str = ""
     crs: int = Field(description="Projected CRS in metres (EPSG code)")
+    holidays: list[dt.date] = Field([], description="Public holidays, national and municipal: not working days for [delay]")
 
 
 class Cartography(Model):
@@ -340,6 +367,34 @@ class AreaScan(Model):
     min_pattern_m: float = 30
 
 
+class Delay(Model):
+    """Time buses spend on a stretch of the street, from archived vehicle positions (``mobilidados.delay``)."""
+
+    source: str = Field(description="A git_archive source of vehicle positions")
+    s_from: float = Field(ge=0, description="Start of the stretch measured, along the street axis (m)")
+    s_to: float = Field(gt=0, description="End of the stretch (m); keep the stops out of it, where buses also wait for passengers")
+    peak_hours: list[Annotated[int, Field(ge=0, le=23)]] = Field([17, 18], min_length=1, description="Local clock hours")
+    off_peak_hours: list[Annotated[int, Field(ge=0, le=23)]] = Field(list(range(10, 17)), min_length=1)
+    time_zone: str = "Europe/Lisbon"
+    exclude_dates: list[dt.date] = Field([], description="Other weekdays that are not working days, besides the city's holidays")
+    max_age_s: float = Field(60, gt=0, description="A position reported longer than this before its snapshot is left out")
+    max_offset_m: float = Field(20, gt=0, description="A position farther than this from its route's shape is left out")
+    control_gap_m: float = Field(150, ge=0, description="Distance along each shape between the stretch and its controls")
+    control_m: float = Field(550, gt=0, description="Length of each of the two control stretches")
+    reach_m: float = Field(2000, gt=0, description="How far along each shape a trip counts as passing, to count passages")
+    max_gap_s: float = Field(720, gt=0, description="Seconds per passage use only the hours whose snapshots are never further apart")
+    bootstrap: int = Field(2000, ge=100)
+    seed: int = 1
+
+    @model_validator(mode="after")
+    def _consistent(self) -> Delay:
+        if self.s_from >= self.s_to:
+            raise ValueError(f"delay: s_from ({self.s_from}) must be before s_to ({self.s_to})")
+        if set(self.peak_hours) & set(self.off_peak_hours):
+            raise ValueError(f"delay: hours {sorted(set(self.peak_hours) & set(self.off_peak_hours))} are both peak and off-peak")
+        return self
+
+
 class Comparison(Model):
     compare: list[str] = []
 
@@ -358,6 +413,7 @@ class Config(Model):
     envelope: Envelope | None = None
     occurrences: Occurrences | None = None
     area_scan: AreaScan | None = None
+    delay: Delay | None = None
     standards: Comparison = Comparison()
     known_gaps: list[dict[Lang, str]] = []
     vehicles: dict[str, Vehicle] = {}
@@ -406,6 +462,10 @@ class Config(Model):
                     errors.append("area_scan.identify_source needs a [network] section")
             if self.transit is None:
                 errors.append("[area_scan] needs [transit] (the buses come from its GTFS feed)")
+        if self.delay:
+            need(self.delay.source, "git_archive", "delay.source")
+            if self.transit is None:
+                errors.append("[delay] needs [transit] (its routes and their shapes come from the GTFS feed)")
         if self.envelope:
             used = {self.envelope.bus, self.envelope.car, *(v for sc in self.envelope.scenarios for v in sc)}
             errors += [f"envelope: unknown vehicle {v!r}" for v in sorted(used - set(self.all_vehicles()))]

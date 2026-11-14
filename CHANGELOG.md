@@ -7,6 +7,25 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Time on a stretch, measured from archived bus positions** (the `delay` stage, `[delay]` in a case; method in
+  docs/methodology.md). A new source kind, `git_archive`, reads a public git archive of an operator's real-time
+  feed pinned to a commit, and keeps the case's routes inside an envelope; the lock records the commit and the
+  sha256 of what was extracted. The stage compares the time buses spend on a stretch between stops with the time
+  they spend on control stretches of the same routes, at the evening peak and off-peak on working days
+  (occupancy, Little's law): the ratio needs no count of buses and uses every snapshot; the seconds use only the
+  hours densely recorded. 90% intervals come from a bootstrap over days. The tables record the checks: the
+  passages counted against the timetable, the estimate with each choice changed in turn, by year, by route and
+  direction, and by hour; `tests/test_delay.py` simulates buses with known times and checks the estimator gives
+  them back. Two findings (grade I) say what was measured, by year, and not why; they name the data's chain (Carris,
+  a relay, the archive), which is not Carris's own record. `[city] holidays` lists the public holidays, which are
+  not working days. `new-case` leaves `[delay]` out of a draft, since it depends on the street's stops.
+- Rua Ricardo Jorge: on working days at 17h–19h the stretch between its stops took 49% longer than the slowdown
+  of the routes' neighbouring stretches would explain (90% interval: 34% to 65%); about 14 s more per bus
+  (6 to 24 s), the excess coming at 17h. In 2025 +60% (+42% to +80%); in 2026, with far fewer positions, +4%
+  (−17% to +31%), which does not confirm it.
+- Evidence standard: a rule for data relayed or archived by a third party (name the chain, check it against an
+  official source, grade what is computed from it as an inference).
+
 - `mobilidados verify CASE --live` downloads a case's sources again into a temporary folder and says, file by file,
   whether each service still serves what the lock records (`same`, `changed`, `new`) or did not answer, without
   touching the cache or the lock. A monthly workflow (`.github/workflows/sources.yml`) runs it for every case.

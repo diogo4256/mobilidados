@@ -68,6 +68,29 @@
     "retrieved_utc": "2026-10-24T15:46:42+00:00",
     "url": "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
   },
+  "carris_positions": {
+    "commit": "db6b8e782c0ffaddf602fc3bcb04b335969967d8",
+    "files": {
+      "carris_positions/positions.csv": {
+        "bytes": 30807133,
+        "sha256": "70c6c40548d82e3fe4419b9f28f36bfbc985e8254410ec132ced253377eeefa2"
+      },
+      "carris_positions/snapshots.csv": {
+        "bytes": 2992331,
+        "sha256": "3534640dd2ce50b206657ab7a59adfc924c87e3b16d780e3473f71c98267fd13"
+      }
+    },
+    "kind": "git_archive",
+    "licence": "not stated (third-party archive of the Carris real-time feed; not redistributed)",
+    "period": [
+      "2025-02-17",
+      "2026-11-13"
+    ],
+    "positions": 228982,
+    "retrieved_utc": "2026-11-14T23:29:25+00:00",
+    "snapshots": 107575,
+    "url": "https://github.com/LIVREpt/lisboa_carris_api"
+  },
   "cartography": {
     "copyrightText": "",
     "envelope": [

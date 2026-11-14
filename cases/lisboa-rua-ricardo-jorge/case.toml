@@ -31,6 +31,18 @@ reference_stops = [
   { route = "46B", direction_id = 0, stop_id = "11318", s_m = 202.5, heading = -1 },
 ]
 
+[delay]
+source = "carris_positions"
+# The stretch between the two stops (11315 at s = 33.6 m, 11318 just past the NE end at s = 202.5 m), kept clear of
+# both, so the time measured is time moving or held up, not time at a stop.
+s_from = 45.0
+s_to = 190.0
+
+[sources.carris_positions]
+template = "carris_positions_archive"
+route_ids = ["200_0", "239_0"]   # 744 and 46B, as the GTFS feed names them
+envelope = [-9.165, 38.737, -9.113, 38.777]   # about 2 km around the street: the stretch, its controls and the reach
+
 [sources.cartography]
 envelope = [-9.1425, 38.7555, -9.1355, 38.7590]
 

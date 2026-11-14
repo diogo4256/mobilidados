@@ -258,6 +258,69 @@
       "caveat": "Os pontos de encontro saem de um modelo de velocidade constante, sem tempo parado nas paragens: um encontro a poucos metros do limite de um troço pode acontecer dentro dele. A 12,7 km/h, a mais baixa das velocidades entre paragens em 2026-10-27 (distância em linha reta a dividir pelo tempo mediano do horário), o modelo dá 7."
     },
     {
+      "id": "delay",
+      "grade": "I",
+      "statement": "Nos dias úteis de 2025-02-17 a 2026-11-13 (437 dias), às 17h–19h, a diferença entre o tempo dos autocarros das carreiras 744 e 46B no troço entre paragens (s = 45–190 m, 145 m) e o que o abrandamento dos troços vizinhos das mesmas carreiras, à mesma hora, faria esperar a partir das 10h–17h foi de +49% (intervalo de confiança de 90%: +34% a +65%). Por ano: em 2025, +60% (+42% a +80%; 217 dias); em 2026, +4% (−17% a +31%; 220 dias). O intervalo de 2026 inclui 0: os dados desse ano não confirmam o excesso.",
+      "values": {
+        "ratio": 1.489,
+        "ratio_ci90": [
+          1.337,
+          1.647
+        ],
+        "by_year": {
+          "2025": {
+            "ratio": 1.605,
+            "ratio_ci90": [
+              1.424,
+              1.795
+            ]
+          },
+          "2026": {
+            "ratio": 1.038,
+            "ratio_ci90": [
+              0.832,
+              1.307
+            ]
+          }
+        },
+        "working_days": 437
+      },
+      "sources": [
+        "carris_positions",
+        "carris_gtfs",
+        "street_axes"
+      ],
+      "method": "Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de 550 m, a 150 m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros (2000 réplicas).",
+      "caveat": "Por carreira e sentido: 46B NE→SO +46% (+15% a +86%); 744 SO→NE +42% (+22% a +63%); 744 NE→SO +57% (+36% a +81%). Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de +44% a +51% (delay_sensitivity.csv). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença. Mede onde se perde o tempo, não porquê: o estacionamento, os autocarros em sentido contrário, uma fila vinda de um cruzamento ou um semáforo podem todos contribuir. Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade (18 nesse período)."
+    },
+    {
+      "id": "delay_seconds",
+      "grade": "I",
+      "statement": "Nas 120 horas de ponta e 400 horas fora da ponta em que o arquivo tem posições a intervalos de 12 min no máximo (das de ponta, 118 em 2025 e 2 em 2026), um autocarro levou em média 27 s a percorrer o troço fora da ponta e 48 s na ponta, quando o abrandamento dos troços vizinhos faria esperar 33 s: mais 14 s por passagem (intervalo de confiança de 90%: 6 a 24 s).",
+      "values": {
+        "off_peak_s": 26.9,
+        "peak_s": 48.0,
+        "expected_peak_s": 33.4,
+        "excess_s": 14.5,
+        "excess_ci90_s": [
+          5.6,
+          23.9
+        ],
+        "covered_hours": {
+          "peak": 120,
+          "off_peak": 400
+        }
+      },
+      "sources": [
+        "carris_positions",
+        "carris_gtfs",
+        "street_axes",
+        "delay"
+      ],
+      "method": "Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de 2000 m do troço, só nas horas em que os registos nunca distam mais de 12 min.",
+      "caveat": "O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s (delay_sensitivity.csv); o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença."
+    },
+    {
       "id": "occurrences",
       "grade": "M",
       "statement": "Foram atribuídas à rua 6 ocorrências da categoria «Estacionamento abusivo» (2017-05-05 – 2026-05-31, a ≤12 m do eixo): 2,87 por 100 m, 1.ª de 25 ruas com pelo menos 100 m na envolvente.",
@@ -429,6 +492,29 @@
       "licence": "not stated at the download endpoint (not redistributed)",
       "retrieved_utc": "2026-10-24T15:46:42+00:00",
       "url": "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
+    },
+    "carris_positions": {
+      "commit": "db6b8e782c0ffaddf602fc3bcb04b335969967d8",
+      "files": {
+        "carris_positions/positions.csv": {
+          "bytes": 30807133,
+          "sha256": "70c6c40548d82e3fe4419b9f28f36bfbc985e8254410ec132ced253377eeefa2"
+        },
+        "carris_positions/snapshots.csv": {
+          "bytes": 2992331,
+          "sha256": "3534640dd2ce50b206657ab7a59adfc924c87e3b16d780e3473f71c98267fd13"
+        }
+      },
+      "kind": "git_archive",
+      "licence": "not stated (third-party archive of the Carris real-time feed; not redistributed)",
+      "period": [
+        "2025-02-17",
+        "2026-11-13"
+      ],
+      "positions": 228982,
+      "retrieved_utc": "2026-11-14T23:29:25+00:00",
+      "snapshots": 107575,
+      "url": "https://github.com/LIVREpt/lisboa_carris_api"
     },
     "cartography": {
       "copyrightText": "",

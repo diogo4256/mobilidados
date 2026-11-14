@@ -21,9 +21,9 @@ from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge, unary_union
 
-from . import area_scan, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
+from . import area_scan, delay, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
 from .arcgis import to_line
-from .config import ArcgisQuery, Case, Config, HttpFiles, MobilidadosError
+from .config import ArcgisQuery, Case, Config, GitArchive, HttpFiles, MobilidadosError
 from .sources import IdentifyCache, check_lock, check_pins, load_json, raw_path
 
 log = logging.getLogger(__name__)
@@ -250,6 +250,31 @@ def stage_encounters(r: Run) -> None:
     r.save("encounters_by_pair", detail.groupby(["speed_kmh", "pair"]).size().rename("encounters_per_day").reset_index())
 
 
+def stage_delay(r: Run) -> None:
+    dl, t = r.cfg.delay, r.cfg.transit
+    if dl is None or t is None:
+        return
+    src = r.case.source(dl.source)
+    assert isinstance(src, GitArchive)  # checked when the config was loaded
+    cfg = dl.model_copy(update={"exclude_dates": sorted(set(dl.exclude_dates) | set(r.cfg.city.holidays))})
+    rts = delay.routes(r.feed, t.routes, r.axis, r.case.crs, cfg)
+    unread = sorted({x.route_id for x in rts} - set(src.route_ids))
+    if unread:
+        raise MobilidadosError(
+            f"sources.{dl.source}.route_ids does not include {unread}, the GTFS route_id of the routes in transit.routes"
+        )
+    folder = raw_path(r.case, dl.source)
+    for name in ("positions.csv", "snapshots.csv"):
+        if not (folder / name).exists():
+            raise MobilidadosError(f"{folder / name} is missing: run `mobilidados fetch {r.case.root}` first")
+    pos, snaps = delay.load(
+        pd.read_csv(folder / "positions.csv", dtype=str), pd.read_csv(folder / "snapshots.csv"), cfg.time_zone, src.time_zone
+    )
+    placed = delay.place(pos, rts, r.case.crs, cfg.max_offset_m)
+    for name, table in delay.analyse(placed, snaps, rts, cfg, r.axis, r.table("passings")).items():
+        r.save(name, table)
+
+
 def stage_occurrences(r: Run) -> None:
     o = r.cfg.occurrences
     if o is None:
@@ -312,6 +337,7 @@ STAGES: dict[str, Callable[[Run], None]] = {
     "transit": stage_transit,
     "envelope": stage_envelope,
     "encounters": stage_encounters,
+    "delay": stage_delay,
     "occurrences": stage_occurrences,
     "area": stage_area,
     "standards": stage_standards,

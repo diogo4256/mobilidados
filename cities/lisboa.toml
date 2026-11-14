@@ -6,6 +6,15 @@ id = "lisboa"
 name = "Lisboa"
 country = "PT"
 crs = 3763  # ETRS89 / PT-TM06 (metres)
+# Public holidays, which [delay] does not count as working days: the national holidays (Código do Trabalho, art. 234),
+# Lisbon's municipal holiday (Santo António, 13 June) and Carnival, a day off by government decision in most years.
+# Extend the list when a case covers other years.
+holidays = [
+  2025-01-01, 2025-03-04, 2025-04-18, 2025-04-20, 2025-04-25, 2025-05-01, 2025-06-10, 2025-06-13, 2025-06-19,
+  2025-08-15, 2025-10-05, 2025-11-01, 2025-12-01, 2025-12-08, 2025-12-25,
+  2026-01-01, 2026-02-17, 2026-04-03, 2026-04-05, 2026-04-25, 2026-05-01, 2026-06-04, 2026-06-10, 2026-06-13,
+  2026-08-15, 2026-10-05, 2026-11-01, 2026-12-01, 2026-12-08, 2026-12-25,
+]
 
 [cartography]
 # 1:1000 municipal cartography, polygon layer. Class codes from the CML object catalogue
@@ -68,6 +77,22 @@ url = "https://gateway.carris.pt/gateway/gtfs/api/v2.11/GTFS"
 suffix = ".zip"
 licence = "not stated at the download endpoint (not redistributed)"
 note = "Always serves the current feed; a case pins the feed it used with sha256."
+
+[source_templates.carris_positions_archive]
+# Carris vehicle positions (GTFS-RT) as archived by a third party, one CSV per snapshot, every few minutes since
+# February 2025. The archive's collector (Get_CARRIS_RT.py in the repository) does not read Carris directly: it
+# reads https://rt.jdcp.workers.dev/, a relay run by someone else, and commits what it answers. Two parties stand
+# between Carris and these files, and neither states a licence; the files are used, not redistributed.
+kind = "git_archive"
+url = "https://github.com/LIVREpt/lisboa_carris_api"
+path = "data_sources/data_transformed"
+prefix = "carris_gtfsrt-"
+time_format = "%Y-%m-%d-%H-%M-%S"
+time_zone = "UTC"  # file names from the collector's clock (a GitHub runner, UTC) and vehicle timestamps in UTC seconds
+licence = "not stated (third-party archive of the Carris real-time feed; not redistributed)"
+attribution = "Carris (GTFS-RT), via LIVREpt/lisboa_carris_api"
+description = "Carris GTFS-RT vehicle positions archived every few minutes by LIVREpt/lisboa_carris_api, via the relay rt.jdcp.workers.dev"
+note = "Not the operator's own record: a relay and an archive stand between Carris and the files, and their completeness is checked, not assumed (delay_data.csv, delay_passages.csv)."
 
 [source_templates.cml_na_minha_rua]
 kind = "http_files"

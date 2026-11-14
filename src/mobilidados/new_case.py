@@ -238,6 +238,7 @@ class Draft:
     length_m: float = 0.0
     stops: tuple[dict[str, Any], ...] = ()  # the reference stops, with their name and distance from the axis
     one_way: bool = False  # buses run one way, so the question supposes a car beside the bus
+    without_delay: bool = False  # the model case measures time on a stretch, which the draft leaves out
 
 
 def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
@@ -298,12 +299,18 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
             data["known_gaps"] = [{lg: t("draft.gap_meeting", lg) for lg in get_args(Lang)}]
 
     sources = data.setdefault("sources", {})
+    # the measured time is set up for one stretch of the model case's street (between its stops, with its own
+    # routes and envelope): a draft leaves it out rather than measure a stretch that does not exist on its street
+    measured = cfg.delay is not None
+    if cfg.delay:
+        data.pop("delay", None)
+        sources.pop(cfg.delay.source, None)
     for sid in (cfg.profiles.cartography, cfg.profiles.axes):
         sources.setdefault(sid, {})["envelope"] = around(sid, AXIS_MARGIN_M)
     if cfg.area_scan:
         for sid in (cfg.area_scan.cartography, cfg.area_scan.axes):
             sources.setdefault(sid, {})["envelope"] = around(sid, AREA_MARGIN_M)
-    return Draft(data, out_dir, bearing(axis), axis.length, stops, one_way)
+    return Draft(data, out_dir, bearing(axis), axis.length, stops, one_way, measured)
 
 
 def header(d: Draft, model: str, date: str, lang: str) -> str:
@@ -351,6 +358,8 @@ def header(d: Draft, model: str, date: str, lang: str) -> str:
         lines.append(t("draft.header_question", lang))
         if d.one_way:
             lines.append(t("draft.header_one_way", lang))
+    if d.without_delay:
+        lines.append(t("draft.header_delay", lang))
     lines.append(t("draft.header_inherited", lang, model=model))
     return "\n".join(line.strip("\n") for line in lines) + "\n"
 

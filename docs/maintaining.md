@@ -21,7 +21,9 @@ service no longer serves it, and keeps the inputs that may be redistributed in a
   GitHub reports to the maintainers, means a source changed, moved or did not answer. Run it by hand too before
   using a case in a letter or an article.
   The routing-network answers (`arcgis_identify` sources) are not checked: they are queried point by point during
-  a run. `mobilidados fetch` refuses, in the same way, files that differ from the lock, and writes nothing;
+  a run. A `git_archive` source is fetched again at its pinned commit (the whole archive at that commit, about
+  1.3 GB for Lisbon's, which takes a few minutes) and extracted again: `same` means the archive still holds that
+  commit with the same files. `mobilidados fetch` refuses, in the same way, files that differ from the lock, and writes nothing;
   `fetch --refresh` takes them deliberately.
 * **Do the results still come out the same?** `pytest -m data` re-runs every case from its cache and compares the
   results with the committed ones. It needs the cache (`mobilidados fetch`, or `fetch --from-dir` from an
@@ -45,6 +47,12 @@ to follow the new data, and do not re-run a published case on the new data.
 To analyse the new data, add a new dated city file (for example `cities/lisboa-2027-03.toml`, extending the same
 city profile) and run the case again from it, as a new case or a new reference run. The values already quoted
 from the earlier run stay as they were, and the new results are added next to them.
+
+A git archive of real-time positions keeps growing. A case pins one commit and one period, so its positions do not
+change; to measure a later period, add a dated city file whose `carris_positions_archive` template names a newer
+commit and period, as for any other source. Check `delay_data.csv` first: an archive whose collector stopped or
+thinned out (Lisbon's had far fewer snapshots in 2026 than in 2025) can leave too few covered hours for the
+seconds, even when the ratio can still be computed.
 
 ## A service moved or is down
 

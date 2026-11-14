@@ -1,0 +1,11 @@
+variant,ratio,excess_s
+as configured,1.489,14.5
+no age limit on positions,1.478,14.3
+peak hour 17h only,1.467,35.3
+peak hour 18h only,1.511,2.5
+off-peak without 16h,1.49,14.4
+controls 100 m away,1.476,13.7
+controls 250 m away,1.439,13.7
+controls 300 m long,1.482,14.6
+passages counted within 3000 m,1.489,14.4
+hours with gaps up to 15 min,1.489,17.7

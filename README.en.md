@@ -37,10 +37,15 @@ On Rua Ricardo Jorge, in Alvalade, the findings ledger comes down to this:
   of mapped parking, about 19 to 23 places.
 * **[M]** Of the 69 streets with scheduled buses in the area, this is the only one with buses both ways, two-way
   traffic and parking on both sides leaving less than 5.5 m free over at least 30 m.
+* **[I]** In archived GPS positions of the buses, on working days at 17h–19h, the stretch between the street's
+  stops takes 49% longer than the slowdown of the routes' neighbouring stretches would explain (90% interval: 34%
+  to 65%), about 14 s more per bus (6 to 24 s). The excess is clear in 2025 (+60%) and not confirmed in 2026
+  (+4%, −17% to +31%), with far fewer positions. The positions come from a third-party archive of the Carris
+  real-time feed, not from Carris, and say where the time goes, not why.
 
 Each line carries its source, method and caveats in the [full ledger](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/findings.md)
 (in Portuguese), including what was not verified: there is no field observation of two buses meeting there, and
-Carris does not publish delays per street.
+Carris does not publish delays per street (the time measured above comes from an archive kept by a third party).
 
 ## Who it is for, and what it is not
 
@@ -53,9 +58,9 @@ Carris does not publish delays per street.
   squeezes their passage, before a site visit.
 
 It is not a street design tool: it proposes no profiles, it measures what is mapped. It is not a parking
-inventory or a map of how city space is shared out. Nor does it measure bus speeds or delays, which need
-operating data that is not published per street. It answers one question about one street, from official data,
-and says what each number rests on.
+inventory or a map of how city space is shared out. It measures the time buses spend on a stretch only where a
+public archive of the operator's real-time feed exists, and then says how complete that archive is. It answers
+one question about one street, from public data, and says what each number rests on.
 
 ## Public data, with its provenance
 
@@ -76,6 +81,9 @@ flowchart LR
   B[Street axes] --> P
   C[Routing network] --> D[Traffic direction]
   G[GTFS feed] --> T[Routes, trips per hour,<br>timetable encounters]
+  V[Archived bus positions<br>GTFS-RT] --> W[Time on a stretch<br>peak vs neighbours]
+  G --> W
+  W --> L
   P --> E[Width budget<br>bus × bus, bus × car]
   T --> E
   S[Design references<br>with page and scope] --> L
@@ -93,6 +101,7 @@ flowchart LR
 | `transit` | routes running along the street, heading, trips per hour on a service day, scheduled stop-to-stop times |
 | `envelope` | margins for bus × bus, bus × car, car × car, with and without mirrors; overhang sensitivity; free width without the parking on one side or both |
 | `encounters` | buses in opposite directions predicted to meet on the street, and where |
+| `delay` | time buses spend on a stretch between stops, from archived real-time positions: at peak against off-peak, beyond the slowdown of the same routes' neighbouring stretches, by year, route and hour, with 90% intervals and the checks behind them |
 | `occurrences` | geolocated citizen reports per 100 m of street, compared with neighbouring streets |
 | `area` | the streets with buses in the surrounding area where parking squeezes their passage in the same way |
 | `standards` | measured width against design references, each with its page and scope |
@@ -100,8 +109,9 @@ flowchart LR
 
 ## What it does not do (yet)
 
-* It reads mapped areas, not parked cars; it uses the timetable, not observed operation; and it compares static
-  widths, not swept paths. A narrow free width is a reason to ask for an inspection, not proof of an
+* It reads mapped areas, not parked cars; its encounters come from the timetable, and its measured times from a
+  third-party archive of the real-time feed, not from the operator's own record; and it compares static widths,
+  not swept paths. A narrow free width is a reason to ask for an inspection, not proof of an
   infraction. The ledger lists what was not verified (grade NE) for each case.
 * Only Lisbon has a city profile. Other municipalities need one ([docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md)).
 * The room that parking leaves for buses is the only topic so far. Other mobility questions (sidewalks,

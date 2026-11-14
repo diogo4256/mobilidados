@@ -8,12 +8,14 @@ import json
 import shutil
 
 import matplotlib
+import numpy as np
 import pandas as pd
 import pytest
 from PIL import Image
+from pyproj import Transformer
 from shapely.geometry import box
 
-from mobilidados import arcgis, cli, figures
+from mobilidados import arcgis, archive, cli, figures
 from mobilidados.config import ArcgisQuery, Case, Config, MobilidadosError
 from mobilidados.direction import directions
 from mobilidados.pipeline import Run, run
@@ -599,3 +601,92 @@ def test_a_case_without_a_question_has_no_empty_quote_in_its_ledger(tmp_path):
     lines = (case.results_dir / "findings.md").read_text(encoding="utf-8").splitlines()
     assert lines[:3] == [f"# {case.config.case.title}", "", lines[2]]
     assert not any(line.startswith(">") for line in lines)
+
+
+DELAY = """
+[delay]
+source = "positions"
+s_from = 50.0
+s_to = 150.0
+control_gap_m = 10.0
+control_m = 30.0
+reach_m = 40.0
+bootstrap = 100
+
+[sources.positions]
+kind = "git_archive"
+url = "https://github.com/example/archive"
+commit = "0123456789abcdef0123456789abcdef01234567"
+path = "data"
+prefix = "feed-"
+period = [2026-01-05, 2026-01-16]
+route_ids = ["A", "B"]
+envelope = [-10.0, 38.0, -9.0, 39.0]
+licence = "not stated"
+"""
+
+
+def archived_positions(case):
+    """Buses of routes 10 (A, eastbound) and 20 (B, westbound) at 5 m/s, a new one every minute, seen every 30 s on ten
+    working days: written where ``fetch`` writes a git archive's extraction. The street is short, so the snapshots are
+    frequent: the seconds hold only if every trip is seen within reach of the stretch (docs/methodology.md)."""
+    to_ll = Transformer.from_crs(3763, 4326, always_xy=True)
+    rows, snaps = [], []
+    k = np.arange(13 * 60)
+    for day in pd.bdate_range("2026-01-05", "2026-01-16"):
+        starts = (day + pd.Timedelta(hours=8)).timestamp() + 60 * k + 7 * k % 60  # not in step with the snapshots
+        for t in pd.date_range(day + pd.Timedelta(hours=9), day + pd.Timedelta(hours=20), freq="30s", inclusive="left"):
+            snap, reported = t.strftime("%Y-%m-%dT%H:%M:%S"), (t - pd.Timedelta(seconds=15)).strftime("%Y-%m-%d %H:%M:%S")
+            m = (t.timestamp() - starts) * 5.0
+            on = (m >= 0) & (m <= 200)
+            for route, direction, x in (("A", "0", ORIGIN[0] + m[on]), ("B", "1", ORIGIN[0] + 200 - m[on])):
+                lon, lat = to_ll.transform(x, np.full(len(x), ORIGIN[1]))
+                rows += [[snap, f"{route}{day:%d}-{i}", route, direction, "v", reported, f"{la:.7f}", f"{lo:.7f}", "IN_TRANSIT_TO", "", ""]
+                         for i, lo, la in zip(k[on], lon, lat, strict=True)]  # fmt: skip
+            snaps.append([snap, 100, 2 * int(on.sum()), 2 * int(on.sum())])
+    folder = raw_path(case, "positions")
+    folder.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows, columns=archive.POSITION_COLUMNS).to_csv(folder / "positions.csv", index=False)
+    pd.DataFrame(snaps, columns=archive.SNAPSHOT_COLUMNS).to_csv(folder / "snapshots.csv", index=False)
+    lock = Lock(case.lock_path)
+    lock.record("positions", sorted(folder.iterdir()), case.raw_dir, kind="git_archive", retrieved_utc="2026-10-24T12:00:00+00:00")
+    lock.save()
+
+
+def test_the_time_measured_on_the_stretch_is_in_its_tables_its_figure_and_the_ledger(tmp_path):
+    root = write_case(tmp_path / "delay")
+    (root / "case.toml").write_text((root / "case.toml").read_text(encoding="utf-8") + DELAY, encoding="utf-8")
+    case = Case.load(root)
+    archived_positions(case)
+    run(case, offline=True)
+    tables = case.results_dir / "tables"
+    for name in ("delay_routes", "delay_data", "delay_summary", "delay_sensitivity", "delay_passages", "delay_by_hour"):
+        assert (tables / f"{name}.csv").exists(), name
+    routes_ = pd.read_csv(tables / "delay_routes.csv")
+    assert routes_.route_direction.tolist() == ["10 0", "20 1"]
+    assert routes_.heading.tolist() == [1, -1]
+    summary = pd.read_csv(tables / "delay_summary.csv").set_index("scope")
+    # the same speed everywhere at every hour: the stretch is no slower than its controls
+    assert summary.loc["all", "ratio"] == pytest.approx(1.0, abs=0.15)
+    assert summary.loc["all", "off_peak_s"] == pytest.approx(100 / 5.0, rel=0.15)  # 100 m at 5 m/s
+    assert summary.loc["all", "working_days"] == 10
+    assert (case.results_dir / "figures" / "delay_by_hour.png").exists()
+    findings = ledger_of(case)
+    assert findings["delay"]["grade"] == findings["delay_seconds"]["grade"] == "I"
+    assert findings["delay"]["statement"].startswith("On the working days from 2026-01-05 to 2026-01-16 (10 days), at 17h–19h,")
+    assert "routes 10 and 20" in findings["delay"]["statement"]
+    assert "not Carris's own record" in findings["delay"]["caveat"]
+    md = (case.results_dir / "findings.md").read_text(encoding="utf-8")
+    # the archive is listed as it was at the pinned commit
+    assert "<https://github.com/example/archive/tree/0123456789abcdef0123456789abcdef01234567>" in md
+
+
+def test_a_delay_source_of_another_kind_or_without_transit_is_refused(tmp_path):
+    root = write_case(tmp_path / "bad", optional=False)
+    (root / "case.toml").write_text(
+        (root / "case.toml").read_text(encoding="utf-8") + DELAY.replace('source = "positions"', 'source = "cartography"'), encoding="utf-8"
+    )
+    with pytest.raises(MobilidadosError) as e:
+        Case.load(root)
+    assert "delay.source = 'cartography': needs a source of kind 'git_archive'" in str(e.value)
+    assert "[delay] needs [transit]" in str(e.value)

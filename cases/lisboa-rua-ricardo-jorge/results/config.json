@@ -54,8 +54,68 @@
   "city": {
     "country": "PT",
     "crs": 3763,
+    "holidays": [
+      "2025-01-01",
+      "2025-03-04",
+      "2025-04-18",
+      "2025-04-20",
+      "2025-04-25",
+      "2025-05-01",
+      "2025-06-10",
+      "2025-06-13",
+      "2025-06-19",
+      "2025-08-15",
+      "2025-10-05",
+      "2025-11-01",
+      "2025-12-01",
+      "2025-12-08",
+      "2025-12-25",
+      "2026-01-01",
+      "2026-02-17",
+      "2026-04-03",
+      "2026-04-05",
+      "2026-04-25",
+      "2026-05-01",
+      "2026-06-04",
+      "2026-06-10",
+      "2026-06-13",
+      "2026-08-15",
+      "2026-10-05",
+      "2026-11-01",
+      "2026-12-01",
+      "2026-12-08",
+      "2026-12-25"
+    ],
     "id": "lisboa",
     "name": "Lisboa"
+  },
+  "delay": {
+    "bootstrap": 2000,
+    "control_gap_m": 150.0,
+    "control_m": 550.0,
+    "exclude_dates": [],
+    "max_age_s": 60.0,
+    "max_gap_s": 720.0,
+    "max_offset_m": 20.0,
+    "off_peak_hours": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "peak_hours": [
+      17,
+      18
+    ],
+    "reach_m": 2000.0,
+    "s_from": 45.0,
+    "s_to": 190.0,
+    "seed": 1,
+    "source": "carris_positions",
+    "time_zone": "Europe/Lisbon"
   },
   "direction": {
     "source": "network_identify",
@@ -212,6 +272,37 @@
       "sha256": "c7550ea2d2f039d127d9d3dbbcb28687b2d1f958f36999d79fe30c2f76d1c1d7",
       "suffix": ".zip",
       "url": "https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip"
+    },
+    "carris_positions": {
+      "attribution": "Carris (GTFS-RT), via LIVREpt/lisboa_carris_api",
+      "commit": "db6b8e782c0ffaddf602fc3bcb04b335969967d8",
+      "dataset_page": null,
+      "description": "Carris GTFS-RT vehicle positions archived every few minutes by LIVREpt/lisboa_carris_api, via the relay rt.jdcp.workers.dev",
+      "envelope": [
+        -9.165,
+        38.737,
+        -9.113,
+        38.777
+      ],
+      "kind": "git_archive",
+      "licence": "not stated (third-party archive of the Carris real-time feed; not redistributed)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "note": "Not the operator's own record: a relay and an archive stand between Carris and the files, and their completeness is checked, not assumed (delay_data.csv, delay_passages.csv).",
+      "path": "data_sources/data_transformed",
+      "period": [
+        "2025-02-17",
+        "2026-11-13"
+      ],
+      "prefix": "carris_gtfsrt-",
+      "redistributable": false,
+      "route_ids": [
+        "200_0",
+        "239_0"
+      ],
+      "time_format": "%Y-%m-%d-%H-%M-%S",
+      "time_zone": "UTC",
+      "url": "https://github.com/LIVREpt/lisboa_carris_api"
     },
     "cartography": {
       "attribution": "© Câmara Municipal de Lisboa",

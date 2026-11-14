@@ -39,10 +39,15 @@ Na Rua Ricardo Jorge, em Alvalade, a lista de factos apurados chega a isto:
   retirados 117,5 m de estacionamento cartografado, cerca de 19 a 23 lugares.
 * **[M]** Das 69 ruas da zona com autocarros no horário, só esta tem autocarros nos dois sentidos, dois sentidos
   de trânsito e estacionamento dos dois lados com menos de 5,5 m livres em pelo menos 30 m.
+* **[I]** Nas posições GPS arquivadas dos autocarros, nos dias úteis às 17h–19h, o troço entre as paragens da rua
+  leva mais 49% de tempo do que o abrandamento dos troços vizinhos das mesmas carreiras explicaria (intervalo de
+  90%: 34% a 65%), cerca de mais 14 s por autocarro (6 a 24 s). O excesso é claro em 2025 (+60%) e não se
+  confirma em 2026 (+4%, −17% a +31%), com muito menos posições. As posições vêm de um arquivo do feed em tempo
+  real da Carris mantido por terceiros, não da Carris, e dizem onde se perde o tempo, não porquê.
 
 Cada linha leva a fonte, o método e as reservas na [lista completa](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/findings.md),
 incluindo o que não foi verificado: não há observação no local de dois autocarros a cruzar-se ali, e a Carris
-não publica atrasos por rua.
+não publica atrasos por rua (o tempo medido acima vem de um arquivo mantido por terceiros).
 
 ## Para quem é, e o que não é
 
@@ -54,9 +59,9 @@ não publica atrasos por rua.
   estacionamento aperta a passagem, antes de ir ao local.
 
 Não é uma ferramenta de desenho de ruas: não propõe perfis, mede o que está cartografado. Não é um inventário de
-estacionamento nem um mapa da repartição do espaço da cidade. Também não mede a velocidade nem os atrasos dos
-autocarros, que pedem dados de operação que não são públicos por rua. Responde a uma pergunta sobre uma rua, a
-partir dos dados oficiais, e diz em que se apoia cada número.
+estacionamento nem um mapa da repartição do espaço da cidade. Só mede o tempo dos autocarros num troço onde exista
+um arquivo público do feed em tempo real do operador, e diz então até que ponto esse arquivo está completo.
+Responde a uma pergunta sobre uma rua, a partir de dados públicos, e diz em que se apoia cada número.
 
 ## De onde vêm os dados
 
@@ -79,6 +84,9 @@ flowchart LR
   B[Eixos de via] --> P
   C[Rede viária] --> D[Sentido de trânsito]
   G[Horários GTFS] --> T[Carreiras, viagens por hora,<br>cruzamentos previstos]
+  V[Posições arquivadas<br>dos autocarros, GTFS-RT] --> W[Tempo num troço<br>ponta face aos vizinhos]
+  G --> W
+  W --> L
   P --> E[Repartição da largura<br>autocarro e autocarro, autocarro e ligeiro]
   T --> E
   S[Referências de desenho<br>com página e âmbito] --> L
@@ -96,6 +104,7 @@ flowchart LR
 | `transit` | carreiras que passam na rua, em que sentido, quantas viagens por hora num dia de serviço, tempos previstos entre paragens |
 | `envelope` | folgas para dois autocarros, autocarro e ligeiro, e dois ligeiros, com e sem espelhos; efeito de carros estacionados que ficam fora do lugar; largura livre sem o estacionamento de um lado ou dos dois |
 | `encounters` | autocarros em sentidos opostos que, segundo o horário, se cruzam na rua, e em que ponto |
+| `delay` | tempo dos autocarros num troço entre paragens, a partir de posições em tempo real arquivadas: na ponta face a fora da ponta, para além do abrandamento dos troços vizinhos das mesmas carreiras, por ano, carreira e hora, com intervalos de 90% e as verificações que os sustentam |
 | `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
 | `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
 | `standards` | largura medida comparada com as referências de desenho de rua, cada uma com página e âmbito |
@@ -103,8 +112,9 @@ flowchart LR
 
 ## O que (ainda) não faz
 
-* Lê os lugares de estacionamento desenhados na cartografia, não os carros que lá estão; usa o horário, não o
-  que os autocarros fazem na realidade; e compara larguras, sem simular o espaço que um autocarro varre numa
+* Lê os lugares de estacionamento desenhados na cartografia, não os carros que lá estão; os encontros vêm do
+  horário, e os tempos medidos de um arquivo do feed em tempo real mantido por terceiros, não do registo do próprio
+  operador; e compara larguras, sem simular o espaço que um autocarro varre numa
   curva. Uma rua estreita é motivo para pedir uma vistoria, não prova de que há uma infração. Para cada caso, a
   lista de factos diz o que ficou por verificar (NE).
 * Por agora só há perfil de cidade para Lisboa. Os outros concelhos precisam do seu ([docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md)).

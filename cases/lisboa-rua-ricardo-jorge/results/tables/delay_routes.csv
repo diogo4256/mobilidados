@@ -1,0 +1,4 @@
+route_direction,route_id,shape_id,heading,stretch_from_m,stretch_to_m,controls_m
+46B 0,239_0,239_0_CIRC_shp,-1,4119.7,4264.7,3420-3970 4415-4965
+744 0,200_0,200_0_ASC_shp,1,5903.4,6048.4,5203-5753 6198-6748
+744 1,200_0,200_0_DESC_shp,-1,6550.3,6695.2,5850-6400 6845-7395

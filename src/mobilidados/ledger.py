@@ -13,9 +13,10 @@ import json
 import math
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
 from pydantic import BaseModel
 
-from .config import AnySource, Case, Grade, HttpFiles, standards_catalogue
+from .config import AnySource, Case, GitArchive, Grade, HttpFiles, standards_catalogue
 from .direction import directions
 from .envelope import widths
 from .geometry import MIN_STRIP_M, TWO_STRIPS
@@ -409,6 +410,10 @@ def build(r: Run) -> list[Finding]:
             )
         )
 
+    dl = cfg.delay
+    if dl and tr:
+        F += delay_findings(r, say, method, caveat, n)
+
     o = cfg.occurrences
     if o:
         fname, frx = next(iter(o.filters.items()))
@@ -503,6 +508,149 @@ def build(r: Run) -> list[Finding]:
     return F
 
 
+def delay_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:
+    """The measured time on the stretch (``delay`` stage): the ratio over every snapshot, by year and by direction,
+    and the seconds over the hours the archive covers densely enough."""
+    cfg, lang = r.cfg, r.case.lang
+    dl, tr = cfg.delay, cfg.transit
+    assert dl is not None
+    assert tr is not None
+    src = cfg.sources[dl.source]
+    assert isinstance(src, GitArchive)
+    summ = r.table("delay_summary").astype({"scope": str}).set_index("scope")
+    data = r.table("delay_data").set_index("item").value
+    routes = r.table("delay_routes").astype({"route_direction": str})
+    sens = r.table("delay_sensitivity")
+    checked = r.table("delay_passages")
+
+    def pct(ratio: float) -> str:
+        return str(n((float(ratio) - 1) * 100, 0, sign=True))
+
+    def hours(hs: list[int]) -> str:
+        return f"{min(hs)}h–{max(hs) + 1}h"
+
+    years = [y for y in summ.index if y.isdigit()]
+    unconfirmed = [y for y in years if summ.loc[y, "ratio_ci90_low"] <= 1]
+    and_ = t("report.and", lang)
+    whole = summ.loc["all"]
+    sources = [dl.source, tr.source, cfg.profiles.axes]
+    directions = [
+        caveat(
+            "delay_direction",
+            route=row.route_direction.split()[0],
+            heading=cfg.street.heading_label(int(row.heading)),
+            pct=pct(summ.loc[row.route_direction, "ratio"]),
+            lo=pct(summ.loc[row.route_direction, "ratio_ci90_low"]),
+            hi=pct(summ.loc[row.route_direction, "ratio_ci90_high"]),
+        )
+        for row in routes.itertuples()
+    ]
+    common = [
+        caveat("delay_source", url=src.url.removeprefix("https://github.com/"), commit=src.commit[:12]),
+        caveat("delay_cause"),
+        caveat("delay_days", n=int(data["holidays_left_out"])),
+    ]
+    out = [
+        Finding(
+            id="delay",
+            grade="I",
+            statement=say(
+                "delay",
+                first=data["first_day"],
+                last=data["last_day"],
+                days=int(whole.working_days),
+                peak=hours(dl.peak_hours),
+                off=hours(dl.off_peak_hours),
+                routes=and_.join(tr.routes),
+                a=n(dl.s_from, 0),
+                b=n(dl.s_to, 0),
+                length=n(dl.s_to - dl.s_from, 0),
+                pct=pct(whole.ratio),
+                lo=pct(whole.ratio_ci90_low),
+                hi=pct(whole.ratio_ci90_high),
+                years="; ".join(
+                    say(
+                        "delay_year",
+                        year=y,
+                        pct=pct(summ.loc[y, "ratio"]),
+                        lo=pct(summ.loc[y, "ratio_ci90_low"]),
+                        hi=pct(summ.loc[y, "ratio_ci90_high"]),
+                        days=int(summ.loc[y, "working_days"]),
+                    )
+                    for y in years
+                ),
+                unconfirmed=say("delay_unconfirmed", count=len(unconfirmed), years=and_.join(unconfirmed)) if unconfirmed else "",
+            ),
+            values={
+                "ratio": float(whole.ratio),
+                "ratio_ci90": [float(whole.ratio_ci90_low), float(whole.ratio_ci90_high)],
+                "by_year": {
+                    y: {
+                        "ratio": float(summ.loc[y, "ratio"]),
+                        "ratio_ci90": [float(summ.loc[y, "ratio_ci90_low"]), float(summ.loc[y, "ratio_ci90_high"])],
+                    }
+                    for y in years
+                },
+                "working_days": int(whole.working_days),
+            },
+            sources=sources,
+            method=method("delay", cm=n(dl.control_m, 0), gap=n(dl.control_gap_m, 0), reps=dl.bootstrap),
+            caveat=sentences(
+                caveat("delay_directions", list="; ".join(directions)),
+                caveat("delay_sensitivity", lo=pct(sens.ratio.min()), hi=pct(sens.ratio.max())),
+                *common,
+            ),
+        )
+    ]
+    if np.isfinite(whole.excess_s):
+        by_year = [say("delay_hours_year", n=int(summ.loc[y, "covered_hours_peak"]), year=y) for y in years]
+        timetable = float(checked.passages_per_hour_timetable.sum())  # 0 if the service day has no trip at those hours
+        counted = float(checked.passages_per_hour_counted.sum()) / timetable if timetable else math.nan
+        out.append(
+            Finding(
+                id="delay_seconds",
+                grade="I",
+                statement=say(
+                    "delay_seconds",
+                    hp=int(whole.covered_hours_peak),
+                    ho=int(whole.covered_hours_off_peak),
+                    gap=n(dl.max_gap_s / 60, 0),
+                    by_year=and_.join(by_year),
+                    off=n(whole.off_peak_s, 0),
+                    peak=n(whole.peak_s, 0),
+                    exp=n(whole.expected_peak_s, 0),
+                    exc=n(whole.excess_s, 0),
+                    lo=n(whole.excess_ci90_low_s, 0),
+                    hi=n(whole.excess_ci90_high_s, 0),
+                ),
+                values={
+                    "off_peak_s": float(whole.off_peak_s),
+                    "peak_s": float(whole.peak_s),
+                    "expected_peak_s": float(whole.expected_peak_s),
+                    "excess_s": float(whole.excess_s),
+                    "excess_ci90_s": [float(whole.excess_ci90_low_s), float(whole.excess_ci90_high_s)],
+                    "covered_hours": {"peak": int(whole.covered_hours_peak), "off_peak": int(whole.covered_hours_off_peak)},
+                },
+                sources=[*sources, "delay"],
+                method=method("delay_seconds", reach=n(dl.reach_m, 0), gap=n(dl.max_gap_s / 60, 0)),
+                caveat=sentences(
+                    caveat(
+                        "delay_by_hour",
+                        list="; ".join(
+                            caveat("delay_hour", h=row.variant.split()[2].rstrip("h"), s=n(row.excess_s, 0))
+                            for row in sens[sens.variant.str.startswith("peak hour")].itertuples()
+                        ),
+                    )
+                    if sens.variant.str.startswith("peak hour").any()
+                    else "",
+                    caveat("delay_passages", pct=n(100 * counted, 0), day=tr.service_date) if math.isfinite(counted) else "",
+                    common[0],
+                ),
+            )
+        )
+    return out
+
+
 def write(r: Run) -> None:
     findings, case = build(r), r.case
     lock = Lock(case.lock_path)
@@ -548,7 +696,11 @@ def markdown(case: Case, findings: list[Finding], lock: Lock) -> str:
 
 
 def _urls(source: AnySource) -> list[str]:
-    return [f.url for f in source.files] if isinstance(source, HttpFiles) else [source.url]
+    if isinstance(source, HttpFiles):
+        return [f.url for f in source.files]
+    if isinstance(source, GitArchive):  # the archive as it was at the pinned commit
+        return [f"{source.url}/tree/{source.commit}" if source.url.startswith("https://github.com/") else f"{source.url}@{source.commit}"]
+    return [source.url]
 
 
 def attribution(case: Case) -> list[str]:
