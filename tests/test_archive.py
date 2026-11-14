@@ -2,6 +2,7 @@
 archive's own text, and the same bytes on every reading."""
 
 import datetime as dt
+import os
 import shutil
 import subprocess
 
@@ -20,10 +21,9 @@ def row(route, lat, lon, trip="t1", ts="2025-03-10 17:00:00"):
 
 
 def git(repo, *args):
-    env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.org", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.org"}
-    return subprocess.run(
-        ["git", *args], cwd=repo, check=True, capture_output=True, text=True, env=env | {"PATH": __import__("os").environ["PATH"]}
-    ).stdout
+    # the whole environment (git on Windows needs more than PATH), with an author for the test commits
+    who = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.org", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.org"}
+    return subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True, env=os.environ | who).stdout
 
 
 @pytest.fixture
