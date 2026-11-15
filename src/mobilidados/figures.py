@@ -12,7 +12,7 @@ import numpy as np
 from matplotlib.figure import Figure
 
 from . import envelope, i18n
-from .config import Case, Lang, Vehicle
+from .config import Case, Lang, Vehicle, standards_catalogue
 
 if TYPE_CHECKING:
     from .pipeline import Run
@@ -55,6 +55,8 @@ def make_all(run: Run) -> None:
             figs["area_streets"] = fig
         if cfg.delay and cfg.transit:
             figs["delay_by_hour"] = delay_by_hour(run, lang)
+        if cfg.sidewalks:
+            figs["sidewalk_profile"] = sidewalk_profile(run, lang)
         note = credit(run.case)
         for old in out.glob("*.png"):
             if old.stem not in figs:  # made by an earlier configuration
@@ -270,5 +272,43 @@ def delay_by_hour(run: Run, lang: Lang) -> Figure:
     ax.grid(axis="y", color=GRID, lw=0.6)
     ax.legend(frameon=False, loc="upper left", fontsize=9)
     ax.set_title(t("delay_title", lang, length=i18n.num(dl.s_to - dl.s_from, lang, 0)), loc="left", fontsize=10, color=INK)
+    fig.tight_layout()
+    return fig
+
+
+def sidewalk_profile(run: Run, lang: Lang) -> Figure:
+    """The widest piece of mapped sidewalk on each side along the street, against the free path of the accessibility
+    law: solid where the sidewalk reaches the buildings, faint where it does not (what lies beyond is not known), and
+    the stretches below what the law admits shaded."""
+    sw = run.cfg.sidewalks
+    assert sw is not None
+    free = standards_catalogue().reference(sw.free_path)[0].value_m
+    p = run.table("sidewalk_profile")
+    sec = run.table("sidewalk_narrow_sections")
+    fig = Figure(figsize=(10, 3.8))
+    ax = fig.subplots()
+    for i, b in enumerate(run.cfg.street.blocks):
+        ax.axvspan(b.start, b.end, color=GRID if i % 2 else "white", alpha=0.5, lw=0)
+        ax.text((b.start + b.end) / 2, 0.1, b.id, ha="center", color=MUTED, fontsize=9)
+    step = run.cfg.profiles.step_m
+    for x in sec[sec.below.astype(bool)].itertuples():
+        ax.axvspan(x.s_from - step / 2, x.s_to + step / 2, color=ALERT, alpha=0.15, lw=0)
+    names: dict[str, str] = {str(k): v for k, v in run.cfg.street.sides.items()}
+    for side, color in (("L", BUS2), ("R", CAR)):
+        w = p[f"walk_{side}"]
+        hard = p[f"walk_{side}_bounded"].eq(True)
+        label = t("sidewalk_side", lang, side=names[side])
+        ax.plot(p.s, w.where(hard), color=color, lw=1.4, label=label)
+        ax.plot(p.s, w.where(~hard), color=color, lw=1, alpha=0.35, ls="--")
+    ax.plot([], [], color=MUTED, lw=1, alpha=0.6, ls="--", label=t("sidewalk_open", lang))
+    ax.axhline(free, color=ALERT, lw=0.9, ls=":")
+    ax.text(p.s.max(), free + 0.08, t("free_path", lang, w=num(free, lang)), color=ALERT, ha="right", fontsize=8)
+    top = p[["walk_L", "walk_R"]].max().max()
+    ax.set_ylim(0, min(8.0, max(3.0, (top if top == top else 0) + 0.5)))  # corners read wide: keep the narrow end legible
+    ax.set_xlim(0, float(run.table("street").length_m.iloc[0]))
+    ax.set_xlabel(t("along", lang))
+    ax.set_ylabel("m")
+    ax.set_title(t("sidewalk_title", lang), loc="left", fontsize=10, color=INK)
+    ax.legend(frameon=False, loc="upper left", fontsize=9)
     fig.tight_layout()
     return fig

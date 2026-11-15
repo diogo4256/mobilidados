@@ -4,6 +4,9 @@
 #   kind = "reference_profile"  a recommended cross-section in a design manual (not binding)
 #   kind = "conditional_value"  a value the document allows only under the stated conditions
 #   kind = "secondary_citation" an official document quoting a standard we have not read ourselves
+#   kind = "legal_requirement"  a value a law sets, for the cases its scope covers (binding where it applies)
+#
+# `max_length_m` marks a value that applies only to a stretch at most that long (a short narrowing a law admits).
 #
 # `document_sha256` lets anyone check they are reading the same file. `page` is the printed page number;
 # `pdf_page` is the 1-based page index in the PDF. Quotes are in the PDF text layer unless quote_location = "image".
@@ -36,6 +39,15 @@ url = "https://www.mobilitaet.bayern.de/assets/stmi/vum/strasse/planung/49_einfu
 document_sha256 = "144618918c798610985492d388965a91e6aa93abbde80c08f2b8bcecdcfeb425"
 nature = "Ministerial letter introducing RASt 06 for federal and state roads in Bavaria"
 url_checked = "2026-10-24: downloaded file matches document_sha256"
+
+[documents.dl_163_2006]
+title = "Decreto-Lei n.º 163/2006, de 8 de agosto (regime da acessibilidade), Diário da República, 1.ª série, n.º 152"
+publisher = "Diário da República"
+year = 2006
+url = "https://files.diariodarepublica.pt/1s/2006/08/15200/56705689.pdf"
+document_sha256 = "5b800bfbee2efde7d768e77c9193dc0643b0a35b7aae96cef1c59f6436a617a1"
+nature = "Law (decree-law): binding. Amended by Decrees-Law 136/2014, 125/2017, 95/2019 and 10/2024; the consolidated text on diariodarepublica.pt keeps annex sections 1.2.1 and 4.3.1–4.3.3 and article 9 as published (checked 2026-11-15)"
+url_checked = "2026-11-15: downloaded file matches document_sha256"
 
 [[references]]
 id = "cml_manual_two_way_profile"
@@ -125,3 +137,77 @@ quote = "für die Begegnungsfälle zweier Linienbusse bzw. zweier Lkw eine Fahrb
 label = "Faixa de rodagem para o cruzamento de dois autocarros de carreira ou dois pesados (introdução da RASt 06 na Baviera)"
 scope = "Travessias de localidades em estradas federais e estaduais sob responsabilidade da Baviera; não é lei portuguesa"
 derivation = "Em geral, 6,50 m; faixa mais estreita só em ruas com tráfego muito reduzido"
+
+[[references]]
+id = "dl163_free_path"
+document = "dl_163_2006"
+page = 5686
+pdf_page = 17
+kind = "legal_requirement"
+value_m = 1.20
+label = "Pedestrian routes: continuous channel free of obstructions (street furniture, trees, signs, hydrants, bins and the like count as obstructions), measured at ground level"
+derivation = "Annex, sections 4.3.1 (width) and 4.3.2 (what counts as an obstruction); sidewalks are within the decree's scope by article 2(2)(a), p. 5672"
+scope = "Sidewalks and other paved pedestrian routes on the public way (article 2(2)(a)); existing public space had to be adapted within 10 years of the decree's entry into force, or 5 if built after 22 August 1997 (article 9), save justified exceptions (article 10)"
+quote = "Os percursos pedonais devem ter em todo o seu desenvolvimento um canal de circulação contínuo e desimpedido de obstruções com uma largura não inferior a 1,2 m, medida ao nível do pavimento."
+
+[references.translations.pt]
+label = "Percursos pedonais: canal de circulação contínuo e desimpedido de obstruções (mobiliário urbano, árvores, sinalização, bocas-de-incêndio, papeleiras e semelhantes contam como obstruções), medido ao nível do pavimento"
+derivation = "Anexo, secções 4.3.1 (largura) e 4.3.2 (o que conta como obstrução); os passeios estão no âmbito do decreto-lei pelo artigo 2.º, n.º 2, alínea a), p. 5672"
+scope = "Passeios e outros percursos pedonais pavimentados na via pública (artigo 2.º, n.º 2, alínea a)); o espaço público existente tinha de ser adaptado em 10 anos a contar da entrada em vigor do decreto-lei, ou em 5 se construído depois de 22 de agosto de 1997 (artigo 9.º), salvo exceções fundamentadas (artigo 10.º)"
+
+[[references]]
+id = "dl163_short_060"
+document = "dl_163_2006"
+page = 5686
+pdf_page = 17
+kind = "legal_requirement"
+value_m = 0.80
+max_length_m = 0.60
+label = "Pedestrian routes: free width admitted over a narrowing at most 0.60 m long"
+derivation = "Annex, section 4.3.3, first drawing: A ≥ 0.80 m when B ≤ 0.60 m (A the width, B the length of the narrowing)"
+scope = "Short narrowings of a pedestrian route, instead of the 1.2 m of section 4.3.1"
+quote_location = "image"
+quote = "Podem existir troços dos percursos pedonais com uma largura livre inferior ao especificado no n.º 4.3.1, se tiverem dimensões que satisfaçam o definido em seguida"
+extraction = "Values read from the drawing under section 4.3.3 (A, B and the inequalities are printed in the drawing's table); checked by eye on 2026-11-15."
+
+[references.translations.pt]
+label = "Percursos pedonais: largura livre admitida num estreitamento com até 0,60 m de comprimento"
+derivation = "Anexo, secção 4.3.3, primeiro desenho: A ≥ 0,80 m quando B ≤ 0,60 m (A a largura, B o comprimento do estreitamento)"
+scope = "Estreitamentos curtos de um percurso pedonal, em vez dos 1,2 m da secção 4.3.1"
+
+[[references]]
+id = "dl163_short_150"
+document = "dl_163_2006"
+page = 5686
+pdf_page = 17
+kind = "legal_requirement"
+value_m = 0.90
+max_length_m = 1.50
+label = "Pedestrian routes: free width admitted over a narrowing more than 0.60 m and at most 1.50 m long"
+derivation = "Annex, section 4.3.3, second drawing: A ≥ 0.90 m when 0.60 < B ≤ 1.50 m (A the width, B the length of the narrowing)"
+scope = "Short narrowings of a pedestrian route, instead of the 1.2 m of section 4.3.1"
+quote_location = "image"
+quote = "Podem existir troços dos percursos pedonais com uma largura livre inferior ao especificado no n.º 4.3.1, se tiverem dimensões que satisfaçam o definido em seguida"
+extraction = "Values read from the drawing under section 4.3.3 (A, B and the inequalities are printed in the drawing's table); checked by eye on 2026-11-15."
+
+[references.translations.pt]
+label = "Percursos pedonais: largura livre admitida num estreitamento com mais de 0,60 m e até 1,50 m de comprimento"
+derivation = "Anexo, secção 4.3.3, segundo desenho: A ≥ 0,90 m quando 0,60 < B ≤ 1,50 m (A a largura, B o comprimento do estreitamento)"
+scope = "Estreitamentos curtos de um percurso pedonal, em vez dos 1,2 m da secção 4.3.1"
+
+[[references]]
+id = "dl163_main_roads"
+document = "dl_163_2006"
+page = 5676
+pdf_page = 7
+kind = "legal_requirement"
+value_m = 1.50
+label = "Sidewalks next to main roads and distributor roads: free width"
+derivation = "Annex, section 1.2.1"
+scope = "Only sidewalks adjacent to main roads and distributor roads (vias principais e vias distribuidoras); the decree does not define which roads these are, so a case applies it only where the municipality classifies the street so"
+quote = "Os passeios adjacentes a vias principais e vias distribuidoras devem ter uma largura livre não inferior a 1,5 m."
+
+[references.translations.pt]
+label = "Passeios adjacentes a vias principais e vias distribuidoras: largura livre"
+derivation = "Anexo, secção 1.2.1"
+scope = "Só passeios adjacentes a vias principais e vias distribuidoras; o decreto-lei não define quais são, pelo que um caso só a aplica onde a Câmara classifica a rua assim"

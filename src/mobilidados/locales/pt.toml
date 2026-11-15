@@ -33,6 +33,11 @@ delay_controls = "troços vizinhos, à mesma escala"
 delay_s = "segundos por passagem"
 delay_interval = "intervalo de confiança de 90% (reamostragem de dias)"
 delay_peak = "ponta"
+sidewalk_title = "Passeio cartografado ao longo da rua (a parte mais larga, entre o lancil e as construções)"
+sidewalk_side = "lado {side}"
+sidewalk_open = "não vai até às construções (a verificar)"
+free_path = "canal livre do DL 163/2006: {w} m"
+
 [ledger]
 length = "O eixo da rua tem {length} m."
 traffic = { one = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} ponto verificado ao longo da rua, a circulação é permitida em ambos os sentidos.", other = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos." }
@@ -67,6 +72,20 @@ without_parking = "Sem o estacionamento do lado {side_l}, a largura livre passar
 parking_removed = "Retirar o estacionamento de um lado, nos troços com estacionamento dos dois lados, retiraria {m} m de estacionamento cartografado ({places}); dos dois lados, {m2} m ({places2}). Lugares contados a {space} m cada (pressuposto). Em toda a rua, o estacionamento cartografado mede {wl} m do lado {side_l} e {wr} m do lado {side_r}."
 places = { one = "cerca de {n} lugar", other = "cerca de {n} lugares" }
 places_range = "cerca de {lo} a {hi} lugares"
+sidewalks_side = "do lado {side}, mediana de {med} m e mínimo de {min} m, em {m} m de rua ({b} m até às construções)"
+sidewalks_side_none = "do lado {side}, nenhum troço medido"
+sidewalks = "O passeio cartografado tem, {left}; {right}."
+sidewalks_law = "O Decreto-Lei n.º 163/2006, de 8 de agosto, aplica-se aos passeios e exige nos percursos pedonais um canal de circulação contínuo e desimpedido com pelo menos {free} m de largura, medido ao nível do pavimento, contando como obstruções o mobiliário urbano, as árvores, a sinalização, as bocas-de-incêndio e as papeleiras (anexo, secções 4.3.1 e 4.3.2, p. {page}); um troço mais estreito só é admitido se for curto: pelo menos {w1} m de largura em até {l1} m de comprimento, ou {w2} m em até {l2} m (secção 4.3.3)."
+sidewalk_section = "lado {side}, s = {a}–{b} m ({len} m, mínimo de {w} m)"
+sidewalks_narrow = { one = "Em {n} troço ({m} m), o passeio cartografado vai até às construções e é mais estreito do que o decreto-lei admite para um troço desse comprimento, pelo que o canal livre também o é: {list}.", other = "Em {n} troços ({m} m no total), o passeio cartografado vai até às construções e é mais estreito do que o decreto-lei admite para um troço desse comprimento, pelo que o canal livre também o é: {list}." }
+sidewalks_margin = { one = " {n} deles ({m} m) continua abaixo mesmo que cada aresta cartografada esteja {acc} m fora do sítio, a favor do passeio.", other = " {n} deles ({m} m) continuam abaixo mesmo que cada aresta cartografada esteja {acc} m fora do sítio, a favor do passeio." }
+sidewalks_none = "Nos {m} m de rua em que o passeio cartografado vai até às construções, nenhum troço é mais estreito do que o decreto-lei admite."
+sidewalks_to_check = "Em {m} m de rua, o passeio cartografado tem menos de {free} m mas não vai até às construções (o que fica além dele, como um logradouro, um canteiro ou um muro, não está nas classes da cartografia lidas): são troços a verificar, não troços abaixo do que o decreto-lei admite."
+sidewalks_area_streets = { one = "De {n} rua da zona com passeio medido", other = "Das {n} ruas da zona com passeio medido" }
+sidewalks_area = { one = "{streets}, {n} tem troços em que o passeio cartografado vai até às construções e é mais estreito do que o Decreto-Lei n.º 163/2006 admite, mesmo que cada aresta cartografada esteja {acc} m fora do sítio, a favor do passeio: {names}.", other = "{streets}, {n} têm troços em que o passeio cartografado vai até às construções e é mais estreito do que o Decreto-Lei n.º 163/2006 admite, mesmo que cada aresta cartografada esteja {acc} m fora do sítio, a favor do passeio: {names}." }
+sidewalks_area_within = { one = " Em mais {n} rua, isso só acontece dentro dessa margem.", other = " Em mais {n} ruas, isso só acontece dentro dessa margem." }
+sidewalks_area_none = "{streets}, nenhuma tem troços em que o passeio cartografado vai até às construções e é mais estreito do que o Decreto-Lei n.º 163/2006 admite, contando com uma margem de {acc} m por aresta cartografada."
+sidewalks_area_street = "{street} ({m} m)"
 
 # Como cada afirmação do registo foi obtida.
 [method]
@@ -84,6 +103,9 @@ delay = "Ocupação (lei de Little): posições GPS no troço e em dois troços 
 delay_seconds = "Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de {reach} m do troço, só nas horas em que os registos nunca distam mais de {gap} min."
 occurrences = "Cada ocorrência georreferenciada dos dados abertos é atribuída ao eixo de rua mais próximo."
 area_pattern = "Perfis a cada {step} m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua."
+sidewalks = "Perfis a cada {step} m; em cada um, a parte mais larga do passeio cartografado entre o lancil e as construções. Ficam de fora os perfis a menos de {j} m de um cruzamento ou do fim da rua, onde a rua alarga, os separadores e as ilhas entre faixas de rodagem, e os passeios que acabam sob uma arcada ou uma varanda."
+sidewalks_narrow = "Troços seguidos de perfis com o passeio abaixo de {free} m, cada um comparado com a largura que a secção 4.3.3 admite para o seu comprimento."
+sidewalks_area = "O mesmo método em todos os eixos de rua da zona, com perfis a cada {step} m; ficam de fora as vias privadas."
 
 # Limites de cada afirmação do registo. Uma ressalva composta junta várias destas frases.
 [caveat]
@@ -109,11 +131,14 @@ delay_passages = "As passagens contadas são {pct}% das do horário de {day} nas
 delay_days = "Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade ({n} nesse período)."
 occurrences = "Uma ocorrência não é uma infração provada e as contagens são pequenas. A ordenação divide as ocorrências contadas dentro da janela de atribuição (um retângulo que vai {w} m além da rua) pelo comprimento total de cada rua, incluindo a parte fora da janela: isso favorece as ruas que cabem inteiras na janela, como a deste caso."
 area_pattern = "Os limiares ({thr} m de largura livre, {minm} m de extensão) são parâmetros escolhidos para esta análise, não valores de um documento técnico."
+sidewalks_unmapped = "A cartografia não mostra postes, papeleiras, esplanadas nem carros em cima do passeio: onde o passeio cartografado tem {free} m ou mais, isso não mostra que o canal livre os tenha."
+sidewalks_area = "É uma lista de onde olhar: cada rua precisa do seu caso (mobilidados new-case) para os troços, os pontos e as reservas (results/screening.md)."
 
 [kind]
 reference_profile = "perfil de referência"
 conditional_value = "valor condicionado"
 secondary_citation = "citado em documento oficial"
+legal_requirement = "requisito legal"
 
 [traffic]
 two-way = "dois sentidos"
@@ -164,3 +189,59 @@ header_delay = """# - [delay] o tempo medido num troço da rua (posições GPS a
 #   carreiras da rua. Para o medir, escolha um troço entre paragens e acrescente [delay] e a fonte das posições,
 #   como em docs/methodology.md;"""
 header_inherited = "# O resto (dados fixados, veículos, parâmetros, lacunas comuns) é herdado, tal como em {model}."
+
+[letter]
+comment = """<!--
+Rascunho feito por `mobilidados draft` a partir da lista de factos apurados do caso. Antes de enviar:
+- preencha o que está entre [parênteses retos] e retire o que não se aplica;
+- cada facto vem da lista tal como está, com o seu identificador; se mudar um número ou uma frase, volte a
+  confirmar com `mobilidados check-claims`;
+- os pressupostos ficam declarados como tal: se os retirar, retire também as estimativas que deles dependem;
+- envie pelos canais oficiais, guarde o número de registo e anote os prazos (docs/writing-to-public-bodies.md).
+-->"""
+sender = "[Nome]  \n[Morada]  \n[Contacto]"
+recipient = "[Destinatário: entidade e serviço]  \n[Morada ou endereço do canal oficial]"
+place_date = "[Local], [data]"
+subject_label = "Assunto:"
+subject_buses = "espaço para a circulação dos autocarros na {street}"
+subject_sidewalks = "largura dos passeios na {street}"
+salutation = "[Exmo(a). Senhor(a)],"
+opening_buses = "Escrevo a propósito da {street}, por onde passam autocarros de carreira. Os números abaixo vêm de dados publicados (cartografia municipal, horário do operador e outros indicados em anexo) e podem ser refeitos por qualquer pessoa: a lista anexa diz, para cada um, a fonte, o método e as reservas."
+opening_sidewalks = "Escrevo a propósito dos passeios da {street}. Os números abaixo vêm da cartografia municipal e podem ser refeitos por qualquer pessoa: a lista anexa diz, para cada um, a fonte, o método e as reservas."
+measured = "Medido em dados oficiais"
+documents = "Documentos oficiais"
+estimates = "Estimativas a partir destes dados"
+assumptions = "Pressupostos"
+assumptions_intro = "As estimativas acima usam os valores seguintes, que nenhuma fonte oficial publica e que por isso são pressupostos:"
+ref = "(lista anexa: `{id}`)"
+request = "Pedido"
+ask_buses_review = "Peço que os serviços competentes confirmem estes valores, nomeadamente nos pontos indicados em anexo, e avaliem a revisão do perfil da {street} de modo a que os autocarros que ali circulam se possam cruzar, informando-me da decisão tomada."
+ask_buses_documents = "Ao abrigo da Lei n.º 26/2016, de 22 de agosto (artigos 12.º e 15.º), peço cópia, em formato digital, dos seguintes documentos sobre a {street}: [o projeto ou a deliberação que definiu o estacionamento dos dois lados da rua]; [estudos, contagens ou registos dos serviços sobre a circulação dos autocarros na rua]. O artigo 15.º da mesma lei prevê a resposta no prazo de 10 dias."
+ask_sidewalks_review = "Peço que os serviços competentes confirmem a largura livre dos passeios da {street} nos troços indicados em anexo e, onde fique abaixo de 1,2 m, me informem das medidas e do prazo previstos para a corrigir, nos termos do Decreto-Lei n.º 163/2006, de 8 de agosto."
+ask_sidewalks_documents = "Ao abrigo da Lei n.º 26/2016, de 22 de agosto (artigos 12.º e 15.º), peço cópia, em formato digital, dos seguintes documentos sobre os passeios da {street}: [o plano ou o levantamento de acessibilidade que os abranja]; [a fundamentação de qualquer exceção aplicada a estes passeios ao abrigo do artigo 10.º do Decreto-Lei n.º 163/2006]. O artigo 15.º da mesma lei prevê a resposta no prazo de 10 dias."
+attachments = "Anexos"
+attach_ledger = "Lista de factos apurados (findings.md), com a fonte, o método e as reservas de cada número."
+attach_figures = "As figuras que a acompanham."
+attach_points_buses = "Pontos onde a largura livre pode ser medida no local (s: posição ao longo do eixo da rua):"
+attach_points_sidewalks = "Troços onde o passeio cartografado tem menos de 1,2 m (s: posição ao longo do eixo da rua):"
+point_free = "s = {s} m ({lat}, {lon}): largura livre cartografada de {w} m"
+point_sidewalk = "lado {side}, s = {a}–{b} m (a meio: {lat}, {lon}): {w} m na parte mais estreita"
+closing = "Com os melhores cumprimentos,"
+signature = "[Nome]"
+attach_screening = "O rastreio da zona (screening.md), com as outras ruas onde o mesmo acontece."
+
+[screening]
+title = "Rastreio da zona à volta da {street}"
+intro = "Gerado por `mobilidados run` (ou `mobilidados screen`) a partir das tabelas em `tables/`. Diz onde olhar, não o que concluir: cada rua da lista precisa do seu caso para os troços, os pontos e as reservas. Os dados são os mesmos do caso (cartografia municipal, horário do operador), numa zona de cerca de {km} km à volta da rua."
+buses = "Espaço para os autocarros"
+buses_intro = "Ruas com autocarros no horário onde o estacionamento dos dois lados deixa menos de {thr} m de largura livre em pelo menos {minm} m (area_streets.csv)."
+buses_head = "| Rua | Autocarros por dia | Carreiras | Autocarros nos dois sentidos | Trânsito | Largura livre mediana (m) | Metros nessa situação |"
+buses_none = "Nenhuma rua da zona está nesta situação."
+sidewalks = "Passeios"
+sidewalks_intro = "Ruas da zona com troços em que o passeio cartografado vai até às construções e é mais estreito do que o Decreto-Lei n.º 163/2006 admite (canal livre de {free} m; troços curtos, secção 4.3.3), e metros a verificar onde o passeio tem menos de {free} m mas não vai até às construções (area_sidewalks.csv)."
+sidewalks_head = "| Rua | Metros abaixo do admitido | Dos quais, mesmo com a exatidão da cartografia | Troço mais estreito (m) | Metros a verificar | Onde (lat, lon) |"
+sidewalks_none = "Nenhuma rua da zona tem troços nesta situação."
+yes = "sim"
+no = "não"
+next = "Próximo passo"
+next_body = "Para fazer o caso de uma destas ruas, com os seus troços, pontos de verificação e reservas:"

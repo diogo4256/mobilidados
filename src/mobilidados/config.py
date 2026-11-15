@@ -176,9 +176,10 @@ class Reference(Model):
     document: str
     page: int
     pdf_page: int
-    kind: Literal["reference_profile", "conditional_value", "secondary_citation"]
+    kind: Literal["reference_profile", "conditional_value", "secondary_citation", "legal_requirement"]
     value_m: float
     also_m: float | None = None
+    max_length_m: float | None = Field(None, gt=0, description="The value applies only to a stretch at most this long")
     label: str
     scope: str
     derivation: str = ""
@@ -246,6 +247,16 @@ class Cartography(Model):
     road: list[str] = Field(min_length=1)
     parking: list[str] = Field(min_length=1)
     sidewalk: list[str] = []
+    overhead: list[str] = Field(
+        [],
+        description="Plot classes drawn at roof level (arcades, balconies, canopies): the "
+        "ground under them may be walked on, so a sidewalk that ends at one is not measured",
+    )
+    yard: list[str] = Field(
+        [],
+        description="Plot classes of open ground (yards, forecourts): a sidewalk that ends at one "
+        "is reported as one to check, not as bounded by the plots",
+    )
     plot: list[str] = []
     survey: str | dict[Lang, str] = Field("", description="When and how the cartography was made; text, or text per language")
     accuracy_note: str | dict[Lang, str] = Field("", description="Its stated positional accuracy; text, or text per language")
@@ -255,8 +266,15 @@ class Cartography(Model):
         return value if isinstance(value, str) else value.get(lang) or next(iter(value.values()), "")
 
     def roles(self) -> dict[str, set[str]]:
-        """Cartography class codes per role: road, parking, sidewalk, plot."""
-        return {"road": set(self.road), "parking": set(self.parking), "sidewalk": set(self.sidewalk), "plot": set(self.plot)}
+        """Cartography class codes per role: road, parking, sidewalk, plot, overhead, yard."""
+        return {
+            "road": set(self.road),
+            "parking": set(self.parking),
+            "sidewalk": set(self.sidewalk),
+            "plot": set(self.plot),
+            "overhead": set(self.overhead),
+            "yard": set(self.yard),
+        }
 
 
 class Axes(Model):
@@ -361,6 +379,13 @@ class AreaScan(Model):
     cartography: str = "area_cartography"
     axes: str = "area_axes"
     identify_source: str | None = None
+    sidewalks: str | None = Field(
+        None,
+        description="An arcgis_query source with the area's road, parking, sidewalk and "
+        "plot polygons: every street in the area is scanned for narrow sidewalks ([sidewalks])",
+    )
+    sidewalk_step_m: float = Field(1, gt=0, description="Station spacing of the area's sidewalk scan")
+    exclude_streets: str | None = Field(None, description="Regex on axis names left out of the area's sidewalk scan (private roads)")
     step_m: float = Field(3, gt=0)
     threshold_m: float = 5.5
     reference_m: float = 6.5
@@ -399,6 +424,27 @@ class Comparison(Model):
     compare: list[str] = []
 
 
+class Sidewalks(Model):
+    """Sidewalk width against the free path a pedestrian route needs (``mobilidados.sidewalks``)."""
+
+    free_path: str = Field("dl163_free_path", description="Reference (data/standards.toml) for the free path's width")
+    short: list[str] = Field(
+        ["dl163_short_060", "dl163_short_150"], description="References for short narrowings the law admits (with max_length_m)"
+    )
+    main_roads: str | None = Field(
+        None,
+        description="Reference for sidewalks next to main and distributor roads (dl163_main_roads): set it only where the "
+        "municipality classifies the street as such, and say where in `main_roads_basis`",
+    )
+    main_roads_basis: dict[Lang, str] = {}
+    edge_accuracy_m: float = Field(
+        0.30, ge=0, description="Positional accuracy of each mapped edge, as the city profile's accuracy_note states it"
+    )
+    junction_m: float = Field(
+        10.0, ge=0, description="Stations this close to a junction or an end of the axis are left out (corners, crossings)"
+    )
+
+
 class Config(Model):
     case: CaseInfo
     city: City
@@ -415,6 +461,7 @@ class Config(Model):
     area_scan: AreaScan | None = None
     delay: Delay | None = None
     standards: Comparison = Comparison()
+    sidewalks: Sidewalks | None = None
     known_gaps: list[dict[Lang, str]] = []
     vehicles: dict[str, Vehicle] = {}
 
@@ -462,6 +509,10 @@ class Config(Model):
                     errors.append("area_scan.identify_source needs a [network] section")
             if self.transit is None:
                 errors.append("[area_scan] needs [transit] (the buses come from its GTFS feed)")
+            if self.area_scan.sidewalks is not None:
+                need(self.area_scan.sidewalks, "arcgis_query", "area_scan.sidewalks")
+                if self.sidewalks is None:
+                    errors.append("area_scan.sidewalks needs a [sidewalks] section (the free path it compares with)")
         if self.delay:
             need(self.delay.source, "git_archive", "delay.source")
             if self.transit is None:
@@ -471,6 +522,20 @@ class Config(Model):
             errors += [f"envelope: unknown vehicle {v!r}" for v in sorted(used - set(self.all_vehicles()))]
         refs = {r.id for r in standards_catalogue().references}
         errors += [f"standards.compare: unknown design reference {r!r}" for r in self.standards.compare if r not in refs]
+        if self.sidewalks:
+            sw = self.sidewalks
+            if not self.cartography.sidewalk:
+                errors.append("[sidewalks] needs the sidewalk class codes in [cartography] sidewalk")
+            named = [
+                ("free_path", sw.free_path),
+                *(("short", r) for r in sw.short),
+                *([("main_roads", sw.main_roads)] if sw.main_roads else []),
+            ]
+            errors += [f"sidewalks.{k}: unknown reference {r!r}" for k, r in named if r not in refs]
+            no_length = [r for r in sw.short if r in refs and standards_catalogue().reference(r)[0].max_length_m is None]
+            errors += [f"sidewalks.short: {r!r} has no max_length_m" for r in no_length]
+            if sw.main_roads and self.case.language not in sw.main_roads_basis:
+                errors.append(f"sidewalks.main_roads needs main_roads_basis.{self.case.language}: where the street is classified so")
         lang = self.case.language
         errors += [f"known_gaps[{i}] has no {lang!r} text" for i, g in enumerate(self.known_gaps) if lang not in g]
         if errors:

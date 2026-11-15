@@ -33,6 +33,11 @@ delay_controls = "neighbouring stretches, same length"
 delay_s = "seconds per passage"
 delay_interval = "90% confidence interval (resampled days)"
 delay_peak = "peak"
+sidewalk_title = "Mapped sidewalk along the street (its widest piece, between the kerb and the buildings)"
+sidewalk_side = "{side} side"
+sidewalk_open = "does not reach the buildings (to check)"
+free_path = "free path, DL 163/2006: {w} m"
+
 [ledger]
 length = "The street axis is {length} m long."
 traffic = { one = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} point checked along it.", other = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} points checked along it." }
@@ -67,6 +72,20 @@ without_parking = "Without the parking on the {side_l} side, the free width woul
 parking_removed = "Removing the parking on one side, along the stretches with parking on both sides, would remove {m} m of mapped parking ({places}); on both sides, {m2} m ({places2}). Places counted at {space} m each (an assumption). Along the whole street, the mapped parking measures {wl} m on the {side_l} side and {wr} m on the {side_r} side."
 places = { one = "about {n} place", other = "about {n} places" }
 places_range = "about {lo} to {hi} places"
+sidewalks_side = "on the {side} side, a median of {med} m and a minimum of {min} m, over {m} m of street ({b} m up to the buildings)"
+sidewalks_side_none = "on the {side} side, no stretch measured"
+sidewalks = "The mapped sidewalk has, {left}; {right}."
+sidewalks_law = "Decree-Law 163/2006 of 8 August applies to sidewalks and requires pedestrian routes to have a continuous channel free of obstructions at least {free} m wide, measured at ground level, counting street furniture, trees, signs, hydrants and bins as obstructions (annex, sections 4.3.1 and 4.3.2, p. {page}); a narrower stretch is admitted only if it is short: at least {w1} m wide over at most {l1} m, or {w2} m over at most {l2} m (section 4.3.3)."
+sidewalk_section = "{side} side, s = {a}–{b} m ({len} m, {w} m at the narrowest)"
+sidewalks_narrow = { one = "On {n} stretch ({m} m), the mapped sidewalk reaches the buildings and is narrower than the decree-law admits for a stretch that long, so the free channel is too: {list}.", other = "On {n} stretches ({m} m in all), the mapped sidewalk reaches the buildings and is narrower than the decree-law admits for a stretch that long, so the free channel is too: {list}." }
+sidewalks_margin = { one = " {n} of them ({m} m) is still below it if each mapped edge were {acc} m off, in the sidewalk's favour.", other = " {n} of them ({m} m) are still below it if each mapped edge were {acc} m off, in the sidewalk's favour." }
+sidewalks_none = "Over the {m} m of street where the mapped sidewalk reaches the buildings, no stretch is narrower than the decree-law admits."
+sidewalks_to_check = "Over {m} m of street, the mapped sidewalk is narrower than {free} m but does not reach the buildings (what lies beyond it, such as a yard, a planter or a wall, is not in the cartography classes read): stretches to check, not stretches below what the decree-law admits."
+sidewalks_area_streets = { one = "Of {n} street in the area with a sidewalk measured", other = "Of the {n} streets in the area with a sidewalk measured" }
+sidewalks_area = { one = "{streets}, {n} has stretches where the mapped sidewalk reaches the buildings and is narrower than Decree-Law 163/2006 admits, even if each mapped edge were {acc} m off in the sidewalk's favour: {names}.", other = "{streets}, {n} have stretches where the mapped sidewalk reaches the buildings and is narrower than Decree-Law 163/2006 admits, even if each mapped edge were {acc} m off in the sidewalk's favour: {names}." }
+sidewalks_area_within = { one = " In {n} more street, that happens only within that margin.", other = " In {n} more streets, that happens only within that margin." }
+sidewalks_area_none = "{streets}, none has stretches where the mapped sidewalk reaches the buildings and is narrower than Decree-Law 163/2006 admits, allowing a margin of {acc} m per mapped edge."
+sidewalks_area_street = "{street} ({m} m)"
 
 # How each statement of the ledger was obtained.
 [method]
@@ -84,6 +103,9 @@ delay = "Occupancy (Little's law): GPS positions on the stretch and on two contr
 delay_seconds = "Seconds per passage: positions on the stretch divided by the passages per second, counted as trips seen within {reach} m of the stretch, only in the hours whose records are never more than {gap} min apart."
 occurrences = "Nearest-street attribution of geolocated open-data records."
 area_pattern = "Stations every {step} m on every street axis with buses, measured with the scan's own transect half-width and tolerances, not the case street's; traffic direction from the routing network at one station per street."
+sidewalks = "Profiles every {step} m; in each, the widest piece of mapped sidewalk between the kerb and the buildings. Left out: profiles within {j} m of a junction or an end of the street, where the street widens, medians and islands between carriageways, and sidewalks that end under an arcade or a balcony."
+sidewalks_narrow = "Runs of consecutive profiles with the sidewalk below {free} m, each compared with the width section 4.3.3 admits for its length."
+sidewalks_area = "The same method on every street axis in the area, with profiles every {step} m; private roads are left out."
 
 # Limits of each statement of the ledger. A caveat made of several parts joins several of these sentences.
 [caveat]
@@ -109,11 +131,14 @@ delay_passages = "The passages counted are {pct}% of the timetable's on {day} at
 delay_days = "Working days: Monday to Friday, without the holidays in the city profile ({n} in that period)."
 occurrences = "A report is not a proven infraction; counts are small. The ranking divides the reports counted within the attribution window (a rectangle reaching {w} m beyond the street) by each street's full length, including any part outside the window: this favours streets that lie wholly inside the window, such as the case street."
 area_pattern = "The thresholds ({thr} m of free width, over {minm} m) are parameters of this analysis, not values from a design document."
+sidewalks_unmapped = "The cartography does not show poles, bins, café terraces or cars parked on the sidewalk: where the mapped sidewalk is {free} m or wider, that does not show that the free channel is."
+sidewalks_area = "A list of where to look: each street needs its own case (mobilidados new-case) for its stretches, points and caveats (results/screening.md)."
 
 [kind]
 reference_profile = "reference profile"
 conditional_value = "conditional value"
 secondary_citation = "cited by an official document"
+legal_requirement = "legal requirement"
 
 [traffic]
 two-way = "two-way traffic"
@@ -165,3 +190,60 @@ header_delay = """# - [delay] the time measured on a stretch of the street (arch
 #   street's stops and routes. To measure it, choose a stretch between stops and add [delay] and the positions
 #   source, as in docs/methodology.md;"""
 header_inherited = "# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {model}."
+
+[letter]
+comment = """<!--
+Draft written by `mobilidados draft` from the case's findings ledger. Before sending it:
+- fill in what is in [square brackets] and remove what does not apply;
+- each fact is copied from the ledger as it is, with its id; if you change a number or a sentence, check the
+  draft again with `mobilidados check-claims`;
+- the assumptions are declared as such: if you remove them, remove the estimates that rest on them too;
+- send it through the official channels, keep the submission's reference and note the deadlines
+  (docs/writing-to-public-bodies.md).
+-->"""
+sender = "[Name]  \n[Address]  \n[Contact]"
+recipient = "[Recipient: body and department]  \n[Address or official channel]"
+place_date = "[Place], [date]"
+subject_label = "Subject:"
+subject_buses = "room for the buses on {street}"
+subject_sidewalks = "sidewalk width on {street}"
+salutation = "[Dear Sir or Madam],"
+opening_buses = "I am writing about {street}, where scheduled buses run. The numbers below come from published data (the municipal cartography, the operator's timetable and the others listed in the attachment) and anyone can reproduce them: the attached ledger gives the source, method and caveats of each."
+opening_sidewalks = "I am writing about the sidewalks of {street}. The numbers below come from the municipal cartography and anyone can reproduce them: the attached ledger gives the source, method and caveats of each."
+measured = "Measured in official data"
+documents = "Official documents"
+estimates = "Estimates from these data"
+assumptions = "Assumptions"
+assumptions_intro = "The estimates above use the following values, which no official source publishes and which are therefore assumptions:"
+ref = "(attached ledger: `{id}`)"
+request = "Request"
+ask_buses_review = "I ask the competent services to confirm these values, in particular at the points listed in the attachment, and to consider revising the layout of {street} so that the buses that run there can pass each other, and to inform me of their decision."
+ask_buses_documents = "Under Law 26/2016 of 22 August (articles 12 and 15), I request a digital copy of the following documents about {street}: [the project or decision that set the parking on both sides of the street]; [studies, counts or records of the services on the buses' passage along the street]. Article 15 of the same law provides for a reply within 10 days."
+ask_sidewalks_review = "I ask the competent services to confirm the free width of the sidewalks of {street} on the stretches listed in the attachment and, where it is below 1.2 m, to inform me of the measures and the timetable planned to correct it, under Decree-Law 163/2006 of 8 August."
+ask_sidewalks_documents = "Under Law 26/2016 of 22 August (articles 12 and 15), I request a digital copy of the following documents about the sidewalks of {street}: [the accessibility plan or survey that covers them]; [the grounds for any exception applied to these sidewalks under article 10 of Decree-Law 163/2006]. Article 15 of the same law provides for a reply within 10 days."
+attachments = "Attachments"
+attach_ledger = "The findings ledger (findings.md), with the source, method and caveats of each number."
+attach_figures = "The figures that go with it."
+attach_points_buses = "Points where the free width can be measured on site (s: position along the street axis):"
+attach_points_sidewalks = "Stretches where the mapped sidewalk is narrower than 1.2 m (s: position along the street axis):"
+point_free = "s = {s} m ({lat}, {lon}): mapped free width {w} m"
+point_sidewalk = "{side} side, s = {a}–{b} m (midpoint: {lat}, {lon}): {w} m at the narrowest"
+closing = "Yours faithfully,"
+signature = "[Name]"
+attach_screening = "The screening of the area (screening.md), with the other streets where the same happens."
+
+[screening]
+title = "Screening of the area around {street}"
+intro = "Generated by `mobilidados run` (or `mobilidados screen`) from the tables in `tables/`. It says where to look, not what to conclude: each street listed needs its own case for its stretches, points and caveats. The data are the case's (municipal cartography, the operator's timetable), over an area of about {km} km around the street."
+buses = "Room for the buses"
+buses_intro = "Streets with scheduled buses where parking on both sides leaves less than {thr} m of free width over at least {minm} m (area_streets.csv)."
+buses_head = "| Street | Buses per day | Routes | Buses both ways | Traffic | Median free width (m) | Metres in that situation |"
+buses_none = "No street in the area is in that situation."
+sidewalks = "Sidewalks"
+sidewalks_intro = "Streets in the area with stretches where the mapped sidewalk reaches the buildings and is narrower than Decree-Law 163/2006 admits (a free path of {free} m; short stretches, section 4.3.3), and metres to check where the sidewalk is narrower than {free} m but does not reach the buildings (area_sidewalks.csv)."
+sidewalks_head = "| Street | Metres below what is admitted | Of which, even with the cartography's accuracy | Narrowest stretch (m) | Metres to check | Where (lat, lon) |"
+sidewalks_none = "No street in the area has stretches in that situation."
+yes = "yes"
+no = "no"
+next = "Next step"
+next_body = "To make the case of one of these streets, with its stretches, check points and caveats:"

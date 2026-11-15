@@ -35,7 +35,7 @@ organisation listed here is involved in this project or endorses it.
 | --- | --- | --- |
 | Bus passengers | Faster, more reliable trips | Findings about the space buses need, framed for them |
 | Residents and businesses who park in the street | Lose parking if space is reallocated | The cost of each option stated as plainly as its benefit |
-| Pedestrians, including people with reduced mobility | Sidewalk width, crossings | Their space measured, not traded away unseen (sidewalks are profiled today; a dedicated tool is welcome) |
+| Pedestrians, including people with reduced mobility | Sidewalk width, crossings | Their space measured, not traded away unseen: sidewalks are compared with the free path of the accessibility law (Decree-Law 163/2006) on the case street and every street of its area |
 | People on bikes | Lane space and safety | The same, in future tools |
 | Emergency services (in Lisbon, among others, the Regimento de Sapadores Bombeiros) and waste collection | Need access for wide vehicles | Their vehicles can be added to the catalogue, with an official width source |
 
@@ -78,7 +78,11 @@ It can:
 * make every number reproducible from pinned public inputs, and grade every statement by its evidence;
 * where a public archive of the operator's real-time feed exists, measure how much longer buses take on a
   stretch at peak than its surroundings would explain, and say how complete that archive is;
-* draft a case for another street from its name, and check a letter's claims against the findings.
+* compare the mapped sidewalks with the free path the accessibility law requires, and say where the map alone shows
+  them too narrow;
+* screen the streets around a case for the same problems, so a resident or an association can pick where to act;
+* draft a case for another street from its name, draft a letter from a case's findings, and check a letter's claims
+  against the findings.
 
 It cannot:
 
@@ -111,3 +115,11 @@ It cannot:
 * A drafted case states in its header what it assumed: each reference stop with its distance from the street,
   compass labels that could be read either way, and, where buses run one way, a question that supposes a car
   beside the bus (claimants, services).
+* Citizens are not asked to observe, count or measure anything. What the data cannot show becomes a request to the
+  body that holds it: the services, who can measure on site, or the operator and the municipality, who must give
+  access to their documents (claimants, services).
+* The sidewalk tool states only what the map can show: a sidewalk mapped up to the buildings and narrower than the
+  law admits. Where the sidewalk ends at a yard or at something unmapped, the stretch is one to check; a wide mapped
+  sidewalk is never presented as a clear one (pedestrians, services).
+* A letter draft copies the ledger's statements and declares their assumptions, so it cannot say more than the
+  ledger (claimants, services).

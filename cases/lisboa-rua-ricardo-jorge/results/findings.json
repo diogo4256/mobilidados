@@ -179,7 +179,8 @@
         "free_width",
         "vehicle_carris_man_city_gold_body",
         "vehicle_carris_man_city_gold_mirrors",
-        "vehicle_car_typical_body"
+        "vehicle_car_typical_body",
+        "vehicle_car_typical_mirrors"
       ],
       "method": "Soma das larguras dos veículos lado a lado (envelope estático), sem simular a trajetória nem as curvas.",
       "caveat": "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas. Só com a carroçaria, a folga entre dois autocarros é de −0,22 m na largura livre mínima, −0,10 m na mediana e +0,08 m no percentil 95. Em 77% dos perfis contados, a largura livre fica abaixo dos 5,00 m que ocupam duas carroçarias de autocarro. Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
@@ -387,6 +388,98 @@
       "caveat": "Espaço livre de 7,50 m (7,00 m em condições restritas) com distâncias de segurança, donde 6,50 m de faixa de rodagem; 6,00 m é referido como mínimo da RASt 06"
     },
     {
+      "id": "sidewalks",
+      "grade": "M",
+      "statement": "O passeio cartografado tem, do lado NO, mediana de 5,29 m e mínimo de 2,60 m, em 145 m de rua (78 m até às construções); do lado SE, mediana de 2,81 m e mínimo de 2,44 m, em 141 m de rua (43 m até às construções).",
+      "values": {
+        "L": {
+          "measured_m": 145.0,
+          "bounded_m": 78.0,
+          "width_min_m": 2.6,
+          "width_median_m": 5.29
+        },
+        "R": {
+          "measured_m": 141.0,
+          "bounded_m": 43.0,
+          "width_min_m": 2.44,
+          "width_median_m": 2.81
+        }
+      },
+      "sources": [
+        "cartography",
+        "street_axes"
+      ],
+      "method": "Perfis a cada 0,5 m; em cada um, a parte mais larga do passeio cartografado entre o lancil e as construções. Ficam de fora os perfis a menos de 10 m de um cruzamento ou do fim da rua, onde a rua alarga, os separadores e as ilhas entre faixas de rodagem, e os passeios que acabam sob uma arcada ou uma varanda.",
+      "caveat": "Cartografia: fotogrametria aérea de maio de 2016, restituição e completagem de campo em 2020, homologada pela DGT (registo em dados.gov.pt). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
+    },
+    {
+      "id": "sidewalks_law",
+      "grade": "D",
+      "statement": "O Decreto-Lei n.º 163/2006, de 8 de agosto, aplica-se aos passeios e exige nos percursos pedonais um canal de circulação contínuo e desimpedido com pelo menos 1,20 m de largura, medido ao nível do pavimento, contando como obstruções o mobiliário urbano, as árvores, a sinalização, as bocas-de-incêndio e as papeleiras (anexo, secções 4.3.1 e 4.3.2, p. 5686); um troço mais estreito só é admitido se for curto: pelo menos 0,80 m de largura em até 0,60 m de comprimento, ou 0,90 m em até 1,50 m (secção 4.3.3).",
+      "values": {
+        "free_path_m": 1.2,
+        "short": [
+          [
+            0.6,
+            0.8
+          ],
+          [
+            1.5,
+            0.9
+          ]
+        ]
+      },
+      "sources": [
+        "dl163_free_path",
+        "dl163_short_060",
+        "dl163_short_150"
+      ],
+      "method": "",
+      "caveat": "Passeios e outros percursos pedonais pavimentados na via pública (artigo 2.º, n.º 2, alínea a)); o espaço público existente tinha de ser adaptado em 10 anos a contar da entrada em vigor do decreto-lei, ou em 5 se construído depois de 22 de agosto de 1997 (artigo 9.º), salvo exceções fundamentadas (artigo 10.º). Decreto-Lei n.º 163/2006, de 8 de agosto (regime da acessibilidade), Diário da República, 1.ª série, n.º 152."
+    },
+    {
+      "id": "sidewalks_narrow",
+      "grade": "I",
+      "statement": "Nos 121 m de rua em que o passeio cartografado vai até às construções, nenhum troço é mais estreito do que o decreto-lei admite.",
+      "values": {
+        "sections_below": 0,
+        "metres_below": 0.0,
+        "sections_below_with_accuracy": 0,
+        "metres_below_with_accuracy": 0.0
+      },
+      "sources": [
+        "sidewalks",
+        "sidewalks_law"
+      ],
+      "method": "Troços seguidos de perfis com o passeio abaixo de 1,20 m, cada um comparado com a largura que a secção 4.3.3 admite para o seu comprimento.",
+      "caveat": "A cartografia não mostra postes, papeleiras, esplanadas nem carros em cima do passeio: onde o passeio cartografado tem 1,20 m ou mais, isso não mostra que o canal livre os tenha. Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
+    },
+    {
+      "id": "sidewalks_area",
+      "grade": "M",
+      "statement": "Das 230 ruas da zona com passeio medido, 7 têm troços em que o passeio cartografado vai até às construções e é mais estreito do que o Decreto-Lei n.º 163/2006 admite, mesmo que cada aresta cartografada esteja 0,30 m fora do sítio, a favor do passeio: Rua das Mimosas (42 m); Largo Machado de Assis (14 m); Rua de Entrecampos (12 m); Travessa do Chafariz ao Bairro de São João de Brito (10 m); Travessa da Fonte (8 m) (+2). Em mais 21 ruas, isso só acontece dentro dessa margem.",
+      "values": {
+        "streets": 230,
+        "below_with_accuracy": [
+          "Rua das Mimosas",
+          "Largo Machado de Assis",
+          "Rua de Entrecampos",
+          "Travessa do Chafariz ao Bairro de São João de Brito",
+          "Travessa da Fonte",
+          "Rua Castelo Branco Chaves",
+          "Avenida de Madrid"
+        ],
+        "below_within_accuracy": 21
+      },
+      "sources": [
+        "area_sidewalks",
+        "area_axes",
+        "sidewalks_law"
+      ],
+      "method": "O mesmo método em todos os eixos de rua da zona, com perfis a cada 1 m; ficam de fora as vias privadas.",
+      "caveat": "É uma lista de onde olhar: cada rua precisa do seu caso (mobilidados new-case) para os troços, os pontos e as reservas (results/screening.md). A cartografia não mostra postes, papeleiras, esplanadas nem carros em cima do passeio: onde o passeio cartografado tem 1,20 m ou mais, isso não mostra que o canal livre os tenha."
+    },
+    {
       "id": "gap_1",
       "grade": "NE",
       "statement": "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário.",
@@ -480,6 +573,28 @@
       "licence": "not stated (Lisboa Interativa public viewer, guest access)",
       "retrieved_utc": "2026-10-24T15:49:12+00:00",
       "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+    },
+    "area_sidewalks": {
+      "copyrightText": "",
+      "envelope": [
+        -9.156,
+        38.744,
+        -9.127,
+        38.766
+      ],
+      "envelope_sr": 4326,
+      "files": {
+        "area_sidewalks.json": {
+          "bytes": 28036863,
+          "sha256": "cfcc0bc30e225f6089a92206a7e9f3674f8f032ad2b6eb3434791402e782fe8c"
+        }
+      },
+      "kind": "arcgis_query",
+      "licence": "CC-BY-4.0",
+      "n_features": 13584,
+      "retrieved_utc": "2026-11-15T10:46:04+00:00",
+      "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+      "where": "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea','87000501_Passeio','06020103_Predio','06020206_Logradouro','06020201_Garagem','06020203_ArrecadacaoAnexo','06000000_ConstrucoesEmGeral','06020102_VivendaCasa','06020106_CorpoRecuado','06020111_CorpoBalancado','06020112_CorpoElevado','06020202_TelheiroAlpendre')"
     },
     "carris_gtfs": {
       "files": {

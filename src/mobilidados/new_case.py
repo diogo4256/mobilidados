@@ -308,7 +308,7 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     for sid in (cfg.profiles.cartography, cfg.profiles.axes):
         sources.setdefault(sid, {})["envelope"] = around(sid, AXIS_MARGIN_M)
     if cfg.area_scan:
-        for sid in (cfg.area_scan.cartography, cfg.area_scan.axes):
+        for sid in (cfg.area_scan.cartography, cfg.area_scan.axes, *([cfg.area_scan.sidewalks] if cfg.area_scan.sidewalks else [])):
             sources.setdefault(sid, {})["envelope"] = around(sid, AREA_MARGIN_M)
     return Draft(data, out_dir, bearing(axis), axis.length, stops, one_way, measured)
 

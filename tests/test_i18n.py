@@ -82,6 +82,11 @@ def args_for(key, count):
         "ledger.places": {"n": count},
         "report.files": {"n": count, "example": "<u>"},
         "caveat.free_filter": {"max": "7,00", "k": count, "n": 240},
+        "ledger.sidewalks_narrow": {"n": count, "m": "12", "list": "LIST"},
+        "ledger.sidewalks_margin": {"n": count, "m": "8", "acc": "0,30"},
+        "ledger.sidewalks_area_streets": {"n": count},
+        "ledger.sidewalks_area": {"streets": "STREETS", "n": count, "acc": "0,30", "names": "Rua A"},
+        "ledger.sidewalks_area_within": {"n": count},
     }[key]
 
 
@@ -127,6 +132,30 @@ WORDING = {
             "Only transects with parking mapped on both sides and a free width of at most 7,00 m count: "
             "3 of the 240 transects with parking on both sides are wider and were left out.",
         ),
+        "ledger.sidewalks_narrow": (
+            "On 1 stretch (12 m), the mapped sidewalk reaches the buildings and is narrower than the decree-law admits for "
+            "a stretch that long, so the free channel is too: LIST.",
+            "On 3 stretches (12 m in all), the mapped sidewalk reaches the buildings and is narrower than the decree-law "
+            "admits for a stretch that long, so the free channel is too: LIST.",
+        ),
+        "ledger.sidewalks_margin": (
+            " 1 of them (8 m) is still below it if each mapped edge were 0,30 m off, in the sidewalk's favour.",
+            " 3 of them (8 m) are still below it if each mapped edge were 0,30 m off, in the sidewalk's favour.",
+        ),
+        "ledger.sidewalks_area_streets": (
+            "Of 1 street in the area with a sidewalk measured",
+            "Of the 3 streets in the area with a sidewalk measured",
+        ),
+        "ledger.sidewalks_area": (
+            "STREETS, 1 has stretches where the mapped sidewalk reaches the buildings and is narrower than Decree-Law "
+            "163/2006 admits, even if each mapped edge were 0,30 m off in the sidewalk's favour: Rua A.",
+            "STREETS, 3 have stretches where the mapped sidewalk reaches the buildings and is narrower than Decree-Law "
+            "163/2006 admits, even if each mapped edge were 0,30 m off in the sidewalk's favour: Rua A.",
+        ),
+        "ledger.sidewalks_area_within": (
+            " In 1 more street, that happens only within that margin.",
+            " In 3 more streets, that happens only within that margin.",
+        ),
     },
     "pt": {
         "ledger.delay_unconfirmed": (
@@ -169,6 +198,27 @@ WORDING = {
             "1 dos 240 perfis com estacionamento dos dois lados tem mais largura livre e ficou de fora.",
             "Só contam os perfis com estacionamento cartografado dos dois lados e até 7,00 m de largura livre: "
             "3 dos 240 perfis com estacionamento dos dois lados têm mais largura livre e ficaram de fora.",
+        ),
+        "ledger.sidewalks_narrow": (
+            "Em 1 troço (12 m), o passeio cartografado vai até às construções e é mais estreito do que o decreto-lei admite "
+            "para um troço desse comprimento, pelo que o canal livre também o é: LIST.",
+            "Em 3 troços (12 m no total), o passeio cartografado vai até às construções e é mais estreito do que o "
+            "decreto-lei admite para um troço desse comprimento, pelo que o canal livre também o é: LIST.",
+        ),
+        "ledger.sidewalks_margin": (
+            " 1 deles (8 m) continua abaixo mesmo que cada aresta cartografada esteja 0,30 m fora do sítio, a favor do passeio.",
+            " 3 deles (8 m) continuam abaixo mesmo que cada aresta cartografada esteja 0,30 m fora do sítio, a favor do passeio.",
+        ),
+        "ledger.sidewalks_area_streets": ("De 1 rua da zona com passeio medido", "Das 3 ruas da zona com passeio medido"),
+        "ledger.sidewalks_area": (
+            "STREETS, 1 tem troços em que o passeio cartografado vai até às construções e é mais estreito do que o "
+            "Decreto-Lei n.º 163/2006 admite, mesmo que cada aresta cartografada esteja 0,30 m fora do sítio, a favor do passeio: Rua A.",
+            "STREETS, 3 têm troços em que o passeio cartografado vai até às construções e é mais estreito do que o "
+            "Decreto-Lei n.º 163/2006 admite, mesmo que cada aresta cartografada esteja 0,30 m fora do sítio, a favor do passeio: Rua A.",
+        ),
+        "ledger.sidewalks_area_within": (
+            " Em mais 1 rua, isso só acontece dentro dessa margem.",
+            " Em mais 3 ruas, isso só acontece dentro dessa margem.",
         ),
     },
 }

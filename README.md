@@ -9,11 +9,23 @@ Parte dos dados que as câmaras e os operadores já publicam e chega a factos qu
 cada número refaz-se a partir das fontes e cada afirmação diz em que se apoia. Assim, um morador, uma
 associação, um jornalista ou um vereador pode levar um pedido à Câmara com factos, e não só com impressões.
 
-A primeira ferramenta responde a uma pergunta: **o estacionamento deixa espaço para dois autocarros se cruzarem?**
-Mede a rua de lado a lado na cartografia de pormenor da Câmara, vai ao horário publicado pelo operador (GTFS)
-buscar as carreiras que lá passam, compara a largura que o estacionamento deixa livre com a largura dos veículos
-que ali se cruzam e com as referências de desenho de rua publicadas, e reúne tudo numa **lista de factos
-apurados**: cada número, em que se apoia, de onde vem e que reservas tem.
+Não pede a ninguém que observe, conte ou recolha seja o que for: trabalha com dados publicados e, onde os dados
+acabam, ajuda a pedir o resto a quem o tem. Por agora responde a duas perguntas sobre uma rua:
+
+* **O estacionamento deixa espaço para dois autocarros se cruzarem?** Mede a rua de lado a lado na cartografia de
+  pormenor da Câmara, vai ao horário publicado pelo operador (GTFS) buscar as carreiras que lá passam e compara a
+  largura que o estacionamento deixa livre com a largura dos veículos que ali se cruzam e com as referências de
+  desenho de rua publicadas.
+* **Os passeios têm a largura que a lei das acessibilidades exige?** Compara os passeios cartografados com o canal
+  livre de 1,2 m do Decreto-Lei n.º 163/2006 e diz onde a cartografia, por si só, mostra um passeio estreito demais.
+
+Para cada rua reúne tudo numa **lista de factos apurados**: cada número, em que se apoia, de onde vem e que
+reservas tem. Depois:
+
+* **`mobilidados screen`** ordena as ruas à volta com os mesmos problemas, para escolher onde agir;
+* **`mobilidados draft`** escreve, a partir da lista, um primeiro rascunho de carta à Câmara ou ao operador, com um
+  só pedido (que os serviços verifiquem e atuem, ou um pedido de documentos ao abrigo da lei de acesso);
+* **`mobilidados lint`** e **`check-claims`** conferem o texto final com a lista.
 
 Nasceu de um caso concreto, uma rua de Lisboa, que está incluído na íntegra como exemplo.
 
@@ -44,6 +56,11 @@ Na Rua Ricardo Jorge, em Alvalade, a lista de factos apurados chega a isto:
   90%: 34% a 65%), cerca de mais 14 s por autocarro (6 a 24 s). O excesso é claro em 2025 (+60%) e não se
   confirma em 2026 (+4%, −17% a +31%), com muito menos posições. As posições vêm de um arquivo do feed em tempo
   real da Carris mantido por terceiros, não da Carris, e dizem onde se perde o tempo, não porquê.
+* **[I]** Onde os passeios da rua estão cartografados até às construções (121 m), nenhum troço é mais estreito do
+  que a lei das acessibilidades admite; a cartografia não mostra se estão livres (postes e carros não estão nela).
+  **[M]** Na zona à volta, 7 ruas têm passeios cartografados até às construções e mais estreitos do que o
+  Decreto-Lei n.º 163/2006 admite, mesmo contando com 0,30 m de erro em cada aresta cartografada (Rua das Mimosas,
+  42 m; as travessas de São João de Brito; …): o [rastreio da zona](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/screening.md) lista-as, com o sítio onde olhar.
 
 Cada linha leva a fonte, o método e as reservas na [lista completa](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/findings.md),
 incluindo o que não foi verificado: não há observação no local de dois autocarros a cruzar-se ali, e a Carris
@@ -51,8 +68,9 @@ não publica atrasos por rua (o tempo medido acima vem de um arquivo mantido por
 
 ## Para quem é, e o que não é
 
-* **Moradores e associações:** levar à Câmara, à junta de freguesia ou à Carris um pedido sobre uma rua concreta,
-  apoiado nos dados da própria Câmara, com o custo de cada opção dito tão claramente como o ganho.
+* **Moradores e associações:** encontrar as ruas da sua zona com um caso a fazer (`screen`) e levar à Câmara, à
+  junta de freguesia ou à Carris um pedido sobre uma delas (`draft`), apoiado nos dados da própria Câmara, com o
+  custo de cada opção dito tão claramente como o ganho.
 * **Eleitos:** fazer uma pergunta ou uma recomendação que os serviços possam confirmar número a número.
 * **Jornalistas:** verificar uma reivindicação antes de a publicar, com cada número ligado à sua fonte.
 * **Serviços técnicos e operador:** passar em revista as ruas com autocarros de uma zona e ver onde o
@@ -91,6 +109,9 @@ flowchart LR
   T --> E
   S[Referências de desenho<br>com página e âmbito] --> L
   O[Ocorrências<br>Na Minha Rua] --> L
+  A --> SW[Passeios<br>face ao DL 163/2006] --> L
+  L --> SC[Rastreio<br>da zona]
+  L --> DR[Rascunho de carta]
   E --> L[Factos apurados<br>M · D · I · P · NE]
   D --> L
   L --> R[findings.md / .json<br>figuras, tabelas]
@@ -105,10 +126,16 @@ flowchart LR
 | `envelope` | folgas para dois autocarros, autocarro e ligeiro, e dois ligeiros, com e sem espelhos; efeito de carros estacionados que ficam fora do lugar; largura livre sem o estacionamento de um lado ou dos dois |
 | `encounters` | autocarros em sentidos opostos que, segundo o horário, se cruzam na rua, e em que ponto |
 | `delay` | tempo dos autocarros num troço entre paragens, a partir de posições em tempo real arquivadas: na ponta face a fora da ponta, para além do abrandamento dos troços vizinhos das mesmas carreiras, por ano, carreira e hora, com intervalos de 90% e as verificações que os sustentam |
+| `sidewalks` | a parte mais larga do passeio cartografado de cada lado, face ao canal livre da lei das acessibilidades (Decreto-Lei n.º 163/2006): troços mais estreitos do que a lei admite para o seu comprimento, com e sem a margem de exatidão da cartografia, e troços a verificar |
 | `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
 | `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
+| `area_sidewalks` | todas as ruas da zona, com os passeios medidos da mesma maneira |
 | `standards` | largura medida comparada com as referências de desenho de rua, cada uma com página e âmbito |
 | `ledger` | `findings.md` / `findings.json`: cada afirmação com a sua base, fontes, método e reservas |
+| `screening` | `screening.md`: as ruas da zona onde olhar, para os autocarros e para os passeios, e como fazer o seu caso |
+
+E, a partir dos resultados: `mobilidados draft CASO --topic buses|sidewalks` escreve uma carta
+(`results/letter-<tema>.md`); `mobilidados screen CASO` refaz só as etapas da zona e o rastreio.
 
 ## O que (ainda) não faz
 
@@ -118,8 +145,11 @@ flowchart LR
   curva. Uma rua estreita é motivo para pedir uma vistoria, não prova de que há uma infração. Para cada caso, a
   lista de factos diz o que ficou por verificar (NE).
 * Por agora só há perfil de cidade para Lisboa. Os outros concelhos precisam do seu ([docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md)).
-* Por agora só trata do espaço que o estacionamento deixa aos autocarros. Outras questões de mobilidade
-  (passeios, passadeiras, paragens, ciclovias) são bem-vindas como novas ferramentas, com o mesmo rigor.
+* Compara os passeios tal como estão cartografados: postes, papeleiras, esplanadas e carros em cima deles não estão
+  na cartografia, pelo que um passeio largo no mapa nunca é apresentado como livre, e um passeio que acaba num
+  logradouro ou em algo não cartografado é um troço a verificar, não um troço abaixo da lei.
+* Por agora trata do espaço que o estacionamento deixa aos autocarros e da largura dos passeios. Outras questões
+  de mobilidade (passadeiras, paragens, ciclovias) são bem-vindas como novas ferramentas, com o mesmo rigor.
 
 ## Em que se apoia cada afirmação
 
@@ -184,6 +214,9 @@ recomendação.
    uv run mobilidados run cases/lisboa-rua-teixeira-de-pascoais
    ```
 
+   Para escolher a rua, o `mobilidados screen cases/lisboa-rua-ricardo-jorge` (ou o
+   [screening.md](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/screening.md) do caso) lista as ruas à volta com um caso a fazer. Depois
+   da análise, `uv run mobilidados draft cases/lisboa-rua-teixeira-de-pascoais --topic buses` escreve a carta.
    O nome não tem de estar escrito tal e qual: se não houver um eixo com esse nome, o `new-case` procura nomes
    parecidos e sugere-os. O `new-case` encontra a rua na cartografia da Câmara, divide-a em quarteirões nos cruzamentos, vai ao horário
    buscar as carreiras que lá passam e escreve o `case.toml`. O resto (fontes, horário, veículos, parâmetros) vem

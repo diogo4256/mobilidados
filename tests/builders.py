@@ -232,13 +232,30 @@ min_pattern_m = 30
 compare = ["cml_manual_two_way_profile", "rast06_bus_bus"]
 """
 
+SIDEWALKS_TOML = """
+[sidewalks]
+edge_accuracy_m = 0.30
+
+[sources.area_sidewalks]
+kind = "arcgis_query"
+url = "https://example.org/arcgis/rest/services/Base/MapServer/1"
+envelope = {envelope}
+out_sr = 3763
+licence = "CC-BY-4.0"
+licence_url = "https://creativecommons.org/licenses/by/4.0/"
+attribution = "Example City Council"
+"""
+PINCH = (60.0, 70.0, 0.5)  # with sidewalks=True, a building narrows the north sidewalk to 0.5 m from x = 60 to 70 m
+
 TWO_WAY = [
     {"[EID]": "1", "[Direction]": "Along", "Oneway": "Traversable"},
     {"[EID]": "1", "[Direction]": "Against", "Oneway": "Traversable"},
 ]
 
 
-def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = True, parking_both_sides: bool = True) -> Path:
+def write_case(
+    root: Path, street_name: str = "Rua do Teste", optional: bool = True, parking_both_sides: bool = True, sidewalks: bool = False
+) -> Path:
     """Write a complete case into ``root`` (the folder is created): ``case.toml``, the cached sources and the lock.
 
     Rua do Teste is 200 m long. It is a 4.90 m road with 2.00 m parking strips on both sides between 40.5 m and
@@ -247,7 +264,9 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
     case's ``min_street_length_m``. The reports (two files, each with its own date format) are mostly parking
     reports on Rua do Teste. With ``optional=False`` the case has only the sections every case needs (no transit,
     direction, envelope, occurrences, area scan or design references); the cached sources are written all the same.
-    With ``parking_both_sides=False`` the strip on the south side is not mapped.
+    With ``parking_both_sides=False`` the strip on the south side is not mapped. With ``sidewalks=True`` the case has
+    [sidewalks] and scans the area's sidewalks (``area_scan.sidewalks``), and a building narrows the north sidewalk
+    (``PINCH``).
     """
     root.mkdir()
     to_ll = Transformer.from_crs(CRS, 4326, always_xy=True)
@@ -256,7 +275,11 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
 
     def toml(pin: str) -> str:
         text = CASE_TOML.format(street=street_name, envelope=envelope, pin=pin)
-        return text + (OPTIONAL_TOML.format(date=SERVICE_DATE) if optional else "")
+        text += OPTIONAL_TOML.format(date=SERVICE_DATE) if optional else ""
+        if sidewalks:
+            text = text.replace("min_pattern_m = 30\n", 'min_pattern_m = 30\nsidewalks = "area_sidewalks"\n')
+            text += SIDEWALKS_TOML.format(envelope=envelope)
+        return text
 
     (root / "case.toml").write_text(toml(""), encoding="utf-8")
     case = Case.load(root)
@@ -266,6 +289,12 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
         raw_path(case, source).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
     _, local = street(length=LENGTH, strip_from=40.5, strip_to=150.5)
+    if sidewalks:  # a building on the north sidewalk, cut out of it as the cartography would
+        x0, x1, left = PINCH
+        north = local[3][1]
+        building = box(x0, north.bounds[1] + left, x1, north.bounds[3])
+        local[3] = ("walk", north.difference(building))
+        local.append(("plot", building))
     if not parking_both_sides:
         del local[2]  # the south strip
     features = [
@@ -280,6 +309,8 @@ def write_case(root: Path, street_name: str = "Rua do Teste", optional: bool = T
     ]
     write_json("cartography", layer_file("Polygons", features))
     write_json("area_cartography", layer_file("Polygons", [f for f in features if f["attributes"]["LAYER"] in ("road", "park")]))
+    if sidewalks:
+        write_json("area_sidewalks", layer_file("Polygons", features))
 
     def axis(oid: int, name: str, *points: tuple[float, float], dy: float = 0.0) -> dict[str, Any]:
         return {"attributes": {"OBJECTID": oid, "NAME": name}, "geometry": esri_path(at_origin(LineString(points), dy))}

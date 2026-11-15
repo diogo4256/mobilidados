@@ -1,4 +1,4 @@
-"""Run a case end to end: measurements, direction, transit, envelope, encounters, occurrences, area scan,
+"""Run a case end to end: measurements, sidewalks, direction, transit, envelope, encounters, occurrences, area scan,
 standards comparison, figures and the findings ledger.
 
 Each stage reads the case's cached sources and the tables of earlier stages, and writes its own tables to
@@ -11,6 +11,7 @@ from __future__ import annotations
 import functools
 import json
 import logging
+import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -21,9 +22,23 @@ from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge, unary_union
 
-from . import area_scan, delay, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
+from . import (
+    area_scan,
+    delay,
+    direction,
+    encounters,
+    envelope,
+    figures,
+    geometry,
+    gtfs,
+    ledger,
+    occurrences,
+    screening,
+    sidewalks,
+    standards,
+)
 from .arcgis import to_line
-from .config import ArcgisQuery, Case, Config, GitArchive, HttpFiles, MobilidadosError
+from .config import ArcgisQuery, Case, Config, GitArchive, HttpFiles, MobilidadosError, standards_catalogue
 from .sources import IdentifyCache, check_lock, check_pins, load_json, raw_path
 
 log = logging.getLogger(__name__)
@@ -145,6 +160,7 @@ def stage_profiles(r: Run) -> None:
     c, p = r.case, r.cfg.profiles
     roles = r.cfg.cartography.roles()
     polys = geometry.classed_polygons(load_json(c, p.cartography)["features"], r.cfg.cartography.class_field, set().union(*roles.values()))
+    polys = geometry.drop_slivers(polys, roles["sidewalk"], geometry.MIN_WALK_PIECE_M)
     df = geometry.measure_profiles(r.axis, polys, roles, step=p.step_m, half_width=p.half_width_m)
     df = geometry.classify(df, r.cfg.street.blocks, narrow_max=p.narrow_max_m)
     length = round(r.axis.length, 2)
@@ -183,6 +199,27 @@ def stage_profiles(r: Run) -> None:
         "geometry": {"type": "LineString", "coordinates": [[round(x, 7), round(y, 7)] for x, y in zip(lo, la, strict=True)]},
     }
     (c.results_dir / "street_axis.geojson").write_text(json.dumps({"type": "FeatureCollection", "features": [feature]}), encoding="utf-8")
+
+
+def stage_sidewalks(r: Run) -> None:
+    sw = r.cfg.sidewalks
+    if sw is None:
+        return
+    refs = standards_catalogue()
+    free = refs.reference(sw.free_path)[0].value_m
+    short = sorted((ref.max_length_m, ref.value_m) for ref, _ in map(refs.reference, sw.short) if ref.max_length_m)
+    thresholds = sorted({free, *([refs.reference(sw.main_roads)[0].value_m] if sw.main_roads else [])})
+    df, step = r.table("profiles"), r.cfg.profiles.step_m
+    length = float(r.table("street").length_m.iloc[0])
+    # the case's junctions: its ends and the cross streets its blocks are cut at
+    ends = sorted({0.0, length, *(b.end for b in r.cfg.street.blocks[:-1])})
+    df = sidewalks.away_from_widenings(sidewalks.away_from_junctions(df, ends, sw.junction_m))
+    cols = ["s", "block", *(f"walk_{side}{x}" for side in sidewalks.SIDES for x in ("", "_bounded"))]
+    r.save("sidewalk_profile", df[cols])
+    r.save("sidewalks", sidewalks.summary(df, r.cfg.street.blocks, step, length, thresholds))
+    sections = sidewalks.narrow_sections(df, step, length, free, short, sw.edge_accuracy_m)
+    lon, lat = Transformer.from_crs(r.case.crs, 4326, always_xy=True).transform(sections.x.to_numpy(), sections.y.to_numpy())
+    r.save("sidewalk_narrow_sections", sections.assign(lat=pd.Series(lat).round(6), lon=pd.Series(lon).round(6)))
 
 
 def stage_direction(r: Run) -> None:
@@ -316,6 +353,27 @@ def stage_area(r: Run) -> None:
     r.save("area_streets", ranked)
 
 
+def stage_area_sidewalks(r: Run) -> None:
+    a, sw = r.cfg.area_scan, r.cfg.sidewalks
+    if a is None or a.sidewalks is None or sw is None:
+        return
+    roles = r.cfg.cartography.roles()
+    polys = geometry.classed_polygons(
+        load_json(r.case, a.sidewalks)["features"], r.cfg.cartography.class_field, set().union(*roles.values())
+    )
+    polys = geometry.drop_slivers(polys, roles["sidewalk"], geometry.MIN_WALK_PIECE_M)
+    refs = standards_catalogue()
+    short = sorted((ref.max_length_m, ref.value_m) for ref, _ in map(refs.reference, sw.short) if ref.max_length_m)
+    axes = [(n, g) for n, g in r.axes(a.axes).items() if not (a.exclude_streets and re.match(a.exclude_streets, n))]
+    log.info("  scanning the sidewalks of %d streets", len(axes))
+    found = sidewalks.scan_area(
+        axes, geometry.Profiler(polys), roles, a.sidewalk_step_m, refs.reference(sw.free_path)[0].value_m, short,
+        sw.edge_accuracy_m, sw.junction_m,
+    )  # fmt: skip
+    lon, lat = Transformer.from_crs(r.case.crs, 4326, always_xy=True).transform(found.worst_x.to_numpy(), found.worst_y.to_numpy())
+    r.save("area_sidewalks", found.assign(worst_lat=pd.Series(lat).round(6), worst_lon=pd.Series(lon).round(6)))
+
+
 def stage_standards(r: Run) -> None:
     if not r.cfg.standards.compare or not r.two_strips:
         return
@@ -331,8 +389,13 @@ def stage_ledger(r: Run) -> None:
     ledger.write(r)
 
 
+def stage_screening(r: Run) -> None:
+    screening.write(r)
+
+
 STAGES: dict[str, Callable[[Run], None]] = {
     "profiles": stage_profiles,
+    "sidewalks": stage_sidewalks,
     "direction": stage_direction,
     "transit": stage_transit,
     "envelope": stage_envelope,
@@ -340,7 +403,9 @@ STAGES: dict[str, Callable[[Run], None]] = {
     "delay": stage_delay,
     "occurrences": stage_occurrences,
     "area": stage_area,
+    "area_sidewalks": stage_area_sidewalks,
     "standards": stage_standards,
     "figures": stage_figures,
     "ledger": stage_ledger,
+    "screening": stage_screening,
 }

@@ -61,6 +61,17 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("draft", type=Path)
     p.add_argument("--lang", default="pt", choices=["pt", "en"], help="the draft's language (default: pt)")
 
+    p = sub.add_parser("screen", help="rank the streets around a case's street: room for buses, narrow sidewalks")
+    p.add_argument("case")
+    p.add_argument("--offline", action="store_true", help="never call web services (cached data only)")
+
+    p = sub.add_parser("draft", help="write a first draft of a letter to a public body from a case's findings (no AI)")
+    p.add_argument("case")
+    p.add_argument("--topic", default="buses", choices=["buses", "sidewalks"], help="one topic per letter (default: buses)")
+    p.add_argument("--ask", default="review", choices=["review", "documents"],
+                   help="review: ask the services to check and act; documents: request documents under Law 26/2016")  # fmt: skip
+    p.add_argument("--out", type=Path, help="default: results/letter-<topic>.md in the case")
+
     p = sub.add_parser("check-claims", help="AI fact-check of a draft against the case ledger and source texts")
     p.add_argument("case")
     p.add_argument("draft", type=Path)
@@ -148,6 +159,24 @@ def _dispatch(a: argparse.Namespace) -> int:
         for i in issues:
             print(f"{i.line}:{i.col}  {i.rule:14s} {i.message}\n      {i.excerpt}")
         print(f"{len(issues)} issue(s)")
+        return 1 if issues else 0
+    elif a.cmd == "screen":
+        from .pipeline import run
+        from .screening import summary_rows
+
+        case = Case.load(a.case)
+        r = run(case, stages=["area", "area_sidewalks", "screening"], offline=a.offline)
+        rows = summary_rows(r)
+        for x in rows.itertuples():
+            print(f"{x.topic:10s} {x.metres:7.1f} m  {x.street}")
+        print(f"wrote {case.results_dir / 'screening.md'}: {rows.street.nunique()} street(s) to look at")
+    elif a.cmd == "draft":
+        from .letter import write as write_letter
+
+        path, issues = write_letter(Case.load(a.case), a.topic, a.ask, a.out)
+        print(f"wrote {path}: fill in the [placeholders], then check it with\n  mobilidados check-claims {a.case} {path}")
+        for i in issues:
+            print(f"{i.line}:{i.col}  {i.rule:14s} {i.message}\n      {i.excerpt}")
         return 1 if issues else 0
     elif a.cmd == "check-claims":
         return int(_agents("claim_checker").main(Case.load(a.case), a.draft, a.corpus, a.out))

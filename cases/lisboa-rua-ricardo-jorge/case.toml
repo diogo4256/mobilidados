@@ -55,6 +55,9 @@ envelope = [-9.1560, 38.7440, -9.1270, 38.7660]
 [sources.area_axes]
 envelope = [-9.1560, 38.7440, -9.1270, 38.7660]
 
+[sources.area_sidewalks]
+envelope = [-9.1560, 38.7440, -9.1270, 38.7660]
+
 # Listed before the gaps every Lisbon case shares (cities/lisboa.toml).
 [[known_gaps]]
 pt = "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário."

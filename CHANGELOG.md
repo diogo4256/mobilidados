@@ -5,6 +5,46 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+The toolset is for citizens to make their case from published data alone: nothing in it asks anyone to observe,
+count or collect anything, and where the data stop, it helps them ask the body that holds the rest.
+
+### Added
+
+- **Sidewalks against the accessibility law** (the `sidewalks` stage, `[sidewalks]` in a case; method in
+  docs/methodology.md). Decree-Law 163/2006 requires pedestrian routes to keep a free channel at least 1.2 m wide,
+  with obstructions (street furniture, trees, signs) counted against it, and admits a narrower stretch only if it is
+  short (section 4.3.3). The values are in `data/standards.toml`, from the 2006 publication pinned by its checksum,
+  with their page and quote, as a new kind, `legal_requirement`. At each station the stage reads the widest piece of
+  mapped sidewalk between the kerb and the buildings; where it runs up to the buildings, the free channel cannot be
+  wider, so a stretch narrower than the law admits for its length rests on the cartography alone. Where it ends at a
+  yard or at something unmapped, the stretch is one to check, never one below the law; a wide mapped sidewalk is never
+  presented as a clear one. Junctions, widenings, medians, islands, arcades and slivers are left out. Stretches
+  still below if each mapped edge were off by the cartography's stated accuracy are told apart. Findings
+  `sidewalks` (M), `sidewalks_law` (D), `sidewalks_narrow` (I) and, where it applies, `sidewalks_to_check` (M); tables
+  `sidewalks.csv`, `sidewalk_narrow_sections.csv` (with the coordinates of each stretch), `sidewalk_profile.csv`; figure
+  `sidewalk_profile.png`. `[cartography]` gains `overhead` and `yard` class lists.
+- **Screening of the area** (`area_sidewalks` and `screening` stages, `mobilidados screen CASE`). Every street of the
+  case's area is scanned for narrow sidewalks the same way (`[area_scan] sidewalks`, `exclude_streets`), and
+  `results/screening.md` ranks the streets with buses squeezed by parking and the streets with sidewalks narrower than
+  the law admits, with where to look and the commands that make a case for one. Finding `sidewalks_area` (M) names
+  only the streets below even with the accuracy margin. In Lisbon a new source, `area_sidewalks`, holds the area's
+  road, parking, sidewalk and plot polygons; `new-case` gives it the area's envelope.
+- **Letter drafts** (`mobilidados draft CASE --topic buses|sidewalks [--ask review|documents]`). A first letter to a
+  public body, written from `findings.json` alone as docs/writing-to-public-bodies.md advises: one topic; the facts
+  grouped as measured, official documents and estimates, each with its finding id; the assumptions they rest on,
+  declared; one request (that the services check and act, or a request for documents under Law 26/2016, articles 12
+  and 15); the attachments, with the points or stretches where a technician can measure. Every statement is the
+  ledger's own, and the draft is linted before it is written.
+- Writing guide: start from a draft, and ask for the documents the data do not cover (Law 26/2016: who must answer,
+  in how many days, and the complaint to the CADA). Evidence standard: say which way a measurement can point, and a
+  law is not a manual.
+
+### Fixed
+
+- The width-budget finding uses the car's width with mirrors, an assumption, but did not list it among its sources,
+  so a letter could not declare it.
+- A cartography polygon with an invalid ring is repaired when it is read, instead of stopping the run.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added

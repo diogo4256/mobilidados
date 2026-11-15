@@ -210,6 +210,78 @@ with a free width below `area_scan.threshold_m`, and, for streets with enough me
 per street. Only two-way streets share the case's pattern: a one-way street needs a single
 lane. The thresholds are parameters of the analysis, not values from a design document.
 
+## Sidewalks (`sidewalks.py`)
+
+The law, not a design manual: Decree-Law 163/2006 applies to sidewalks and other paved pedestrian routes on the
+public way (article 2(2)(a)) and requires a continuous channel free of obstructions at least **1.2 m** wide,
+measured at ground level, counting street furniture, trees, signs, hydrants and bins as obstructions (annex,
+sections 4.3.1 and 4.3.2). A narrower stretch is admitted only if it is short: at least 0.80 m wide over at most
+0.60 m of length, at least 0.90 m over at most 1.50 m (section 4.3.3, read from its drawings: A is the width, B the
+length). Sidewalks next to main and distributor roads need 1.5 m (section 1.2.1); the decree does not say which roads
+those are, so a case uses that value only where the municipality classifies its street so (`[sidewalks] main_roads`,
+with `main_roads_basis`). The values, pages and quotes are in `data/standards.toml`, kind `legal_requirement`; the
+document is the 2006 publication pinned by its checksum, and the consolidated text on diariodarepublica.pt was
+checked to keep these sections and article 9 as published (amendments by Decrees-Law 136/2014, 125/2017, 95/2019
+and 10/2024 touch other parts).
+
+**What is measured.** At each station of the case street (and every metre of every street in the area,
+`area_scan.sidewalk_step_m`) the transect reads the widest piece of mapped sidewalk between the kerb (the road edge,
+or the outer edge of a parking strip) and the first plot on that side (`walk_L`, `walk_R` in `profiles.csv`). A
+sidewalk cut by a tree pit, a kiosk or a shelter mapped as another class is walked on its widest piece.
+
+**Why the mapped width can show a stretch is too narrow, and never that it is wide enough.** Obstructions only take
+width away. Where the piece runs up to the plots (`walk_*_bounded`), nothing beyond it can be walked on, so the free
+channel cannot be wider than the mapped sidewalk: a stretch narrower than the law admits for its length is one where
+the free channel is too, and the case for it rests on the municipality's own cartography. The reverse does not hold:
+poles, bins, café terraces and cars on the sidewalk are not mapped, so a wide mapped sidewalk does not show a wide
+free channel, and the ledger says so.
+
+**What is left out, so a reading is not a slip of the map.**
+
+* stations within `sidewalks.junction_m` (10 m in Lisbon) of a junction or an end of the axis, and where the street
+  is more than 1.5 times wider kerb to kerb than its median (a junction, a slip lane, a square): there a transect
+  crosses corners and other streets;
+* a side where another carriageway comes before any plot, or where the plot that bounds the sidewalk has a
+  carriageway within 3 m behind it: a median or an island, not a sidewalk (`geometry.ISLAND_BACK_M`);
+* a sidewalk that ends at a plot class drawn at roof level (`cartography.overhead`: in Lisbon, raised and
+  cantilevered building bodies and canopies): the ground under an arcade may be walked on, so its width is unknown;
+* sidewalk polygons thinner on average than 0.3 m, and pieces of sidewalk narrower than that on a transect: slivers
+  where polygons meet (`geometry.MIN_WALK_PIECE_M`).
+
+**Two tiers, never mixed.** A sidewalk that ends at a yard (`cartography.yard`: open ground, which may be a forecourt
+or a planted island) or at something the classes read do not cover (a lawn, a wall, a public building) is reported as
+metres *to check*, never as below the law. Of the stretches below, those still below if each of the two mapped edges
+were `sidewalks.edge_accuracy_m` off in the sidewalk's favour (the accuracy per edge the city profile states, 0.30 m
+in Lisbon) are counted apart, and the area finding names only those streets.
+
+**Tables.** `sidewalks.csv` (per side and block: metres measured, metres up to the plots, width, metres below each
+threshold and metres to check), `sidewalk_narrow_sections.csv` (each run of narrow stations: its length, narrowest
+width, the width the law admits for that length, whether it is below, with and without the accuracy margin, and the
+coordinates of its middle, for the letter), `sidewalk_profile.csv` (the readings the figure draws) and
+`area_sidewalks.csv` (one row per street of the area, the most robust first).
+
+This was checked by drawing the cartography at the stretches the scan flagged in the Alvalade area before and after
+each rule above: what remains are buildings at the edge of narrow streets (Rua das Mimosas, the lanes of São João de
+Brito) and long sidewalks about 1 m wide between the kerb and the buildings.
+
+## Screening (`screening.py`)
+
+`results/screening.md` turns the area tables into two ranked lists: the streets with buses where parking on both
+sides leaves less than `area_scan.threshold_m` of free width over at least `area_scan.min_pattern_m`, and the streets
+with sidewalks narrower than the law admits. It computes nothing, says where to look, not what to conclude, and ends
+with the commands that make a case for a listed street. `mobilidados screen CASE` re-runs just the area stages and
+writes it.
+
+## Letter drafts (`letter.py`)
+
+`mobilidados draft CASE --topic buses|sidewalks [--ask review|documents]` writes `results/letter-<topic>.md` from
+`findings.json` alone: one topic; the topic's findings and the findings they rest on (their `sources`), grouped as
+measured (M), official documents (D) and estimates (I), each followed by its finding id; the assumptions (P) they
+use, declared as such; one request (that the services check and act, or, with `--ask documents`, a request for
+documents under Law 26/2016, articles 12 and 15); the attachments, with the points or stretches where a technician
+can measure. Gaps (NE) stay out: they are for the sender's notes. Every statement is copied from the ledger, so the
+draft says no more than the ledger, and the draft is linted before it is written.
+
 ## Design references (`standards.py`)
 
 `src/mobilidados/data/standards.toml` lists references with the document's checksum and URL, the printed and PDF

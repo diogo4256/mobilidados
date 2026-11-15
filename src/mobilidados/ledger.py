@@ -286,7 +286,13 @@ def build(r: Run) -> list[Finding]:
                     "bus_car_margin_m": round(fmed - bc, 2),
                     "bus_car_margin_mirrors_m": round(fmed - bcm, 2),
                 },
-                sources=["free_width", f"vehicle_{e.bus}_body", f"vehicle_{e.bus}_mirrors", f"vehicle_{e.car}_body"],
+                sources=[
+                    "free_width",
+                    f"vehicle_{e.bus}_body",
+                    f"vehicle_{e.bus}_mirrors",
+                    f"vehicle_{e.car}_body",
+                    f"vehicle_{e.car}_mirrors",
+                ],
                 method=method("width_budget"),
                 caveat=sentences(
                     caveat("budget_inside"),
@@ -504,8 +510,147 @@ def build(r: Run) -> list[Finding]:
             )
         )
 
+    if cfg.sidewalks:
+        F += sidewalk_findings(r, say, method, caveat, n)
+
     F += [Finding(id=f"gap_{i}", grade="NE", statement=gap[lang]) for i, gap in enumerate(cfg.known_gaps, 1)]
     return F
+
+
+def sidewalk_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:
+    """The sidewalks (``sidewalks`` and ``area_sidewalks`` stages) against the free path of the accessibility law."""
+    cfg, lang = r.cfg, r.case.lang
+    sw = cfg.sidewalks
+    assert sw is not None
+    refs = standards_catalogue()
+    free, free_doc = refs.reference(sw.free_path)
+    short = sorted((ref for ref, _ in map(refs.reference, sw.short)), key=lambda ref: ref.max_length_m or 0)
+    sides: dict[str, str] = {str(k): v for k, v in cfg.street.sides.items()}
+    survey, accuracy = cfg.cartography.text("survey", lang), cfg.cartography.text("accuracy_note", lang)
+    survey_note = caveat("survey", survey=survey) if survey else ""
+    table = r.table("sidewalks").astype({"block": str}).set_index(["side", "block"])
+
+    def length(x: float) -> str:
+        return street_length(x, lang)
+
+    def side_text(side: str) -> str:
+        row = table.loc[(side, "all")]
+        if not row.measured_m:
+            return str(say("sidewalks_side_none", side=sides[side]))
+        return str(
+            say(
+                "sidewalks_side",
+                side=sides[side],
+                med=n(row.width_median_m),
+                min=n(row.width_min_m),
+                m=length(row.measured_m),
+                b=length(row.bounded_m),
+            )
+        )
+
+    out = [
+        Finding(
+            id="sidewalks",
+            grade="M",
+            statement=say("sidewalks", left=side_text("L"), right=side_text("R")),
+            values={
+                side: {k: float(table.loc[(side, "all"), k]) for k in ("measured_m", "bounded_m", "width_min_m", "width_median_m")}
+                for side in ("L", "R")
+            },
+            sources=[cfg.profiles.cartography, cfg.profiles.axes],
+            method=method("sidewalks", step=f"{cfg.profiles.step_m:g}".replace(".", "," if lang == "pt" else "."), j=f"{sw.junction_m:g}"),
+            caveat=sentences(survey_note, accuracy),
+        ),
+        Finding(
+            id="sidewalks_law",
+            grade="D",
+            statement=say(
+                "sidewalks_law",
+                free=n(free.value_m),
+                page=free.page,
+                w1=n(short[0].value_m),
+                l1=n(short[0].max_length_m or 0),
+                w2=n(short[-1].value_m),
+                l2=n(short[-1].max_length_m or 0),
+            ),
+            values={"free_path_m": free.value_m, "short": [[ref.max_length_m, ref.value_m] for ref in short]},
+            sources=[sw.free_path, *sw.short],
+            caveat=sentences(free.text("scope", lang) + ".", free_doc.title + "."),
+        ),
+    ]
+    sec = r.table("sidewalk_narrow_sections")
+    bad, sure = sec[sec.below.astype(bool)], sec[sec.below_with_accuracy.astype(bool)]
+    bounded_m = float(table.xs("all", level="block").bounded_m.sum())
+    unmapped = caveat("sidewalks_unmapped", free=n(free.value_m))
+    if len(bad):
+        listed = "; ".join(
+            say("sidewalk_section", side=sides[x.side], a=n(x.s_from, 0), b=n(x.s_to, 0), len=length(x.length_m), w=n(x.width_min_m))
+            for x in bad.sort_values(["side", "s_from"]).itertuples()
+        )
+        margin = (
+            say("sidewalks_margin", count=len(sure), n=len(sure), m=length(sure.length_m.sum()), acc=n(sw.edge_accuracy_m))
+            if len(sure)
+            else ""
+        )
+        statement = say("sidewalks_narrow", count=len(bad), n=len(bad), m=length(bad.length_m.sum()), list=listed) + margin
+    else:
+        statement = say("sidewalks_none", m=length(bounded_m))
+    out.append(
+        Finding(
+            id="sidewalks_narrow",
+            grade="I",
+            statement=statement,
+            values={
+                "sections_below": len(bad),
+                "metres_below": float(bad.length_m.sum()),
+                "sections_below_with_accuracy": len(sure),
+                "metres_below_with_accuracy": float(sure.length_m.sum()),
+            },
+            sources=["sidewalks", "sidewalks_law"],
+            method=method("sidewalks_narrow", free=n(free.value_m)),
+            caveat=sentences(unmapped, accuracy),
+        )
+    )
+    open_m = float(table.xs("all", level="block")[f"metres_open_below_{free.value_m:g}m"].sum())
+    if open_m:
+        out.append(
+            Finding(
+                id="sidewalks_to_check",
+                grade="M",
+                statement=say("sidewalks_to_check", m=length(open_m), free=n(free.value_m)),
+                values={"metres": open_m},
+                sources=["sidewalks"],
+            )
+        )
+    a = cfg.area_scan
+    if a and a.sidewalks:
+        area = r.table("area_sidewalks")
+        hit = area[area.metres_below_with_accuracy > 0]  # the streets the case can name: below even with the margin
+        within = int(((area.metres_below > 0) & (area.metres_below_with_accuracy == 0)).sum())
+        streets = say("sidewalks_area_streets", count=len(area), n=len(area))
+        acc = n(sw.edge_accuracy_m)
+        if len(hit):
+            names = "; ".join(
+                say("sidewalks_area_street", street=x.street, m=length(x.metres_below_with_accuracy)) for x in hit.head(5).itertuples()
+            )
+            more = f" (+{len(hit) - 5})" if len(hit) > 5 else ""
+            statement = say("sidewalks_area", streets=streets, count=len(hit), n=len(hit), acc=acc, names=names + more)
+        else:
+            statement = say("sidewalks_area_none", streets=streets, acc=acc)
+        if within:
+            statement += say("sidewalks_area_within", count=within, n=within)
+        out.append(
+            Finding(
+                id="sidewalks_area",
+                grade="M",
+                statement=statement,
+                values={"streets": len(area), "below_with_accuracy": hit.street.tolist(), "below_within_accuracy": within},
+                sources=[a.sidewalks, a.axes, "sidewalks_law"],
+                method=method("sidewalks_area", step=f"{a.sidewalk_step_m:g}"),
+                caveat=sentences(caveat("sidewalks_area"), unmapped),
+            )
+        )
+    return out
 
 
 def delay_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:

@@ -15,7 +15,7 @@ from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
-from shapely import STRtree
+from shapely import STRtree, make_valid
 from shapely.geometry import LineString, MultiLineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge
@@ -45,8 +45,16 @@ def classed_polygons(features: Iterable[dict], class_field: str, keep: set[str])
     for f in features:
         cls = f["attributes"].get(class_field)
         if cls in keep and f.get("geometry"):
-            out.append((cls, to_polygon(f["geometry"])))
+            g = to_polygon(f["geometry"])
+            out.append((cls, g if g.is_valid else make_valid(g)))  # a self-touching ring would stop GEOS mid-run
     return out
+
+
+def drop_slivers(polygons: list[tuple[str, BaseGeometry]], classes: set[str], min_thickness: float) -> list[tuple[str, BaseGeometry]]:
+    """The polygons without those of ``classes`` thinner on average (twice the area over the perimeter, the width of a
+    long strip) than ``min_thickness``: slivers left where polygons meet, which a transect crossing them at a slant
+    would read as a narrow sidewalk."""
+    return [(c, g) for c, g in polygons if c not in classes or 2 * g.area / max(g.length, 1e-9) >= min_thickness]
 
 
 def _tangent(axis: LineString, s: float, eps: float = 0.5) -> tuple[float, float]:
@@ -100,15 +108,22 @@ def measure_profiles(
     half_width: float = 25.0,
     snap: float = 0.35,
     axis_tol: float = 0.05,
+    profiler: Profiler | None = None,
 ) -> pd.DataFrame:
     """One row per station: free carriageway between parking strips, strips, kerb-to-kerb, sidewalks, plots.
 
-    ``classes`` maps the roles ``road``, ``parking``, ``sidewalk`` and ``plot`` to cartography class codes.
+    ``sidewalk_*`` is the mapped sidewalk touching the kerb; ``walk_*`` the widest piece of mapped sidewalk between
+    the kerb and the plots, the width the ``sidewalks`` stage compares with the free path a pedestrian needs.
+
+    ``classes`` maps the roles ``road``, ``parking``, ``sidewalk`` and ``plot`` to cartography class codes, and
+    optionally ``overhead``: plot classes drawn at roof level (arcades, balconies), under which the ground may be open,
+    and ``yard``: plot classes of open ground, which do not bound a sidewalk as a building does.
     Columns ending in ``_L`` are on the left of the direction of increasing s, ``_R`` on the right.
     ``snap`` is how far apart (m) two mapped edges may be and still count as touching; ``axis_tol`` is how far
-    outside a road interval (m) the axis may lie and still count as on it.
+    outside a road interval (m) the axis may lie and still count as on it. ``profiler`` reuses an index already built
+    over many polygons (the area scan measures every street against one), instead of ``polygons``.
     """
-    prof = Profiler(polygons)
+    prof = profiler or Profiler(polygons)
     rows = []
     for s in np.arange(0.0, axis.length + 1e-6, step):
         c = axis.interpolate(s)
@@ -117,10 +132,13 @@ def measure_profiles(
         transect = LineString(
             [(c.x - nrm[0] * half_width, c.y - nrm[1] * half_width), (c.x + nrm[0] * half_width, c.y + nrm[1] * half_width)]
         )
-        road = [iv for iv in prof.intervals(transect, c.x, c.y, nrm, classes["road"]) if iv[0] - axis_tol <= 0 <= iv[1] + axis_tol]
+        all_road = prof.intervals(transect, c.x, c.y, nrm, classes["road"])
+        road = [iv for iv in all_road if iv[0] - axis_tol <= 0 <= iv[1] + axis_tol]
         park = prof.intervals(transect, c.x, c.y, nrm, classes["parking"])
         side = prof.intervals(transect, c.x, c.y, nrm, classes["sidewalk"])
         plot = prof.intervals(transect, c.x, c.y, nrm, classes["plot"])
+        overhead = prof.intervals(transect, c.x, c.y, nrm, classes["overhead"]) if classes.get("overhead") else []
+        yards = prof.intervals(transect, c.x, c.y, nrm, classes["yard"]) if classes.get("yard") else []
         r: dict = {"s": round(float(s), 3), "x": round(c.x, 2), "y": round(c.y, 2)}
         if not road:
             r["note"] = "axis outside the mapped road polygon"
@@ -144,11 +162,43 @@ def measure_profiles(
         tr = [iv for iv in plot if iv[1] <= outer_R + snap]
         r["to_plot_L"] = round(min(iv[0] for iv in tl) - outer_L, 2) if tl else None
         r["to_plot_R"] = round(outer_R - max(iv[1] for iv in tr), 2) if tr else None
+        # the widest piece of mapped sidewalk between the kerb and the plots (or the end of the transect): a sidewalk cut
+        # by a tree pit, a kiosk or a shelter mapped as another class is walked on its widest piece, not the one at the kerb.
+        # A side where another carriageway comes before any plot is a median or an island, not a sidewalk: not measured.
+        # Pieces thinner than MIN_WALK_PIECE_M are slivers left where polygons meet, not something one walks on.
+        lanes = [iv for iv in all_road if iv not in road]
+        edge_L = min((iv[0] for iv in tl), default=half_width)
+        edge_R = max((iv[1] for iv in tr), default=-half_width)
+        # the same if what bounds the sidewalk is a plot with a carriageway just behind it: an island, not a building line
+        back_L = next((b for a, b in plot if a - snap <= edge_L <= b), edge_L)
+        back_R = next((a for a, b in plot if a <= edge_R <= b + snap), edge_R)
+        island_L = any(outer_L + snap < a < edge_L or back_L <= a <= back_L + ISLAND_BACK_M for a, _ in lanes)
+        island_R = any(edge_R < b < outer_R - snap or back_R - ISLAND_BACK_M <= b <= back_R for _, b in lanes)
+        # a plot drawn at roof level (an arcade, a balcony, a canopy) hides the ground under it, which may be walked on:
+        # a sidewalk ending at one has an unknown width
+        under_L = any(a - snap <= edge_L <= b + snap for a, b in overhead) if tl else False
+        under_R = any(a - snap <= edge_R <= b + snap for a, b in overhead) if tr else False
+        # ``walk_*_bounded``: the piece runs up to the plots, so nothing beyond it can be walked on; where it does not, what
+        # lies beyond (a lawn, a square, a wall) is not in the cartography classes read, and the path may continue there
+        wl = [(a, b) for a, b in side if a >= outer_L - snap and b <= edge_L + snap and b - a >= MIN_WALK_PIECE_M]
+        wr = [(a, b) for a, b in side if b <= outer_R + snap and a >= edge_R - snap and b - a >= MIN_WALK_PIECE_M]
+        best_L = max(wl, key=lambda iv: iv[1] - iv[0]) if wl and not (island_L or under_L) else None
+        best_R = max(wr, key=lambda iv: iv[1] - iv[0]) if wr and not (island_R or under_R) else None
+        r["walk_L"] = round(best_L[1] - best_L[0], 2) if best_L else None
+        r["walk_R"] = round(best_R[1] - best_R[0], 2) if best_R else None
+        # a yard (open ground inside a plot) does not bound a sidewalk as a building does: it may be a forecourt or a
+        # planted island one can step onto
+        yard_L = any(abs(a - edge_L) < snap for a, _ in yards)
+        yard_R = any(abs(b - edge_R) < snap for _, b in yards)
+        r["walk_L_bounded"] = bool(tl) and not yard_L and abs(best_L[1] - edge_L) < snap if best_L else None
+        r["walk_R_bounded"] = bool(tr) and not yard_R and abs(best_R[0] - edge_R) < snap if best_R else None
         rows.append(r)
     return pd.DataFrame(rows)
 
 
 TWO_STRIPS, ONE_STRIP, OTHER = "two_strips", "one_strip", "other"
+ISLAND_BACK_M = 3.0  # a plot with a carriageway this close behind it is an island between roads, not a building line
+MIN_WALK_PIECE_M = 0.3  # a piece of mapped sidewalk thinner than this is a sliver between polygons, not a sidewalk
 MIN_STRIP_M = 0.5  # a mapped parking strip narrower than this at a station does not count as parking there
 
 

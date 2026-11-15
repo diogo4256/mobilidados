@@ -56,6 +56,28 @@
     "retrieved_utc": "2026-10-24T15:49:12+00:00",
     "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
   },
+  "area_sidewalks": {
+    "copyrightText": "",
+    "envelope": [
+      -9.156,
+      38.744,
+      -9.127,
+      38.766
+    ],
+    "envelope_sr": 4326,
+    "files": {
+      "area_sidewalks.json": {
+        "bytes": 28036863,
+        "sha256": "cfcc0bc30e225f6089a92206a7e9f3674f8f032ad2b6eb3434791402e782fe8c"
+      }
+    },
+    "kind": "arcgis_query",
+    "licence": "CC-BY-4.0",
+    "n_features": 13584,
+    "retrieved_utc": "2026-11-15T10:46:04+00:00",
+    "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
+    "where": "LAYER IN ('10010306_RuaAvenidaRotundaPracaLargoPasseio','10010307_Arruamentos','10100104_ParqueEstacionamentoArea','87000501_Passeio','06020103_Predio','06020206_Logradouro','06020201_Garagem','06020203_ArrecadacaoAnexo','06000000_ConstrucoesEmGeral','06020102_VivendaCasa','06020106_CorpoRecuado','06020111_CorpoBalancado','06020112_CorpoElevado','06020202_TelheiroAlpendre')"
+  },
   "carris_gtfs": {
     "files": {
       "carris_gtfs.zip": {

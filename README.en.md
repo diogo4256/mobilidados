@@ -8,11 +8,22 @@ operators already publish into findings a public body can check for itself: ever
 sources, and every statement graded by how well it is supported. A citizen, an association, a journalist or a
 councillor can then make a request that rests on facts, not impressions.
 
-The first tool answers one question: **does on-street parking leave room for buses to pass each other?** It
-measures a street's cross-section from the municipality's own large-scale cartography, finds the bus routes
-scheduled on it in the operator's GTFS feed, compares the free width that parking leaves with the vehicles that
-must pass each other there and with published design references, and writes a **findings ledger**: every number,
-its evidence grade, its sources and its caveats.
+Nothing in it asks you to observe, count or collect anything: it works from published data, and where the data
+stop, it helps you ask the body that holds the rest. It answers two questions about a street so far:
+
+* **Does on-street parking leave room for buses to pass each other?** It measures the street's cross-section from
+  the municipality's own large-scale cartography, finds the bus routes scheduled on it in the operator's GTFS feed,
+  and compares the free width that parking leaves with the vehicles that must pass each other there and with
+  published design references.
+* **Are the sidewalks as wide as the accessibility law requires?** It compares the mapped sidewalks with the 1.2 m
+  free path of Decree-Law 163/2006, and says where the map alone shows a sidewalk too narrow.
+
+For each street it writes a **findings ledger**: every number, its evidence grade, its sources and its caveats. Then:
+
+* **`mobilidados screen`** ranks the streets around it with the same problems, so you can pick where to act;
+* **`mobilidados draft`** writes a first letter to the municipality or the operator from the ledger, with one
+  request (that the services check and act, or a request for documents under the access-to-documents law);
+* **`mobilidados lint`** and **`check-claims`** check your final text against the ledger.
 
 It started as one person's case about one street in Lisbon. The case is included in full as the worked example.
 
@@ -42,6 +53,11 @@ On Rua Ricardo Jorge, in Alvalade, the findings ledger comes down to this:
   to 65%), about 14 s more per bus (6 to 24 s). The excess is clear in 2025 (+60%) and not confirmed in 2026
   (+4%, −17% to +31%), with far fewer positions. The positions come from a third-party archive of the Carris
   real-time feed, not from Carris, and say where the time goes, not why.
+* **[I]** Where the street's own sidewalks are mapped up to the buildings (121 m), no stretch is narrower than the
+  accessibility law admits; the map cannot show that they are clear (poles and parked cars are not on it).
+  **[M]** In the surrounding area, 7 streets have sidewalks mapped up to the buildings and narrower than Decree-Law
+  163/2006 admits, even allowing 0.30 m of error on each mapped edge (Rua das Mimosas, 42 m; the lanes of São João
+  de Brito; …): the [screening of the area](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/screening.md) lists them, with where to look.
 
 Each line carries its source, method and caveats in the [full ledger](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/findings.md)
 (in Portuguese), including what was not verified: there is no field observation of two buses meeting there, and
@@ -49,8 +65,9 @@ Carris does not publish delays per street (the time measured above comes from an
 
 ## Who it is for, and what it is not
 
-* **Residents and associations:** take a request about a specific street to the municipality, the parish council
-  or Carris, resting on the municipality's own data, with the cost of each option stated as plainly as its gain.
+* **Residents and associations:** find the streets in your area with a case (`screen`), and take a request about
+  one of them to the municipality, the parish council or Carris (`draft`), resting on the municipality's own data,
+  with the cost of each option stated as plainly as its gain.
 * **Elected representatives:** table a question or a recommendation that the services can check number by
   number.
 * **Journalists:** check a claim before publishing it, with every number linked to its source.
@@ -88,6 +105,9 @@ flowchart LR
   T --> E
   S[Design references<br>with page and scope] --> L
   O[Open-data reports] --> L
+  A --> SW[Sidewalks<br>against DL 163/2006] --> L
+  L --> SC[Screening<br>of the area]
+  L --> DR[Letter draft]
   E --> L[Findings ledger<br>M · D · I · P · NE]
   D --> L
   L --> R[findings.md / .json<br>figures, tables]
@@ -102,10 +122,16 @@ flowchart LR
 | `envelope` | margins for bus × bus, bus × car, car × car, with and without mirrors; overhang sensitivity; free width without the parking on one side or both |
 | `encounters` | buses in opposite directions predicted to meet on the street, and where |
 | `delay` | time buses spend on a stretch between stops, from archived real-time positions: at peak against off-peak, beyond the slowdown of the same routes' neighbouring stretches, by year, route and hour, with 90% intervals and the checks behind them |
+| `sidewalks` | the widest piece of mapped sidewalk on each side, against the free path of the accessibility law (Decree-Law 163/2006): stretches narrower than it admits for their length, with and without the cartography's accuracy margin, and stretches to check |
 | `occurrences` | geolocated citizen reports per 100 m of street, compared with neighbouring streets |
 | `area` | the streets with buses in the surrounding area where parking squeezes their passage in the same way |
+| `area_sidewalks` | every street of the area, its sidewalks measured the same way |
 | `standards` | measured width against design references, each with its page and scope |
 | `ledger` | `findings.md` / `findings.json`: every statement with grade, sources, method and caveats |
+| `screening` | `screening.md`: the streets of the area to look at, for buses and for sidewalks, and how to make their case |
+
+And, from the results: `mobilidados draft CASE --topic buses|sidewalks` writes a letter (`results/letter-<topic>.md`);
+`mobilidados screen CASE` re-runs only the area stages and the screening.
 
 ## What it does not do (yet)
 
@@ -114,8 +140,11 @@ flowchart LR
   not swept paths. A narrow free width is a reason to ask for an inspection, not proof of an
   infraction. The ledger lists what was not verified (grade NE) for each case.
 * Only Lisbon has a city profile. Other municipalities need one ([docs/adding-a-city.md](https://github.com/diogo4256/mobilidados/blob/main/docs/adding-a-city.md)).
-* The room that parking leaves for buses is the only topic so far. Other mobility questions (sidewalks,
-  crossings, stops, cycle lanes) are welcome as new tools that follow the same evidence standard.
+* The sidewalks are compared as mapped: poles, bins, terraces and cars on them are not in the cartography, so a wide
+  mapped sidewalk is never presented as a clear one, and a sidewalk that ends at a yard or at something unmapped is a
+  stretch to check, not one below the law.
+* The room that parking leaves for buses and the width of sidewalks are the topics so far. Other mobility
+  questions (crossings, stops, cycle lanes) are welcome as new tools that follow the same evidence standard.
 
 ## Evidence standard
 
@@ -177,7 +206,10 @@ concessions, quotation marks, normative words such as "mandatory" for a recommen
    uv run mobilidados run cases/lisboa-rua-teixeira-de-pascoais
    ```
 
-   The name need not be spelled exactly: when no axis has that name, `new-case` looks for similar names and
+   To choose the street, `mobilidados screen cases/lisboa-rua-ricardo-jorge` (or the case's
+   [screening.md](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/results/screening.md)) lists the streets around it with a case to make.
+   When the run is done, `uv run mobilidados draft cases/lisboa-rua-teixeira-de-pascoais --topic buses` writes the
+   letter. The name need not be spelled exactly: when no axis has that name, `new-case` looks for similar names and
    suggests them. It finds the street in the municipal axes layer, cuts it into blocks at the cross streets, finds the
    bus routes that run along it in the timetable and writes `case.toml`. Everything else (sources, feed,
    vehicles, parameters) comes from the `--like` case. The top of the file lists what to check before use.

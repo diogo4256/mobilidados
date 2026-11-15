@@ -343,3 +343,13 @@ def test_a_draft_leaves_out_the_time_measured_on_a_stretch_of_the_model_street(t
     assert draft.config.delay is None
     assert "positions" not in draft.config.sources
     assert "# - [delay] the time measured on a stretch of the street" in text
+
+
+def test_a_draft_scans_the_sidewalks_of_its_own_area(tmp_path, city_layer):
+    like = Case.load(write_case(tmp_path / "like", sidewalks=True))
+    case = Case.load(write(like, "Rua do Teste", tmp_path / "example-rua-do-teste"))
+    area, sidewalks = case.source("area_cartography"), case.source("area_sidewalks")
+    assert isinstance(area, ArcgisQuery)
+    assert isinstance(sidewalks, ArcgisQuery)
+    assert tuple(sidewalks.envelope) == tuple(area.envelope)
+    assert case.config.sidewalks == like.config.sidewalks

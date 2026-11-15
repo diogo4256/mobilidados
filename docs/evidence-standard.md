@@ -37,7 +37,13 @@ no delay data" is a claim about the world.
    example an archive of an operator's real-time feed) are not the publisher's own record: name the chain, check
    the data against an official source where one exists (the timetable, for archived bus positions), and grade
    what is computed from them as an inference (I), not a measurement (M).
-9. **Distinguish an infraction from a design problem.** Parking inside a marked bay is not an infraction even
+9. **Say which way a measurement can point.** A mapped sidewalk that runs from the kerb to the buildings bounds the
+   free path from above: if it is narrower than the law admits, so is the free path, and the map is enough to say
+   so. If it is wide, the map says nothing about poles or parked cars on it. State the first; never the second.
+10. **A law is not a manual.** A legal requirement (kind `legal_requirement`, such as Decree-Law 163/2006 for
+    sidewalks) binds within its scope; a design manual recommends. Quote the article or section and keep its scope
+    (which streets, which exceptions, which deadlines) with it.
+11. **Distinguish an infraction from a design problem.** Parking inside a marked bay is not an infraction even
    if the remaining width is insufficient; that is a question for the street's design, not for enforcement.
 
 ## How the tools apply it

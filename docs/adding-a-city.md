@@ -6,7 +6,7 @@ complete example. It needs:
 | Section | What |
 | --- | --- |
 | `[city]` | id, name, a projected CRS in metres |
-| `[cartography]` | the class field and class codes for `road`, `parking`, `sidewalk`, `plot` in a large-scale polygon layer |
+| `[cartography]` | the class field and class codes for `road`, `parking`, `sidewalk`, `plot` in a large-scale polygon layer; for the sidewalk tool, also `overhead` (plot classes drawn at roof level: arcades, balconies, canopies) and `yard` (plot classes of open ground) |
 | `[axes]` | the street-name field of the street-axis layer |
 | `[network]` | fields of a routing network giving per-edge, per-direction access (optional) |
 | `[source_templates.*]` | how to fetch each source: kind, URL, CRS, licence as the publisher states it |
@@ -29,6 +29,15 @@ orthophotos, which mobilidados does not automate yet.
 
 Check the cartography's survey date and stated accuracy, and record them in `[cartography]` (`survey`,
 `accuracy_note`): they go into the ledger as caveats.
+
+For the **sidewalk tool** (`[sidewalks]`, see [methodology.md](methodology.md#sidewalks-sidewalkspy)) the cartography
+must map sidewalks as their own class and the buildings as plots. Look at how it draws a building over an arcade or
+a balcony, and list those classes in `overhead`: a sidewalk that ends at one has an unknown width and is left
+unmeasured. List yards and other open ground inside plots in `yard`: a sidewalk that ends at one is reported as one
+to check, never as one below the law. Set `[sidewalks] edge_accuracy_m` to the accuracy per edge your
+`accuracy_note` states. To screen every street of the area, give `[area_scan] sidewalks` a source with the road,
+parking, sidewalk and plot classes of the area (Lisbon: `area_sidewalks`), and exclude private roads by name with
+`exclude_streets`.
 
 ## Steps
 
