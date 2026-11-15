@@ -21,6 +21,17 @@ def _agents(name: str) -> ModuleType:
         raise
 
 
+def _pages(text: str) -> list[int]:
+    """``--pages 3,5``: PDF page numbers counted from 1, as argparse reports a value it cannot use."""
+    try:
+        pages = [int(x) for x in text.split(",")]
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{text!r}: give page numbers separated by commas, e.g. 152,153") from None
+    if any(p < 1 for p in pages):
+        raise argparse.ArgumentTypeError(f"{text!r}: pages are counted from 1")
+    return pages
+
+
 def parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="mobilidados", description=__doc__)
     ap.add_argument("-v", "--verbose", action="store_true", help="show debug messages")
@@ -48,7 +59,7 @@ def parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("lint", help="flag generalisations, hedges and quotes in a draft letter (no AI)")
     p.add_argument("draft", type=Path)
-    p.add_argument("--lang", default="pt")
+    p.add_argument("--lang", default="pt", choices=["pt", "en"], help="the draft's language (default: pt)")
 
     p = sub.add_parser("check-claims", help="AI fact-check of a draft against the case ledger and source texts")
     p.add_argument("case")
@@ -58,7 +69,7 @@ def parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("extract-standard", help="AI + OCR extraction of width values from PDF pages")
     p.add_argument("pdf", type=Path)
-    p.add_argument("--pages", required=True, help="comma-separated PDF page numbers, counted from 1")
+    p.add_argument("--pages", required=True, type=_pages, help="comma-separated PDF page numbers, counted from 1")
     p.add_argument("--out", type=Path)
 
     p = sub.add_parser("new-case", help="draft a case for another street from an existing case of the same city")
@@ -141,7 +152,7 @@ def _dispatch(a: argparse.Namespace) -> int:
     elif a.cmd == "check-claims":
         return int(_agents("claim_checker").main(Case.load(a.case), a.draft, a.corpus, a.out))
     elif a.cmd == "extract-standard":
-        return int(_agents("standards_extractor").main(a.pdf, [int(x) for x in a.pages.split(",")], a.out))
+        return int(_agents("standards_extractor").main(a.pdf, a.pages, a.out))
     elif a.cmd == "discover":
         return int(_agents("source_discovery").main(a.city, a.start, a.hosts, a.bbox, a.out))
     return 0

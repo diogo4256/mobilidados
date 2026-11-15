@@ -49,3 +49,10 @@ def num(x: float, lang: str, d: int = 2, sign: bool = False) -> str:
     """A number as printed in ``lang``: decimal comma in Portuguese, a true minus sign in both."""
     s = f"{x:+.{d}f}" if sign else f"{x:.{d}f}"
     return s.replace(".", ",").replace("-", "−") if lang == "pt" else s.replace("-", "−")
+
+
+def length(x: float, lang: str) -> str:
+    """A length of street to 0.1 m, as the tables give it (whole metres without a decimal), so the same length reads
+    the same in every finding and figure."""
+    x = round(float(x), 1)
+    return num(x, lang, 0 if x.is_integer() else 1)

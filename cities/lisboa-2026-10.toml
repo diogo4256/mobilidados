@@ -27,3 +27,8 @@ files = [
   { name = "2025.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/6434e62b-eb7d-4d2c-95d8-a19bc8bd1755/download/2025.csv" },
   { name = "2026_1s.csv", url = "https://dados.cm-lisboa.pt/dataset/fe6c4ef5-c021-48d0-9d1b-d4388769e3be/resource/e77c5e16-70c2-492a-96ef-fc5bdadf387c/download/20261s.csv" },
 ]
+
+[source_templates.carris_positions_archive]
+# The archive pinned at its last commit of 14 November 2026; the case reads the complete days up to 13 November.
+commit = "db6b8e782c0ffaddf602fc3bcb04b335969967d8"
+period = [2025-02-17, 2026-11-13]

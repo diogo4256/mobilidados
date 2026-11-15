@@ -8,12 +8,14 @@ import json
 import shutil
 
 import matplotlib
+import numpy as np
 import pandas as pd
 import pytest
 from PIL import Image
+from pyproj import Transformer
 from shapely.geometry import box
 
-from mobilidados import arcgis, cli, figures
+from mobilidados import arcgis, archive, cli, figures
 from mobilidados.config import ArcgisQuery, Case, Config, MobilidadosError
 from mobilidados.direction import directions
 from mobilidados.pipeline import Run, run
@@ -281,14 +283,14 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     assert findings["parking_removed"]["grade"] == "I"
     assert findings["parking_removed"]["values"] == {
         "removed_one_side_m": findings["free_width"]["values"]["metres_two_strips"],
-        "places_one_side": [18, 21],
-        "removed_both_sides_m": 216.0,
-        "places_both_sides": [36, 43],
+        "places_one_side": [18, 22],
+        "removed_both_sides_m": 220.0,
+        "places_both_sides": [36, 44],
         "parking_space_m": [5.0, 5.5, 6.0],
         "whole_street_parking_m": {"left": 110.0, "right": 110.0},
     }
     assert (
-        "would remove 108 m of mapped parking (about 18 to 21 places); on both sides, 216 m (about 36 to 43 places). "
+        "would remove 110 m of mapped parking (about 18 to 22 places); on both sides, 220 m (about 36 to 44 places). "
         "Places counted at 5.00–6.00 m each (an assumption). Along the whole street, the mapped parking measures 110.0 m"
     ) in findings["parking_removed"]["statement"]
     # a design reference keeps its stated scope: the scenario is not compared with the references
@@ -415,16 +417,25 @@ def ledger_of(case):
     return {f["id"]: f for f in json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["findings"]}
 
 
-def test_buses_in_one_direction_only_never_meet_and_the_ledger_says_0(tmp_path):
+def test_buses_in_one_direction_only_never_meet_and_the_ledger_says_why(tmp_path):
     root = write_case(tmp_path / "one-direction")
     edit(root, 'routes = ["10", "20"]', 'routes = ["10"]')
     edit(root, '  { route = "20", direction_id = 1, stop_id = "S2", s_m = 200.0, heading = -1 },\n', "")
     case = Case.load(root)
     run(case, offline=True)
-    encounters = ledger_of(case)["encounters"]
+    findings = ledger_of(case)
+    # the direction without buses is named, not counted as 0 trips and at most 0 per hour
+    assert findings["transit"]["statement"] == (
+        "Route 10 is scheduled along the street. On 2026-10-27: 2 trips east and none west (at most 1 per hour)."
+    )
+    assert findings["transit"]["values"]["trips_down"] == 0
+    encounters = findings["encounters"]
     assert encounters["values"] == {"per_day": [0], "in_narrow_sections": [0]}
-    assert "implies 0 meetings on 2026-10-27" in encounters["statement"]
-    assert encounters["statement"].endswith("; 0 fall within the sections with parking on both sides.")
+    assert encounters["statement"] == (
+        "On 2026-10-27 the timetable has buses in one direction only (east), so it implies no meetings between buses "
+        "in opposite directions on the street."
+    )
+    assert encounters["method"] == encounters["caveat"] == ""  # no constant-speed model is needed to say so
 
 
 def test_a_traffic_station_without_an_answer_still_counts_as_checked(tmp_path):
@@ -501,7 +512,9 @@ def test_a_step_finer_than_10_cm_measures_the_same_stretches(tmp_path):
         run(case, offline=True)
         metres[step] = ledger_of(case)["free_width"]["values"]["metres_two_strips"]
         assert pd.read_csv(case.results_dir / "tables" / "check_points.csv").s_m.tolist() == json.loads(checks)
-    assert metres["0.5"] == 109.5  # strips from 40.5 m to 150.5 m, cut at the end of block B1 (100 m)
+    # strips from 40.5 m to 150.5 m (110 m), with a station on each end: each station stands for half a step on
+    # either side, so the length is within half a step of the true one at each end, whatever the block boundaries
+    assert metres["0.5"] == 110.5
     assert metres["0.25"] == pytest.approx(metres["0.5"], abs=0.25 + 0.05)  # one step, and the ledger's rounding to 0.1 m
 
 
@@ -563,3 +576,121 @@ def test_runtime_medians_are_printed_as_numbers_of_the_cases_language(tmp_path):
     findings = ledger_of(case)
     assert "mediana de 62,5 s em todas as viagens do horário" in findings["runtime_S1"]["statement"]
     assert "mediana de 60 s em todas as viagens do horário" in findings["runtime_S2"]["statement"]
+
+
+def test_streets_with_the_same_rate_of_reports_share_a_rank(case, results, tmp_path):
+    # Rua Larga given the case street's rate: sorted by name it comes first, but the case street is not second for that
+    shutil.copytree(results / "tables", tmp_path / "tables")
+    path = tmp_path / "tables" / "occurrences_by_street.csv"
+    by_street = pd.read_csv(path)
+    by_street.loc[by_street.street == "Rua Larga", "parking_per_100m"] = 2.5
+    by_street.sort_values(["parking_per_100m", "street"], ascending=[False, True]).to_csv(path, index=False)
+    run(Case.load(case.root, results_dir=tmp_path), stages=["ledger"], offline=True)
+    occ = next(f for f in json.loads((tmp_path / "findings.json").read_text(encoding="utf-8"))["findings"] if f["id"] == "occurrences")
+    assert pd.read_csv(path).street.tolist() == ["Rua Larga", "Rua do Teste"]
+    assert (occ["values"]["rank"], occ["values"]["of"]) == (1, 2)
+
+
+def test_a_case_without_a_question_has_no_empty_quote_in_its_ledger(tmp_path):
+    root = write_case(tmp_path / "no-question", optional=False)
+    text = (root / "case.toml").read_text(encoding="utf-8")
+    (root / "case.toml").write_text("\n".join(x for x in text.splitlines() if not x.startswith("question")) + "\n", encoding="utf-8")
+    case = Case.load(root)
+    assert case.config.case.question == ""
+    run(case, offline=True)
+    lines = (case.results_dir / "findings.md").read_text(encoding="utf-8").splitlines()
+    assert lines[:3] == [f"# {case.config.case.title}", "", lines[2]]
+    assert not any(line.startswith(">") for line in lines)
+
+
+DELAY = """
+[delay]
+source = "positions"
+s_from = 50.0
+s_to = 150.0
+control_gap_m = 10.0
+control_m = 30.0
+reach_m = 40.0
+bootstrap = 100
+
+[sources.positions]
+kind = "git_archive"
+url = "https://github.com/example/archive"
+commit = "0123456789abcdef0123456789abcdef01234567"
+path = "data"
+prefix = "feed-"
+period = [2026-01-05, 2026-01-16]
+route_ids = ["A", "B"]
+envelope = [-10.0, 38.0, -9.0, 39.0]
+licence = "not stated"
+"""
+
+
+def archived_positions(case):
+    """Buses of routes 10 (A, eastbound) and 20 (B, westbound) at 5 m/s, a new one every minute, seen every 30 s on ten
+    working days: written where ``fetch`` writes a git archive's extraction. The street is short, so the snapshots are
+    frequent: the seconds hold only if every trip is seen within reach of the stretch (docs/methodology.md)."""
+    to_ll = Transformer.from_crs(3763, 4326, always_xy=True)
+    rows, snaps = [], []
+    k = np.arange(13 * 60)
+    for day in pd.bdate_range("2026-01-05", "2026-01-16"):
+        starts = (day + pd.Timedelta(hours=8)).timestamp() + 60 * k + 7 * k % 60  # not in step with the snapshots
+        for t in pd.date_range(day + pd.Timedelta(hours=9), day + pd.Timedelta(hours=20), freq="30s", inclusive="left"):
+            snap, reported = t.strftime("%Y-%m-%dT%H:%M:%S"), (t - pd.Timedelta(seconds=15)).strftime("%Y-%m-%d %H:%M:%S")
+            m = (t.timestamp() - starts) * 5.0
+            on = (m >= 0) & (m <= 200)
+            # both routes in one call: pyproj 3.6 (the lowest allowed) reads an array of one as a scalar, and warns
+            x = np.concatenate([ORIGIN[0] + m[on], ORIGIN[0] + 200 - m[on]])
+            lon, lat = to_ll.transform(x, np.full(len(x), ORIGIN[1]))
+            n_on = int(on.sum())
+            for j, (route, direction) in enumerate((("A", "0"), ("B", "1"))):
+                part = slice(j * n_on, (j + 1) * n_on)
+                rows += [[snap, f"{route}{day:%d}-{i}", route, direction, "v", reported, f"{la:.7f}", f"{lo:.7f}", "IN_TRANSIT_TO", "", ""]
+                         for i, lo, la in zip(k[on], lon[part], lat[part], strict=True)]  # fmt: skip
+            snaps.append([snap, 100, 2 * int(on.sum()), 2 * int(on.sum())])
+    folder = raw_path(case, "positions")
+    folder.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows, columns=archive.POSITION_COLUMNS).to_csv(folder / "positions.csv", index=False)
+    pd.DataFrame(snaps, columns=archive.SNAPSHOT_COLUMNS).to_csv(folder / "snapshots.csv", index=False)
+    lock = Lock(case.lock_path)
+    lock.record("positions", sorted(folder.iterdir()), case.raw_dir, kind="git_archive", retrieved_utc="2026-10-24T12:00:00+00:00")
+    lock.save()
+
+
+def test_the_time_measured_on_the_stretch_is_in_its_tables_its_figure_and_the_ledger(tmp_path):
+    root = write_case(tmp_path / "delay")
+    (root / "case.toml").write_text((root / "case.toml").read_text(encoding="utf-8") + DELAY, encoding="utf-8")
+    case = Case.load(root)
+    archived_positions(case)
+    run(case, offline=True)
+    tables = case.results_dir / "tables"
+    for name in ("delay_routes", "delay_data", "delay_summary", "delay_sensitivity", "delay_passages", "delay_by_hour"):
+        assert (tables / f"{name}.csv").exists(), name
+    routes_ = pd.read_csv(tables / "delay_routes.csv")
+    assert routes_.route_direction.tolist() == ["10 0", "20 1"]
+    assert routes_.heading.tolist() == [1, -1]
+    summary = pd.read_csv(tables / "delay_summary.csv").set_index("scope")
+    # the same speed everywhere at every hour: the stretch is no slower than its controls
+    assert summary.loc["all", "ratio"] == pytest.approx(1.0, abs=0.15)
+    assert summary.loc["all", "off_peak_s"] == pytest.approx(100 / 5.0, rel=0.15)  # 100 m at 5 m/s
+    assert summary.loc["all", "working_days"] == 10
+    assert (case.results_dir / "figures" / "delay_by_hour.png").exists()
+    findings = ledger_of(case)
+    assert findings["delay"]["grade"] == findings["delay_seconds"]["grade"] == "I"
+    assert findings["delay"]["statement"].startswith("On the working days from 2026-01-05 to 2026-01-16 (10 days), at 17h–19h,")
+    assert "routes 10 and 20" in findings["delay"]["statement"]
+    assert "not Carris's own record" in findings["delay"]["caveat"]
+    md = (case.results_dir / "findings.md").read_text(encoding="utf-8")
+    # the archive is listed as it was at the pinned commit
+    assert "<https://github.com/example/archive/tree/0123456789abcdef0123456789abcdef01234567>" in md
+
+
+def test_a_delay_source_of_another_kind_or_without_transit_is_refused(tmp_path):
+    root = write_case(tmp_path / "bad", optional=False)
+    (root / "case.toml").write_text(
+        (root / "case.toml").read_text(encoding="utf-8") + DELAY.replace('source = "positions"', 'source = "cartography"'), encoding="utf-8"
+    )
+    with pytest.raises(MobilidadosError) as e:
+        Case.load(root)
+    assert "delay.source = 'cartography': needs a source of kind 'git_archive'" in str(e.value)
+    assert "[delay] needs [transit]" in str(e.value)

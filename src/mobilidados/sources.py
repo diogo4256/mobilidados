@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from . import arcgis
-from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, HttpFile, HttpFiles, MobilidadosError
+from . import arcgis, archive
+from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, GitArchive, HttpFile, HttpFiles, MobilidadosError
 from .provenance import DOWNLOAD_TIMEOUT_S, Lock, http_get, now_utc, sha256_bytes, sha256_file, write_atomic
 
 log = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def raw_path(case: Case, source_id: str) -> Path:
     src = case.source(source_id)
     if isinstance(src, HttpFile):
         return case.raw_dir / f"{source_id}{src.suffix or Path(urlparse(src.url).path).suffix or '.bin'}"
-    if isinstance(src, HttpFiles):
+    if isinstance(src, HttpFiles | GitArchive):
         return case.raw_dir / source_id
     return case.raw_dir / f"{source_id}.json"
 
@@ -86,12 +86,12 @@ def _copy(src: AnySource, origin: Path, new: Path) -> None:
     """Copy a source from a folder: for a multi-file source, only the files it names."""
     if not origin.exists():
         raise MobilidadosError(f"{origin} is not in the folder; fetch the source without --from-dir")
-    if isinstance(src, HttpFiles):
+    if isinstance(src, HttpFiles | GitArchive):
         new.mkdir()
-        for f in src.files:
-            if not (origin / f.name).is_file():
-                raise MobilidadosError(f"{origin / f.name} is not in the folder; nothing was written")
-            shutil.copy2(origin / f.name, new / f.name)
+        for name in _names(src):
+            if not (origin / name).is_file():
+                raise MobilidadosError(f"{origin / name} is not in the folder; nothing was written")
+            shutil.copy2(origin / name, new / name)
     else:
         shutil.copy2(origin, new)
 
@@ -162,10 +162,15 @@ def check_live(case: Case) -> list[tuple[str, str, str]]:
     return out
 
 
+def _names(src: HttpFiles | GitArchive) -> list[str]:
+    """The files of a multi-file source."""
+    return [f.name for f in src.files] if isinstance(src, HttpFiles) else list(archive.FILES)
+
+
 def _cached(src: AnySource, dest: Path) -> bool:
     """A multi-file source is cached only when every file is there: a download that failed halfway is not."""
-    if isinstance(src, HttpFiles):
-        return all((dest / f.name).exists() for f in src.files)
+    if isinstance(src, HttpFiles | GitArchive):
+        return all((dest / name).exists() for name in _names(src))
     return dest.exists()
 
 
@@ -196,6 +201,8 @@ def _download(src: AnySource, dest: Path) -> dict[str, Any]:
         for f in src.files:
             write_atomic(dest / f.name, http_get(f.url, timeout=DOWNLOAD_TIMEOUT_S).content)
         meta |= {"urls": {f.name: f.url for f in src.files}}
+    elif isinstance(src, GitArchive):
+        meta |= archive.download(src, dest)
     return meta
 
 

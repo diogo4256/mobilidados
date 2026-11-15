@@ -33,7 +33,11 @@ no delay data" is a claim about the world.
    was read.
 7. **Record assumptions where they are used**, with the reason (grade P), and test how much the result
    depends on them (e.g. `overhang_sensitivity.csv`).
-8. **Distinguish an infraction from a design problem.** Parking inside a marked bay is not an infraction even
+8. **Say who stands between the data and their publisher.** Data relayed or archived by a third party (for
+   example an archive of an operator's real-time feed) are not the publisher's own record: name the chain, check
+   the data against an official source where one exists (the timetable, for archived bus positions), and grade
+   what is computed from them as an inference (I), not a measurement (M).
+9. **Distinguish an infraction from a design problem.** Parking inside a marked bay is not an infraction even
    if the remaining width is insufficient; that is a question for the street's design, not for enforcement.
 
 ## How the tools apply it

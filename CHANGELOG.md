@@ -5,7 +5,28 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
 ### Added
+
+- **Time on a stretch, measured from archived bus positions** (the `delay` stage, `[delay]` in a case; method in
+  docs/methodology.md). A new source kind, `git_archive`, reads a public git archive of an operator's real-time
+  feed pinned to a commit, and keeps the case's routes inside an envelope; the lock records the commit and the
+  sha256 of what was extracted. The stage compares the time buses spend on a stretch between stops with the time
+  they spend on control stretches of the same routes, at the evening peak and off-peak on working days
+  (occupancy, Little's law): the ratio needs no count of buses and uses every snapshot; the seconds use only the
+  hours densely recorded. 90% intervals come from a bootstrap over days. The tables record the checks: the
+  passages counted against the timetable, the estimate with each choice changed in turn, by year, by route and
+  direction, and by hour; `tests/test_delay.py` simulates buses with known times and checks the estimator gives
+  them back. Two findings (grade I) say what was measured, by year, and not why; they name the data's chain (Carris,
+  a relay, the archive), which is not Carris's own record. `[city] holidays` lists the public holidays, which are
+  not working days. `new-case` leaves `[delay]` out of a draft, since it depends on the street's stops.
+- Rua Ricardo Jorge: on working days at 17h–19h the stretch between its stops took 49% longer than the slowdown
+  of the routes' neighbouring stretches would explain (90% interval: 34% to 65%); about 14 s more per bus
+  (6 to 24 s), the excess coming at 17h. In 2025 +60% (+42% to +80%); in 2026, with far fewer positions, +4%
+  (−17% to +31%), which does not confirm it.
+- Evidence standard: a rule for data relayed or archived by a third party (name the chain, check it against an
+  official source, grade what is computed from it as an inference).
 
 - `mobilidados verify CASE --live` downloads a case's sources again into a temporary folder and says, file by file,
   whether each service still serves what the lock records (`same`, `changed`, `new`) or did not answer, without
@@ -16,6 +37,16 @@ and the project uses [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - The READMEs say the package is on PyPI and that the cases and city profiles stay in the repository.
+- Every length of street in the ledger follows one rule: each 0.5 m station stands for the stretch within half a
+  step of it, cut at the ends of the axis (`geometry.covered`, explained in docs/methodology.md). The stretches with
+  parking on both sides were measured from their first to their last station, one step short per section, while
+  the mapped parking per side counted a step per station; the shorter length also understated the parking an
+  option removes. In Rua Ricardo Jorge the stretches with parking on both sides measure 117.5 m (was 116 m), and
+  removing the parking on both sides would remove about 39 to 47 places (was 38 to 46); one side, 19 to 23 places,
+  as before. No width, count of meetings or other number changes. Lengths are printed to 0.1 m wherever they
+  appear, so the same length reads the same in every finding and figure.
+- The READMEs open with what the Rua Ricardo Jorge example finds, each line with its grade, and say who the
+  tool is for and what it is not (a street design tool, a parking inventory, a bus-speed tracker).
 
 ### Fixed
 
@@ -80,6 +111,18 @@ and the project uses [Semantic Versioning](https://semver.org/).
   keeps its file, since the PNG compression differs from one platform to another. With the locked package
   versions, the Lisbon figures drawn on Linux and on macOS were identical pixel for pixel. The figures stage also removes the
   figures an earlier configuration made, which a full run used to do.
+- On a street where the timetable has buses in one direction only, the ledger names the direction without buses
+  ("72 trips S→N and none N→S") instead of printing 0 trips and at most 0 per hour, and says that buses in one
+  direction do not meet head-on instead of "0 meetings; 0 fall within the sections with parking on both sides".
+  The values in `findings.json` are unchanged.
+- Streets with the same rate of reports share a rank in the occurrences finding; the case street was ranked below
+  a street with the same rate whose name sorts first.
+- An area scan in which no bus runs along any street axis wrote tables without a header, which the ledger then
+  failed to read; they are written empty with their columns.
+- A case without a `question` no longer starts its `findings.md` with an empty quote.
+- `lint --lang` accepts only the languages it has rules for (`pt`, `en`), instead of silently checking only the
+  quotation marks of any other; `extract-standard --pages` reports page numbers it cannot read as a usage error,
+  not a traceback.
 
 ## [0.3.0] - 2026-10-24
 
@@ -260,7 +303,8 @@ streetfit.
   `discover` (city-profile agent); deterministic `lint` for letters.
 - Lisbon city profile and the Rua Ricardo Jorge case, reproducing the original October 2026 analysis exactly.
 
-[Unreleased]: https://github.com/diogo4256/mobilidados/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/diogo4256/mobilidados/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/diogo4256/mobilidados/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/diogo4256/mobilidados/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/diogo4256/mobilidados/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/diogo4256/mobilidados/releases/tag/v0.1.0

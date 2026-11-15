@@ -327,3 +327,19 @@ def test_a_bearing_near_a_compass_boundary_is_named_with_both_readings(tmp_path,
         "O rascunho lê a rua como E (sentidos O→E / E→O, lados N / S), mas lê-la como NE "
         "(sentidos SO→NE / NE→SO, lados NO / SE) é igualmente válido." in pt
     )
+
+
+def test_a_draft_leaves_out_the_time_measured_on_a_stretch_of_the_model_street(tmp_path, city_layer):
+    from tests.test_end_to_end import DELAY
+
+    root = write_case(tmp_path / "like")
+    (root / "case.toml").write_text((root / "case.toml").read_text(encoding="utf-8") + DELAY, encoding="utf-8")
+    like = Case.load(root)
+    assert like.config.delay is not None
+    out = write(like, "Rua do Teste", tmp_path / "a")
+    text = (out / "case.toml").read_text(encoding="utf-8")
+    draft = Case.load(out)
+    # the stretch, its stops and its routes are the model street's: nothing of it is carried over
+    assert draft.config.delay is None
+    assert "positions" not in draft.config.sources
+    assert "# - [delay] the time measured on a stretch of the street" in text

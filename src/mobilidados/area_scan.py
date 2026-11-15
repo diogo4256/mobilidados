@@ -24,6 +24,8 @@ from .geometry import MIN_STRIP_M, Profiler
 from .gtfs import Feed, active_service_ids
 from .sources import IdentifyCache
 
+STATION_COLUMNS = ["street", "x", "y", "buses_per_day", "bus_directions", "routes", "free_width_m", "parking_both_sides"]
+
 
 def bus_shapes(
     feed: Feed, day: dt.date, crs: int, bbox: tuple[float, float, float, float]
@@ -117,7 +119,7 @@ def scan(
                         "parking_both_sides": left and right,
                     }
                 )
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=STATION_COLUMNS)  # with its header even when no bus runs along any axis
 
 
 def rank_streets(
@@ -155,4 +157,8 @@ def rank_streets(
             q = ref.iloc[len(pattern) // 2 if len(pattern) else 0]
             r["traffic"] = directions(pd.DataFrame(edges_at(cache, net, q.x, q.y)), net.open_value)
         out.append(r)
-    return pd.DataFrame(out).sort_values(["metres_with_pattern", f"metres_below_{reference:g}m"], ascending=False)
+    below = f"metres_below_{reference:g}m"
+    columns = ["street", "metres_with_buses", "buses_per_day", "buses_both_directions", "routes", "free_width_median_m",
+               "free_width_p10_m", "pct_parking_both_sides", below, "metres_with_pattern", "traffic"]  # fmt: skip
+    # with its header even when no street qualifies, so the ledger and the figure read an empty table, not a missing one
+    return pd.DataFrame(out, columns=columns).sort_values(["metres_with_pattern", below], ascending=False)

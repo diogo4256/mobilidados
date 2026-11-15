@@ -1,5 +1,7 @@
 """The command line: what it prints, to which stream, and the exit code, on minimal cases (no network)."""
 
+import pytest
+
 from mobilidados import cli, sources
 from mobilidados.config import Case, MobilidadosError
 from mobilidados.provenance import Lock
@@ -133,3 +135,20 @@ def test_verify_live_exits_0_when_every_source_still_serves_the_locked_files(mak
     monkeypatch.setattr(sources, "_download", download)
     assert cli.main(["verify", str(case.root), "--live"]) == 0
     assert capsys.readouterr().out.strip() == "2/2 files served today match the lock"
+
+
+def test_lint_refuses_a_language_it_has_no_rules_for(tmp_path, capsys):
+    draft = tmp_path / "draft.md"
+    draft.write_text("Toujours.\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as exit_:
+        cli.main(["lint", str(draft), "--lang", "fr"])
+    assert exit_.value.code == 2
+    assert "invalid choice: 'fr'" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(("pages", "message"), [("152-153", "separated by commas"), ("0", "counted from 1")])
+def test_extract_standard_pages_that_are_not_numbers_are_a_usage_error(tmp_path, capsys, pages, message):
+    with pytest.raises(SystemExit) as exit_:
+        cli.main(["extract-standard", str(tmp_path / "manual.pdf"), "--pages", pages])
+    assert exit_.value.code == 2
+    assert message in capsys.readouterr().err

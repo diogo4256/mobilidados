@@ -53,6 +53,8 @@ def make_all(run: Run) -> None:
             figs["trips_per_hour"] = trips_per_hour(run, lang)
         if cfg.area_scan and cfg.transit and (fig := area(run, lang)) is not None:
             figs["area_streets"] = fig
+        if cfg.delay and cfg.transit:
+            figs["delay_by_hour"] = delay_by_hour(run, lang)
         note = credit(run.case)
         for old in out.glob("*.png"):
             if old.stem not in figs:  # made by an earlier configuration
@@ -108,7 +110,7 @@ def width_budget(run: Run, lang: Lang) -> Figure:
             t("without_one_side", lang),
             [(one_side, FREE_ALT, f"{num(one_side, lang)} m")],
             0.0,
-            t("removes", lang, m=i18n.num(float(wp.loc["L", "parking_removed_m"]), lang, 0), places=places),
+            t("removes", lang, m=i18n.length(wp.loc["L", "parking_removed_m"], lang), places=places),
         ),
         (t("free_width_short", lang), [(free, FREE, f"{num(free, lang)} m")], 0.0, ""),
         (
@@ -239,5 +241,34 @@ def area(run: Run, lang: Lang) -> Figure | None:
     ax.set_title(t("area_title", lang), loc="left", fontsize=10, color=INK)
     ax.legend(frameon=False, fontsize=9)
     ax.grid(color=GRID, lw=0.5)
+    fig.tight_layout()
+    return fig
+
+
+def delay_by_hour(run: Run, lang: Lang) -> Figure:
+    """Seconds per passage on the stretch, hour by hour, against the neighbouring stretches at the same length: where
+    the two lines part, the stretch is slower than its surroundings. Hours with no dense record are left blank."""
+    dl = run.cfg.delay
+    assert dl is not None
+    h = run.table("delay_by_hour")
+    fig = Figure(figsize=(9.5, 3.8))
+    ax = fig.subplots()
+    for hour in dl.peak_hours:
+        ax.axvspan(hour, hour + 1, color=GRID, alpha=0.6, lw=0)
+    ax.text(
+        min(dl.peak_hours) + 0.08, 0.02, t("delay_peak", lang), transform=ax.get_xaxis_transform(), color=MUTED, fontsize=8, va="bottom"
+    )
+    x = h.hour + 0.5  # each value is for the whole hour: draw it at the middle
+    ax.fill_between(x, h.stretch_ci90_low_s, h.stretch_ci90_high_s, color=BUS2, alpha=0.15, lw=0, label=t("delay_interval", lang))
+    ax.plot(x, h.stretch_s, color=BUS2, lw=1.8, marker="o", ms=4, label=t("delay_stretch", lang))
+    ax.plot(x, h.controls_s_same_length, color=MUTED, lw=1.2, marker="o", ms=3, ls="--", label=t("delay_controls", lang))
+    ax.set_xlim(h.hour.min(), h.hour.max() + 1)
+    ax.set_ylim(0, None)
+    ax.set_xticks(range(int(h.hour.min()), int(h.hour.max()) + 2, 2))
+    ax.set_xlabel(t("hour", lang))
+    ax.set_ylabel(t("delay_s", lang))
+    ax.grid(axis="y", color=GRID, lw=0.6)
+    ax.legend(frameon=False, loc="upper left", fontsize=9)
+    ax.set_title(t("delay_title", lang, length=i18n.num(dl.s_to - dl.s_from, lang, 0)), loc="left", fontsize=10, color=INK)
     fig.tight_layout()
     return fig

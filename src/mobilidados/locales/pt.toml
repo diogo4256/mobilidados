@@ -27,6 +27,12 @@ without_one_side = "Sem estacionamento de um lado"
 short_by = "faltam {x} m ({xm} m com espelhos)"
 removes = "nos troços com estacionamento dos dois lados, retira {m} m de estacionamento ({places})"
 
+delay_title = "Tempo no troço entre paragens ({length} m), dias úteis, por hora (horas com registos densos)"
+delay_stretch = "no troço"
+delay_controls = "troços vizinhos, à mesma escala"
+delay_s = "segundos por passagem"
+delay_interval = "intervalo de confiança de 90% (reamostragem de dias)"
+delay_peak = "ponta"
 [ledger]
 length = "O eixo da rua tem {length} m."
 traffic = { one = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} ponto verificado ao longo da rua, a circulação é permitida em ambos os sentidos.", other = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos." }
@@ -36,12 +42,19 @@ strips = "O estacionamento cartografado ocupa {sl} m do lado {side_l} e {sr} m d
 routes_scheduled = { one = "Segundo o horário, a carreira {routes} passa nesta rua.", other = "Segundo o horário, as carreiras {routes} passam nesta rua." }
 trips = { one = "{n} viagem {heading}", other = "{n} viagens {heading}" }
 routes = "{scheduled} Em {day}: {trips_up} e {trips_down} (no máximo {max_up} e {max_down} por hora)."
+routes_one_way = "{scheduled} Em {day}: {trips} e nenhuma {none} (no máximo {max} por hora)."
 vehicle_body = "Veículo de referência: {label}. Carroçaria com {w} m de largura ({src})."
 vehicle_mirrors = "Veículo de referência: {label}. Largura com espelhos assumida em {w} m ({src})."
 budget = "Com o estacionamento ocupado dos dois lados e os carros dentro dos lugares, dois autocarros precisam de pelo menos {bb} m (só a carroçaria, sem espaço nenhum entre eles; {bbm} m com espelhos) e a largura livre mediana é de {fmed} m: folga de {mbb} m. Um autocarro e um ligeiro precisam de pelo menos {bc} m: folga de {mbc} m ({mbcm} m contando com os espelhos do ligeiro)."
 meetings = { one = "{n} encontro", other = "{n} encontros" }
 meetings_narrow = { one = "{n} acontece nos troços com estacionamento dos dois lados", other = "{n} acontecem nos troços com estacionamento dos dois lados" }
 encounters = "Segundo o horário, em {day} há {meetings} entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de {speeds} km/h); {narrow}."
+delay = "Nos dias úteis de {first} a {last} ({days} dias), às {peak}, a diferença entre o tempo dos autocarros das carreiras {routes} no troço entre paragens (s = {a}–{b} m, {length} m) e o que o abrandamento dos troços vizinhos das mesmas carreiras, à mesma hora, faria esperar a partir das {off} foi de {pct}% (intervalo de confiança de 90%: {lo}% a {hi}%). Por ano: {years}.{unconfirmed}"
+delay_year = "em {year}, {pct}% ({lo}% a {hi}%; {days} dias)"
+delay_unconfirmed = { one = " O intervalo de {years} inclui 0: os dados desse ano não confirmam o excesso.", other = " Os intervalos de {years} incluem 0: os dados desses anos não confirmam o excesso." }
+delay_seconds = "Nas {hp} horas de ponta e {ho} horas fora da ponta em que o arquivo tem posições a intervalos de {gap} min no máximo (das de ponta, {by_year}), um autocarro levou em média {off} s a percorrer o troço fora da ponta e {peak} s na ponta, quando o abrandamento dos troços vizinhos faria esperar {exp} s: mais {exc} s por passagem (intervalo de confiança de 90%: {lo} a {hi} s)."
+delay_hours_year = "{n} em {year}"
+encounters_one_way = "Em {day}, o horário só tem autocarros num sentido ({heading}), por isso não prevê encontros entre autocarros em sentidos opostos nesta rua."
 runtimes = "Tempo previsto da paragem {a} à seguinte ({b}, a {d} m em linha reta): mediana de {m_all} s em todas as viagens do horário (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h)."
 reports_attributed = { one = "Foi atribuída à rua {n} ocorrência da categoria «{flt}»", other = "Foram atribuídas à rua {n} ocorrências da categoria «{flt}»" }
 street_rank = { one = "{rank}.ª de {total} rua com pelo menos {minlen} m na envolvente", other = "{rank}.ª de {total} ruas com pelo menos {minlen} m na envolvente" }
@@ -67,6 +80,8 @@ width_budget = "Soma das larguras dos veículos lado a lado (envelope estático)
 without_parking = "Largura livre mais a faixa (ou as faixas) de estacionamento cartografada no mesmo perfil, em cada perfil com estacionamento dos dois lados."
 parking_removed = "Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua vêm de parking_strip_lengths.csv."
 encounters = "Sobreposição dos intervalos em que cada autocarro está na rua, a velocidade constante e com as horas do horário; é o horário, não uma observação."
+delay = "Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de {cm} m, a {gap} m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros ({reps} réplicas)."
+delay_seconds = "Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de {reach} m do troço, só nas horas em que os registos nunca distam mais de {gap} min."
 occurrences = "Cada ocorrência georreferenciada dos dados abertos é atribuída ao eixo de rua mais próximo."
 area_pattern = "Perfis a cada {step} m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua."
 
@@ -83,6 +98,15 @@ without_parking = "Admite que o espaço do estacionamento passa para a faixa de 
 parking_removed = "Área de estacionamento cartografada, não lugares contados: entradas e outras interrupções dentro das faixas não são descontadas. O comprimento de um lugar é um pressuposto."
 encounters_model = "Os pontos de encontro saem de um modelo de velocidade constante, sem tempo parado nas paragens: um encontro a poucos metros do limite de um troço pode acontecer dentro dele."
 encounters_check = "A {kmh} km/h, a mais baixa das velocidades entre paragens em {day} (distância em linha reta a dividir pelo tempo mediano do horário), o modelo dá {per_day}."
+delay_source = "Posições do arquivo público {url} (commit {commit}), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença."
+delay_cause = "Mede onde se perde o tempo, não porquê: o estacionamento, os autocarros em sentido contrário, uma fila vinda de um cruzamento ou um semáforo podem todos contribuir."
+delay_directions = "Por carreira e sentido: {list}."
+delay_direction = "{route} {heading} {pct}% ({lo}% a {hi}%)"
+delay_sensitivity = "Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de {lo}% a {hi}% (delay_sensitivity.csv)."
+delay_by_hour = "O excesso em segundos depende muito da hora de ponta escolhida: {list} (delay_sensitivity.csv); o rácio muda pouco."
+delay_hour = "só às {h}h, {s} s"
+delay_passages = "As passagens contadas são {pct}% das do horário de {day} nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas)."
+delay_days = "Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade ({n} nesse período)."
 occurrences = "Uma ocorrência não é uma infração provada e as contagens são pequenas. A ordenação divide as ocorrências contadas dentro da janela de atribuição (um retângulo que vai {w} m além da rua) pelo comprimento total de cada rua, incluindo a parte fora da janela: isso favorece as ruas que cabem inteiras na janela, como a deste caso."
 area_pattern = "Os limiares ({thr} m de largura livre, {minm} m de extensão) são parâmetros escolhidos para esta análise, não valores de um documento técnico."
 
@@ -136,4 +160,7 @@ header_one_way = """
 #   Aqui os autocarros só passam num sentido, e a pergunta parte do princípio de que cabe um ligeiro ao lado do
 #   autocarro, ou seja, de que a rua tem dois sentidos ou duas vias. Se a rua tiver um só sentido e uma só via, a
 #   pergunta não se aplica tal como está: reescreva-a depois de o `mobilidados run` mostrar o sentido do trânsito."""
+header_delay = """# - [delay] o tempo medido num troço da rua (posições GPS arquivadas) não foi copiado: depende das paragens e das
+#   carreiras da rua. Para o medir, escolha um troço entre paragens e acrescente [delay] e a fonte das posições,
+#   como em docs/methodology.md;"""
 header_inherited = "# O resto (dados fixados, veículos, parâmetros, lacunas comuns) é herdado, tal como em {model}."

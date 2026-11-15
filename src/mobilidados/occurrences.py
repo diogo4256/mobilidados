@@ -86,7 +86,8 @@ def rates_by_street(
 ) -> pd.DataFrame:
     """Per street: count and rate per 100 m for each named category filter (regex on ``category``).
 
-    Sorted by the first filter's rate (highest first), then by street name, so the rank of a street is its row.
+    Sorted by the first filter's rate (highest first), then by street name. Streets with the same rate share a rank
+    (the ledger counts the streets with a higher rate), so a street's row is its rank only when its rate is unique.
     """
     near = points[points.dist_m <= max_dist]
     out = pd.DataFrame({"street": list(streets), "length_m": [round(g.length, 1) for g in streets.values()]})

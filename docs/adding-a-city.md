@@ -53,6 +53,13 @@ Check the cartography's survey date and stated accuracy, and record them in `[ca
 
 ## Other source kinds
 
+`git_archive` reads vehicle positions from a git repository that archives a real-time feed one CSV per snapshot
+(columns `trip_id`, `route_id`, `direction_id`, `latitude`, `longitude`, `timestamp`, `vehicle_id`, as GTFS-RT
+vehicle positions name them), pinned to a commit; it needs the `git` command. A city profile can hold a template
+with the archive's address and file names (Lisbon: `carris_positions_archive`), the dated city file its commit and
+period, and a case its routes and envelope (see docs/methodology.md, *Time on a stretch*). List the city's public
+holidays in `[city] holidays`, so the stage does not count them as working days.
+
 `arcgis_query` and `arcgis_identify` cover ArcGIS servers, and `http_file(s)` covers files. For WFS, OGC API
 Features or OpenStreetMap, add a kind in `src/mobilidados/sources.py` that writes the same structure (a JSON with
 `features` holding `attributes` and ESRI geometry), or convert in the fetcher. Contributions welcome.

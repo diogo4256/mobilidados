@@ -1,11 +1,22 @@
 """Cross-section measurement on a synthetic street with known widths."""
 
+import numpy as np
 import pytest
 from shapely import affinity
 from shapely.geometry import LineString, box
 
 from mobilidados.config import Block, MobilidadosError
-from mobilidados.geometry import TWO_STRIPS, classify, measure_profiles, narrow_sections, street_axis, strip_lengths, summarize_blocks
+from mobilidados.geometry import (
+    TWO_STRIPS,
+    classify,
+    covered,
+    measure_profiles,
+    narrow_sections,
+    section_extent,
+    street_axis,
+    strip_lengths,
+    summarize_blocks,
+)
 
 from .builders import street
 
@@ -57,7 +68,21 @@ def test_classify_summary_and_sections():
     assert (two.s.min(), two.s.max()) == (20, 80)
     assert summarize_blocks(df, blocks).set_index("block").loc["all", "free_median"] == pytest.approx(4.90)
     assert [b for _, _, b in narrow_sections(df, 1.0)] == ["A", "B"]
-    assert strip_lengths(df, blocks, 1.0, (5.0,)).set_index("block").loc["all", "strip_L_length_m"] == pytest.approx(61.0)
+    assert strip_lengths(df, blocks, 1.0, (5.0,), axis.length).set_index("block").loc["all", "strip_L_length_m"] == pytest.approx(61.0)
+
+
+def test_each_station_stands_for_the_step_around_it_cut_at_the_ends_of_the_axis():
+    # stations every 0.5 m on a 10 m axis: 0.0 and 10.0 stand for a quarter of a metre each, the others half a metre
+    assert covered([3.0, 3.5, 4.0], 0.5, 10.0) == pytest.approx(1.5)
+    assert covered([0.0, 0.5], 0.5, 10.0) == pytest.approx(0.75)
+    assert covered([9.5, 10.0], 0.5, 10.0) == pytest.approx(0.75)
+    assert covered(np.arange(0, 10.001, 0.5), 0.5, 10.0) == pytest.approx(10.0)  # the whole axis, once
+    assert covered([], 0.5, 10.0) == 0.0
+    # a section is the same stretch: its length is what covered gives for its stations
+    a, z = section_extent(3.0, 4.0, 0.5, 10.0)
+    assert (a, z) == (2.75, 4.25)
+    assert z - a == pytest.approx(covered([3.0, 3.5, 4.0], 0.5, 10.0))
+    assert section_extent(0.0, 1.0, 0.5, 10.0) == (0.0, 1.25)
 
 
 def axis_feature(name, *paths):

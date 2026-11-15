@@ -74,6 +74,7 @@ def args_for(key, count):
         "ledger.trips": {"n": count, "heading": "HEADING"},
         "ledger.meetings": {"n": count},
         "ledger.meetings_narrow": {"n": count},
+        "ledger.delay_unconfirmed": {"years": "2026" if count == 1 else "2025 and 2026"},
         "ledger.reports_attributed": {"n": count, "flt": "Parking"},
         "ledger.street_rank": {"rank": 1, "total": count, "minlen": "100"},
         "ledger.area_streets": {"n": count},
@@ -87,6 +88,10 @@ def args_for(key, count):
 # (count of 1, count of 3) for each plural message
 WORDING = {
     "en": {
+        "ledger.delay_unconfirmed": (
+            " The interval for 2026 includes 0: that year's data do not confirm the excess.",
+            " The intervals for 2025 and 2026 include 0: those years' data do not confirm the excess.",
+        ),
         "ledger.traffic": (
             "The municipal routing network marks the street as TRAFFIC: an edge is open in both directions at 1 of 1 point checked along it.",
             "The municipal routing network marks the street as TRAFFIC: an edge is open in both directions at 1 of 3 points checked along it.",
@@ -124,6 +129,10 @@ WORDING = {
         ),
     },
     "pt": {
+        "ledger.delay_unconfirmed": (
+            " O intervalo de 2026 inclui 0: os dados desse ano não confirmam o excesso.",
+            " Os intervalos de 2025 and 2026 incluem 0: os dados desses anos não confirmam o excesso.",
+        ),
         "ledger.traffic": (
             "Segundo a rede viária da Câmara, a rua tem TRAFFIC: em 1 de 1 ponto verificado ao longo da rua, "
             "a circulação é permitida em ambos os sentidos.",

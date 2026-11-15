@@ -31,10 +31,18 @@ strips, sidewalks and plots/buildings. Intervals of the same role separated by l
 A station is `two_strips` when both strips are wider than `min_strip` and the free width is at most
 `profiles.narrow_max_m`; `one_strip` when only one side has a strip (`geometry.classify`). A transect lying
 exactly on a strip's end edge counts the strip (shared boundary). Summary statistics use `two_strips` stations
-only. Consecutive `two_strips` stations within a block form a section (`narrow_sections.csv`); the length the
-ledger gives for them is the distance from the first to the last station of each section, summed. It is not
-the station count times `profiles.step_m`, which would add one step per section, and it is not the mapped
-strip length per side in `parking_strip_lengths.csv`. The free-width finding's caveat states this filter, with
+only. Consecutive `two_strips` stations within a block form a section (`narrow_sections.csv`, which lists the
+first and last station of each).
+
+**Lengths.** Every length of street the ledger gives follows one rule (`geometry.covered`): each station stands
+for the stretch within half a step on either side of it, cut at the ends of the axis. A run of k stations shows a
+condition holding over at least (k − 1) steps and less than (k + 1) steps; k steps is the middle of that range.
+This applies to the stretches with parking on both sides (the free-width finding, and the parking an option
+removes, measured on the same stretches) and to the mapped parking per side (`parking_strip_lengths.csv`), so the
+lengths can be compared with each other. Taking the distance from the first to the last station instead would
+understate every length by one step per section, and with it the parking an option removes; the error of the rule
+used is at most half a step at each end of a section. A meeting of two buses counts as inside a section over the
+same stretch (`encounters_detail.csv`). The free-width finding's caveat states this filter, with
 the value of `profiles.narrow_max_m`, and how many stations with parking on both sides it leaves out for being
 wider, next to the cartography's survey and accuracy notes.
 
@@ -111,6 +119,72 @@ not a count. The same lengths give the stall counts of `parking_strip_lengths.cs
 parking along the whole street on each side; the finding states those lengths too, since removing a whole side
 would remove more than the stretches with parking on both sides. The strips are mapped areas, not counted
 spaces: entrances and other gaps inside them are not subtracted.
+
+## Time on a stretch (`delay.py`, `archive.py`)
+
+What the timetable cannot say, the operation can: how long buses actually take on a stretch of the street. The
+`delay` stage measures it from archived vehicle positions (GTFS-RT), where a public archive of the operator's
+real-time feed exists. It answers one question: **at the evening peak, do buses spend more time on this stretch
+than the slowdown of the same routes' neighbouring stretches would explain?** It does not say why.
+
+**The data.** A real-time feed answers with every vehicle's last reported position. Some projects poll it every
+few minutes and commit each answer to a git repository; a `git_archive` source pins such an archive to one commit
+and reads the snapshots of a period (`archive.py`). For Lisbon the archive is LIVREpt/lisboa_carris_api. Its
+collector does not read Carris directly but a relay (`rt.jdcp.workers.dev`), so two parties stand between Carris
+and the files; neither states a licence. The positions are used and not redistributed, the source is named in
+every finding, and the checks below test the archive instead of trusting it. The snapshots are irregular: in the
+Lisbon case half of the hours have a gap of 20 minutes or more somewhere.
+
+**The stretch and its controls.** `delay.s_from` and `delay.s_to` mark the stretch along the street axis; keep it
+clear of the stops, where buses also wait for passengers. For each route and direction of `transit.routes`, the
+GTFS shape the most trips use locates the stretch along the route and two *control* stretches of `control_m`,
+`control_gap_m` before and after it. A position counts if the vehicle reported it at most `max_age_s` before the
+snapshot (an older one repeats a past position and would be counted twice) and lies within `max_offset_m` of the
+shape (a diverted trip drops out). Working days are Monday to Friday, without the city profile's `holidays` and
+`delay.exclude_dates`. Hours are keyed by their start in UTC, so the hour repeated when clocks go back is two
+hours.
+
+**The estimator (occupancy).** If buses pass a stretch at a rate λ and each spends W seconds on it, the expected
+number on it at any instant is λ·W (Little's law). The archive's snapshot times do not depend on where the buses
+are, so over a set of snapshots the positions seen on the stretch, divided by the sum of λ at those snapshots,
+estimate W. Two quantities follow:
+
+* **The ratio** (finding `delay`): (on the stretch ÷ on the controls) at peak, divided by the same off-peak. The
+  same buses pass the stretch and its controls minutes apart, so λ and the snapshot cadence cancel exactly: the
+  ratio needs no count of buses and uses every working-day snapshot. A ratio of 1 means the stretch slows down at
+  peak exactly as much as its surroundings.
+* **The seconds** (finding `delay_seconds`): the time per passage off-peak and at peak, what the controls' peak
+  slowdown predicts at peak (off-peak time × controls' peak ÷ off-peak time), and the excess. These need λ: the
+  trips seen within `reach_m` of the stretch along their shape, each counted once, in the hour of its position
+  nearest the stretch. A trip is sure to be seen only if snapshots are frequent enough, so the seconds (and their
+  inputs) use only the hours whose snapshots are never more than `max_gap_s` apart. In Lisbon those are 120 peak
+  hours, nearly all of 2025.
+
+**Uncertainty.** 90% intervals from a bootstrap over whole days (`delay.bootstrap` replicates, fixed `seed`, so a
+run gives the same intervals every time): positions of the same day stay together.
+
+**Checks, all in the tables.**
+
+* `delay_passages.csv`: the passages counted per covered hour against the timetable's trips per hour on the
+  service day. In Lisbon, 90–95%: if passages are missing, the seconds are overstated in that proportion; the
+  ratio does not depend on them. The count does not grow with a longer reach (3 km instead of 2), so trips are not
+  being missed between snapshots.
+* `delay_data.csv`: the snapshots, working days and covered hours behind the estimates, and the share of positions
+  left out for being too old, on the stretch and on the controls apart: if the two differed much, leaving them out
+  would bias the comparison (Lisbon: 0.8% and 2.3%; with no age limit at all, the ratio moves from 1.49 to 1.48).
+* `delay_sensitivity.csv`: the ratio and the excess with one choice changed at a time (each peak hour alone, the
+  off-peak hours, the controls' distance and length, no age limit on positions, a longer reach, longer gaps).
+* `delay_summary.csv`: the estimates for all routes, each route and direction, and each year. A year whose ratio
+  interval includes 1 is named in the finding as not confirming the excess.
+* `delay_by_hour.csv` and `figures/delay_by_hour.png`: hour by hour, with the interval of each hour.
+* `tests/test_delay.py` simulates buses with known speeds, samples them at irregular snapshots and checks that the
+  estimator gives back their times, the ratio and the excess within its intervals, and no excess where there is
+  none.
+
+**What it is not.** It measures where the time goes, not why. Parked cars, buses in the other direction, a queue
+from a junction at either end and a traffic light can all slow a stretch at peak; the per-direction ratios
+(the finding's caveat) help to tell a queue towards one end from a slowdown in both directions, but do not settle
+it. It is the operation as an archive recorded it, not the operator's own record.
 
 ## Citizen reports (`occurrences.py`)
 

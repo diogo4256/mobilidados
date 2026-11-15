@@ -21,9 +21,9 @@ from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge, unary_union
 
-from . import area_scan, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
+from . import area_scan, delay, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
 from .arcgis import to_line
-from .config import ArcgisQuery, Case, Config, HttpFiles, MobilidadosError
+from .config import ArcgisQuery, Case, Config, GitArchive, HttpFiles, MobilidadosError
 from .sources import IdentifyCache, check_lock, check_pins, load_json, raw_path
 
 log = logging.getLogger(__name__)
@@ -63,6 +63,22 @@ class Run:
         row). Without them there is no free width between parking strips, and the width budget and the design
         references, which compare it, do not apply."""
         return "all" in set(self.table("summary_by_block").block)
+
+    @property
+    def two_strips_m(self) -> float:
+        """The length of street with parking on both sides (the stations the free width counts), by
+        ``geometry.covered``: the free-width finding states it and the parking an option removes is measured on it."""
+        profiles = self.table("profiles")
+        two = profiles.s[profiles["class"] == geometry.TWO_STRIPS]
+        return round(geometry.covered(two, self.cfg.profiles.step_m, float(self.table("street").length_m.iloc[0])), 1)
+
+    def narrow_extents(self) -> list[tuple[float, float, str]]:
+        """The sections with parking on both sides as stretches of street (``geometry.section_extent``)."""
+        step, length = self.cfg.profiles.step_m, float(self.table("street").length_m.iloc[0])
+        return [
+            (*geometry.section_extent(a, z, step, length), b)
+            for a, z, b in self.table("narrow_sections").itertuples(index=False, name=None)
+        ]
 
     # --- shared inputs ----------------------------------------------------------------------------
     @functools.cached_property
@@ -135,7 +151,7 @@ def stage_profiles(r: Run) -> None:
     r.save("street", pd.DataFrame([{"name": r.cfg.street.name, "length_m": length}]))
     r.save("profiles", df)
     r.save("summary_by_block", geometry.summarize_blocks(df, r.cfg.street.blocks))
-    r.save("parking_strip_lengths", geometry.strip_lengths(df, r.cfg.street.blocks, p.step_m, tuple(p.parking_space_m)))
+    r.save("parking_strip_lengths", geometry.strip_lengths(df, r.cfg.street.blocks, p.step_m, tuple(p.parking_space_m), r.axis.length))
     r.save("narrow_sections", pd.DataFrame(geometry.narrow_sections(df, p.step_m), columns=["s_from", "s_to", "block"]))
     tr = Transformer.from_crs(c.crs, 4326, always_xy=True)
     pts = []
@@ -212,9 +228,7 @@ def stage_envelope(r: Run) -> None:
     vehicles = r.cfg.all_vehicles()
     r.save("width_budget", envelope.width_budget(free, vehicles, e.scenarios))
     r.save("overhang_sensitivity", envelope.overhang_sensitivity(free["median"], vehicles, e.scenarios))
-    narrow = r.table("narrow_sections")
-    two_strips_m = round(float((narrow.s_to - narrow.s_from).sum()), 1)  # as the free_width finding states it
-    r.save("without_parking", envelope.without_parking(r.table("profiles"), two_strips_m, r.cfg.profiles.parking_space_m))
+    r.save("without_parking", envelope.without_parking(r.table("profiles"), r.two_strips_m, r.cfg.profiles.parking_space_m))
 
 
 def stage_encounters(r: Run) -> None:
@@ -223,7 +237,7 @@ def stage_encounters(r: Run) -> None:
         return
     passings = r.table("passings").astype({"route_short_name": str, "arrival_time": str})
     length = float(r.table("street").length_m.iloc[0])
-    narrow = list(r.table("narrow_sections").itertuples(index=False, name=None))
+    narrow = r.narrow_extents()  # a meeting counts in a section over the whole stretch its stations stand for
     summary = [encounters.summary(passings, length, t.speeds_kmh, basis="assumed")]
     # sensitivity: the slowest stop-to-stop speed implied by the service day's schedule (slower buses meet more often)
     rt = r.table("scheduled_runtimes")
@@ -234,6 +248,31 @@ def stage_encounters(r: Run) -> None:
     detail = pd.concat([encounters.locate(encounters.encounters(passings, length, v), narrow) for v in t.speeds_kmh], ignore_index=True)
     r.save("encounters_detail", detail)
     r.save("encounters_by_pair", detail.groupby(["speed_kmh", "pair"]).size().rename("encounters_per_day").reset_index())
+
+
+def stage_delay(r: Run) -> None:
+    dl, t = r.cfg.delay, r.cfg.transit
+    if dl is None or t is None:
+        return
+    src = r.case.source(dl.source)
+    assert isinstance(src, GitArchive)  # checked when the config was loaded
+    cfg = dl.model_copy(update={"exclude_dates": sorted(set(dl.exclude_dates) | set(r.cfg.city.holidays))})
+    rts = delay.routes(r.feed, t.routes, r.axis, r.case.crs, cfg)
+    unread = sorted({x.route_id for x in rts} - set(src.route_ids))
+    if unread:
+        raise MobilidadosError(
+            f"sources.{dl.source}.route_ids does not include {unread}, the GTFS route_id of the routes in transit.routes"
+        )
+    folder = raw_path(r.case, dl.source)
+    for name in ("positions.csv", "snapshots.csv"):
+        if not (folder / name).exists():
+            raise MobilidadosError(f"{folder / name} is missing: run `mobilidados fetch {r.case.root}` first")
+    pos, snaps = delay.load(
+        pd.read_csv(folder / "positions.csv", dtype=str), pd.read_csv(folder / "snapshots.csv"), cfg.time_zone, src.time_zone
+    )
+    placed = delay.place(pos, rts, r.case.crs, cfg.max_offset_m)
+    for name, table in delay.analyse(placed, snaps, rts, cfg, r.axis, r.table("passings")).items():
+        r.save(name, table)
 
 
 def stage_occurrences(r: Run) -> None:
@@ -298,6 +337,7 @@ STAGES: dict[str, Callable[[Run], None]] = {
     "transit": stage_transit,
     "envelope": stage_envelope,
     "encounters": stage_encounters,
+    "delay": stage_delay,
     "occurrences": stage_occurrences,
     "area": stage_area,
     "standards": stage_standards,

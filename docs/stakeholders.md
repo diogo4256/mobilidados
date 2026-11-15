@@ -76,12 +76,15 @@ It can:
 * compare a measured width with published design references, within their stated scope;
 * measure options such as giving the space of one parking strip back to the carriageway;
 * make every number reproducible from pinned public inputs, and grade every statement by its evidence;
+* where a public archive of the operator's real-time feed exists, measure how much longer buses take on a
+  stretch at peak than its surroundings would explain, and say how complete that archive is;
 * draft a case for another street from its name, and check a letter's claims against the findings.
 
 It cannot:
 
-* observe the street: parked cars, actual bus operation, delays, near misses. Those need a site visit,
-  operator data or observation, and the findings say so (grade NE);
+* observe the street: parked cars, near misses, why buses lose time where they do. Those need a site visit,
+  operator data or observation, and the findings say so (grade NE). A time measured from an archive of positions
+  says where the time goes, not why, and is not the operator's own record;
 * decide what a street should be. Layouts are the municipality's responsibility, weighed against every user and
   usually after consultation; the toolset informs that decision, it does not make it;
 * replace an engineer's swept-path study or safety audit;
