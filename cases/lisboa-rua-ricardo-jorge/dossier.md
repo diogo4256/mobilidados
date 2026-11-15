@@ -126,35 +126,35 @@ livre no local:
 
 Dados (a impressão digital SHA-256, aqui abreviada, identifica a versão exata usada):
 
-1. Câmara Municipal de Lisboa, *Cartografia numérica vetorial 1:1000* (fotogrametria de 2016, completagem de campo em
-   2020, homologada pela DGT), serviço MapaBase_WGS84, camada 53,
-   <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53>. Obtida em 2026-10-24. Licença
-   CC BY 4.0. SHA-256 `87c633260730…` (rua) e `6d49fe735c72…` (zona).
-2. Câmara Municipal de Lisboa, *Eixos de via*, serviço MapaBase_WGS84, camada 79,
-   <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79>. Obtidos em 2026-10-24. Licença não
-   declarada pelo serviço. SHA-256 `902bbeda01db…` (rua) e `3096da389677…` (zona).
-3. Câmara Municipal de Lisboa, *Sentidos de trânsito* (rede viária do visualizador Lisboa Interativa, acesso de
-   convidado), <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify>.
-   Consultada em 2026-10-24. Licença não declarada. SHA-256 das respostas `71a5fe259fc7…` (rua) e `0f584f1874ef…` (zona).
-4. Carris, *horário GTFS*, cópia arquivada pela Mobility Database (feed mdb-2929, versão de 2026-10-20),
-   <https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip>. Obtido em 2026-10-24.
-   Licença não declarada. SHA-256 `c7550ea2d2f0…`.
-5. Posições em tempo real dos autocarros da Carris, de 2025-02-17 a 2026-11-13, arquivo mantido por terceiros
-   (LIVREpt/lisboa_carris_api, commit db6b8e782c0f),
-   <https://github.com/LIVREpt/lisboa_carris_api/tree/db6b8e782c0ffaddf602fc3bcb04b335969967d8>. Obtidas em 2026-11-14.
-   Licença não declarada. SHA-256 `70c6c40548d8…` (posições) e `3534640dd2ce…` (registos).
+- Câmara Municipal de Lisboa, *Cartografia numérica vetorial 1:1000* (fotogrametria de 2016, completagem de campo em
+  2020, homologada pela DGT), serviço MapaBase_WGS84, camada 53,
+  <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53>. Obtida em 2026-10-24. Licença
+  CC BY 4.0. SHA-256 `87c633260730…` (rua) e `6d49fe735c72…` (zona).
+- Câmara Municipal de Lisboa, *Eixos de via*, serviço MapaBase_WGS84, camada 79,
+  <https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/79>. Obtidos em 2026-10-24. Licença não
+  declarada pelo serviço. SHA-256 `902bbeda01db…` (rua) e `3096da389677…` (zona).
+- Câmara Municipal de Lisboa, *Sentidos de trânsito* (rede viária do visualizador Lisboa Interativa, acesso de
+  convidado), <https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify>.
+  Consultada em 2026-10-24. Licença não declarada. SHA-256 das respostas `71a5fe259fc7…` (rua) e `0f584f1874ef…` (zona).
+- Carris, *horário GTFS*, cópia arquivada pela Mobility Database (feed mdb-2929, versão de 2026-10-20),
+  <https://files.mobilitydatabase.org/mdb-2929/mdb-2929-202610200105/mdb-2929-202610200105.zip>. Obtido em 2026-10-24.
+  Licença não declarada. SHA-256 `c7550ea2d2f0…`.
+- Posições em tempo real dos autocarros da Carris, de 2025-02-17 a 2026-11-13, arquivo mantido por terceiros
+  (LIVREpt/lisboa_carris_api, commit db6b8e782c0f),
+  <https://github.com/LIVREpt/lisboa_carris_api/tree/db6b8e782c0ffaddf602fc3bcb04b335969967d8>. Obtidas em 2026-11-14.
+  Licença não declarada. SHA-256 `70c6c40548d8…` (posições) e `3534640dd2ce…` (registos).
 
 Documentos:
 
-6. Câmara Municipal de Lisboa, *Lisboa: o Desenho da Rua – Manual de espaço público*, 2018, ISBN 978-972-8403-46-1,
-   p. 152, <https://recrutamento.cm-lisboa.pt/cmlisboa-wirerecruit/uploads/writer_file/document/161/manual_de_espaco_publico.pdf>.
-   SHA-256 `5d540643094e…`.
-7. Abgeordnetenhaus Berlin, *Schriftliche Anfrage Drucksache 19/25490*, resposta de 27.03.2026, p. 3 (cita a
-   diretriz alemã RASt 06), <https://pardok.parlament-berlin.de/starweb/adis/citat/VT/19/SchrAnfr/S19-25490.pdf>.
-   SHA-256 `89da5cda9d62…`.
-8. Carris, fichas da frota, *Autocarros Standard*, <https://www.carris.pt/descubra/frota/autocarros-standard/>.
-   Consultadas em 2026-11-15.
-9. Lei n.º 26/2016, de 22 de agosto (acesso aos documentos administrativos), artigos 12.º e 15.º.
+- Câmara Municipal de Lisboa, *Lisboa: o Desenho da Rua – Manual de espaço público*, 2018, ISBN 978-972-8403-46-1,
+  p. 152, <https://recrutamento.cm-lisboa.pt/cmlisboa-wirerecruit/uploads/writer_file/document/161/manual_de_espaco_publico.pdf>.
+  SHA-256 `5d540643094e…`.
+- Abgeordnetenhaus Berlin, *Schriftliche Anfrage Drucksache 19/25490*, resposta de 27.03.2026, p. 3 (cita a
+  diretriz alemã RASt 06), <https://pardok.parlament-berlin.de/starweb/adis/citat/VT/19/SchrAnfr/S19-25490.pdf>.
+  SHA-256 `89da5cda9d62…`.
+- Carris, fichas da frota, *Autocarros Standard*, <https://www.carris.pt/descubra/frota/autocarros-standard/>.
+  Consultadas em 2026-11-15.
+- Lei n.º 26/2016, de 22 de agosto (acesso aos documentos administrativos), artigos 12.º e 15.º.
 
 ## Anexo C: factos citados
 
