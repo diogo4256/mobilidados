@@ -251,7 +251,7 @@ free channel, and the ledger says so.
 **Two tiers, never mixed.** A sidewalk that ends at a yard (`cartography.yard`: open ground, which may be a forecourt
 or a planted island) or at something the classes read do not cover (a lawn, a wall, a public building) is reported as
 metres *to check*, never as below the law. Of the stretches below, those still below if each of the two mapped edges
-were `sidewalks.edge_accuracy_m` off in the sidewalk's favour (the accuracy per edge the city profile states, 0.30 m
+were `cartography.edge_accuracy_m` off in the sidewalk's favour (the accuracy per edge the city profile states, 0.30 m
 in Lisbon) are counted apart, and the area finding names only those streets.
 
 **Tables.** `sidewalks.csv` (per side and block: metres measured, metres up to the plots, width, metres below each

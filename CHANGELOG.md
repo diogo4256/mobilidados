@@ -35,12 +35,28 @@ count or collect anything, and where the data stop, it helps them ask the body t
   declared; one request (that the services check and act, or a request for documents under Law 26/2016, articles 12
   and 15); the attachments, with the points or stretches where a technician can measure. Every statement is the
   ledger's own, and the draft is linted before it is written.
+- **Rua Ricardo Jorge dossier** (`cases/lisboa-rua-ricardo-jorge/dossier.md`, and its PDF): the case written up for
+  the Câmara, every number with its finding id and grade, the comparisons that hold within the cartography's error led
+  with, and a table of what the data do not show and who can provide it. `tests/test_cases.py` fails if a dossier cites
+  a finding that does not exist, fails `lint`, or gives a number with a unit that neither the ledger nor a table it
+  links to gives.
+- Findings: `width_accuracy` (I), whether the width comparisons hold if every mapped edge were off by the stated
+  accuracy (`[cartography] edge_accuracy_m`, which the sidewalk tool now reads too); `fleet` (M), the fleet-number
+  series the archive shows on the stretch for each route (`delay_fleet.csv`). The encounters finding splits the
+  meetings by pair of routes. In Rua Ricardo Jorge: with 0.30 m per edge, 5.50 m, still short of the 5.80 m of two
+  buses with mirrors and 1.30 m short of the municipal reference profile; the bodies-only margin (−0.10 m) is within
+  that error. Route 744 runs mostly with 26xx vehicles (79% of positions), the reference vehicle's series; 46B only
+  with 2xx; 4–5 of the 6–7 daily meetings are between two 744 buses.
+- The reference bus says what Carris's fleet pages show: the 12 standard models are 2.5 to 2.6 m wide, so 2.50 m is
+  the narrowest.
 - Writing guide: start from a draft, and ask for the documents the data do not cover (Law 26/2016: who must answer,
   in how many days, and the complaint to the CADA). Evidence standard: say which way a measurement can point, and a
   law is not a manual.
 
 ### Fixed
 
+- The free-width figure no longer scales to the cross streets at the ends of the axis (up to 50 m), which flattened
+  the narrow stretches; close reference values are labelled apart.
 - The width-budget finding uses the car's width with mirrors, an assumption, but did not list it among its sources,
   so a letter could not declare it.
 - A cartography polygon with an invalid ring is repaired when it is read, instead of stopping the run.

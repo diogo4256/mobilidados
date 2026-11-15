@@ -22,7 +22,7 @@ label = "Carris MAN 18.310 / Caetano City Gold (12 m)"
 category = "bus"
 width_body_m = 2.50
 grade_body = "D"
-source_body = "Carris fleet sheet (carris.pt > Descubra > Frota), vehicle 2643"
+source_body = "Carris fleet sheet (carris.pt > Descubra > Frota), vehicle 2643; the 12 standard bus models Carris lists are 2.5 to 2.6 m wide (checked 2026-11-15), so this is the narrowest"
 width_mirrors_m = 2.90
 grade_mirrors = "P"
 source_mirrors = "Assumption: no official mirror width published; +0.40 m as in the Mercedes-Benz eCitaro sheet"
@@ -30,7 +30,7 @@ mirrors_clear_cars = true
 
 [vehicles.carris_man_city_gold.translations.pt]
 label = "Carris MAN 18.310 / Caetano City Gold (12 m)"
-source_body = "ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643"
+source_body = "ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643; os 12 modelos de autocarro standard que a Carris publica têm 2,5 a 2,6 m de largura (consultado em 2026-11-15), pelo que este é o mais estreito"
 source_mirrors = "pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro"
 
 [vehicles.car_typical]

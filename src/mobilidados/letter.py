@@ -149,7 +149,10 @@ def compose(case: Case, topic: str, ask: str = "review") -> str:
         out.append("")
     out += [f"### {say('request')}", "", say(f"ask_{topic}_{ask}", street=street), ""]
     points = check_points(case, topic)
-    out += [f"### {say('attachments')}", "", f"- {say('attach_ledger')}", f"- {say('attach_figures')}"]
+    out += [f"### {say('attachments')}", ""]
+    if (case.root / "dossier.pdf").exists() or (case.root / "dossier.md").exists():
+        out.append(f"- {say('attach_dossier')}")
+    out += [f"- {say('attach_ledger')}", f"- {say('attach_figures')}"]
     if (case.results_dir / "screening.md").exists():
         out.append(f"- {say('attach_screening')}")
     if points:

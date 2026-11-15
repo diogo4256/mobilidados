@@ -86,6 +86,13 @@ sidewalks_area = { one = "{streets}, {n} has stretches where the mapped sidewalk
 sidewalks_area_within = { one = " In {n} more street, that happens only within that margin.", other = " In {n} more streets, that happens only within that margin." }
 sidewalks_area_none = "{streets}, none has stretches where the mapped sidewalk reaches the buildings and is narrower than Decree-Law 163/2006 admits, allowing a margin of {acc} m per mapped edge."
 sidewalks_area_street = "{street} ({m} m)"
+encounters_pairs = " By pair of routes: {list}."
+width_accuracy_short = "Even if every mapped edge were {acc} m off in the street's favour, the median free width would be {fw} m, still {gap} m short of the {bbm} m two buses take with mirrors; with bodies only, the margin of {mbb} m is within that error."
+width_accuracy_fits = "If every mapped edge were {acc} m off in the street's favour, the median free width would be {fw} m, enough for the {bbm} m two buses take with mirrors: within that error, the cartography does not show that they do not fit."
+width_accuracy_ref = " With that error it would be {d} m short of the {v} m reference profile of {doc} (p. {page})."
+fleet = "In the archived positions on the stretch, {list}."
+fleet_route = "route {route} runs with vehicles numbered {list}"
+fleet_series = "{series} ({pct}% of positions, {k} vehicles)"
 
 # How each statement of the ledger was obtained.
 [method]
@@ -106,6 +113,8 @@ area_pattern = "Stations every {step} m on every street axis with buses, measure
 sidewalks = "Profiles every {step} m; in each, the widest piece of mapped sidewalk between the kerb and the buildings. Left out: profiles within {j} m of a junction or an end of the street, where the street widens, medians and islands between carriageways, and sidewalks that end under an arcade or a balcony."
 sidewalks_narrow = "Runs of consecutive profiles with the sidewalk below {free} m, each compared with the width section 4.3.3 admits for its length."
 sidewalks_area = "The same method on every street axis in the area, with profiles every {step} m; private roads are left out."
+width_accuracy = "Median free width plus twice the stated accuracy per edge (both edges of the free width, both in the street's favour)."
+fleet = "The series of each fleet number (its digits but the last two), in the positions that fall on the measured stretch."
 
 # Limits of each statement of the ledger. A caveat made of several parts joins several of these sentences.
 [caveat]
@@ -133,6 +142,7 @@ occurrences = "A report is not a proven infraction; counts are small. The rankin
 area_pattern = "The thresholds ({thr} m of free width, over {minm} m) are parameters of this analysis, not values from a design document."
 sidewalks_unmapped = "The cartography does not show poles, bins, café terraces or cars parked on the sidewalk: where the mapped sidewalk is {free} m or wider, that does not show that the free channel is."
 sidewalks_area = "A list of where to look: each street needs its own case (mobilidados new-case) for its stretches, points and caveats (results/screening.md)."
+fleet = "The archive does not give a vehicle's model, and the fleet sheets Carris publishes give models, not fleet numbers: this says which series run the street, not how wide they are."
 
 [kind]
 reference_profile = "reference profile"
@@ -231,6 +241,7 @@ point_sidewalk = "{side} side, s = {a}–{b} m (midpoint: {lat}, {lon}): {w} m a
 closing = "Yours faithfully,"
 signature = "[Name]"
 attach_screening = "The screening of the area (screening.md), with the other streets where the same happens."
+attach_dossier = "The technical dossier (dossier.pdf), with the numbers, the comparisons, the limits and the check points."
 
 [screening]
 title = "Screening of the area around {street}"

@@ -234,7 +234,6 @@ compare = ["cml_manual_two_way_profile", "rast06_bus_bus"]
 
 SIDEWALKS_TOML = """
 [sidewalks]
-edge_accuracy_m = 0.30
 
 [sources.area_sidewalks]
 kind = "arcgis_query"
@@ -278,6 +277,7 @@ def write_case(
         text += OPTIONAL_TOML.format(date=SERVICE_DATE) if optional else ""
         if sidewalks:
             text = text.replace("min_pattern_m = 30\n", 'min_pattern_m = 30\nsidewalks = "area_sidewalks"\n')
+            text = text.replace('plot = ["plot"]\n', 'plot = ["plot"]\nedge_accuracy_m = 0.30\n', 1)
             text += SIDEWALKS_TOML.format(envelope=envelope)
         return text
 

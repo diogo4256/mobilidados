@@ -310,6 +310,31 @@ def build(r: Run) -> list[Finding]:
                 ),
             )
         )
+        acc = cfg.cartography.edge_accuracy_m
+        if acc:
+            widest = fmed + 2 * acc  # every mapped edge off by the stated accuracy, in the street's favour
+            ref = next((standards_catalogue().reference(x) for x in cfg.standards.compare), None)
+            refs = [ref] if ref and ref[0].kind == "reference_profile" else []
+            F.append(
+                Finding(
+                    id="width_accuracy",
+                    grade="I",
+                    statement=say(
+                        "width_accuracy_short" if widest < bbm else "width_accuracy_fits",
+                        acc=n(acc),
+                        fw=n(widest),
+                        bbm=n(bbm),
+                        gap=n(bbm - widest),
+                        mbb=n(fmed - bb, sign=True),
+                    )
+                    + "".join(
+                        say("width_accuracy_ref", doc=d.title, page=x.page, v=n(x.value_m), d=n(x.value_m - widest)) for x, d in refs
+                    ),
+                    values={"free_width_with_accuracy_m": round(widest, 2), "edge_accuracy_m": acc},
+                    sources=["free_width", "width_budget", *(f"standard_{x.id}" for x, _ in refs)],
+                    method=method("width_accuracy"),
+                )
+            )
         wp = r.table("without_parking").set_index("without")
         one_side = float(wp.loc[["L", "R"], "free_median"].min())
         F.append(
@@ -401,6 +426,16 @@ def build(r: Run) -> list[Finding]:
                 speeds="/".join(f"{v:g}" for v in assumed.speed_kmh),
                 narrow=say("meetings_narrow", count=range_count(in_narrow), n="–".join(map(str, in_narrow))),
             )
+            pairs = r.table("encounters_by_pair").astype({"pair": str})
+            if pairs.pair.nunique() > 1:  # which routes meet, when more than one pair of routes does
+                per_pair = {
+                    p: sorted({int(x) for x in g.set_index("speed_kmh").encounters_per_day.reindex(assumed.speed_kmh, fill_value=0)})
+                    for p, g in pairs.groupby("pair", sort=True)
+                }
+                statement += say(
+                    "encounters_pairs",
+                    list="; ".join(f"{p}, {'–'.join(map(str, v))}" for p, v in sorted(per_pair.items(), key=lambda kv: -kv[1][-1])),
+                )
             notes = sentences(caveat("encounters_model"), check)
         else:  # no model is needed to say that buses in one direction do not meet head-on, at any speed
             statement, notes = say("encounters_one_way", day=tr.service_date, heading=one_way[0]), ""
@@ -588,7 +623,13 @@ def sidewalk_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> lis
             for x in bad.sort_values(["side", "s_from"]).itertuples()
         )
         margin = (
-            say("sidewalks_margin", count=len(sure), n=len(sure), m=length(sure.length_m.sum()), acc=n(sw.edge_accuracy_m))
+            say(
+                "sidewalks_margin",
+                count=len(sure),
+                n=len(sure),
+                m=length(sure.length_m.sum()),
+                acc=n(cfg.cartography.edge_accuracy_m or 0.0),
+            )
             if len(sure)
             else ""
         )
@@ -628,7 +669,7 @@ def sidewalk_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> lis
         hit = area[area.metres_below_with_accuracy > 0]  # the streets the case can name: below even with the margin
         within = int(((area.metres_below > 0) & (area.metres_below_with_accuracy == 0)).sum())
         streets = say("sidewalks_area_streets", count=len(area), n=len(area))
-        acc = n(sw.edge_accuracy_m)
+        acc = n(cfg.cartography.edge_accuracy_m or 0.0)
         if len(hit):
             names = "; ".join(
                 say("sidewalks_area_street", street=x.street, m=length(x.metres_below_with_accuracy)) for x in hit.head(5).itertuples()
@@ -747,6 +788,34 @@ def delay_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[F
             ),
         )
     ]
+    fl = r.table("delay_fleet").astype({"route": str, "series": str})
+    if len(fl):
+        parts = []
+        for route, g in fl.groupby("route", sort=False):
+            main = g[g.share >= 0.05]
+            parts.append(
+                say(
+                    "fleet_route",
+                    route=route,
+                    list=and_.join(
+                        say("fleet_series", series=x.series, pct=n(100 * x.share, 0), k=int(x.vehicles)) for x in main.itertuples()
+                    ),
+                )
+            )
+        out.append(
+            Finding(
+                id="fleet",
+                grade="M",
+                statement=say("fleet", list="; ".join(parts)),
+                values={
+                    route: {x.series: {"share": float(x.share), "vehicles": int(x.vehicles)} for x in g.itertuples()}
+                    for route, g in fl.groupby("route")
+                },
+                sources=[dl.source],
+                method=method("fleet"),
+                caveat=caveat("fleet"),
+            )
+        )
     if np.isfinite(whole.excess_s):
         by_year = [say("delay_hours_year", n=int(summ.loc[y, "covered_hours_peak"]), year=y) for y in years]
         timetable = float(checked.passages_per_hour_timetable.sum())  # 0 if the service day has no trip at those hours

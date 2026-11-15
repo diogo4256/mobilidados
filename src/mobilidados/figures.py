@@ -190,10 +190,21 @@ def profile(run: Run, lang: Lang) -> Figure:
     ax.plot(p.s, p.strip_L, color=STRIP, lw=1, label=t("strips", lang))
     ax.plot(p.s, p.strip_R, color=STRIP, lw=1, ls="--")
     if run.cfg.standards.compare and run.two_strips:
-        for v in sorted(set(run.table("standards_comparison").value_m)):
+        values = sorted(set(run.table("standards_comparison").value_m))
+        for i, v in enumerate(values):
             ax.axhline(v, color=ALERT, lw=0.8, ls=":")
-            ax.text(p.s.max(), v + 0.08, f"{num(v, lang)} m", color=ALERT, ha="right", fontsize=8)
-    ax.set_ylim(0, max(10, p.free_width.quantile(0.98) + 0.5))
+            above = i == len(values) - 1  # the highest label above its line, the others below theirs, so close values stay legible
+            ax.text(
+                p.s.max(),
+                v + 0.08 if above else v - 0.08,
+                f"{num(v, lang)} m",
+                color=ALERT,
+                ha="right",
+                va="bottom" if above else "top",
+                fontsize=8,
+            )
+    # the cross streets at the ends read as very wide; the stretch that matters is the narrow one
+    ax.set_ylim(0, min(12.0, max(10, p.free_width.quantile(0.98) + 0.5)))
     ax.set_xlabel(t("along", lang))
     ax.set_ylabel("m")
     ax.set_title(t("profile_title", lang), loc="left", fontsize=10, color=INK)

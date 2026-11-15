@@ -34,6 +34,7 @@ yard = ["06020206_Logradouro"]
 survey.en = "aerial photogrammetry of May 2016, restitution and field completion in 2020, homologated by DGT (dados.gov.pt record)"
 survey.pt = "fotogrametria aérea de maio de 2016, restituição e completagem de campo em 2020, homologada pela DGT (registo em dados.gov.pt)"
 accuracy_note.en = "Planimetric accuracy assumed ≤0.30 m per edge (DGT figure for plan-scale cartography, as quoted in a 2025 DGT opinion); the 1:1000 RMSE itself was not found."
+edge_accuracy_m = 0.30  # the figure accuracy_note gives, per edge
 accuracy_note.pt = "Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
 
 [axes]
@@ -161,11 +162,9 @@ exclude_streets = "^Rua (Particular|Interior) "
 [standards]
 compare = ["cml_manual_two_way_profile", "rast06_bus_bus"]
 
-# Sidewalk width against the free path of Decree-Law 163/2006 (data/standards.toml). edge_accuracy_m is the accuracy
-# per edge in [cartography] accuracy_note. A case whose street the municipality classifies as a main or distributor
+# Sidewalk width against the free path of Decree-Law 163/2006 (data/standards.toml). A case whose street the municipality classifies as a main or distributor
 # road can add main_roads = "dl163_main_roads", with main_roads_basis saying where that classification is published.
 [sidewalks]
-edge_accuracy_m = 0.30
 
 # A case gives the envelopes of the four ArcGIS sources (around its street, and around its area).
 [sources.cartography]

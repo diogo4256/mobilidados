@@ -486,7 +486,38 @@ def analyse(
         "delay_sensitivity": pd.DataFrame(variants),
         "delay_passages": passages_checked(d, passings, peak_off),
         "delay_by_hour": by_hour(pos, snaps, rts, cfg, stretch_m, controls_m),
+        "delay_fleet": fleet(pos, rts),
     }
+
+
+def series(vehicle_id: object) -> str:
+    """A fleet number's series: its digits but the last two (``2643`` -> ``26xx``, ``215`` -> ``2xx``)."""
+    v = str(vehicle_id).strip()
+    return f"{v[:-2]}xx" if v.isdigit() and len(v) >= 3 else (v or "?")
+
+
+def fleet(pos: pd.DataFrame, rts: list[Route]) -> pd.DataFrame:
+    """Which vehicles the archive shows on the stretch, per route: the series of their fleet numbers, how many vehicles
+    and what share of the route's positions there. The archive does not say a vehicle's model; the operator's fleet
+    sheets give models, not fleet numbers, so this says which series run the street, not how wide they are."""
+    label = {r.key: r.route for r in rts}
+    on = pos[where(pos, rts) == STRETCH].assign(route=lambda d: d.key.map(label), series=lambda d: d.vehicle_id.map(series))
+    rows = []
+    for route, g in on.groupby("route", sort=True):
+        for s, h in g.groupby("series", sort=True):
+            rows.append(
+                {
+                    "route": route,
+                    "series": s,
+                    "vehicles": h.vehicle_id.nunique(),
+                    "positions": len(h),
+                    "share": round(len(h) / len(g), 3),
+                    "first_day": str(h.local.min().date()),
+                    "last_day": str(h.local.max().date()),
+                }
+            )
+    out = pd.DataFrame(rows, columns=["route", "series", "vehicles", "positions", "share", "first_day", "last_day"])
+    return out.sort_values(["route", "share"], ascending=[True, False], ignore_index=True)
 
 
 def routes_with(rts: list[Route], cfg: Delay) -> list[Route]:

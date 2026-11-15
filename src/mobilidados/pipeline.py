@@ -217,7 +217,7 @@ def stage_sidewalks(r: Run) -> None:
     cols = ["s", "block", *(f"walk_{side}{x}" for side in sidewalks.SIDES for x in ("", "_bounded"))]
     r.save("sidewalk_profile", df[cols])
     r.save("sidewalks", sidewalks.summary(df, r.cfg.street.blocks, step, length, thresholds))
-    sections = sidewalks.narrow_sections(df, step, length, free, short, sw.edge_accuracy_m)
+    sections = sidewalks.narrow_sections(df, step, length, free, short, r.cfg.cartography.edge_accuracy_m or 0.0)
     lon, lat = Transformer.from_crs(r.case.crs, 4326, always_xy=True).transform(sections.x.to_numpy(), sections.y.to_numpy())
     r.save("sidewalk_narrow_sections", sections.assign(lat=pd.Series(lat).round(6), lon=pd.Series(lon).round(6)))
 
@@ -368,7 +368,7 @@ def stage_area_sidewalks(r: Run) -> None:
     log.info("  scanning the sidewalks of %d streets", len(axes))
     found = sidewalks.scan_area(
         axes, geometry.Profiler(polys), roles, a.sidewalk_step_m, refs.reference(sw.free_path)[0].value_m, short,
-        sw.edge_accuracy_m, sw.junction_m,
+        r.cfg.cartography.edge_accuracy_m or 0.0, sw.junction_m,
     )  # fmt: skip
     lon, lat = Transformer.from_crs(r.case.crs, 4326, always_xy=True).transform(found.worst_x.to_numpy(), found.worst_y.to_numpy())
     r.save("area_sidewalks", found.assign(worst_lat=pd.Series(lat).round(6), worst_lon=pd.Series(lon).round(6)))

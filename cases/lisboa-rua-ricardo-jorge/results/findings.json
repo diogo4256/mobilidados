@@ -116,12 +116,12 @@
     {
       "id": "vehicle_carris_man_city_gold_body",
       "grade": "D",
-      "statement": "Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Carroçaria com 2,50 m de largura (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643).",
+      "statement": "Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Carroçaria com 2,50 m de largura (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643; os 12 modelos de autocarro standard que a Carris publica têm 2,5 a 2,6 m de largura (consultado em 2026-11-15), pelo que este é o mais estreito).",
       "values": {
         "width_m": 2.5
       },
       "sources": [
-        "Carris fleet sheet (carris.pt > Descubra > Frota), vehicle 2643"
+        "Carris fleet sheet (carris.pt > Descubra > Frota), vehicle 2643; the 12 standard bus models Carris lists are 2.5 to 2.6 m wide (checked 2026-11-15), so this is the narrowest"
       ],
       "method": "",
       "caveat": ""
@@ -186,6 +186,22 @@
       "caveat": "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas. Só com a carroçaria, a folga entre dois autocarros é de −0,22 m na largura livre mínima, −0,10 m na mediana e +0,08 m no percentil 95. Em 77% dos perfis contados, a largura livre fica abaixo dos 5,00 m que ocupam duas carroçarias de autocarro. Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
     },
     {
+      "id": "width_accuracy",
+      "grade": "I",
+      "statement": "Mesmo que cada aresta cartografada estivesse 0,30 m fora do sítio a favor da rua, a largura livre mediana seria de 5,50 m, ainda 0,30 m abaixo dos 5,80 m que dois autocarros ocupam com espelhos; só com a carroçaria, a folga de −0,10 m fica dentro dessa margem. Com essa margem, ficaria 1,30 m abaixo dos 6,80 m do perfil de referência de Lisboa: o Desenho da Rua – Manual de espaço público (p. 152).",
+      "values": {
+        "free_width_with_accuracy_m": 5.5,
+        "edge_accuracy_m": 0.3
+      },
+      "sources": [
+        "free_width",
+        "width_budget",
+        "standard_cml_manual_two_way_profile"
+      ],
+      "method": "Largura livre mediana mais duas vezes a exatidão declarada por aresta (as duas arestas da faixa livre, ambas a favor da rua).",
+      "caveat": ""
+    },
+    {
       "id": "without_parking",
       "grade": "I",
       "statement": "Sem o estacionamento do lado NO, a largura livre passaria a ir de 6,79 a 7,68 m (mediana de 6,91 m); sem o do lado SE, de 6,78 a 8,06 m (mediana de 6,92 m); sem estacionamento nenhum, mediana de 8,92 m. Dois autocarros precisam de pelo menos 5,00 m (5,80 m com espelhos): só com estacionamento de um lado, a folga seria de +1,91 m (+1,11 m com espelhos).",
@@ -240,7 +256,7 @@
     {
       "id": "encounters",
       "grade": "I",
-      "statement": "Segundo o horário, em 2026-10-27 há 6–7 encontros entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de 15/20 km/h); 1–2 acontecem nos troços com estacionamento dos dois lados.",
+      "statement": "Segundo o horário, em 2026-10-27 há 6–7 encontros entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de 15/20 km/h); 1–2 acontecem nos troços com estacionamento dos dois lados. Por pares de carreiras: 744 x 744, 4–5; 744 x 46B, 2.",
       "values": {
         "per_day": [
           6,
@@ -293,6 +309,46 @@
       ],
       "method": "Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de 550 m, a 150 m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros (2000 réplicas).",
       "caveat": "Por carreira e sentido: 46B NE→SO +46% (+15% a +86%); 744 SO→NE +42% (+22% a +63%); 744 NE→SO +57% (+36% a +81%). Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de +44% a +51% (delay_sensitivity.csv). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença. Mede onde se perde o tempo, não porquê: o estacionamento, os autocarros em sentido contrário, uma fila vinda de um cruzamento ou um semáforo podem todos contribuir. Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade (18 nesse período)."
+    },
+    {
+      "id": "fleet",
+      "grade": "M",
+      "statement": "Nas posições arquivadas no troço, a carreira 46B aparece com veículos de números 2xx (100% das posições, 24 veículos); a carreira 744 aparece com veículos de números 26xx (79% das posições, 64 veículos) e 3xx (17% das posições, 7 veículos).",
+      "values": {
+        "46B": {
+          "2xx": {
+            "share": 1.0,
+            "vehicles": 24
+          }
+        },
+        "744": {
+          "26xx": {
+            "share": 0.792,
+            "vehicles": 64
+          },
+          "3xx": {
+            "share": 0.171,
+            "vehicles": 7
+          },
+          "27xx": {
+            "share": 0.029,
+            "vehicles": 19
+          },
+          "28xx": {
+            "share": 0.007,
+            "vehicles": 12
+          },
+          "17xx": {
+            "share": 0.001,
+            "vehicles": 4
+          }
+        }
+      },
+      "sources": [
+        "carris_positions"
+      ],
+      "method": "Série de cada número de frota (os algarismos menos os dois últimos), nas posições que caem no troço medido.",
+      "caveat": "O arquivo não diz o modelo de cada veículo, e as fichas da frota publicadas pela Carris dão modelos, não números de frota: diz que séries passam na rua, não a sua largura."
     },
     {
       "id": "delay_seconds",

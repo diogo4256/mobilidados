@@ -6,7 +6,7 @@ SPDX-FileCopyrightText = "2026 mobilidados contributors"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = ["README.md", "README.en.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md", "CITATION.cff", "docs/**", "cases/*/README.md"]
+path = ["README.md", "README.en.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md", "CITATION.cff", "docs/**", "cases/*/README.md", "cases/*/dossier.md", "cases/*/dossier.pdf"]
 SPDX-FileCopyrightText = "2026 mobilidados contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 

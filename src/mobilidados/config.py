@@ -260,6 +260,12 @@ class Cartography(Model):
     plot: list[str] = []
     survey: str | dict[Lang, str] = Field("", description="When and how the cartography was made; text, or text per language")
     accuracy_note: str | dict[Lang, str] = Field("", description="Its stated positional accuracy; text, or text per language")
+    edge_accuracy_m: float | None = Field(
+        None,
+        ge=0,
+        description="The accuracy of each mapped edge (m) that accuracy_note states: the ledger says which comparisons "
+        "hold if every edge were that far off, and the sidewalk tool counts the stretches still below the law",
+    )
 
     def text(self, key: Literal["survey", "accuracy_note"], lang: Lang) -> str:
         value = getattr(self, key)
@@ -437,9 +443,6 @@ class Sidewalks(Model):
         "municipality classifies the street as such, and say where in `main_roads_basis`",
     )
     main_roads_basis: dict[Lang, str] = {}
-    edge_accuracy_m: float = Field(
-        0.30, ge=0, description="Positional accuracy of each mapped edge, as the city profile's accuracy_note states it"
-    )
     junction_m: float = Field(
         10.0, ge=0, description="Stations this close to a junction or an end of the axis are left out (corners, crossings)"
     )

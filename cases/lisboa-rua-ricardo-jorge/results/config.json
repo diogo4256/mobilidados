@@ -20,6 +20,7 @@
       "pt": "Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
     },
     "class_field": "LAYER",
+    "edge_accuracy_m": 0.3,
     "overhead": [
       "06020111_CorpoBalancado",
       "06020112_CorpoElevado",
@@ -213,7 +214,6 @@
     "step_m": 0.5
   },
   "sidewalks": {
-    "edge_accuracy_m": 0.3,
     "free_path": "dl163_free_path",
     "junction_m": 10.0,
     "main_roads": null,

@@ -34,7 +34,7 @@ For the **sidewalk tool** (`[sidewalks]`, see [methodology.md](methodology.md#si
 must map sidewalks as their own class and the buildings as plots. Look at how it draws a building over an arcade or
 a balcony, and list those classes in `overhead`: a sidewalk that ends at one has an unknown width and is left
 unmeasured. List yards and other open ground inside plots in `yard`: a sidewalk that ends at one is reported as one
-to check, never as one below the law. Set `[sidewalks] edge_accuracy_m` to the accuracy per edge your
+to check, never as one below the law. Set `[cartography] edge_accuracy_m` to the accuracy per edge your
 `accuracy_note` states. To screen every street of the area, give `[area_scan] sidewalks` a source with the road,
 parking, sidewalk and plot classes of the area (Lisbon: `area_sidewalks`), and exclude private roads by name with
 `exclude_streets`.

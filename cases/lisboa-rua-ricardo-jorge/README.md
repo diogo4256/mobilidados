@@ -6,6 +6,12 @@ other in opposite directions?
 **Pergunta:** com estacionamento dos dois lados, a faixa livre que sobra permite que dois autocarros
 programados se cruzem em sentidos opostos?
 
+## Dossier
+
+[dossier.md](dossier.md) ([PDF](dossier.pdf), in Portuguese) is the case written up for the Câmara: what the data show,
+what they do not, and how each gap can be closed without observation by the sender. Every number in it is a number of
+the findings ledger or of a table it links to, and `tests/test_cases.py` fails if that stops being true.
+
 ## Results
 
 Every result, with its evidence grade, sources, method and caveats, is in the findings ledger that the run
