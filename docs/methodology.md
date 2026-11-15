@@ -169,6 +169,9 @@ run gives the same intervals every time): positions of the same day stay togethe
   service day. In Lisbon, 90–95%: if passages are missing, the seconds are overstated in that proportion; the
   ratio does not depend on them. The count does not grow with a longer reach (3 km instead of 2), so trips are not
   being missed between snapshots.
+* `delay_data.csv`: the snapshots, working days and covered hours behind the estimates, and the share of positions
+  left out for being too old, on the stretch and on the controls apart: if the two differed much, leaving them out
+  would bias the comparison (Lisbon: 0.8% and 2.3%; with no age limit at all, the ratio moves from 1.49 to 1.48).
 * `delay_sensitivity.csv`: the ratio and the excess with one choice changed at a time (each peak hour alone, the
   off-peak hours, the controls' distance and length, no age limit on positions, a longer reach, longer gaps).
 * `delay_summary.csv`: the estimates for all routes, each route and direction, and each year. A year whose ratio

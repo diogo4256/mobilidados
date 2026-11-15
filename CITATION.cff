@@ -7,7 +7,7 @@ authors:
     family-names: Adegas
     email: diogo.adegas@gmail.com
 version: 0.4.0
-date-released: "2026-11-14"
+date-released: "2026-11-15"
 license: Apache-2.0
 repository-code: "https://github.com/diogo4256/mobilidados"
 keywords: [civic-tech, gtfs, gis, public-transport, street-design, open-data, reproducibility, mobility, portugal, lisboa]

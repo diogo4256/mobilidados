@@ -25,7 +25,7 @@ def route() -> delay.Route:
     line = LineString([(X0, Y0), (X0 + ROUTE_M, Y0)])
     m0, m1 = STRETCH
     g, c = CFG.control_gap_m, CFG.control_m
-    return delay.Route("R_0", 0, "R", "R_shape", line, STRETCH, ((m0 - g - c, m0 - g), (m1 + g, m1 + g + c)), (m0 - 2000, m1 + 2000))
+    return delay.Route("R_0", 0, "R", "R_shape", line, STRETCH, ((m0 - g - c, m0 - g), (m1 + g, m1 + g + c)), (m0 - 2000, m1 + 2000), "R 0")
 
 
 def position(m: float, v_other: float, v_stretch: float) -> float:
@@ -118,7 +118,7 @@ def truth() -> dict[str, float]:
 def test_the_estimator_gives_back_the_simulated_times(counted):
     placed, snaps = counted
     d, selection = delay.daily(placed, snaps, [route()], CFG)
-    est = delay.estimate(d, 145, 2 * CFG.control_m)
+    est = delay.estimate(d, 2 * CFG.control_m)
     want = truth()  # 26.1 s off-peak, 65.3 s at peak where the controls predict 34.8 s: +30.5 s, ratio 1.875
     assert selection["covered_hours_peak"] > 40  # snapshots at most 7 min apart: every hour is covered
     for key in ("off_s", "peak_s", "expected_peak_s", "excess_s", "ratio"):
@@ -129,7 +129,7 @@ def test_the_ratio_does_not_depend_on_the_passages_counted(counted):
     placed, snaps = counted
     d, _ = delay.daily(placed, snaps, [route()], CFG)
     halved = d.assign(trips=d.trips / 2, exposure=d.exposure / 2)  # half the passages: every second doubles
-    full, half = delay.estimate(d, 145, 1100), delay.estimate(halved, 145, 1100)
+    full, half = delay.estimate(d, 1100), delay.estimate(halved, 1100)
     assert half["ratio"] == full["ratio"]
     assert half["excess_s"] == pytest.approx(2 * full["excess_s"])
 
@@ -137,7 +137,7 @@ def test_the_ratio_does_not_depend_on_the_passages_counted(counted):
 def test_the_interval_covers_the_simulated_excess_and_is_the_same_on_every_run(counted):
     placed, snaps = counted
     d, _ = delay.daily(placed, snaps, [route()], CFG)
-    a, b = delay.bootstrap(d, 145, 1100, 200, 1), delay.bootstrap(d, 145, 1100, 200, 1)
+    a, b = delay.bootstrap(d, 1100, 200, 1), delay.bootstrap(d, 1100, 200, 1)
     pd.testing.assert_frame_equal(a, b)
     lo, hi = a.excess_s.quantile([0.05, 0.95])
     assert lo < truth()["excess_s"] < hi
@@ -156,7 +156,7 @@ def test_without_a_slower_stretch_there_is_no_excess():
     placed = delay.place(pos, [route()], CRS, CFG.max_offset_m)
     delay.prepare(placed, snaps, CFG)
     d, _ = delay.daily(placed, snaps, [route()], CFG)
-    b = delay.bootstrap(d, 145, 1100, 200, 1)
+    b = delay.bootstrap(d, 1100, 200, 1)
     assert b.ratio.quantile(0.05) < 1 < b.ratio.quantile(0.95)
     assert b.excess_s.quantile(0.05) < 0 < b.excess_s.quantile(0.95)
 
@@ -188,3 +188,25 @@ def test_the_hour_repeated_when_clocks_go_back_is_two_hours():
     assert snaps.hour.tolist() == [1, 1]
     assert snaps.slot.nunique() == 2
     assert not snaps.weekday.any()  # a Sunday
+
+
+def test_two_gtfs_routes_with_the_same_short_name_stay_apart(tmp_path):
+    import zipfile
+
+    from mobilidados.gtfs import Feed
+
+    (lon0, lon1), (lat0, lat1) = TO_LL.transform([X0, X0 + ROUTE_M], [Y0, Y0])
+    files = {
+        "routes.txt": "route_id,route_short_name,route_long_name,route_type\nX_0,727,One,3\nX_1,727,Another,3\n",
+        "trips.txt": "route_id,service_id,trip_id,direction_id,shape_id\nX_0,WK,a,0,s\nX_1,WK,b,0,s\n",
+        "shapes.txt": f"shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence\ns,{lat0},{lon0},1\ns,{lat1},{lon1},2\n",
+    }
+    with zipfile.ZipFile(tmp_path / "feed.zip", "w") as z:
+        for name, text in files.items():
+            z.writestr(name, text)
+    axis = LineString([(X0 + STRETCH[0], Y0), (X0 + STRETCH[1], Y0)])
+    rts = delay.routes(Feed(tmp_path / "feed.zip"), ["727"], axis, CRS, CFG)
+    assert [(r.key, r.label) for r in rts] == [("X_0 0", "727 (X_0) 0"), ("X_1 0", "727 (X_1) 0")]
+    lon, lat = TO_LL.transform(X0 + 2050, Y0)
+    pos = pd.DataFrame({"route_id": ["X_0", "X_1"], "direction_id": ["0", "0"], "latitude": [str(lat)] * 2, "longitude": [str(lon)] * 2})
+    assert delay.place(pos, rts, CRS, CFG.max_offset_m).key.tolist() == ["X_0 0", "X_1 0"]

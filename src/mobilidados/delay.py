@@ -43,7 +43,7 @@ operation as recorded in the archive, not the timetable.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 import numpy as np
@@ -73,10 +73,19 @@ class Route:
     stretch: tuple[float, float]
     controls: tuple[tuple[float, float], ...]
     reach: tuple[float, float]
+    label: str = ""  # how the tables name it: "<route> <direction_id>", with the route_id when a name has several
 
     @property
     def key(self) -> str:
-        return f"{self.route} {self.direction_id}"
+        """Unique within a case: a route's short name can stand for several GTFS routes (Lisbon's 727 for six)."""
+        return f"{self.route_id} {self.direction_id}"
+
+
+def windows(line: LineString, m0: float, m1: float, cfg: Delay) -> tuple[tuple[tuple[float, float], ...], tuple[float, float]]:
+    """The two control stretches and the reach around a stretch from ``m0`` to ``m1`` along ``line``, cut at its ends."""
+    lo, hi = max(m0 - cfg.control_gap_m - cfg.control_m, 0.0), min(m1 + cfg.control_gap_m + cfg.control_m, line.length)
+    controls = ((lo, m0 - cfg.control_gap_m), (m1 + cfg.control_gap_m, hi))
+    return controls, (max(m0 - cfg.reach_m, 0.0), min(m1 + cfg.reach_m, line.length))
 
 
 def routes(feed: Feed, names: list[str], axis: LineString, crs: int, cfg: Delay) -> list[Route]:
@@ -100,15 +109,23 @@ def routes(feed: Feed, names: list[str], axis: LineString, crs: int, cfg: Delay)
         if max(line.distance(a), line.distance(b)) > cfg.max_offset_m:
             continue  # this direction does not run along the stretch (e.g. a variant of the route)
         m0, m1 = sorted((line.project(a), line.project(b)))
-        lo, hi = m0 - cfg.control_gap_m - cfg.control_m, m1 + cfg.control_gap_m + cfg.control_m
-        if lo < 0 or hi > line.length:
+        if m0 - cfg.control_gap_m - cfg.control_m < 0 or m1 + cfg.control_gap_m + cfg.control_m > line.length:
             raise MobilidadosError(
                 f"delay: route {name} direction {direction} (shape {shape_id}) does not run {cfg.control_gap_m + cfg.control_m:g} m "
                 "before and after the stretch, which its control stretches need; lower delay.control_m or delay.control_gap_m"
             )
-        controls = ((lo, m0 - cfg.control_gap_m), (m1 + cfg.control_gap_m, hi))
-        reach = (max(m0 - cfg.reach_m, 0.0), min(m1 + cfg.reach_m, line.length))
+        controls, reach = windows(line, m0, m1, cfg)
         out.append(Route(str(route_id), int(direction), name, shape_id, line, (m0, m1), controls, reach))
+    names_used = [(r.route, r.direction_id) for r in out]
+    out = [
+        replace(
+            r,
+            label=f"{r.route} ({r.route_id}) {r.direction_id}"
+            if names_used.count((r.route, r.direction_id)) > 1
+            else f"{r.route} {r.direction_id}",
+        )
+        for r in out
+    ]
     missing = sorted(set(names) - {r.route for r in out})
     if missing:
         raise MobilidadosError(
@@ -241,7 +258,7 @@ def daily(pos: pd.DataFrame, snaps: pd.DataFrame, rts: list[Route], cfg: Delay) 
         # every working day and period with a snapshot has its row, also one in which no bus of the route was seen
         grid = pd.MultiIndex.from_frame(work[["date", "period"]].drop_duplicates(), names=keys)
         frame = pd.DataFrame(parts).reindex(grid).fillna(0).reset_index()
-        rows.append(frame.assign(key=r.key))
+        rows.append(frame.assign(key=r.label))  # the tables name a route by its label
     out = pd.concat(rows, ignore_index=True)
     cov = work[work.covered]
     first, last = (min(snaps.date), max(snaps.date)) if len(snaps) else (None, None)
@@ -286,7 +303,7 @@ def _from_sums(peak: np.ndarray, off: np.ndarray, controls_m: float) -> dict[str
         }
 
 
-def estimate(d: pd.DataFrame, stretch_m: float, controls_m: float) -> dict[str, float]:
+def estimate(d: pd.DataFrame, controls_m: float) -> dict[str, float]:
     """The estimates from per-day counts (``daily``), all the routes of ``d`` together.
 
     ``ratio`` uses every snapshot; the seconds use the covered hours: on the stretch per passage off-peak and at
@@ -295,7 +312,7 @@ def estimate(d: pd.DataFrame, stretch_m: float, controls_m: float) -> dict[str, 
     return {k: float(v[0]) for k, v in _from_sums(s[:1], s[1:], controls_m).items()}
 
 
-def bootstrap(d: pd.DataFrame, stretch_m: float, controls_m: float, reps: int, seed: int) -> pd.DataFrame:
+def bootstrap(d: pd.DataFrame, controls_m: float, reps: int, seed: int) -> pd.DataFrame:
     """The estimates on ``reps`` resamplings of whole days, with replacement (deterministic for a given seed): each
     replicate draws as many days as there are, and weights each day by how often it was drawn."""
     days = np.array(sorted(d.date.unique()))
@@ -375,13 +392,13 @@ def passages_checked(d: pd.DataFrame, passings: pd.DataFrame, hours: list[int]) 
     return out.round(2).rename_axis("route_direction").reset_index()
 
 
-def summary(d: pd.DataFrame, scopes: dict[str, pd.DataFrame], stretch_m: float, controls_m: float, cfg: Delay) -> pd.DataFrame:
+def summary(scopes: dict[str, pd.DataFrame], controls_m: float, cfg: Delay) -> pd.DataFrame:
     """One row per scope (all, each route and direction, each year): counts, the ratio and the seconds with their
     90% intervals (bootstrap over days)."""
     rows = []
     for scope, g in scopes.items():
-        e = estimate(g, stretch_m, controls_m)
-        b = bootstrap(g, stretch_m, controls_m, cfg.bootstrap, cfg.seed)
+        e = estimate(g, controls_m)
+        b = bootstrap(g, controls_m, cfg.bootstrap, cfg.seed)
         s = g.groupby("period")[["n", "c"]].sum().reindex([PEAK, OFF], fill_value=0)
         # the covered hours are the same for every route: count them once per day, not once per route
         s["slots"] = g.groupby(["date", "period"]).slots.max().groupby("period").sum().reindex([PEAK, OFF], fill_value=0)
@@ -436,21 +453,23 @@ def analyse(
     prepare(pos, snaps, cfg)
     stretch_m, controls_m = cfg.s_to - cfg.s_from, 2 * cfg.control_m
     d, selection = daily(pos, snaps, rts, cfg)
+    ages = ages_by_place(pos, rts, cfg.max_age_s).set_index("where").share_too_old
+    selection |= {"share_too_old_on_stretch": float(ages[STRETCH]), "share_too_old_on_controls": float(ages[CONTROL])}
     years = sorted({day.year for day in d.date})
-    scopes = {"all": d} | {r.key: d[d.key == r.key] for r in rts} | {str(y): d[pd.to_datetime(d.date).dt.year == y] for y in years}
+    scopes = {"all": d} | {r.label: d[d.key == r.label] for r in rts} | {str(y): d[pd.to_datetime(d.date).dt.year == y] for y in years}
     variants = []
     for name, change in sensitivity(cfg).items():
         v = cfg.model_copy(update=change)
         rv = routes_with(rts, v) if {"control_gap_m", "control_m", "reach_m"} & set(change) else rts
         dv, _ = daily(pos, snaps, rv, v)
-        e = estimate(dv, stretch_m, 2 * v.control_m)
+        e = estimate(dv, 2 * v.control_m)
         variants.append({"variant": name, "ratio": round(e["ratio"], 3), "excess_s": round(e["excess_s"], 1)})
     peak_off = sorted(set(cfg.peak_hours) | set(cfg.off_peak_hours))
     return {
         "delay_routes": pd.DataFrame(
             [
                 {
-                    "route_direction": r.key,
+                    "route_direction": r.label,
                     "route_id": r.route_id,
                     "shape_id": r.shape_id,
                     "heading": heading(r, axis),
@@ -462,7 +481,7 @@ def analyse(
             ]
         ),
         "delay_data": pd.DataFrame([{"item": k, "value": v} for k, v in selection.items()]),
-        "delay_summary": summary(d, scopes, stretch_m, controls_m, cfg),
+        "delay_summary": summary(scopes, controls_m, cfg),
         "delay_sensitivity": pd.DataFrame(variants),
         "delay_passages": passages_checked(d, passings, peak_off),
         "delay_by_hour": by_hour(pos, snaps, rts, cfg, stretch_m, controls_m),
@@ -471,11 +490,4 @@ def analyse(
 
 def routes_with(rts: list[Route], cfg: Delay) -> list[Route]:
     """The same routes with their controls and reach recomputed for ``cfg`` (sensitivity variants)."""
-    out = []
-    for r in rts:
-        m0, m1 = r.stretch
-        lo, hi = max(m0 - cfg.control_gap_m - cfg.control_m, 0.0), min(m1 + cfg.control_gap_m + cfg.control_m, r.line.length)
-        controls = ((lo, m0 - cfg.control_gap_m), (m1 + cfg.control_gap_m, hi))
-        reach = (max(m0 - cfg.reach_m, 0.0), min(m1 + cfg.reach_m, r.line.length))
-        out.append(Route(r.route_id, r.direction_id, r.route, r.shape_id, r.line, r.stretch, controls, reach))
-    return out
+    return [replace(r, controls=c, reach=reach) for r in rts for c, reach in [windows(r.line, *r.stretch, cfg)]]
