@@ -48,13 +48,17 @@ ANNEX = "\n## Anexo C"
 
 @pytest.mark.parametrize("case_dir", [c for c in CASES if (c / "dossier.md").exists()], ids=lambda p: p.name)
 def test_a_dossier_stands_alone_and_says_nothing_the_results_do_not(case_dir):
-    """A dossier is sent on its own, so it links to nothing and refers to no file: the facts it cites are in its
-    Annex C, copied from the ledger word for word. Its own text passes lint, and every number with a unit in it is a
+    """A dossier is sent on its own, so it refers to no file of the case: its sources are cited, with where they are
+    published, in Annex B, and the facts it cites are in its Annex C, copied from the ledger word for word. Its own text passes lint, and every number with a unit in it is a
     number the ledger gives, or one of the check points (``check_points.csv``) its Annex A lists."""
     case = Case.load(case_dir)
     text = (case_dir / "dossier.md").read_text(encoding="utf-8")
     body, annex = text.split(ANNEX)
-    assert not re.search(r"\]\((?!results/figures/)|https?://|\.csv|\.json|findings\.md", text), "a link or a file name"
+    # citations may give where a source is published (Annex B); nothing may send the reader to the case's own files
+    cited_sources = body.split("\n## Anexo B")[1]
+    assert not re.search(r"\]\((?!results/figures/)|\.csv|\.json|findings\.md|mobilidados", text), "a link or a file name"
+    assert not re.search(r"https?://", body.split("\n## Anexo B")[0] + annex), "an address outside the citations"
+    assert re.search(r"https?://", cited_sources), "the sources are cited with where they are published"
     assert lint_text(body, case.lang) == []
     findings = {f["id"]: f for f in json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["findings"]}
     cited = {i.strip(" `") for group in re.findall(r"\[[MDIP] ([^\]]+)\]", body) for i in group.split(",")}
