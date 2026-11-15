@@ -104,7 +104,7 @@ transit = "Trips counted at a reference stop per direction; timetable, not obser
 runtimes = "Arrival at the next stop minus departure from the reference stop; straight-line distance between stops."
 width_budget = "Static envelope (sum of widths), not a swept-path simulation."
 without_parking = "Free width plus the mapped parking strip(s) on the same transect, at every station with parking on both sides."
-parking_removed = "Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the longest and the shortest space length; the whole-street lengths are parking_strip_lengths.csv."
+parking_removed = "Length of the stretches with parking on both sides (as in free_width), per side removed, divided by the longest and the shortest space length; the whole-street lengths add up every transect with a strip on that side."
 encounters = "Presence-interval overlap at constant speed from scheduled times; timetable, not observation."
 delay = "Occupancy (Little's law): GPS positions on the stretch and on two control stretches of {cm} m, {gap} m before and after it along each route; the peak to off-peak ratio depends neither on the number of buses nor on how often positions were recorded. Confidence intervals by resampling whole days ({reps} replicates)."
 delay_seconds = "Seconds per passage: positions on the stretch divided by the passages per second, counted as trips seen within {reach} m of the stretch, only in the hours whose records are never more than {gap} min apart."
@@ -120,7 +120,7 @@ fleet = "The series of each fleet number (its digits but the last two), in the p
 [caveat]
 free_filter = { one = "Only transects with parking mapped on both sides and a free width of at most {max} m count: {k} of the {n} transects with parking on both sides is wider and was left out.", other = "Only transects with parking mapped on both sides and a free width of at most {max} m count: {k} of the {n} transects with parking on both sides are wider and were left out." }
 survey = "Cartography: {survey}."
-budget_inside = "Assumes parked vehicles stay inside the mapped strips; overhang_sensitivity.csv shows how much the margin shrinks if they do not."
+budget_inside = "Assumes parked vehicles stay inside the mapped strips; if they stick out {list} on each side, the bodies-only margin between two buses becomes {margins} m."
 budget_spread = "Bodies only, the margin between two buses is {fmin} m at the minimum free width, {fmed} m at the median and {fp95} m at the 95th percentile."
 budget_share = "At {pct}% of the transects counted, the free width is below the {bb} m taken by two bus bodies."
 mirrors_clear = "Mirrors: bus × bus counts the four bus mirrors; bus × car counts only the car's, because the bus's mirrors are assumed to pass above the car (an assumption)."
@@ -133,8 +133,8 @@ delay_source = "Positions from the public archive {url} (commit {commit}), which
 delay_cause = "It measures where the time goes, not why: the parking, buses in the other direction, a queue from a junction or a traffic light may all contribute."
 delay_directions = "By route and direction: {list}."
 delay_direction = "{route} {heading} {pct}% ({lo}% to {hi}%)"
-delay_sensitivity = "With other reasonable choices (peak hours, distance and length of the control stretches, maximum age of positions, reach of the passage count), the ratio ranges from {lo}% to {hi}% (delay_sensitivity.csv)."
-delay_by_hour = "The excess in seconds depends strongly on the peak hour chosen: {list} (delay_sensitivity.csv); the ratio changes little."
+delay_sensitivity = "With other reasonable choices (peak hours, distance and length of the control stretches, maximum age of positions, reach of the passage count), the ratio ranges from {lo}% to {hi}%."
+delay_by_hour = "The excess in seconds depends strongly on the peak hour chosen: {list}; the ratio changes little."
 delay_hour = "{h}h alone, {s} s"
 delay_passages = "The passages counted are {pct}% of the timetable's on {day} at the same hours; if passages are missing, the seconds are overstated in the same proportion (the ratio does not depend on them)."
 delay_days = "Working days: Monday to Friday, without the holidays in the city profile ({n} in that period)."
@@ -165,6 +165,7 @@ files = { one = "{n} file, e.g. {example}", other = "{n} files, e.g. {example}" 
 attribution = "Attribution"
 transformed = "The data were transformed: tables and figures are measurements, counts and aggregations derived by mobilidados; they are not publications of the originating body, which does not endorse them."
 and = " and "
+or = " or "
 
 [draft]
 question_both = "Does the free width between the two parking strips let two scheduled buses pass each other in opposite directions?"

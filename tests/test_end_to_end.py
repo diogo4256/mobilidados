@@ -255,7 +255,11 @@ def test_the_ledger_states_what_the_tables_show(findings, results):
     assert "margin −0.20 m" in findings["width_budget"]["statement"]
     assert "two buses need at least 5.10 m (bodies only, with no gap between them;" in findings["width_budget"]["statement"]
     budget = findings["width_budget"]["caveat"]
-    assert budget.startswith("Assumes parked vehicles stay inside the mapped strips; overhang_sensitivity.csv")
+    # the margin if parked vehicles stick out, read from overhang_sensitivity.csv and stated, not pointed to
+    assert budget.startswith(
+        "Assumes parked vehicles stay inside the mapped strips; if they stick out 0.10, 0.20 or 0.30 m on each side, "
+        "the bodies-only margin between two buses becomes −0.40, −0.60 or −0.80 m."
+    )
     # the spread of the bus x bus margin over width_budget.csv's free widths (the same 4.90 m everywhere here)
     assert "the margin between two buses is −0.20 m at the minimum free width, −0.20 m at the median and −0.20 m at the 95th" in budget
     assert "At 100% of the transects counted, the free width is below the 5.10 m taken by two bus bodies." in budget

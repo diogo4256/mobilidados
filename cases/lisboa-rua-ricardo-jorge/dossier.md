@@ -2,10 +2,10 @@
 
 *Versão de 2026-11-15.*
 
-**Dossier técnico a partir de dados públicos.** Cada número vem da lista de factos apurados do caso
-([results/findings.md](results/findings.md)), indicada entre parênteses retos com a letra que diz em que se apoia:
-**M** medido em dados oficiais, **D** escrito em documento oficial, **I** inferido desses dados, **P** pressuposto.
-Todos os números se refazem a partir das fontes com o `mobilidados`; o anexo B diz como.
+**Dossier técnico a partir de dados públicos.** Cada número remete, entre parênteses retos, para um facto do anexo C,
+que diz de onde vem, como foi obtido e que reservas tem. A letra diz em que se apoia: **M** medido em dados oficiais,
+**D** escrito em documento oficial, **I** inferido desses dados, **P** pressuposto. As fontes estão no anexo B; são
+todas públicas, e qualquer pessoa pode refazer os números a partir delas.
 
 ## Resumo
 
@@ -109,12 +109,12 @@ Nada disto exige observação no local por quem escreve: o que os dados público
 | Não se sabe quando nem com que fundamento o estacionamento foi marcado dos dois lados | Saber se o perfil atual foi decidido tendo os autocarros em conta | Pedir à Câmara o projeto ou a deliberação (Lei n.º 26/2016) |
 
 Os pedidos de documentos fazem-se por escrito ao abrigo da Lei n.º 26/2016, de 22 de agosto (artigos 12.º e 15.º),
-que dá à entidade 10 dias para responder; o `mobilidados draft --ask documents` escreve o pedido.
+que dá à entidade 10 dias para responder.
 
 ## Anexo A: pontos de verificação
 
 Pontos ao longo do eixo da rua (s: distância desde a Av. do Rio de Janeiro) onde os serviços podem medir a largura
-livre no local ([results/tables/check_points.csv](results/tables/check_points.csv)):
+livre no local:
 
 | s | Quarteirão | Coordenadas (lat, lon) | Largura livre cartografada |
 | ---: | --- | --- | ---: |
@@ -122,22 +122,66 @@ livre no local ([results/tables/check_points.csv](results/tables/check_points.cs
 | 122 m | B2 (R. Cor. Marques Leitão → R. Constantino Fernandes) | 38.757165, −9.138783 | 4,90 m |
 | 180 m | B3 (R. Constantino Fernandes → R. Carlos Mayer) | 38.757363, −9.138165 | 5,04 m |
 
-## Anexo B: fontes e reprodução
+## Anexo B: fontes
 
-- Cartografia municipal vetorial 1:1000, eixos de via e rede viária: Câmara Municipal de Lisboa (CC BY 4.0, exceto a
-  rede viária do Lisboa Interativa, sem licença declarada).
-- Horário GTFS da Carris, cópia arquivada na Mobility Database e fixada pela impressão digital SHA-256.
-- Posições em tempo real da Carris arquivadas por terceiros (LIVREpt/lisboa_carris_api), fixadas num commit.
-- Lisboa: o Desenho da Rua – Manual de espaço público (Câmara Municipal de Lisboa, 2018), p. 152.
-- Fichas da frota da Carris (carris.pt › Descubra › Frota), consultadas em 2026-11-15.
+| Fonte | Entidade | Obtida em | Licença |
+| --- | --- | --- | --- |
+| Cartografia numérica vetorial 1:1000 (fotogrametria de 2016, completagem de campo em 2020, homologada pela DGT) | Câmara Municipal de Lisboa | 2026-10-24 | CC BY 4.0 |
+| Eixos de via | Câmara Municipal de Lisboa | 2026-10-24 | não declarada |
+| Rede viária com sentidos de trânsito (visualizador Lisboa Interativa) | Câmara Municipal de Lisboa | 2026-10-24 | não declarada |
+| Horário GTFS da Carris (cópia arquivada pela Mobility Database, dia de serviço 2026-10-27) | Carris | 2026-10-24 | não declarada |
+| Posições em tempo real dos autocarros, de 2025-02-17 a 2026-11-13 (arquivo LIVREpt/lisboa_carris_api, mantido por terceiros) | Carris, por intermédio de terceiros | 2026-11-14 | não declarada |
+| Lisboa: o Desenho da Rua – Manual de espaço público (2018), p. 152 | Câmara Municipal de Lisboa | — | — |
+| Schriftliche Anfrage Drucksache 19/25490, resposta de 27.03.2026, p. 3 (cita a diretriz alemã RASt 06) | Abgeordnetenhaus Berlin | — | — |
+| Fichas da frota de autocarros | Carris | 2026-11-15 | — |
 
-Cada ficheiro, a data em que foi obtido, a licença e a impressão digital estão em
-[sources.lock.json](sources.lock.json). Para refazer tudo:
+Cada ficheiro usado está identificado pela sua impressão digital (SHA-256), o que permite confirmar que se trata
+exatamente dos mesmos dados.
 
-```bash
-git clone https://github.com/diogo4256/mobilidados.git && cd mobilidados && uv sync
-uv run mobilidados fetch cases/lisboa-rua-ricardo-jorge
-uv run mobilidados run cases/lisboa-rua-ricardo-jorge
-```
+## Anexo C: factos citados
 
-A lista completa de factos, com o método e as reservas de cada um, está em [results/findings.md](results/findings.md).
+Copiados, sem alterações, da lista de factos apurados do caso: os que o texto cita e aqueles em que estes se apoiam.
+
+- **[M] `free_width`** Nos troços com estacionamento cartografado dos dois lados (117,5 m da rua), a largura livre entre eles vai de 4,78 a 5,68 m (mediana de 4,90 m).  
+  *Método:* Perfis transversais a cada 0,5 m; as larguras são lidas só nos polígonos cartografados.  
+  *Reservas:* Só contam os perfis com estacionamento cartografado dos dois lados e até 7,00 m de largura livre: 5 dos 240 perfis com estacionamento dos dois lados têm mais largura livre e ficaram de fora. Cartografia: fotogrametria aérea de maio de 2016, restituição e completagem de campo em 2020, homologada pela DGT (registo em dados.gov.pt). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado.
+- **[D] `standard_cml_manual_two_way_profile`** Lisboa: o Desenho da Rua – Manual de espaço público, p. 152 (perfil de referência): Rua de dois sentidos, duas vias, estacionamento longitudinal dos dois lados: largura entre as faixas de estacionamento: 6,80 m. Âmbito: Ruas de dois sentidos com duas vias de trânsito e estacionamento dos dois lados. Mediana medida: 4,90 m (−1,90 m).  
+  *Reservas:* 0,40 m (sobrelargura) + 3,00 m + 3,00 m + 0,40 m (sobrelargura) = 6,80 m; nota ao desenho: sem sobrelargura, a largura recomendada por via é 3,25 m, ou seja 6,50 m
+- **[I] `width_budget`** Com o estacionamento ocupado dos dois lados e os carros dentro dos lugares, dois autocarros precisam de pelo menos 5,00 m (só a carroçaria, sem espaço nenhum entre eles; 5,80 m com espelhos) e a largura livre mediana é de 4,90 m: folga de −0,10 m. Um autocarro e um ligeiro precisam de pelo menos 4,30 m: folga de +0,60 m (+0,35 m contando com os espelhos do ligeiro).  
+  *Método:* Soma das larguras dos veículos lado a lado (envelope estático), sem simular a trajetória nem as curvas.  
+  *Reservas:* Admite que os carros estacionados ficam dentro das faixas cartografadas; se saírem delas 0,10, 0,20 ou 0,30 m de cada lado, a folga entre dois autocarros, só com a carroçaria, passa a −0,30, −0,50 ou −0,70 m. Só com a carroçaria, a folga entre dois autocarros é de −0,22 m na largura livre mínima, −0,10 m na mediana e +0,08 m no percentil 95. Em 77% dos perfis contados, a largura livre fica abaixo dos 5,00 m que ocupam duas carroçarias de autocarro. Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado.
+- **[I] `width_accuracy`** Mesmo que cada aresta cartografada estivesse 0,30 m fora do sítio a favor da rua, a largura livre mediana seria de 5,50 m, ainda 0,30 m abaixo dos 5,80 m que dois autocarros ocupam com espelhos; só com a carroçaria, a folga de −0,10 m fica dentro dessa margem. Com essa margem, ficaria 1,30 m abaixo dos 6,80 m do perfil de referência de Lisboa: o Desenho da Rua – Manual de espaço público (p. 152).  
+  *Método:* Largura livre mediana mais duas vezes a exatidão declarada por aresta (as duas arestas da faixa livre, ambas a favor da rua).
+- **[I] `encounters`** Segundo o horário, em 2026-10-27 há 6–7 encontros entre autocarros em sentidos opostos nesta rua (admitindo uma velocidade constante de 15/20 km/h); 1–2 acontecem nos troços com estacionamento dos dois lados. Por pares de carreiras: 744 x 744, 4–5; 744 x 46B, 2.  
+  *Método:* Sobreposição dos intervalos em que cada autocarro está na rua, a velocidade constante e com as horas do horário; é o horário, não uma observação.  
+  *Reservas:* Os pontos de encontro saem de um modelo de velocidade constante, sem tempo parado nas paragens: um encontro a poucos metros do limite de um troço pode acontecer dentro dele. A 12,7 km/h, a mais baixa das velocidades entre paragens em 2026-10-27 (distância em linha reta a dividir pelo tempo mediano do horário), o modelo dá 7.
+- **[I] `delay`** Nos dias úteis de 2025-02-17 a 2026-11-13 (437 dias), às 17h–19h, a diferença entre o tempo dos autocarros das carreiras 744 e 46B no troço entre paragens (s = 45–190 m, 145 m) e o que o abrandamento dos troços vizinhos das mesmas carreiras, à mesma hora, faria esperar a partir das 10h–17h foi de +49% (intervalo de confiança de 90%: +34% a +65%). Por ano: em 2025, +60% (+42% a +80%; 217 dias); em 2026, +4% (−17% a +31%; 220 dias). O intervalo de 2026 inclui 0: os dados desse ano não confirmam o excesso.  
+  *Método:* Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de 550 m, a 150 m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros (2000 réplicas).  
+  *Reservas:* Por carreira e sentido: 46B NE→SO +46% (+15% a +86%); 744 SO→NE +42% (+22% a +63%); 744 NE→SO +57% (+36% a +81%). Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de +44% a +51%. Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença. Mede onde se perde o tempo, não porquê: o estacionamento, os autocarros em sentido contrário, uma fila vinda de um cruzamento ou um semáforo podem todos contribuir. Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade (18 nesse período).
+- **[I] `without_parking`** Sem o estacionamento do lado NO, a largura livre passaria a ir de 6,79 a 7,68 m (mediana de 6,91 m); sem o do lado SE, de 6,78 a 8,06 m (mediana de 6,92 m); sem estacionamento nenhum, mediana de 8,92 m. Dois autocarros precisam de pelo menos 5,00 m (5,80 m com espelhos): só com estacionamento de um lado, a folga seria de +1,91 m (+1,11 m com espelhos).  
+  *Método:* Largura livre mais a faixa (ou as faixas) de estacionamento cartografada no mesmo perfil, em cada perfil com estacionamento dos dois lados.  
+  *Reservas:* Admite que o espaço do estacionamento passa para a faixa de rodagem e que nada mais o ocupa; mede uma opção, não é um projeto.
+- **[I] `parking_removed`** Retirar o estacionamento de um lado, nos troços com estacionamento dos dois lados, retiraria 117,5 m de estacionamento cartografado (cerca de 19 a 23 lugares); dos dois lados, 235 m (cerca de 39 a 47 lugares). Lugares contados a 5,00–6,00 m cada (pressuposto). Em toda a rua, o estacionamento cartografado mede 122,5 m do lado NO e 137,0 m do lado SE.  
+  *Método:* Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua somam todos os perfis com estacionamento de cada lado.  
+  *Reservas:* Área de estacionamento cartografada, não lugares contados: entradas e outras interrupções dentro das faixas não são descontadas. O comprimento de um lugar é um pressuposto.
+- **[M] `length`** O eixo da rua tem 209,25 m.  
+  *Método:* Comprimento do eixo da rua, em coordenadas projetadas.
+- **[M] `traffic`** Segundo a rede viária da Câmara, a rua tem dois sentidos: em 8 de 8 pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos.  
+  *Método:* Consulta à rede viária municipal em pontos ao longo do eixo.
+- **[M] `transit`** Segundo o horário, as carreiras 744, 46B passam nesta rua. Em 2026-10-27: 56 viagens SO→NE e 76 viagens NE→SO (no máximo 4 e 6 por hora).  
+  *Método:* Viagens contadas numa paragem de referência em cada sentido; é o horário, não a operação observada.
+- **[D] `vehicle_carris_man_city_gold_body`** Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Carroçaria com 2,50 m de largura (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643; os 12 modelos de autocarro standard que a Carris publica têm 2,5 a 2,6 m de largura (consultado em 2026-11-15), pelo que este é o mais estreito).
+- **[M] `fleet`** Nas posições arquivadas no troço, a carreira 46B aparece com veículos de números 2xx (100% das posições, 24 veículos); a carreira 744 aparece com veículos de números 26xx (79% das posições, 64 veículos) e 3xx (17% das posições, 7 veículos).  
+  *Método:* Série de cada número de frota (os algarismos menos os dois últimos), nas posições que caem no troço medido.  
+  *Reservas:* O arquivo não diz o modelo de cada veículo, e as fichas da frota publicadas pela Carris dão modelos, não números de frota: diz que séries passam na rua, não a sua largura.
+- **[M] `parking_strips`** O estacionamento cartografado ocupa 2,01 m do lado NO e 2,01 m do lado SE (medianas).  
+  *Método:* Área cartografada, não carros estacionados.
+- **[I] `delay_seconds`** Nas 120 horas de ponta e 400 horas fora da ponta em que o arquivo tem posições a intervalos de 12 min no máximo (das de ponta, 118 em 2025 e 2 em 2026), um autocarro levou em média 27 s a percorrer o troço fora da ponta e 48 s na ponta, quando o abrandamento dos troços vizinhos faria esperar 33 s: mais 14 s por passagem (intervalo de confiança de 90%: 6 a 24 s).  
+  *Método:* Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de 2000 m do troço, só nas horas em que os registos nunca distam mais de 12 min.  
+  *Reservas:* O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s; o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença.
+- **[M] `area_pattern`** Das 69 ruas da zona com autocarros no horário, 2 têm dois sentidos e estacionamento dos dois lados, com menos de 5,5 m de largura livre em pelo menos 30 m (Rua Ricardo Jorge e Rua Teixeira de Pascoais); destas, 1 com autocarros nos dois sentidos: Rua Ricardo Jorge.  
+  *Método:* Perfis a cada 3 m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua.  
+  *Reservas:* Os limiares (5,5 m de largura livre, 30 m de extensão) são parâmetros escolhidos para esta análise, não valores de um documento técnico.
+- **[P] `vehicle_carris_man_city_gold_mirrors`** Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Largura com espelhos assumida em 2,90 m (pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro).
+- **[P] `vehicle_car_typical_body`** Veículo de referência: Ligeiro típico. Carroçaria com 1,80 m de largura (pressuposto: largura típica de um ligeiro europeu; a validar no local).
+- **[P] `vehicle_car_typical_mirrors`** Veículo de referência: Ligeiro típico. Largura com espelhos assumida em 2,05 m (pressuposto: largura típica com espelhos abertos; a validar no local).

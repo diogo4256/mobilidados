@@ -104,7 +104,7 @@ transit = "Viagens contadas numa paragem de referência em cada sentido; é o ho
 runtimes = "Chegada à paragem seguinte menos partida da paragem de referência; distância em linha reta entre as duas."
 width_budget = "Soma das larguras dos veículos lado a lado (envelope estático), sem simular a trajetória nem as curvas."
 without_parking = "Largura livre mais a faixa (ou as faixas) de estacionamento cartografada no mesmo perfil, em cada perfil com estacionamento dos dois lados."
-parking_removed = "Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua vêm de parking_strip_lengths.csv."
+parking_removed = "Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua somam todos os perfis com estacionamento de cada lado."
 encounters = "Sobreposição dos intervalos em que cada autocarro está na rua, a velocidade constante e com as horas do horário; é o horário, não uma observação."
 delay = "Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de {cm} m, a {gap} m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros ({reps} réplicas)."
 delay_seconds = "Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de {reach} m do troço, só nas horas em que os registos nunca distam mais de {gap} min."
@@ -120,7 +120,7 @@ fleet = "Série de cada número de frota (os algarismos menos os dois últimos),
 [caveat]
 free_filter = { one = "Só contam os perfis com estacionamento cartografado dos dois lados e até {max} m de largura livre: {k} dos {n} perfis com estacionamento dos dois lados tem mais largura livre e ficou de fora.", other = "Só contam os perfis com estacionamento cartografado dos dois lados e até {max} m de largura livre: {k} dos {n} perfis com estacionamento dos dois lados têm mais largura livre e ficaram de fora." }
 survey = "Cartografia: {survey}."
-budget_inside = "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas."
+budget_inside = "Admite que os carros estacionados ficam dentro das faixas cartografadas; se saírem delas {list} de cada lado, a folga entre dois autocarros, só com a carroçaria, passa a {margins} m."
 budget_spread = "Só com a carroçaria, a folga entre dois autocarros é de {fmin} m na largura livre mínima, {fmed} m na mediana e {fp95} m no percentil 95."
 budget_share = "Em {pct}% dos perfis contados, a largura livre fica abaixo dos {bb} m que ocupam duas carroçarias de autocarro."
 mirrors_clear = "Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto)."
@@ -133,8 +133,8 @@ delay_source = "Posições do arquivo público {url} (commit {commit}), que reco
 delay_cause = "Mede onde se perde o tempo, não porquê: o estacionamento, os autocarros em sentido contrário, uma fila vinda de um cruzamento ou um semáforo podem todos contribuir."
 delay_directions = "Por carreira e sentido: {list}."
 delay_direction = "{route} {heading} {pct}% ({lo}% a {hi}%)"
-delay_sensitivity = "Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de {lo}% a {hi}% (delay_sensitivity.csv)."
-delay_by_hour = "O excesso em segundos depende muito da hora de ponta escolhida: {list} (delay_sensitivity.csv); o rácio muda pouco."
+delay_sensitivity = "Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de {lo}% a {hi}%."
+delay_by_hour = "O excesso em segundos depende muito da hora de ponta escolhida: {list}; o rácio muda pouco."
 delay_hour = "só às {h}h, {s} s"
 delay_passages = "As passagens contadas são {pct}% das do horário de {day} nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas)."
 delay_days = "Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade ({n} nesse período)."
@@ -165,6 +165,7 @@ files = { one = "{n} ficheiro, p. ex. {example}", other = "{n} ficheiros, p. ex.
 attribution = "Atribuição"
 transformed = "Os dados foram trabalhados: as tabelas e as figuras são medições, contagens e agregações feitas pelo mobilidados; não são publicações da entidade de origem, que não as subscreve."
 and = " e "
+or = " ou "
 
 [draft]
 question_both = "A faixa livre entre as duas faixas de estacionamento deixa cruzar dois autocarros programados nos dois sentidos?"

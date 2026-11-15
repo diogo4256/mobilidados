@@ -183,7 +183,7 @@
         "vehicle_car_typical_mirrors"
       ],
       "method": "Soma das larguras dos veículos lado a lado (envelope estático), sem simular a trajetória nem as curvas.",
-      "caveat": "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas. Só com a carroçaria, a folga entre dois autocarros é de −0,22 m na largura livre mínima, −0,10 m na mediana e +0,08 m no percentil 95. Em 77% dos perfis contados, a largura livre fica abaixo dos 5,00 m que ocupam duas carroçarias de autocarro. Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
+      "caveat": "Admite que os carros estacionados ficam dentro das faixas cartografadas; se saírem delas 0,10, 0,20 ou 0,30 m de cada lado, a folga entre dois autocarros, só com a carroçaria, passa a −0,30, −0,50 ou −0,70 m. Só com a carroçaria, a folga entre dois autocarros é de −0,22 m na largura livre mínima, −0,10 m na mediana e +0,08 m no percentil 95. Em 77% dos perfis contados, a largura livre fica abaixo dos 5,00 m que ocupam duas carroçarias de autocarro. Espelhos: entre dois autocarros contam os quatro espelhos; entre um autocarro e um ligeiro só contam os do ligeiro, porque se admite que os do autocarro passam por cima dele (pressuposto). Exatidão planimétrica assumida em ≤0,30 m por aresta (valor da DGT para cartografia à escala de planta, citado num parecer da DGT de 2025); o erro médio quadrático da própria cartografia 1:1000 não foi encontrado."
     },
     {
       "id": "width_accuracy",
@@ -250,7 +250,7 @@
         "free_width",
         "parking_strips"
       ],
-      "method": "Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua vêm de parking_strip_lengths.csv.",
+      "method": "Comprimento dos troços com estacionamento dos dois lados (o mesmo da largura livre), por cada lado retirado, a dividir pelo comprimento mais longo e pelo mais curto de um lugar; os comprimentos em toda a rua somam todos os perfis com estacionamento de cada lado.",
       "caveat": "Área de estacionamento cartografada, não lugares contados: entradas e outras interrupções dentro das faixas não são descontadas. O comprimento de um lugar é um pressuposto."
     },
     {
@@ -308,7 +308,7 @@
         "street_axes"
       ],
       "method": "Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de 550 m, a 150 m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros (2000 réplicas).",
-      "caveat": "Por carreira e sentido: 46B NE→SO +46% (+15% a +86%); 744 SO→NE +42% (+22% a +63%); 744 NE→SO +57% (+36% a +81%). Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de +44% a +51% (delay_sensitivity.csv). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença. Mede onde se perde o tempo, não porquê: o estacionamento, os autocarros em sentido contrário, uma fila vinda de um cruzamento ou um semáforo podem todos contribuir. Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade (18 nesse período)."
+      "caveat": "Por carreira e sentido: 46B NE→SO +46% (+15% a +86%); 744 SO→NE +42% (+22% a +63%); 744 NE→SO +57% (+36% a +81%). Com outras escolhas razoáveis (horas de ponta, distância e comprimento dos troços de controlo, idade máxima das posições, alcance da contagem de passagens), o rácio vai de +44% a +51%. Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença. Mede onde se perde o tempo, não porquê: o estacionamento, os autocarros em sentido contrário, uma fila vinda de um cruzamento ou um semáforo podem todos contribuir. Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade (18 nesse período)."
     },
     {
       "id": "fleet",
@@ -375,7 +375,7 @@
         "delay"
       ],
       "method": "Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de 2000 m do troço, só nas horas em que os registos nunca distam mais de 12 min.",
-      "caveat": "O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s (delay_sensitivity.csv); o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença."
+      "caveat": "O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s; o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença."
     },
     {
       "id": "occurrences",

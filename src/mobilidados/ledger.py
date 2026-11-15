@@ -295,7 +295,7 @@ def build(r: Run) -> list[Finding]:
                 ],
                 method=method("width_budget"),
                 caveat=sentences(
-                    caveat("budget_inside"),
+                    overhang(r.table("overhang_sensitivity"), f"{e.bus} x {e.bus}", caveat, n, lang),
                     caveat(
                         "budget_spread",
                         fmin=n(spread["min"], sign=True),
@@ -692,6 +692,22 @@ def sidewalk_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> lis
             )
         )
     return out
+
+
+def overhang(table: Any, scenario: str, caveat: Any, n: Any, lang: str) -> str:
+    """The width-budget caveat on parked vehicles: the bus x bus margin, bodies only, if they stick out of the mapped
+    strips by each overhang the sensitivity table gives (``overhang_sensitivity.csv``)."""
+    rows = table[(table.scenario == scenario) & (table.overhang_per_side_m > 0)].sort_values("overhang_per_side_m")
+    or_ = t("report.or", lang)
+    return str(
+        caveat(
+            "budget_inside",
+            list=", ".join(n(x, 2) for x in rows.overhang_per_side_m.iloc[:-1]) + or_ + n(rows.overhang_per_side_m.iloc[-1], 2) + " m",
+            margins=", ".join(n(x, 2, sign=True) for x in rows.margin_body_m.iloc[:-1])
+            + or_
+            + n(rows.margin_body_m.iloc[-1], 2, sign=True),
+        )
+    )
 
 
 def delay_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:

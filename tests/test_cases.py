@@ -43,29 +43,33 @@ def test_results_reproduce(case_dir, tmp_path):
 
 
 UNIT = re.compile(r"[+−-]?\d+(?:,\d+)?(?:–\d+(?:,\d+)?)?(?=\s?(?:m\b|%|s\b|km/h|lugares|encontros|viagens|veículos|perfis))")
+ANNEX = "\n## Anexo C"
 
 
 @pytest.mark.parametrize("case_dir", [c for c in CASES if (c / "dossier.md").exists()], ids=lambda p: p.name)
-def test_a_dossier_says_nothing_the_results_do_not(case_dir):
-    """A dossier is written by hand, so it is held to its results: lint-clean, every finding it cites exists, and every
-    number with a unit is one the ledger gives, or a result table the dossier links to."""
+def test_a_dossier_stands_alone_and_says_nothing_the_results_do_not(case_dir):
+    """A dossier is sent on its own, so it links to nothing and refers to no file: the facts it cites are in its
+    Annex C, copied from the ledger word for word. Its own text passes lint, and every number with a unit in it is a
+    number the ledger gives, or one of the check points (``check_points.csv``) its Annex A lists."""
     case = Case.load(case_dir)
     text = (case_dir / "dossier.md").read_text(encoding="utf-8")
-    assert lint_text(text, case.lang) == []
-    findings = json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["findings"]
-    cited = set(re.findall(r"\[[MDIP] ([^\]]+)\]", text))
-    ids = {i.strip(" `") for group in cited for i in group.split(",")}
-    assert ids <= {f["id"] for f in findings}
+    body, annex = text.split(ANNEX)
+    assert not re.search(r"\]\((?!results/figures/)|https?://|\.csv|\.json|findings\.md", text), "a link or a file name"
+    assert lint_text(body, case.lang) == []
+    findings = {f["id"]: f for f in json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["findings"]}
+    cited = {i.strip(" `") for group in re.findall(r"\[[MDIP] ([^\]]+)\]", body) for i in group.split(",")}
+    in_annex = set(re.findall(r"^- \*\*\[[MDIP]\] `([^`]+)`\*\*", annex, flags=re.M))
+    assert cited <= in_annex <= set(findings)
+    for fid in in_annex:  # word for word
+        f = findings[fid]
+        assert f"`{fid}`** {f['statement']}" in annex
+        assert not f["method"] or f"*Método:* {f['method']}" in annex
+        assert not f["caveat"] or f"*Reservas:* {f['caveat']}" in annex
     ledger = (case.results_dir / "findings.md").read_text(encoding="utf-8")
-    # a number that is not in the ledger must come from a table the dossier links to
-    linked = set(re.findall(r"results/tables/([\w-]+\.csv)", text))
-    tables = " ".join((case.results_dir / "tables" / name).read_text(encoding="utf-8") for name in linked)
     printed = {x.lstrip("+−-") for x in UNIT.findall(ledger)}
     printed |= {p for x in printed for p in x.split("–")}  # each end of a range the ledger gives
-
-    def tabled(x: str) -> str:  # 122.0 in a table is the 122 a text prints; 4.87 is 4,87
-        return x.rstrip("0").rstrip(".").replace(".", ",") if "." in x else x
-
-    known = printed | {tabled(x) for x in re.findall(r"\d+\.\d+|\d+", tables)}
-    for x in {x.lstrip("+−-") for x in UNIT.findall(text)}:
+    points = pd.read_csv(case.results_dir / "tables" / "check_points.csv")
+    known = printed | {f"{x:g}".replace(".", ",") for c in ("s_m", "free_width_m") for x in points[c]}
+    known |= {f"{x:.2f}".replace(".", ",") for x in points.free_width_m}
+    for x in {x.lstrip("+−-") for x in UNIT.findall(body)}:
         assert x in known or all(p in known for p in x.split("–")), f"{x} is not in the results"

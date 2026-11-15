@@ -37,9 +37,10 @@ count or collect anything, and where the data stop, it helps them ask the body t
   ledger's own, and the draft is linted before it is written.
 - **Rua Ricardo Jorge dossier** (`cases/lisboa-rua-ricardo-jorge/dossier.md`, and its PDF): the case written up for
   the Câmara, every number with its finding id and grade, the comparisons that hold within the cartography's error led
-  with, and a table of what the data do not show and who can provide it. `tests/test_cases.py` fails if a dossier cites
-  a finding that does not exist, fails `lint`, or gives a number with a unit that neither the ledger nor a table it
-  links to gives.
+  with, and a table of what the data do not show and who can provide it. It stands alone, to be sent as a PDF: no
+  links or file names, the sources named in an annex, and the facts it cites in another, copied from the ledger.
+  `tests/test_cases.py` fails if a dossier links to anything, cites a fact its annex does not hold word for word,
+  fails `lint`, or gives a number with a unit the ledger (or its check points) does not give.
 - Findings: `width_accuracy` (I), whether the width comparisons hold if every mapped edge were off by the stated
   accuracy (`[cartography] edge_accuracy_m`, which the sidewalk tool now reads too); `fleet` (M), the fleet-number
   series the archive shows on the stretch for each route (`delay_fleet.csv`). The encounters finding splits the
@@ -55,6 +56,8 @@ count or collect anything, and where the data stop, it helps them ask the body t
 
 ### Fixed
 
+- Ledger caveats state what they used to point to: the width-budget caveat gives the margin if parked vehicles stick
+  out of the strips by each overhang tested; the time caveats no longer name their tables.
 - The free-width figure no longer scales to the cross streets at the ends of the axis (up to 50 m), which flattened
   the narrow stretches; close reference values are labelled apart.
 - The width-budget finding uses the car's width with mirrors, an assumption, but did not list it among its sources,

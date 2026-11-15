@@ -9,8 +9,9 @@ programados se cruzem em sentidos opostos?
 ## Dossier
 
 [dossier.md](dossier.md) ([PDF](dossier.pdf), in Portuguese) is the case written up for the Câmara: what the data show,
-what they do not, and how each gap can be closed without observation by the sender. Every number in it is a number of
-the findings ledger or of a table it links to, and `tests/test_cases.py` fails if that stops being true.
+what they do not, and how each gap can be closed without observation by the sender. It stands alone: no links and no
+file names; the facts it cites are in its Annex C, copied from the ledger word for word. `tests/test_cases.py` fails if
+that stops being true, or if it gives a number the ledger (or, for its check points, `check_points.csv`) does not.
 
 ## Results
 
