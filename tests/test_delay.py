@@ -210,3 +210,14 @@ def test_two_gtfs_routes_with_the_same_short_name_stay_apart(tmp_path):
     lon, lat = TO_LL.transform(X0 + 2050, Y0)
     pos = pd.DataFrame({"route_id": ["X_0", "X_1"], "direction_id": ["0", "0"], "latitude": [str(lat)] * 2, "longitude": [str(lon)] * 2})
     assert delay.place(pos, rts, CRS, CFG.max_offset_m).key.tolist() == ["X_0 0", "X_1 0"]
+
+
+def test_a_trip_seen_at_the_same_place_twice_counts_in_the_hour_it_was_first_seen_there():
+    r = route()
+    t = pd.to_datetime(["2026-01-05 10:59:00", "2026-01-05 11:01:00", "2026-01-05 10:30:00"]).tz_localize("UTC")
+    pos = pd.DataFrame({"t": t, "key": r.key, "trip_id": ["a", "a", "b"], "m": [2072.5, 2072.5, 2072.5]})
+    pos["slot"], pos["date"] = pos.t.dt.floor("h"), pos.t.dt.date
+    # the two reports of trip a are equally near the stretch: the earlier one decides, not the order of the rows
+    for rows in (pos, pos.iloc[::-1]):
+        lam = delay.trips_per_hour(rows, [r]).set_index("slot").trips
+        assert lam.to_dict() == {pd.Timestamp("2026-01-05 10:00", tz="UTC"): 2}

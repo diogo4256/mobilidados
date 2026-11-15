@@ -639,10 +639,14 @@ def archived_positions(case):
             snap, reported = t.strftime("%Y-%m-%dT%H:%M:%S"), (t - pd.Timedelta(seconds=15)).strftime("%Y-%m-%d %H:%M:%S")
             m = (t.timestamp() - starts) * 5.0
             on = (m >= 0) & (m <= 200)
-            for route, direction, x in (("A", "0", ORIGIN[0] + m[on]), ("B", "1", ORIGIN[0] + 200 - m[on])):
-                lon, lat = to_ll.transform(x, np.full(len(x), ORIGIN[1]))
+            # both routes in one call: pyproj 3.6 (the lowest allowed) reads an array of one as a scalar, and warns
+            x = np.concatenate([ORIGIN[0] + m[on], ORIGIN[0] + 200 - m[on]])
+            lon, lat = to_ll.transform(x, np.full(len(x), ORIGIN[1]))
+            n_on = int(on.sum())
+            for j, (route, direction) in enumerate((("A", "0"), ("B", "1"))):
+                part = slice(j * n_on, (j + 1) * n_on)
                 rows += [[snap, f"{route}{day:%d}-{i}", route, direction, "v", reported, f"{la:.7f}", f"{lo:.7f}", "IN_TRANSIT_TO", "", ""]
-                         for i, lo, la in zip(k[on], lon, lat, strict=True)]  # fmt: skip
+                         for i, lo, la in zip(k[on], lon[part], lat[part], strict=True)]  # fmt: skip
             snaps.append([snap, 100, 2 * int(on.sum()), 2 * int(on.sum())])
     folder = raw_path(case, "positions")
     folder.mkdir(parents=True, exist_ok=True)

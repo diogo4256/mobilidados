@@ -203,7 +203,8 @@ def trips_per_hour(pos: pd.DataFrame, rts: list[Route]) -> pd.DataFrame:
         if p.empty:
             continue
         mid = sum(r.stretch) / 2
-        near = p.assign(d=(p.m - mid).abs()).sort_values("d").drop_duplicates(["trip_id", "date"])
+        # ties (a stale report repeated in several snapshots) go to the earliest snapshot, whatever the pandas version
+        near = p.assign(d=(p.m - mid).abs()).sort_values(["d", "t"], kind="stable").drop_duplicates(["trip_id", "date"])
         rows.append(near.groupby("slot").size().rename("trips").reset_index().assign(key=r.key))
     if not rows:  # no trip seen at all: an empty table whose hour column can still be joined on
         return pd.DataFrame({"slot": pd.Series(dtype=pos.slot.dtype), "trips": pd.Series(dtype=int), "key": pd.Series(dtype=object)})
