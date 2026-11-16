@@ -97,7 +97,7 @@ fleet_series = "{series} ({pct}% of positions, {k} vehicles)"
 # How each statement of the ledger was obtained.
 [method]
 length = "Axis polyline length (projected CRS)."
-traffic = "Identify on the municipal routing network at stations along the axis."
+traffic = "Identify on the municipal routing network at stations along the axis, counting only the edges that run along the street, not those of a crossing street."
 free_width = "Transects every {step} m; widths read from mapped polygons only."
 parking_strips = "Mapped area, not parked vehicles."
 transit = "Trips counted at a reference stop per direction; timetable, not observed operation."
@@ -109,7 +109,7 @@ encounters = "Presence-interval overlap at constant speed from scheduled times; 
 delay = "Occupancy (Little's law): GPS positions on the stretch and on two control stretches of {cm} m, {gap} m before and after it along each route; the peak to off-peak ratio depends neither on the number of buses nor on how often positions were recorded. Confidence intervals by resampling whole days ({reps} replicates)."
 delay_seconds = "Seconds per passage: positions on the stretch divided by the passages per second, counted as trips seen within {reach} m of the stretch, only in the hours whose records are never more than {gap} min apart."
 occurrences = "Nearest-street attribution of geolocated open-data records."
-area_pattern = "Stations every {step} m on every street axis with buses, measured with the scan's own transect half-width and tolerances, not the case street's; traffic direction from the routing network at one station per street."
+area_pattern = "Stations every {step} m on every street axis with buses, measured with the scan's own transect half-width and tolerances, not the case street's; traffic direction from the routing network's edges along each street, at three of its stations, by majority."
 sidewalks = "Profiles every {step} m; in each, the widest piece of mapped sidewalk between the kerb and the buildings. Left out: profiles within {j} m of a junction or an end of the street, where the street widens, medians and islands between carriageways, and sidewalks that end under an arcade or a balcony."
 sidewalks_narrow = "Runs of consecutive profiles with the sidewalk below {free} m, each compared with the width section 4.3.3 admits for its length."
 sidewalks_area = "The same method on every street axis in the area, with profiles every {step} m; private roads are left out."
@@ -259,3 +259,9 @@ yes = "yes"
 no = "no"
 next = "Next step"
 next_body = "To make the case of one of these streets, with its stretches, check points and caveats:"
+
+[dossier]
+annex = "Annex C: facts cited"
+annex_intro = "Copied unchanged from the case's findings ledger: the facts the text cites and those they rest on."
+method = "Method"
+caveat = "Caveats"

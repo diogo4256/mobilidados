@@ -81,12 +81,17 @@ def test_identify_asks_for_a_map_extent_with_the_aspect_of_the_image(monkeypatch
 
     def http_get(url, params=None):
         sent.update(url=url, params=params)
-        return Response({"results": [{"attributes": {"Oneway": "Traversable"}}, {"attributes": {"Oneway": "Prohibited"}}]})
+        line = {"paths": [[[0, 0], [1, 0]]]}
+        return Response(
+            {"results": [{"attributes": {"Oneway": "Traversable"}, "geometry": line}, {"attributes": {"Oneway": "Prohibited"}}]}
+        )
 
     monkeypatch.setattr(arcgis, "http_get", http_get)
     attrs = arcgis.identify("https://gis.example.org/MapServer/identify", 1000.0, 2000.0, 3763, "all:203", tolerance=3, half_extent=160.0)
 
-    assert attrs == [{"Oneway": "Traversable"}, {"Oneway": "Prohibited"}]
+    # each feature with its geometry, None where the service gives none
+    assert attrs == [{"Oneway": "Traversable", "_geometry": {"paths": [[[0, 0], [1, 0]]]}}, {"Oneway": "Prohibited", "_geometry": None}]
+    assert sent["params"]["returnGeometry"] == "true"
     p = sent["params"]
     width, height, _dpi = map(int, p["imageDisplay"].split(","))
     x0, y0, x1, y1 = map(float, p["mapExtent"].split(","))

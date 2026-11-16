@@ -344,10 +344,11 @@ def stage_area(r: Run) -> None:
     env = src.envelope
     (bx0, bx1), (by0, by1) = Transformer.from_crs(src.envelope_sr, r.case.crs, always_xy=True).transform([env[0], env[2]], [env[1], env[3]])
     shapes, n_trips, route_of = area_scan.bus_shapes(r.feed, t.service_date, r.case.crs, (bx0 - 50, by0 - 50, bx1 + 50, by1 + 50))
-    stations = area_scan.scan(list(r.axes(a.axes).items()), geometry.Profiler(polys), roles, shapes, n_trips, route_of, step=a.step_m)
+    axes = r.axes(a.axes)
+    stations = area_scan.scan(list(axes.items()), geometry.Profiler(polys), roles, shapes, n_trips, route_of, step=a.step_m)
     r.save("area_stations", stations)
     cache = IdentifyCache(r.case, a.identify_source, offline=r.offline) if a.identify_source else None
-    ranked = area_scan.rank_streets(stations, a.step_m, a.threshold_m, a.reference_m, cache, r.cfg.network)
+    ranked = area_scan.rank_streets(stations, a.step_m, a.threshold_m, a.reference_m, cache, r.cfg.network, axes)
     if cache:
         cache.save()
     r.save("area_streets", ranked)

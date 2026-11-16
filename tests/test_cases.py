@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from mobilidados.config import Case
+from mobilidados.dossier import annex, split
 from mobilidados.lint import lint_text
 from mobilidados.sources import check_cache
 
@@ -43,7 +44,6 @@ def test_results_reproduce(case_dir, tmp_path):
 
 
 UNIT = re.compile(r"[+−-]?\d+(?:,\d+)?(?:–\d+(?:,\d+)?)?(?=\s?(?:m\b|%|s\b|km/h|lugares|encontros|viagens|veículos|perfis))")
-ANNEX = "\n## Anexo C"
 
 
 @pytest.mark.parametrize("case_dir", [c for c in CASES if (c / "dossier.md").exists()], ids=lambda p: p.name)
@@ -53,22 +53,19 @@ def test_a_dossier_stands_alone_and_says_nothing_the_results_do_not(case_dir):
     number the ledger gives, or one of the check points (``check_points.csv``) its Annex A lists."""
     case = Case.load(case_dir)
     text = (case_dir / "dossier.md").read_text(encoding="utf-8")
-    body, annex = text.split(ANNEX)
+    body, annex_text = split(text, case.lang)
     # citations may give where a source is published (Annex B); nothing may send the reader to the case's own files
     cited_sources = body.split("\n## Anexo B")[1]
     assert not re.search(r"\]\((?!results/figures/)|\.csv|\.json|findings\.md|mobilidados", text), "a link or a file name"
-    assert not re.search(r"https?://", body.split("\n## Anexo B")[0] + annex), "an address outside the citations"
+    assert not re.search(r"https?://", body.split("\n## Anexo B")[0] + annex_text), "an address outside the citations"
     assert re.search(r"https?://", cited_sources), "the sources are cited with where they are published"
     assert lint_text(body, case.lang) == []
     findings = {f["id"]: f for f in json.loads((case.results_dir / "findings.json").read_text(encoding="utf-8"))["findings"]}
     cited = {i.strip(" `") for group in re.findall(r"\[[MDIP] ([^\]]+)\]", body) for i in group.split(",")}
-    in_annex = set(re.findall(r"^- \*\*\[[MDIP]\] `([^`]+)`\*\*", annex, flags=re.M))
-    assert cited <= in_annex <= set(findings)
-    for fid in in_annex:  # word for word
-        f = findings[fid]
-        assert f"`{fid}`** {f['statement']}" in annex
-        assert not f["method"] or f"*Método:* {f['method']}" in annex
-        assert not f["caveat"] or f"*Reservas:* {f['caveat']}" in annex
+    assert cited <= set(findings)
+    # Annex C is what `mobilidados dossier` writes from the ledger: the cited facts and those they rest on, word for word
+    expected = annex(body, findings, case.lang)
+    assert annex_text == expected, "Annex C differs from the ledger: run `mobilidados dossier` on the case"
     ledger = (case.results_dir / "findings.md").read_text(encoding="utf-8")
     printed = {x.lstrip("+−-") for x in UNIT.findall(ledger)}
     printed |= {p for x in printed for p in x.split("–")}  # each end of a range the ledger gives

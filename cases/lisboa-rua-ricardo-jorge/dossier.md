@@ -185,7 +185,7 @@ Copiados, sem alterações, da lista de factos apurados do caso: os que o texto 
 - **[M] `length`** O eixo da rua tem 209,25 m.  
   *Método:* Comprimento do eixo da rua, em coordenadas projetadas.
 - **[M] `traffic`** Segundo a rede viária da Câmara, a rua tem dois sentidos: em 8 de 8 pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos.  
-  *Método:* Consulta à rede viária municipal em pontos ao longo do eixo.
+  *Método:* Consulta à rede viária municipal em pontos ao longo do eixo, contando só as vias que seguem a rua, e não as de uma rua que a cruza.
 - **[M] `transit`** Segundo o horário, as carreiras 744, 46B passam nesta rua. Em 2026-10-27: 56 viagens SO→NE e 76 viagens NE→SO (no máximo 4 e 6 por hora).  
   *Método:* Viagens contadas numa paragem de referência em cada sentido; é o horário, não a operação observada.
 - **[D] `vehicle_carris_man_city_gold_body`** Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Carroçaria com 2,50 m de largura (ficha da frota da Carris (carris.pt › Descubra › Frota), veículo 2643; os 12 modelos de autocarro standard que a Carris publica têm 2,5 a 2,6 m de largura (consultado em 2026-11-15), pelo que este é o mais estreito).
@@ -198,7 +198,7 @@ Copiados, sem alterações, da lista de factos apurados do caso: os que o texto 
   *Método:* Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de 2000 m do troço, só nas horas em que os registos nunca distam mais de 12 min.  
   *Reservas:* O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s; o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença.
 - **[M] `area_pattern`** Das 69 ruas da zona com autocarros no horário, 2 têm dois sentidos e estacionamento dos dois lados, com menos de 5,5 m de largura livre em pelo menos 30 m (Rua Ricardo Jorge e Rua Teixeira de Pascoais); destas, 1 com autocarros nos dois sentidos: Rua Ricardo Jorge.  
-  *Método:* Perfis a cada 3 m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua.  
+  *Método:* Perfis a cada 3 m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido nas vias da rede viária que seguem cada rua, em três dos seus perfis, por maioria.  
   *Reservas:* Os limiares (5,5 m de largura livre, 30 m de extensão) são parâmetros escolhidos para esta análise, não valores de um documento técnico.
 - **[P] `vehicle_carris_man_city_gold_mirrors`** Veículo de referência: Carris MAN 18.310 / Caetano City Gold (12 m). Largura com espelhos assumida em 2,90 m (pressuposto: não há largura oficial com espelhos; +0,40 m como na ficha do Mercedes-Benz eCitaro).
 - **[P] `vehicle_car_typical_body`** Veículo de referência: Ligeiro típico. Carroçaria com 1,80 m de largura (pressuposto: largura típica de um ligeiro europeu; a validar no local).

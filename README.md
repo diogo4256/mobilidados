@@ -135,7 +135,8 @@ flowchart LR
 | `screening` | `screening.md`: as ruas da zona onde olhar, para os autocarros e para os passeios, e como fazer o seu caso |
 
 E, a partir dos resultados: `mobilidados draft CASO --topic buses|sidewalks` escreve uma carta
-(`results/letter-<tema>.md`); `mobilidados screen CASO` refaz só as etapas da zona e o rastreio.
+(`results/letter-<tema>.md`); `mobilidados screen CASO` refaz só as etapas da zona e o rastreio; `mobilidados dossier CASO` reescreve o anexo
+de factos de um dossier escrito à mão para o caso, como [o do exemplo](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/dossier.md).
 
 ## O que (ainda) não faz
 

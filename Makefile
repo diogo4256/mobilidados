@@ -1,6 +1,6 @@
 CASE ?= cases/lisboa-rua-ricardo-jorge
 
-.PHONY: install test lint reproduce fetch verify
+.PHONY: install test lint reproduce fetch verify dossier
 
 install:            ## dev environment with the optional AI tools
 	uv sync --extra agents
@@ -22,3 +22,7 @@ verify:
 reproduce: fetch verify   ## re-run a case and fail if its inputs (the lock) or its committed results changed
 	uv run mobilidados run $(CASE)
 	git diff --exit-code -- $(CASE)/sources.lock.json $(CASE)/results
+
+dossier:            ## rewrite a case's dossier Annex C from its ledger and render dossier.pdf (pandoc + Playwright)
+	uv run mobilidados dossier $(CASE)
+	scripts/dossier/build.sh $(CASE)

@@ -56,8 +56,12 @@ its uncertainty combines both: report ranges, not single decimals, when this mat
 ## Traffic direction (`direction.py`)
 
 An ArcGIS `identify` on the municipal routing network at `direction.stations_s` returns, per network edge and
-direction, whether travel is allowed. The street is two-way if some edge is open in both directions; the ledger
-also says at how many of the stations checked an edge is open in both directions.
+direction, whether travel is allowed, with each edge's geometry. An identify answers with every edge within its
+tolerance, and near a junction that includes the edges of the crossing street: only the edges that run along the
+street count, within `direction.MAX_ANGLE` (30°) of its direction and `direction.MAX_DIST_M` (6 m) of the station.
+Reading every edge made a one-way street next to a two-way crossing read as two-way (Lisbon's Rua de São Bento did).
+The street is two-way if one of its edges is open in both directions; the ledger also says at how many of the
+stations checked that is so. Answers cached before the geometry was kept are asked again (offline, the run stops).
 
 ## Scheduled buses (`gtfs.py`)
 
@@ -206,8 +210,8 @@ in `area_scan.scan`), with its own transect half-width and tolerances (`half`, `
 buses, buses on the service day, whether buses run in both directions, median and 10th-percentile free width, share of
 stations with parking on both sides, metres below `area_scan.reference_m`, metres combining two-sided parking
 with a free width below `area_scan.threshold_m`, and, for streets with enough metres below
-`area_scan.reference_m` (`min_below_ref_m` in `area_scan.rank_streets`), the traffic direction, read at one station
-per street. Only two-way streets share the case's pattern: a one-way street needs a single
+`area_scan.reference_m` (`min_below_ref_m` in `area_scan.rank_streets`), the traffic direction, read the
+same way at a quarter, half and three quarters of its narrowest stations, by majority (a tie, or no reading, is `?`). Only two-way streets share the case's pattern: a one-way street needs a single
 lane. The thresholds are parameters of the analysis, not values from a design document.
 
 ## Sidewalks (`sidewalks.py`)

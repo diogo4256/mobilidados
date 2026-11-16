@@ -61,8 +61,9 @@ def no_network(*args, **kwargs):
 
 def test_offline_an_uncached_point_is_an_error_and_a_cached_one_needs_no_network(make_case, monkeypatch):
     monkeypatch.setattr(arcgis, "identify", no_network)
-    _, cache = identify_cache(make_case, offline=True, cached={"1000,2000": [{"Oneway": "Traversable"}]})
-    assert cache.get(1000.2, 1999.8) == [{"Oneway": "Traversable"}]  # keyed by the rounded coordinates
+    edge = {"Oneway": "Traversable", "_geometry": None}
+    _, cache = identify_cache(make_case, offline=True, cached={"1000,2000": [edge]})
+    assert cache.get(1000.2, 1999.8) == [edge]  # keyed by the rounded coordinates
     with pytest.raises(MobilidadosError, match=r"identify 1500,2000 is not cached"):
         cache.get(1500, 2000)
     with pytest.raises(MobilidadosError, match=r"identify 1000,2000@5 is not cached"):
@@ -84,21 +85,37 @@ def test_an_unused_cache_does_not_create_its_file(make_case):
     assert not raw_path(case, "identify").exists()
 
 
+def test_an_answer_cached_without_geometries_is_asked_again_and_offline_it_is_an_error(make_case, monkeypatch):
+    old = {"1000,2000": [{"Oneway": "Traversable"}]}  # cached before identify kept the edges' geometry
+    monkeypatch.setattr(arcgis, "identify", no_network)
+    case, offline = identify_cache(make_case, offline=True, cached=old)
+    with pytest.raises(MobilidadosError, match="was cached without the edges' geometry and --offline is set"):
+        offline.get(1000, 2000)
+    fresh = [{"Oneway": "Traversable", "_geometry": {"paths": [[[0, 0], [1, 0]]]}}]
+    monkeypatch.setattr(arcgis, "identify", lambda *a: fresh)
+    online = IdentifyCache(case, "identify")
+    assert online.get(1000, 2000) == fresh
+    assert online.dirty
+
+
 def test_a_new_point_is_fetched_once_and_saved(make_case, monkeypatch):
     calls = []
 
     def identify(url, x, y, sr, layers, tolerance):
         calls.append((url, x, y, sr, layers, tolerance))
-        return [{"Oneway": "Prohibited"}]
+        return [{"Oneway": "Prohibited", "_geometry": None}]
 
     monkeypatch.setattr(arcgis, "identify", identify)
     case, cache = identify_cache(make_case, cached={"1000,2000": []})
     assert cache.get(1000, 2000) == []
-    assert cache.get(1500, 2500) == [{"Oneway": "Prohibited"}]
-    assert cache.get(1500, 2500) == [{"Oneway": "Prohibited"}]
+    assert cache.get(1500, 2500) == [{"Oneway": "Prohibited", "_geometry": None}]
+    assert cache.get(1500, 2500) == [{"Oneway": "Prohibited", "_geometry": None}]
     assert calls == [("https://example.org/MapServer/identify", 1500, 2500, 3763, "all:1", 3)]
     cache.save()
-    assert json.loads(raw_path(case, "identify").read_text(encoding="utf-8")) == {"1000,2000": [], "1500,2500": [{"Oneway": "Prohibited"}]}
+    assert json.loads(raw_path(case, "identify").read_text(encoding="utf-8")) == {
+        "1000,2000": [],
+        "1500,2500": [{"Oneway": "Prohibited", "_geometry": None}],
+    }
 
     cache.get(1500, 2500, tolerance=8)  # the tolerance is passed on and part of the key
     assert calls[-1][-1] == 8

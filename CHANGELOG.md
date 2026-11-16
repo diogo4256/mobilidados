@@ -35,6 +35,8 @@ count or collect anything, and where the data stop, it helps them ask the body t
   declared; one request (that the services check and act, or a request for documents under Law 26/2016, articles 12
   and 15); the attachments, with the points or stretches where a technician can measure. Every statement is the
   ledger's own, and the draft is linted before it is written.
+- `mobilidados dossier CASE` rewrites a dossier's Annex C from the ledger, in the case's language, and
+  `make dossier` also renders the PDF (`scripts/dossier/`: pandoc and Playwright).
 - **Rua Ricardo Jorge dossier** (`cases/lisboa-rua-ricardo-jorge/dossier.md`, and its PDF): the case written up for
   the Câmara, every number with its finding id and grade, the comparisons that hold within the cartography's error led
   with, and a table of what the data do not show and who can provide it. It stands alone, to be sent as a PDF: no
@@ -56,6 +58,14 @@ count or collect anything, and where the data stop, it helps them ask the body t
 
 ### Fixed
 
+- **Traffic direction read on the street's own edges.** A routing-network identify answers with every edge within its
+  tolerance, and near a junction that includes the crossing street's: reading them all, a one-way street next to a
+  two-way crossing read as two-way (city-wide, Rua de São Bento, Campo Grande's side road, Avenida de Madrid and Rua
+  Cupertino de Miranda did). Identify now returns each edge's geometry, and only the edges within 30° of the street
+  and 6 m of the point count (`direction.edges_at`). The area scan reads each street at three of its narrowest
+  stations, by majority, instead of one. Answers cached without geometry are asked again. In Rua Ricardo Jorge
+  nothing in the ledger changes (8 of 8 points two-way; the area finding the same); three streets of its area table
+  with no narrow two-sided parking, partly divided, now read two-way by majority.
 - Ledger caveats state what they used to point to: the width-budget caveat gives the margin if parked vehicles stick
   out of the strips by each overhang tested; the time caveats no longer name their tables.
 - The free-width figure no longer scales to the cross streets at the ends of the axis (up to 50 m), which flattened

@@ -246,9 +246,11 @@ attribution = "Example City Council"
 """
 PINCH = (60.0, 70.0, 0.5)  # with sidewalks=True, a building narrows the north sidewalk to 0.5 m from x = 60 to 70 m
 
+# the routing network's edge under Rua do Teste (and Rua Larga, 80 m north), as identify returns it, with its geometry
+ALONG = {"_geometry": {"paths": [[[ORIGIN[0] - 10, ORIGIN[1]], [ORIGIN[0] + LENGTH + 10, ORIGIN[1]]]]}}
 TWO_WAY = [
-    {"[EID]": "1", "[Direction]": "Along", "Oneway": "Traversable"},
-    {"[EID]": "1", "[Direction]": "Against", "Oneway": "Traversable"},
+    {"[EID]": "1", "[Direction]": "Along", "Oneway": "Traversable"} | ALONG,
+    {"[EID]": "1", "[Direction]": "Against", "Oneway": "Traversable"} | ALONG,
 ]
 
 

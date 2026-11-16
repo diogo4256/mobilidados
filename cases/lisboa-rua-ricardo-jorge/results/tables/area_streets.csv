@@ -24,7 +24,7 @@ Alameda das Comunidades Portuguesas,1269,208,False,208 705 722 744 783,11.7,4.44
 Rua Alexandre Rey Colaço,186,21,False,46B,5.53,5.49,0,177,0,one-way
 Rua Jorge Afonso,228,59,False,52B 731,5.76,3.91,0,159,0,one-way
 Campo Grande,4929,333,False,206 207 45B 46B 701 717 727 731 732 735 736 738 744 747 749 750 754 755 767 778 783 796 798,12.92,8.86,0,144,0,one-way
-Rua Sarmento de Beires,834,29,False,49B,10.08,5.73,28,141,0,one-way
+Rua Sarmento de Beires,834,29,False,49B,10.08,5.73,28,141,0,two-way
 Rua Sousa Lopes,870,134,True,52B 731 749,10.63,6.32,6,129,0,one-way
 Rua Domingos Bontempo,156,21,False,46B,5.51,5.46,0,120,0,one-way
 Rua João Villaret,144,29,False,49B,4.63,4.57,0,117,0,one-way
@@ -32,10 +32,10 @@ Avenida Cinco de Outubro,345,17,False,749,11.33,6.08,0,63,0,one-way
 Rua Carlos Reis,120,59,False,731,5.3,3.38,0,63,0,one-way
 Rua João Palma Ferreira,384,128,True,208 31B 32B 755 794,10.6,5.37,0,63,0,one-way
 Rua Guilhermina Suggia,288,72,False,727,6.61,6.46,66,60,0,two-way
-Avenida Dom Rodrigo da Cunha,816,179,True,46B 705 708 722 755,13.21,9.71,51,48,0,one-way
+Avenida Dom Rodrigo da Cunha,816,179,True,46B 705 708 722 755,13.21,9.71,51,48,0,two-way
 Avenida das Forças Armadas,4014,43,False,207 46B 52B 701 727 731 732 736 738 744 749 754 783 798,11.78,9.1,0,48,0,one-way
 Avenida do Rio de Janeiro,1011,294,True,46B 717 731 744 750 755 783,12.89,10.09,45,39,0,two-way
-Rua Pardal Monteiro,435,346,True,208 31B 32B 755 794,14.16,6.65,0,39,0,one-way
+Rua Pardal Monteiro,435,346,True,208 31B 32B 755 794,14.16,6.65,0,39,0,two-way
 Praça de Alvalade,594,140,False,206 735 736 755 767,11.34,7.02,0,33,0,one-way
 Rua Carlos Mayer,213,21,False,46B 744,9.77,6.49,21,33,0,two-way
 Rua Manuel Marques,327,83,False,206 45B 798,6.91,6.49,18,33,0,one-way

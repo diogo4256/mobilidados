@@ -46,14 +46,14 @@
   "area_network_identify": {
     "files": {
       "area_network_identify.json": {
-        "bytes": 34530,
-        "sha256": "0f584f1874ef4dabdbae6bf1045419c96005b4cdd7e35043c4b01f833dd34840"
+        "bytes": 244144,
+        "sha256": "9680780886790bb8f16c621015a5449ed3255f01ed09e3bdb67098b904f3685d"
       }
     },
     "kind": "arcgis_identify",
     "layers": "all:203",
     "licence": "not stated (Lisboa Interativa public viewer, guest access)",
-    "retrieved_utc": "2026-10-24T15:49:12+00:00",
+    "retrieved_utc": "2026-11-16T12:41:19+00:00",
     "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
   },
   "area_sidewalks": {
@@ -185,14 +185,14 @@
   "network_identify": {
     "files": {
       "network_identify.json": {
-        "bytes": 3860,
-        "sha256": "71a5fe259fc789c008d92691732c6ae67f5f8a94cfe1e54ab2c8a99cce6e6d05"
+        "bytes": 6740,
+        "sha256": "75fe6b0118a595a5e230d84bbe60398e0c728c6e93ded997094522d5931ef382"
       }
     },
     "kind": "arcgis_identify",
     "layers": "all:203",
     "licence": "not stated (Lisboa Interativa public viewer, guest access)",
-    "retrieved_utc": "2026-10-24T15:49:12+00:00",
+    "retrieved_utc": "2026-11-16T12:38:21+00:00",
     "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
   },
   "street_axes": {

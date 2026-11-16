@@ -55,8 +55,13 @@ def query_layer(
     }
 
 
+GEOMETRY = "_geometry"  # the key under which ``identify`` keeps each feature's geometry beside its attributes
+
+
 def identify(url: str, x: float, y: float, sr: int, layers: str, tolerance: float, half_extent: float = 100) -> list[dict[str, Any]]:
-    """Attributes of the features within ``tolerance`` pixels of a point (MapServer identify)."""
+    """The features within ``tolerance`` pixels of a point (MapServer identify): each feature's attributes, with its
+    geometry (ESRI JSON, ``None`` if the service gives none) under ``GEOMETRY``. The geometry tells the features of the
+    street asked about from those of a street crossing it at that point."""
     half_height = half_extent * (IMAGE_HEIGHT_PX / IMAGE_WIDTH_PX)  # the extent has the image's aspect ratio
     ext = f"{x - half_extent},{y - half_height},{x + half_extent},{y + half_height}"
     data = _json(
@@ -69,11 +74,11 @@ def identify(url: str, x: float, y: float, sr: int, layers: str, tolerance: floa
             "tolerance": tolerance,
             "mapExtent": ext,
             "imageDisplay": f"{IMAGE_WIDTH_PX},{IMAGE_HEIGHT_PX},{IMAGE_DPI}",
-            "returnGeometry": "false",
+            "returnGeometry": "true",
             "f": "json",
         },
     )
-    return [r["attributes"] for r in data.get("results", [])]
+    return [r["attributes"] | {GEOMETRY: r.get("geometry")} for r in data.get("results", [])]
 
 
 # --- ESRI JSON geometry -> shapely --------------------------------------------------------------

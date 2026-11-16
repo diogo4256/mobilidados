@@ -17,9 +17,10 @@ import shapely
 from pyproj import Transformer
 from shapely import STRtree
 from shapely.geometry import LineString
+from shapely.geometry.base import BaseGeometry
 
 from .config import Network
-from .direction import directions, edges_at
+from .direction import directions, edges_at, majority, tangent
 from .geometry import MIN_STRIP_M, Profiler
 from .gtfs import Feed, active_service_ids
 from .sources import IdentifyCache
@@ -129,10 +130,13 @@ def rank_streets(
     reference: float,
     cache: IdentifyCache | None,
     net: Network | None,
+    axes: dict[str, BaseGeometry] | None = None,
     min_bus_m: float = 45,
     min_below_ref_m: float = 30,
 ) -> pd.DataFrame:
-    """One row per street with buses: free width, two-sided parking and, for the narrowest, the traffic direction."""
+    """One row per street with buses: free width, two-sided parking and, for the narrowest, the traffic direction,
+    read on the street's own edges (``direction.edges_at``) at a quarter, half and three quarters of its narrow
+    stations, by majority (``direction.majority``)."""
     out = []
     for name, g in st.groupby("street"):
         v = g.dropna(subset=["free_width_m"])
@@ -152,10 +156,14 @@ def rank_streets(
             "metres_with_pattern": round(len(pattern) * step),
             "traffic": "",
         }
-        if cache is not None and net is not None and r[f"metres_below_{reference:g}m"] >= min_below_ref_m:
-            ref = pattern if len(pattern) else v.nsmallest(max(1, len(v) // 2), "free_width_m")
-            q = ref.iloc[len(pattern) // 2 if len(pattern) else 0]
-            r["traffic"] = directions(pd.DataFrame(edges_at(cache, net, q.x, q.y)), net.open_value)
+        if cache is not None and net is not None and axes is not None and r[f"metres_below_{reference:g}m"] >= min_below_ref_m:
+            ref = pattern if len(pattern) else v.nsmallest(max(1, len(v) // 2), "free_width_m").sort_index()
+            readings = []
+            for i in sorted({int(f * (len(ref) - 1) + 0.5) for f in (0.25, 0.5, 0.75)}):
+                q = ref.iloc[i]
+                edges = edges_at(cache, net, q.x, q.y, tangent(axes[name], q.x, q.y))
+                readings.append(directions(pd.DataFrame(edges, columns=["edge", "direction", "status"]), net.open_value))
+            r["traffic"] = majority(readings)
         out.append(r)
     below = f"metres_below_{reference:g}m"
     columns = ["street", "metres_with_buses", "buses_per_day", "buses_both_directions", "routes", "free_width_median_m",

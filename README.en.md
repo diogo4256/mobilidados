@@ -131,7 +131,8 @@ flowchart LR
 | `screening` | `screening.md`: the streets of the area to look at, for buses and for sidewalks, and how to make their case |
 
 And, from the results: `mobilidados draft CASE --topic buses|sidewalks` writes a letter (`results/letter-<topic>.md`);
-`mobilidados screen CASE` re-runs only the area stages and the screening.
+`mobilidados screen CASE` re-runs only the area stages and the screening; `mobilidados dossier CASE` rewrites the
+annex of facts of a dossier written by hand for the case, as [the example's](https://github.com/diogo4256/mobilidados/blob/main/cases/lisboa-rua-ricardo-jorge/dossier.md).
 
 ## What it does not do (yet)
 

@@ -72,6 +72,9 @@ def parser() -> argparse.ArgumentParser:
                    help="review: ask the services to check and act; documents: request documents under Law 26/2016")  # fmt: skip
     p.add_argument("--out", type=Path, help="default: results/letter-<topic>.md in the case")
 
+    p = sub.add_parser("dossier", help="rewrite the Annex C of a case's dossier.md (the facts it cites) from its ledger")
+    p.add_argument("case")
+
     p = sub.add_parser("check-claims", help="AI fact-check of a draft against the case ledger and source texts")
     p.add_argument("case")
     p.add_argument("draft", type=Path)
@@ -178,6 +181,10 @@ def _dispatch(a: argparse.Namespace) -> int:
         for i in issues:
             print(f"{i.line}:{i.col}  {i.rule:14s} {i.message}\n      {i.excerpt}")
         return 1 if issues else 0
+    elif a.cmd == "dossier":
+        from .dossier import write as write_dossier
+
+        print(f"wrote the Annex C of {write_dossier(Case.load(a.case))}")
     elif a.cmd == "check-claims":
         return int(_agents("claim_checker").main(Case.load(a.case), a.draft, a.corpus, a.out))
     elif a.cmd == "extract-standard":

@@ -253,9 +253,12 @@ class IdentifyCache:
     def get(self, x: float, y: float, tolerance: float | None = None) -> list[dict[str, Any]]:
         tol = self.src.tolerance if tolerance is None else tolerance
         key = f"{x:.0f},{y:.0f}" + ("" if tol == self.src.tolerance else f"@{tol:g}")
-        if key not in self.data:
+        # an answer cached before identify kept geometries cannot tell a street's edges from a crossing street's: ask again
+        stale = key in self.data and any(arcgis.GEOMETRY not in e for e in self.data[key])
+        if key not in self.data or stale:
             if self.offline:
-                raise MobilidadosError(f"identify {key} is not cached and --offline is set")
+                why = "was cached without the edges' geometry" if stale else "is not cached"
+                raise MobilidadosError(f"identify {key} {why} and --offline is set: run without --offline to query it")
             self.data[key] = arcgis.identify(self.src.url, x, y, self.src.sr, self.src.layers, tol)
             self.dirty = True
         return self.data[key]

@@ -97,7 +97,7 @@ fleet_series = "{series} ({pct}% das posições, {k} veículos)"
 # Como cada afirmação do registo foi obtida.
 [method]
 length = "Comprimento do eixo da rua, em coordenadas projetadas."
-traffic = "Consulta à rede viária municipal em pontos ao longo do eixo."
+traffic = "Consulta à rede viária municipal em pontos ao longo do eixo, contando só as vias que seguem a rua, e não as de uma rua que a cruza."
 free_width = "Perfis transversais a cada {step} m; as larguras são lidas só nos polígonos cartografados."
 parking_strips = "Área cartografada, não carros estacionados."
 transit = "Viagens contadas numa paragem de referência em cada sentido; é o horário, não a operação observada."
@@ -109,7 +109,7 @@ encounters = "Sobreposição dos intervalos em que cada autocarro está na rua, 
 delay = "Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de {cm} m, a {gap} m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros ({reps} réplicas)."
 delay_seconds = "Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de {reach} m do troço, só nas horas em que os registos nunca distam mais de {gap} min."
 occurrences = "Cada ocorrência georreferenciada dos dados abertos é atribuída ao eixo de rua mais próximo."
-area_pattern = "Perfis a cada {step} m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua."
+area_pattern = "Perfis a cada {step} m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido nas vias da rede viária que seguem cada rua, em três dos seus perfis, por maioria."
 sidewalks = "Perfis a cada {step} m; em cada um, a parte mais larga do passeio cartografado entre o lancil e as construções. Ficam de fora os perfis a menos de {j} m de um cruzamento ou do fim da rua, onde a rua alarga, os separadores e as ilhas entre faixas de rodagem, e os passeios que acabam sob uma arcada ou uma varanda."
 sidewalks_narrow = "Troços seguidos de perfis com o passeio abaixo de {free} m, cada um comparado com a largura que a secção 4.3.3 admite para o seu comprimento."
 sidewalks_area = "O mesmo método em todos os eixos de rua da zona, com perfis a cada {step} m; ficam de fora as vias privadas."
@@ -257,3 +257,9 @@ yes = "sim"
 no = "não"
 next = "Próximo passo"
 next_body = "Para fazer o caso de uma destas ruas, com os seus troços, pontos de verificação e reservas:"
+
+[dossier]
+annex = "Anexo C: factos citados"
+annex_intro = "Copiados, sem alterações, da lista de factos apurados do caso: os que o texto cita e aqueles em que estes se apoiam."
+method = "Método"
+caveat = "Reservas"

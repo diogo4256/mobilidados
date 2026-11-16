@@ -21,7 +21,8 @@ service no longer serves it, and keeps the inputs that may be redistributed in a
   GitHub reports to the maintainers, means a source changed, moved or did not answer. Run it by hand too before
   using a case in a letter or an article.
   The routing-network answers (`arcgis_identify` sources) are not checked: they are queried point by point during
-  a run. A `git_archive` source is fetched again at its pinned commit (the whole archive at that commit, about
+  a run. Each answer keeps the geometry of its edges, which tells a street's own edges from a crossing street's; an
+  answer cached without it (before 0.5) is asked again on the next run, which then updates the lock. A `git_archive` source is fetched again at its pinned commit (the whole archive at that commit, about
   1.3 GB for Lisbon's, which takes a few minutes) and extracted again: `same` means the archive still holds that
   commit with the same files. `mobilidados fetch` refuses, in the same way, files that differ from the lock, and writes nothing;
   `fetch --refresh` takes them deliberately.

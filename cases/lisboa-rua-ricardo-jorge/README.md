@@ -12,6 +12,8 @@ programados se cruzem em sentidos opostos?
 what they do not, and how each gap can be closed without observation by the sender. It stands alone: no links and no
 file names; the facts it cites are in its Annex C, copied from the ledger word for word. `tests/test_cases.py` fails if
 that stops being true, or if it gives a number the ledger (or, for its check points, `check_points.csv`) does not.
+After a run that changes the ledger, `make dossier CASE=cases/lisboa-rua-ricardo-jorge` rewrites Annex C
+(`mobilidados dossier`) and renders the PDF (`scripts/dossier/build.sh`, which needs pandoc and Playwright).
 
 ## Results
 
