@@ -14,6 +14,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from pyproj import Transformer
@@ -21,7 +22,22 @@ from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge, unary_union
 
-from . import area_scan, delay, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
+from . import (
+    appraisal,
+    appraisal_report,
+    area_scan,
+    delay,
+    direction,
+    encounters,
+    envelope,
+    figures,
+    geometry,
+    gtfs,
+    i18n,
+    ledger,
+    occurrences,
+    standards,
+)
 from .arcgis import to_line
 from .config import ArcgisQuery, Case, Config, GitArchive, HttpFiles, MobilidadosError
 from .sources import IdentifyCache, check_lock, check_pins, load_json, raw_path
@@ -273,6 +289,11 @@ def stage_delay(r: Run) -> None:
     placed = delay.place(pos, rts, r.case.crs, cfg.max_offset_m)
     for name, table in delay.analyse(placed, snaps, rts, cfg, r.axis, r.table("passings")).items():
         r.save(name, table)
+    # where along the stretch the excess sits, and whether buses there give way to oncoming ones (appraisal's attribution)
+    cuts = delay.parts(r.narrow_extents(), cfg.s_from, cfg.s_to)
+    r.save("delay_by_part", delay.by_part(pos, snaps, cuts, cfg, r.feed, t.routes, r.axis, r.case.crs))
+    fresh = placed[placed.age_s.abs() <= cfg.max_age_s]
+    r.save("delay_copresence", delay.copresence(delay.on_axis(fresh, rts, r.axis, r.case.crs), snaps, cuts, cfg))
 
 
 def stage_occurrences(r: Run) -> None:
@@ -323,6 +344,64 @@ def stage_standards(r: Run) -> None:
     r.save("standards_comparison", standards.compare(med, r.cfg.standards.compare))
 
 
+def stage_appraisal(r: Run) -> None:
+    a, dl, t, e = r.cfg.appraisal, r.cfg.delay, r.cfg.transit, r.cfg.envelope
+    if a is None or dl is None or t is None or e is None or not r.two_strips:
+        return
+    block_metres: dict[str, float] = {}
+    for x, z, block in r.narrow_extents():
+        block_metres[block] = block_metres.get(block, 0.0) + (z - x)
+    tables = {k: r.table(k) for k in ("delay_summary", "delay_by_part", "delay_copresence", "passings")}
+    holidays = sorted(set(dl.exclude_dates) | set(r.cfg.city.holidays))
+    m = appraisal.measured(tables, a, block_metres, dl.peak_hours, t.service_date.year, holidays)
+    for name, table in appraisal.appraise(a, m).items():
+        r.save(name, table)
+    r.save("appraisal_measured", pd.DataFrame(
+        [{"input": "excess_s", "low": m.excess_s[0], "central": m.excess_s[1], "high": m.excess_s[2]}]
+        + [{"input": f"attribution_{k}", "low": v[0], "central": v[1], "high": v[2]} for k, v in m.attribution.items()]
+        + [{"input": "peak_passages_per_working_day", "low": m.peak_passages_per_day, "central": m.peak_passages_per_day, "high": m.peak_passages_per_day},
+           {"input": "working_days_per_year", "low": m.working_days, "central": m.working_days, "high": m.working_days}]
+        + [{"input": f"metres_{k}", "low": v, "central": v, "high": v} for k, v in m.metres.items()]
+    ))  # fmt: skip
+    # the parking mapped around the street, as places at the central length of a place (occupancy is not known)
+    roles = r.cfg.cartography.roles()
+    park = unary_union(
+        [
+            g
+            for _, g in geometry.classed_polygons(
+                load_json(r.case, a_cartography(r))["features"], r.cfg.cartography.class_field, roles["parking"]
+            )
+        ]
+    )
+    stall = a.parameters["stall_m"].central
+    depth = float(r.table("summary_by_block").set_index("block").loc["all", ["strip_L_median", "strip_R_median"]].mean())
+    supply = {radius: park.intersection(r.axis.buffer(radius)).area / depth / stall for radius in (150, 300)}
+    vehicles = r.cfg.all_vehicles()
+    bus = vehicles[e.bus]
+    refs = (
+        [(row.document + ", p. " + str(row.page), float(row.value_m)) for row in r.table("standards_comparison").itertuples()]
+        if r.cfg.standards.compare
+        else []
+    )
+    one_side = r.cfg.profiles.parking_space_m
+    metres = max(m.metres.values())
+    places = (metres / max(one_side), metres / min(one_side))
+    lang = r.case.lang
+
+    def say(key: str, **kw: Any) -> str:
+        return i18n.t(f"appraisal.{key}", lang, **kw)
+
+    r.save("appraisal_feasibility", appraisal.feasibility(
+        a, r.table("without_parking"), envelope.widths(bus, bus, False), envelope.widths(bus, bus, True), refs, places, supply, say
+    ))  # fmt: skip
+    appraisal_report.write(r)
+
+
+def a_cartography(r: Run) -> str:
+    """The cartography that covers the surroundings: the area scan's if there is one, else the case's."""
+    return r.cfg.area_scan.cartography if r.cfg.area_scan else r.cfg.profiles.cartography
+
+
 def stage_figures(r: Run) -> None:
     figures.make_all(r)
 
@@ -341,6 +420,7 @@ STAGES: dict[str, Callable[[Run], None]] = {
     "occurrences": stage_occurrences,
     "area": stage_area,
     "standards": stage_standards,
+    "appraisal": stage_appraisal,
     "figures": stage_figures,
     "ledger": stage_ledger,
 }

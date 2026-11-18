@@ -1,0 +1,2 @@
+alternative,label,pv_cost,value_per_bus_hour,breakeven_bus_hours_per_year,breakeven_seconds_per_peak_passage,keeps_parking
+P,"prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento",1800.0,214.6,1.0862452699805316,0.8655340796657622,True

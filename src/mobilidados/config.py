@@ -395,6 +395,98 @@ class Delay(Model):
         return self
 
 
+class Parameter(Model):
+    """An appraisal input: a central value and the range it is tested over, with its grade and where it comes from."""
+
+    low: float
+    central: float
+    high: float
+    grade: Grade
+    unit: str = ""
+    label: str = Field(description="What it is, in the case's language")
+    source: str = Field(description="Where the value comes from, in the case's language")
+
+    @model_validator(mode="after")
+    def _in_order(self) -> Parameter:
+        if not self.low <= self.central <= self.high:
+            raise ValueError(f"{self.label}: needs low <= central <= high, not {self.low}, {self.central}, {self.high}")
+        return self
+
+
+class Option(Model):
+    """A way of giving the space of one parking strip back to the carriageway in some sections, at some hours."""
+
+    id: str = Field(pattern=r"^[A-Za-z0-9_]+$")
+    label: str
+    blocks: list[str] = Field(min_length=1, description="Blocks whose section with parking on both sides loses one side")
+    days: Literal["all", "working"] = "all"
+    hours: tuple[int, int] = Field((0, 24), description="Local clock hours [from, to) in which parking is not allowed")
+    parking_share: str | None = Field(None, description="Parameter: the part of a place's value lost in those hours (none: all of it)")
+    compliance: str = Field(description="Parameter: the share of drivers who keep the restriction")
+    signs: int = Field(ge=0, description="Vertical signs to put up (C15, with an additional panel for hours)")
+
+    @model_validator(mode="after")
+    def _hours(self) -> Option:
+        a, b = self.hours
+        if not 0 <= a < b <= 24:
+            raise ValueError(f"option {self.id}: hours must be 0 <= from < to <= 24, not {self.hours}")
+        return self
+
+
+class Note(Model):
+    """A statement of the feasibility study that is not computed: the law, a plan, a known gap."""
+
+    dimension: Literal["technical", "legal", "operational", "social", "evidence", "options"]
+    grade: Grade
+    text: str
+    source: str = ""
+
+
+class Alternative(Model):
+    """A measure whose effect the data cannot estimate: the appraisal gives the bus-hours a year it must save to pay for
+    itself, instead of a net present value it could not support."""
+
+    id: str = Field(pattern=r"^[A-Za-z0-9_]+$")
+    label: str
+    signs: int = Field(0, ge=0)
+    works: float = Field(0.0, ge=0, description="Other one-off cost (€)")
+    yearly: float = Field(0.0, ge=0, description="Recurring cost (€ a year)")
+    keeps_parking: bool = True
+
+
+REQUIRED_PARAMETERS = ("vot", "time_weight", "load_peak", "downstream", "bus_cost_h", "occupancy", "car_value",
+                       "sign_cost", "marking_cost_m", "enforcement_year", "stall_m")  # fmt: skip
+
+
+class Appraisal(Model):
+    """Feasibility and cost-benefit appraisal of the options (``mobilidados.appraisal``)."""
+
+    horizon_years: int = Field(10, ge=1)
+    discount_rate: float = Field(0.05, gt=0, lt=1)
+    discount_rates_tested: list[float] = [0.03, 0.07]
+    price_year: int
+    repaint_every_years: int = Field(5, ge=1)
+    draws: int = Field(20000, ge=1000)
+    seed: int = 1
+    significance: float = Field(0.01, gt=0, lt=1, description="p-value below which buses at a junction count as giving way")
+    parameters: dict[str, Parameter]
+    options: list[Option] = Field(min_length=1)
+    alternatives: list[Alternative] = []
+    notes: list[Note] = []
+    references: list[str] = Field([], description="The documents the values and notes come from, cited in full with their address")
+
+    @model_validator(mode="after")
+    def _references(self) -> Appraisal:
+        missing = [k for k in REQUIRED_PARAMETERS if k not in self.parameters]
+        missing += [f"{o.id}: {ref}" for o in self.options for ref in (o.parking_share, o.compliance) if ref and ref not in self.parameters]
+        if missing:
+            raise ValueError(f"appraisal: parameters missing: {missing}")
+        ids = [o.id for o in self.options]
+        if len(set(ids)) != len(ids):
+            raise ValueError(f"appraisal: option ids repeat: {ids}")
+        return self
+
+
 class Comparison(Model):
     compare: list[str] = []
 
@@ -414,6 +506,7 @@ class Config(Model):
     occurrences: Occurrences | None = None
     area_scan: AreaScan | None = None
     delay: Delay | None = None
+    appraisal: Appraisal | None = None
     standards: Comparison = Comparison()
     known_gaps: list[dict[Lang, str]] = []
     vehicles: dict[str, Vehicle] = {}
@@ -466,6 +559,11 @@ class Config(Model):
             need(self.delay.source, "git_archive", "delay.source")
             if self.transit is None:
                 errors.append("[delay] needs [transit] (its routes and their shapes come from the GTFS feed)")
+        if self.appraisal:
+            if self.delay is None or self.envelope is None:
+                errors.append("[appraisal] needs [delay] (the time it values) and [envelope] (the widths it checks)")
+            known = {b.id for b in self.street.blocks}
+            errors += [f"appraisal option {o.id}: unknown block {b!r}" for o in self.appraisal.options for b in o.blocks if b not in known]
         if self.envelope:
             used = {self.envelope.bus, self.envelope.car, *(v for sc in self.envelope.scenarios for v in sc)}
             errors += [f"envelope: unknown vehicle {v!r}" for v in sorted(used - set(self.all_vehicles()))]

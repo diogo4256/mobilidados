@@ -59,3 +59,269 @@ envelope = [-9.1560, 38.7440, -9.1270, 38.7660]
 [[known_gaps]]
 pt = "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário."
 en = "No field observation of two buses meeting on this street: encounters are timetable estimates."
+
+# Feasibility and cost-benefit appraisal of giving one parking strip back to the carriageway (docs/appraisal.md).
+# Every value has a range, a grade and its source; the measured inputs (the peak excess, the share of it each option
+# can remove, the buses at peak, the working days, the metres of parking) come from the run's own tables.
+[appraisal]
+price_year = 2025
+horizon_years = 10
+discount_rate = 0.05             # EAV 2021-2027, p. 20: 5 % for cohesion countries (Reg. 2015/207, annex III)
+discount_rates_tested = [0.03, 0.07]
+seed = 20261118
+
+references = [
+  "Comissão Europeia (2021), Economic Appraisal Vademecum 2021-2027: General Principles and Sector Applications, <https://jaspers.eib.org/LibraryNP/EC%20Reports/Economic%20Appraisal%20Vademecum%202021-2027%20-%20General%20Principles%20and%20Sector%20Applications.pdf>",
+  "Eurostat, Labour cost levels by NACE Rev. 2 activity (lc_lci_lev), Portugal, 2025, <https://ec.europa.eu/eurostat/databrowser/view/lc_lci_lev/default/table>",
+  "Carris, Relatório e Contas 2024, <https://carris.pt/media/ikvdezmc/relat%C3%B3rio-e-contas-carris-2024.pdf>",
+  "EMEL, Plano de Atividades e Orçamento 2026-2029, <https://www.emel.pt/fotos/financeiro/emel_pao_2026-2029_signed_signed_133048145369a6e017b0094.pdf>",
+  "Diário de Notícias, «Ninguém paga mais de 46,30 euros mensais nos parques da EMEL», <https://www.dn.pt/sociedade/ninguem-paga-mais-de-46-30-euros-mensais-nos-parques-da-emel-saiba-porque>",
+  "Observador (20/03/2025), «Câmara de Lisboa disponibiliza 3 500 lugares de estacionamento noturno em parceria com EMEL e Telpark», <https://observador.pt/2025/03/20/camara-de-lisboa-disponibiliza-3-500-lugares-de-estacionamento-noturno-em-parceria-com-emel-e-telpark/>",
+  "Imovirtual, garagens para arrendar em Alvalade (consultado em novembro de 2026), <https://www.imovirtual.com/pt/resultados/arrendar/garagem/lisboa/lisboa/alvalade>",
+  "Junta de Freguesia de Alvalade, Plano de Atividades e Orçamento 2022: manutenção e gestão do espaço público, <https://www.jf-alvalade.pt/wp-content/uploads/manutencaogestaodoespacopublicoequipamentos-pao2022-jfa-web.pdf>",
+  "Decreto Regulamentar n.º 22-A/98, Regulamento de Sinalização do Trânsito, <https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/22-a-1998-302974>",
+  "Lei n.º 75/2013, de 12 de setembro, Regime Jurídico das Autarquias Locais (Diário da República, 1.ª série, n.º 176/2013)",
+]
+
+[appraisal.parameters.vot]
+low = 3.88
+central = 6.00
+high = 7.76
+grade = "I"
+unit = "€/h"
+label = "Valor do tempo de um passageiro"
+source = "Eurostat lc_lci_lev, Portugal 2025: 19,40 €/h de custo da mão de obra; EAV 2021-2027, p. 55: deslocações pendulares a 25–40 % e outras a 20–35 % desse valor; na ponta da tarde admite-se uma maioria de regressos a casa (P)"
+
+[appraisal.parameters.time_weight]
+low = 1.0
+central = 1.5
+high = 2.5
+grade = "P"
+label = "Peso do tempo de atraso face ao tempo a bordo"
+source = "EAV 2021-2027, quadro 7: tempo em congestionamento 1,5; atraso no transporte público 2,5–4, este para atrasos imprevistos; o atraso medido repete-se todos os dias úteis, por isso o valor central é o do congestionamento"
+
+[appraisal.parameters.load_peak]
+low = 13.1
+central = 20.0
+high = 30.0
+grade = "P"
+unit = "passageiros"
+label = "Passageiros a bordo, na ponta da tarde"
+source = "Carris, Relatório e Contas 2024, p. 14 e 26–27: taxa de ocupação dos autocarros 19,58 % × 2 270 milhões de lugares·km ÷ 33,969 milhões de veículos·km = 13,1 passageiros em média no dia; a Carris não publica a ocupação por carreira nem por hora, e na ponta admite-se mais"
+
+[appraisal.parameters.downstream]
+low = 1.0
+central = 1.0
+high = 1.5
+grade = "P"
+label = "Multiplicador para quem espera nas paragens seguintes"
+source = "Quem espera mais adiante também perde o atraso; não se conta no valor central"
+
+[appraisal.parameters.bus_cost_h]
+low = 0.0
+central = 34.6
+high = 55.5
+grade = "I"
+unit = "€/h"
+label = "Custo de uma hora de autocarro parado"
+source = "Carris, Relatório e Contas 2024: gastos com o pessoal 94,07 M€ ÷ 2,718 milhões de veículos·hora = 34,6 €/h; todos os gastos operacionais (150,93 M€) dariam 55,5 €/h; 0 se o atraso não alterar horários nem turnos"
+
+[appraisal.parameters.occupancy]
+low = 0.85
+central = 0.95
+high = 1.0
+grade = "P"
+label = "Ocupação dos lugares retirados"
+source = "A ocupação das ruas vizinhas não foi encontrada (NE); a Junta de Freguesia (Plano de Atividades 2022) pede um parque subterrâneo junto à Av. da Igreja para as necessidades dos moradores, e a EMEL (Plano 2026-2029) aponta a pressão dos dísticos de residente"
+
+[appraisal.parameters.car_value]
+low = 325.0
+central = 555.6
+high = 2100.0
+grade = "I"
+unit = "€/ano"
+label = "Custo anual, para quem perde o lugar, de estacionar noutro sítio"
+source = "Mínimo: mais 10 min a pé por dia, ao valor do tempo de lazer (5,34 €/h). Central: avença R24 da EMEL para residentes, 46,30 €/mês (DN, citando a EMEL). Máximo: lugar de garagem arrendado em Alvalade, cerca de 175 €/mês (anúncios Imovirtual, 150–200 €/mês)"
+
+[appraisal.parameters.share_E]
+low = 0.40
+central = 0.55
+high = 0.75
+grade = "I"
+label = "Opção E: parte do valor do lugar perdida das 7h às 20h nos dias úteis"
+source = "Avenças da EMEL e Telpark: noturna (18h–10h e fins de semana) 22 €/mês contra 46,30 €/mês por 24 h, donde (46,30 − 22) ÷ 46,30 = 0,52 do valor está no dia útil"
+
+[appraisal.parameters.share_G]
+low = 0.25
+central = 0.45
+high = 0.70
+grade = "P"
+label = "Opção G: parte do valor do lugar perdida das 16h às 20h nos dias úteis"
+source = "Quem deixa o carro durante o dia tem de o tirar antes das 16h, e quem chega entre as 16h e as 20h não pode estacionar desse lado: são as horas de chegada a casa; sem dados de uso dos lugares, é um pressuposto, e o valor de inversão diz quanto pode valer"
+
+[appraisal.parameters.compliance_permanent]
+low = 0.80
+central = 0.90
+high = 1.0
+grade = "P"
+label = "Cumprimento de uma proibição permanente"
+source = "Pressuposto; a Carris registou 1 365 interrupções por estacionamento indevido em 2024 (Relatório e Contas 2024, p. 26)"
+
+[appraisal.parameters.compliance_hours]
+low = 0.60
+central = 0.80
+high = 0.95
+grade = "P"
+label = "Cumprimento de uma proibição por horas"
+source = "Pressuposto; uma proibição por horas pede fiscalização às horas certas"
+
+[appraisal.parameters.sign_cost]
+low = 150.0
+central = 300.0
+high = 600.0
+grade = "P"
+unit = "€"
+label = "Sinal vertical colocado (C15, com painel adicional se houver horário)"
+source = "Pressuposto: não se encontrou um preço unitário público em Portugal; a obra pesa pouco no resultado (appraisal_tornado.csv)"
+
+[appraisal.parameters.marking_cost_m]
+low = 2.0
+central = 5.0
+high = 15.0
+grade = "P"
+unit = "€/m"
+label = "Marcação no pavimento, por metro"
+source = "Pressuposto, como o anterior; metade é repintada a cada 5 anos"
+
+[appraisal.parameters.enforcement_year]
+low = 0.0
+central = 1000.0
+high = 5000.0
+grade = "P"
+unit = "€/ano"
+label = "Fiscalização a mais de uma proibição por horas"
+source = "Pressuposto; 0 se couber nas rondas da EMEL e da Polícia Municipal"
+
+[appraisal.parameters.stall_m]
+low = 5.0
+central = 5.5
+high = 6.0
+grade = "P"
+unit = "m"
+label = "Comprimento de um lugar"
+source = "Como no registo de factos (profiles.parking_space_m)"
+
+[[appraisal.options]]
+id = "B"
+label = "Um lado, sempre, nos três troços com estacionamento dos dois lados"
+blocks = ["B1", "B2", "B3"]
+compliance = "compliance_permanent"
+signs = 4
+
+[[appraisal.options]]
+id = "C"
+label = "Um lado, sempre, só no troço B2 (o mais longo)"
+blocks = ["B2"]
+compliance = "compliance_permanent"
+signs = 2
+
+[[appraisal.options]]
+id = "E"
+label = "Um lado, das 7h às 20h nos dias úteis, nos três troços"
+blocks = ["B1", "B2", "B3"]
+days = "working"
+hours = [7, 20]
+parking_share = "share_E"
+compliance = "compliance_hours"
+signs = 6
+
+[[appraisal.options]]
+id = "G"
+label = "Um lado, das 16h às 20h nos dias úteis, nos três troços"
+blocks = ["B1", "B2", "B3"]
+days = "working"
+hours = [16, 20]
+parking_share = "share_G"
+compliance = "compliance_hours"
+signs = 6
+
+[[appraisal.options]]
+id = "H"
+label = "Um lado, das 16h às 20h nos dias úteis, só no troço B2"
+blocks = ["B2"]
+days = "working"
+hours = [16, 20]
+parking_share = "share_G"
+compliance = "compliance_hours"
+signs = 3
+
+[[appraisal.alternatives]]
+id = "P"
+label = "prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento"
+signs = 6
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "Numa faixa de rodagem estreitada por obras ou obstáculos ocasionais, salvo se houver circulação alternada, a largura deixada à circulação não pode ser inferior a 5,8 m onde circulem automóveis pesados. A regra é para obras e obstáculos, não para estacionamento; mas a largura livre medida, 4,90 m, fica abaixo dela, e a circulação alternada é o que os sinais B5 e B6 organizam."
+source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 22-A/98), art. 87.º, n.º 4"
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "O sinal B5 obriga a ceder a passagem a quem vem em sentido contrário num estreitamento; o B6 dá prioridade sobre quem vem em sentido contrário."
+source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 22-A/98), sinais de cedência de passagem"
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "Compete à Câmara Municipal deliberar sobre o estacionamento de veículos nas vias públicas."
+source = "Lei n.º 75/2013, anexo I, art. 33.º, n.º 1, alínea rr)"
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "Uma proibição de estacionar sinaliza-se com o sinal C15; uma proibição por horas e dias, com um painel adicional do modelo n.º 7d (dias da semana e horas do dia)."
+source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 22-A/98), sinais de proibição e painéis adicionais"
+
+[[appraisal.notes]]
+dimension = "operational"
+grade = "D"
+text = "A Carris registou em 2024 1 365 interrupções por estacionamento indevido, com 983 horas de impacto, e diz trabalhar com a Câmara em medidas na rede viária para cumprir horários."
+source = "Carris, Relatório e Contas 2024, p. 26–27"
+
+[[appraisal.notes]]
+dimension = "social"
+grade = "D"
+text = "O plano da EMEL para 2026-2029 prevê 11 parques novos (3 115 lugares), nenhum em Alvalade; a Junta de Freguesia pede um parque subterrâneo junto à Av. da Igreja para os moradores."
+source = "EMEL, Plano de Atividades e Orçamento 2026-2029, quadro 3-1; Junta de Freguesia de Alvalade, Plano de Atividades 2022"
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "NE"
+text = "A ocupação do estacionamento nas ruas vizinhas não foi encontrada: não se sabe se os carros deslocados têm lugar perto."
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "NE"
+text = "O atraso medido vem de um arquivo de terceiros com poucos registos em 2026; os dados de localização da própria Carris mostrariam se se mantém."
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "NE"
+text = "Não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência: os benefícios estão subestimados."
+
+[[appraisal.notes]]
+dimension = "options"
+grade = "P"
+text = "Sentido único para o trânsito geral, mantendo os autocarros nos dois sentidos: exige uma via BUS em contrassentido que não cabe em 4,90 m com estacionamento dos dois lados, e mudaria o trânsito das ruas vizinhas; fica fora deste estudo, que não tem modelo de tráfego."
+
+[[appraisal.notes]]
+dimension = "options"
+grade = "P"
+text = "Desviar uma das carreiras: passa o problema para outra rua e tira paragens a quem as usa; é uma decisão de rede da Carris, fora deste estudo."
+
+[[appraisal.notes]]
+dimension = "options"
+grade = "P"
+text = "Mais fiscalização do estacionamento: os carros estão em lugares marcados, por isso fiscalizar não alarga a faixa livre."
