@@ -69,9 +69,13 @@ def build(r: Run) -> str:
         return grouped(float(x), lang, d)
 
     def part_label(name: str) -> str:
+        """A narrow section by its block; a junction by the cross street that meets the street there (from the block labels)."""
         row = parts[parts.part == name].iloc[0]
         span = f"{n(row.from_m, 1)}–{n(row.to_m, 1)} m"
-        return f"{name.split()[0]} ({span})" if row.narrow else span
+        if row.narrow:
+            return f"{name.split()[0]} ({span})"
+        cross = [b.label.split("→")[-1].strip() for b in cfg.street.blocks if b.label and "→" in b.label and row.from_m < b.end < row.to_m]
+        return f"({cross[0]}, {span})" if cross else f"({span})"
 
     def measured_label(k: str) -> str:
         head, _, tail = k.partition("_")
@@ -189,7 +193,14 @@ def build(r: Run) -> str:
         )
     cba += ["", say("measured_header"), "| --- | ---: | ---: | ---: |"]
     for k, row in measured.iterrows():
-        cba.append(f"| {measured_label(str(k))} | {n(row.low, 2)} | {n(row['central'], 2)} | {n(row.high, 2)} |")
+        d = (
+            0
+            if str(k) in ("peak_passages_per_working_day", "working_days_per_year")
+            else 1
+            if str(k).startswith(("metres_", "excess_"))
+            else 2
+        )
+        cba.append(f"| {measured_label(str(k))} | {n(row.low, d)} | {n(row['central'], d)} | {n(row.high, d)} |")
     r1, r2 = (round(100 * x) for x in a.discount_rates_tested[:2]) if len(a.discount_rates_tested) >= 2 else (3, 7)
     cba += [
         "",
@@ -234,7 +245,7 @@ def build(r: Run) -> str:
         alt_block = [f"## {say('h_alternatives')}", ""]
         for row in alts.itertuples():
             spec = next(x for x in a.alternatives if x.id == row.alternative)
-            alt_block += [say("alternative", label=row.label, cost=money(row.pv_cost, lang), signs=spec.signs, hours=n(row.breakeven_bus_hours_per_year, 1),
+            alt_block += [say("alternative", label=row.label[:1].upper() + row.label[1:], cost=money(row.pv_cost, lang), signs=spec.signs, hours=n(row.breakeven_bus_hours_per_year, 1),
                               secs=n(row.breakeven_seconds_per_peak_passage, 1), attr_s=n(removable_s, 0)), ""]  # fmt: skip
     gaps_block = (
         [f"## {say('h_gaps')}", "", say("gaps_intro"), ""] + [f"- {nt.text}" for nt in a.notes if nt.dimension == "evidence"] + [""]

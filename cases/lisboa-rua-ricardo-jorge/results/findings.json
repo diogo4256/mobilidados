@@ -321,6 +321,132 @@
       "caveat": "O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s (delay_sensitivity.csv); o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença."
     },
     {
+      "id": "appraisal_B",
+      "grade": "I",
+      "statement": "Opção B (um lado, sempre, nos três troços com estacionamento dos dois lados): em 10 anos, a 5%, o valor atual líquido é de −61 100 € (benefício/custo 0,24; entre −148 800 € e −39 900 € em 80% das simulações; probabilidade de ser positivo: 0%). Conta só o tempo dos autocarros na ponta da tarde (2 500 € por ano) contra o valor dos cerca de 21 lugares retirados e a fiscalização (10 100 € por ano) e a obra (1 800 €).",
+      "values": {
+        "npv": -61092.82,
+        "bcr": 0.2417,
+        "npv_p10_p90": [
+          -148845.28,
+          -39907.9
+        ],
+        "probability_positive": 0.0003
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "Os benefícios estão subestimados: não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência. Várias entradas são pressupostos (grau P), testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv)."
+    },
+    {
+      "id": "appraisal_C",
+      "grade": "I",
+      "statement": "Opção C (um lado, sempre, só no troço B2 (o mais longo)): em 10 anos, a 5%, o valor atual líquido é de −21 100 € (benefício/custo 0,43; entre −61 600 € e −9 500 € em 80% das simulações; probabilidade de ser positivo: 2%). Conta só o tempo dos autocarros na ponta da tarde (2 100 € por ano) contra o valor dos cerca de 10 lugares retirados e a fiscalização (4 700 € por ano) e a obra (870 €).",
+      "values": {
+        "npv": -21143.3,
+        "bcr": 0.4297,
+        "npv_p10_p90": [
+          -61611.03,
+          -9467.91
+        ],
+        "probability_positive": 0.022
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "Os benefícios estão subestimados: não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência. Várias entradas são pressupostos (grau P), testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv)."
+    },
+    {
+      "id": "appraisal_E",
+      "grade": "I",
+      "statement": "Opção E (um lado, das 7h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −31 500 € (benefício/custo 0,35; entre −81 600 € e −21 100 € em 80% das simulações; probabilidade de ser positivo: 0%). Conta só o tempo dos autocarros na ponta da tarde (2 200 € por ano) contra o valor dos cerca de 21 lugares retirados e a fiscalização (6 000 € por ano) e a obra (2 400 €).",
+      "values": {
+        "npv": -31524.95,
+        "bcr": 0.3544,
+        "npv_p10_p90": [
+          -81642.2,
+          -21085.96
+        ],
+        "probability_positive": 0.0035
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "Os benefícios estão subestimados: não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência. Várias entradas são pressupostos (grau P), testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv)."
+    },
+    {
+      "id": "appraisal_G",
+      "grade": "I",
+      "statement": "Opção G (um lado, das 16h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −24 600 € (benefício/custo 0,41; entre −68 400 € e −14 300 € em 80% das simulações; probabilidade de ser positivo: 1%). Conta só o tempo dos autocarros na ponta da tarde (2 200 € por ano) contra o valor dos cerca de 21 lugares retirados e a fiscalização (5 100 € por ano) e a obra (2 400 €).",
+      "values": {
+        "npv": -24559.24,
+        "bcr": 0.4134,
+        "npv_p10_p90": [
+          -68381.23,
+          -14336.71
+        ],
+        "probability_positive": 0.0127
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "Os benefícios estão subestimados: não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência. Várias entradas são pressupostos (grau P), testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv)."
+    },
+    {
+      "id": "appraisal_H",
+      "grade": "I",
+      "statement": "Opção H (um lado, das 16h às 20h nos dias úteis, só no troço B2): em 10 anos, a 5%, o valor atual líquido é de −9 300 € (benefício/custo 0,60; entre −34 200 € e −2 000 € em 80% das simulações; probabilidade de ser positivo: 7%). Conta só o tempo dos autocarros na ponta da tarde (1 800 € por ano) contra o valor dos cerca de 10 lugares retirados e a fiscalização (2 900 € por ano) e a obra (1 200 €).",
+      "values": {
+        "npv": -9326.45,
+        "bcr": 0.6029,
+        "npv_p10_p90": [
+          -34229.39,
+          -1997.15
+        ],
+        "probability_positive": 0.073
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "Os benefícios estão subestimados: não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência. Várias entradas são pressupostos (grau P), testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv)."
+    },
+    {
+      "id": "appraisal_alternative_P",
+      "grade": "I",
+      "statement": "Alternativa P (prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento): custa cerca de 1 800 € e paga-se se poupar 1,1 horas de autocarro por ano, ou 0,9 s por passagem na ponta; o efeito não se pode estimar com estes dados.",
+      "values": {
+        "breakeven_bus_hours_per_year": 1.086
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "Os benefícios estão subestimados: não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência. Várias entradas são pressupostos (grau P), testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv)."
+    },
+    {
       "id": "occurrences",
       "grade": "M",
       "statement": "Foram atribuídas à rua 6 ocorrências da categoria «Estacionamento abusivo» (2017-05-05 – 2026-05-31, a ≤12 m do eixo): 2,87 por 100 m, 1.ª de 25 ruas com pelo menos 100 m na envolvente.",

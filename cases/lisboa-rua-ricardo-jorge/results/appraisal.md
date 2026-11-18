@@ -6,7 +6,7 @@ Gerado por `mobilidados run` a partir das tabelas em `tables/` e da configuraç�
 
 - Nos troços com estacionamento dos dois lados (117,5 m), a largura livre mediana é de 4,90 m; dois autocarros lado a lado precisam de pelo menos 5,00 m só com a carroçaria (5,80 m com espelhos).
 - Nos dias úteis, às 17h–19h, a diferença entre o tempo dos autocarros no troço entre paragens e o que os troços vizinhos explicariam foi de +49% (intervalo de 90%: +34% a +65%), cerca de 14 s por passagem (6 a 24 s), segundo posições GPS arquivadas por terceiros (por ano: 2025: +60%; 2026: +4%, não confirmado: o intervalo inclui 0, com muito menos registos).
-- Contando só o tempo dos autocarros na ponta da tarde, nenhuma opção de retirar estacionamento compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,60, probabilidade de VAL > 0 de 5%).
+- Contando só o tempo dos autocarros na ponta da tarde, nenhuma opção de retirar estacionamento compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,60, probabilidade de VAL > 0 de 7%).
 - Para a opção H compensar, seria preciso, por exemplo, um excesso de 24,1 s por passagem (medido: 14,5 s, até 23,9 s); ou que um lugar valesse no máximo 200 € por ano a quem o perde (central: 560 €).
 - A alternativa P (prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento) custa cerca de 1 800 € e paga-se com 0,9 s poupados por passagem na ponta: é a medida que menos arrisca, e pode experimentar-se primeiro.
 - O que mais mudaria estas conclusões: os dados de localização da própria Carris (o atraso atual, que o arquivo de 2026 já não mostra), a ocupação dos lugares nas ruas vizinhas, e uma contagem do atraso de quem segue de carro atrás de um autocarro parado.
@@ -15,7 +15,7 @@ Gerado por `mobilidados run` a partir das tabelas em `tables/` e da configuraç�
 
 Nos troços com estacionamento dos dois lados (117,5 m), a largura livre mediana é de 4,90 m; dois autocarros lado a lado precisam de pelo menos 5,00 m só com a carroçaria (5,80 m com espelhos). Sem o estacionamento de um lado, a mediana passaria a 6,91 m. Nos dias úteis, às 17h–19h, a diferença entre o tempo dos autocarros no troço entre paragens e o que os troços vizinhos explicariam foi de +49% (intervalo de 90%: +34% a +65%), cerca de 14 s por passagem (6 a 24 s), segundo posições GPS arquivadas por terceiros (por ano: 2025: +60%; 2026: +4%, não confirmado: o intervalo inclui 0, com muito menos registos).
 
-Esse excesso não está só nos troços estreitos: 5,7 s estão dentro deles e 8,1 s nos cruzamentos entre eles. No cruzamento 76,2–95,2 m, os autocarros têm um autocarro em sentido contrário na rua em 26% das vezes, contra 11% por acaso (p = 1,5 × 10⁻⁶): esperam ali que o troço seguinte fique livre. Por isso se conta como removível, no valor central, o excesso dos troços estreitos e desse cruzamento (72% do total).
+Esse excesso não está só nos troços estreitos: 5,7 s estão dentro deles e 8,1 s nos cruzamentos entre eles. No cruzamento (R. Cor. Marques Leitão, 76,2–95,2 m), os autocarros têm um autocarro em sentido contrário na rua em 26% das vezes, contra 11% por acaso (p = 1,5 × 10⁻⁶): esperam ali que o troço seguinte fique livre. Por isso se conta como removível, no valor central, o excesso dos troços estreitos e desse cruzamento (72% do total).
 
 ## As opções
 
@@ -23,11 +23,11 @@ Cada opção retira o estacionamento de um dos lados nos troços indicados, semp
 
 | opção | descrição | metros | lugares | quando |
 | --- | --- | ---: | ---: | --- |
-| B | Um lado, sempre, nos três troços com estacionamento dos dois lados | 117,5 | 21 | sempre |
-| C | Um lado, sempre, só no troço B2 (o mais longo) | 54,0 | 10 | sempre |
-| E | Um lado, das 7h às 20h nos dias úteis, nos três troços | 117,5 | 21 | dias úteis, 7h–20h |
-| G | Um lado, das 16h às 20h nos dias úteis, nos três troços | 117,5 | 21 | dias úteis, 16h–20h |
-| H | Um lado, das 16h às 20h nos dias úteis, só no troço B2 | 54,0 | 10 | dias úteis, 16h–20h |
+| B | um lado, sempre, nos três troços com estacionamento dos dois lados | 117,5 | 21 | sempre |
+| C | um lado, sempre, só no troço B2 (o mais longo) | 54,0 | 10 | sempre |
+| E | um lado, das 7h às 20h nos dias úteis, nos três troços | 117,5 | 21 | dias úteis, 7h–20h |
+| G | um lado, das 16h às 20h nos dias úteis, nos três troços | 117,5 | 21 | dias úteis, 16h–20h |
+| H | um lado, das 16h às 20h nos dias úteis, só no troço B2 | 54,0 | 10 | dias úteis, 16h–20h |
 
 Opções consideradas e não avaliadas:
 
@@ -68,7 +68,7 @@ Análise económica incremental de cada opção face a não fazer nada, segundo 
 | Ocupação dos lugares retirados | 0,85 | 0,95 | 1,00 |  | P | A ocupação das ruas vizinhas não foi encontrada (NE); a Junta de Freguesia (Plano de Atividades 2022) pede um parque subterrâneo junto à Av. da Igreja para as necessidades dos moradores, e a EMEL (Plano 2026-2029) aponta a pressão dos dísticos de residente |
 | Custo anual, para quem perde o lugar, de estacionar noutro sítio | 325,00 | 555,60 | 2 100,00 | €/ano | I | Mínimo: mais 10 min a pé por dia, ao valor do tempo de lazer (5,34 €/h). Central: avença R24 da EMEL para residentes, 46,30 €/mês (DN, citando a EMEL). Máximo: lugar de garagem arrendado em Alvalade, cerca de 175 €/mês (anúncios Imovirtual, 150–200 €/mês) |
 | Opção E: parte do valor do lugar perdida das 7h às 20h nos dias úteis | 0,40 | 0,55 | 0,75 |  | I | Avenças da EMEL e Telpark: noturna (18h–10h e fins de semana) 22 €/mês contra 46,30 €/mês por 24 h, donde (46,30 − 22) ÷ 46,30 = 0,52 do valor está no dia útil |
-| Opção G: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,25 | 0,45 | 0,70 |  | P | Quem deixa o carro durante o dia tem de o tirar antes das 16h, e quem chega entre as 16h e as 20h não pode estacionar desse lado: são as horas de chegada a casa; sem dados de uso dos lugares, é um pressuposto, e o valor de inversão diz quanto pode valer |
+| Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,25 | 0,45 | 0,70 |  | P | Quem deixa o carro durante o dia tem de o tirar antes das 16h, e quem chega entre as 16h e as 20h não pode estacionar desse lado: são as horas de chegada a casa; sem dados de uso dos lugares, é um pressuposto, e o valor de inversão diz quanto pode valer |
 | Cumprimento de uma proibição permanente | 0,80 | 0,90 | 1,00 |  | P | Pressuposto; a Carris registou 1 365 interrupções por estacionamento indevido em 2024 (Relatório e Contas 2024, p. 26) |
 | Cumprimento de uma proibição por horas | 0,60 | 0,80 | 0,95 |  | P | Pressuposto; uma proibição por horas pede fiscalização às horas certas |
 | Sinal vertical colocado (C15, com painel adicional se houver horário) | 150,00 | 300,00 | 600,00 | € | P | Pressuposto: não se encontrou um preço unitário público em Portugal; a obra pesa pouco no resultado (appraisal_tornado.csv) |
@@ -78,19 +78,19 @@ Análise económica incremental de cada opção face a não fazer nada, segundo 
 
 | medido nas tabelas do caso | mínimo | central | máximo |
 | --- | ---: | ---: | ---: |
-| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 5,60 | 14,50 | 23,90 |
+| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 5,6 | 14,5 | 23,9 |
 | Opção B: parte do excesso que pode remover | 0,41 | 0,72 | 1,00 |
 | Opção C: parte do excesso que pode remover | 0,28 | 0,59 | 0,87 |
 | Opção E: parte do excesso que pode remover | 0,41 | 0,72 | 1,00 |
 | Opção G: parte do excesso que pode remover | 0,41 | 0,72 | 1,00 |
 | Opção H: parte do excesso que pode remover | 0,28 | 0,59 | 0,87 |
-| Autocarros na rua na ponta, por dia útil (horário) | 18,00 | 18,00 | 18,00 |
-| Dias úteis por ano (sem feriados) | 251,00 | 251,00 | 251,00 |
-| Opção B: metros de estacionamento retirados | 117,50 | 117,50 | 117,50 |
-| Opção C: metros de estacionamento retirados | 54,00 | 54,00 | 54,00 |
-| Opção E: metros de estacionamento retirados | 117,50 | 117,50 | 117,50 |
-| Opção G: metros de estacionamento retirados | 117,50 | 117,50 | 117,50 |
-| Opção H: metros de estacionamento retirados | 54,00 | 54,00 | 54,00 |
+| Autocarros na rua na ponta, por dia útil (horário) | 18 | 18 | 18 |
+| Dias úteis por ano (sem feriados) | 251 | 251 | 251 |
+| Opção B: metros de estacionamento retirados | 117,5 | 117,5 | 117,5 |
+| Opção C: metros de estacionamento retirados | 54,0 | 54,0 | 54,0 |
+| Opção E: metros de estacionamento retirados | 117,5 | 117,5 | 117,5 |
+| Opção G: metros de estacionamento retirados | 117,5 | 117,5 | 117,5 |
+| Opção H: metros de estacionamento retirados | 54,0 | 54,0 | 54,0 |
 
 ### Resultados
 
@@ -104,15 +104,15 @@ Análise económica incremental de cada opção face a não fazer nada, segundo 
 
 ### Incerteza
 
-Simulação de Monte Carlo com 20 000 sorteios de todos os valores (distribuições triangulares, semente fixa); os mesmos sorteios servem todas as opções.
+Simulação de Monte Carlo com 20 000 sorteios de todos os valores (distribuições PERT entre o mínimo, o valor central e o máximo, semente fixa); os mesmos sorteios servem todas as opções.
 
 | opção | VAL P10 | VAL mediano | VAL P90 | probabilidade de VAL > 0 | probabilidade de ser a melhor |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| B | −197 300 € | −105 800 € | −49 000 € | 0% | 0% |
-| C | −82 900 € | −40 200 € | −12 500 € | 2% | 16% |
-| E | −109 900 € | −60 800 € | −28 200 € | 0% | 0% |
-| G | −92 300 € | −49 300 € | −20 500 € | 1% | 0% |
-| H | −46 900 € | −24 400 € | −5 300 € | 5% | 84% |
+| B | −148 800 € | −82 400 € | −39 900 € | 0% | 0% |
+| C | −61 600 € | −30 600 € | −9 500 € | 2% | 13% |
+| E | −81 600 € | −45 700 € | −21 100 € | 0% | 0% |
+| G | −68 400 € | −36 500 € | −14 300 € | 1% | 0% |
+| H | −34 200 € | −16 800 € | −2 000 € | 7% | 87% |
 
 ### O que teria de mudar
 
@@ -142,14 +142,14 @@ Para cada opção, o valor de cada entrada que poria o VAL a zero, mantendo as o
 | G | Passageiros a bordo, na ponta da tarde | 20,00 | 53,84 | ✗ |
 | G | Ocupação dos lugares retirados | 0,95 | 0,21 | ✗ |
 | G | Custo anual, para quem perde o lugar, de estacionar noutro sítio | 555,60 | 120,29 | ✗ |
-| G | Opção G: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,10 | ✗ |
+| G | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,10 | ✗ |
 | G | Fiscalização a mais de uma proibição por horas | 1 000,00 | — | ✗ |
 | H | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 24,05 | ✗ |
 | H | Opção H: parte do excesso que pode remover | 0,59 | 0,97 | ✗ |
 | H | Passageiros a bordo, na ponta da tarde | 20,00 | 35,71 | ✗ |
 | H | Ocupação dos lugares retirados | 0,95 | 0,33 | ✗ |
 | H | Custo anual, para quem perde o lugar, de estacionar noutro sítio | 555,60 | 195,90 | ✗ |
-| H | Opção G: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,16 | ✗ |
+| H | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,16 | ✗ |
 | H | Fiscalização a mais de uma proibição por horas | 1 000,00 | — | ✗ |
 
 Entradas que mais mudam o VAL da opção H (do mínimo ao máximo de cada uma):
@@ -159,7 +159,7 @@ Entradas que mais mudam o VAL da opção H (do mínimo ao máximo de cada uma):
 | Custo anual, para quem perde o lugar, de estacionar noutro sítio | −3 300 € | −49 400 € |
 | Fiscalização a mais de uma proibição por horas | −1 600 € | −40 200 € |
 | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | −18 000 € | −150 € |
-| Opção G: parte do valor do lugar perdida das 16h às 20h nos dias úteis | −2 900 € | −17 300 € |
+| Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | −2 900 € | −17 300 € |
 | Opção H: parte do excesso que pode remover | −16 700 € | −2 500 € |
 | Peso do tempo de atraso face ao tempo a bordo | −13 300 € | −1 400 € |
 
@@ -175,11 +175,11 @@ Entradas que mais mudam o VAL da opção H (do mínimo ao máximo de cada uma):
 
 ## Uma alternativa sem retirar estacionamento
 
-prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento: custa cerca de 1 800 € (6 sinais) e não retira nenhum lugar. O efeito não se pode estimar com estes dados; paga-se se poupar 1,1 horas de autocarro por ano, ou seja 0,9 s por passagem na ponta, quando o excesso medido removível é de cerca de 10 s. Não alarga a rua: um dos autocarros continua a esperar, mas a espera fica organizada (circulação alternada) em vez de decidida no momento.
+Prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento: custa cerca de 1 800 € (6 sinais) e não retira nenhum lugar. O efeito não se pode estimar com estes dados; paga-se se poupar 1,1 horas de autocarro por ano, ou seja 0,9 s por passagem na ponta, quando o excesso medido removível é de cerca de 10 s. Não alarga a rua: um dos autocarros continua a esperar, mas a espera fica organizada (circulação alternada) em vez de decidida no momento.
 
 ## O que não está monetizado e o que falta saber
 
-Os benefícios estão subestimados, porque não se monetizam:
+O que falta saber, e o que fica fora das contas (por isso os benefícios estão subestimados):
 
 - A ocupação do estacionamento nas ruas vizinhas não foi encontrada: não se sabe se os carros deslocados têm lugar perto.
 - O atraso medido vem de um arquivo de terceiros com poucos registos em 2026; os dados de localização da própria Carris mostrariam se se mantém.
@@ -187,7 +187,7 @@ Os benefícios estão subestimados, porque não se monetizam:
 
 ## Conclusões
 
-1. Contando só o tempo dos autocarros na ponta da tarde, nenhuma opção de retirar estacionamento compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,60, probabilidade de VAL > 0 de 5%).
+1. Contando só o tempo dos autocarros na ponta da tarde, nenhuma opção de retirar estacionamento compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,60, probabilidade de VAL > 0 de 7%).
 2. Para a opção H compensar, seria preciso, por exemplo, um excesso de 24,1 s por passagem (medido: 14,5 s, até 23,9 s); ou que um lugar valesse no máximo 200 € por ano a quem o perde (central: 560 €).
 3. A alternativa P (prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento) custa cerca de 1 800 € e paga-se com 0,9 s poupados por passagem na ponta: é a medida que menos arrisca, e pode experimentar-se primeiro.
 4. O que mais mudaria estas conclusões: os dados de localização da própria Carris (o atraso atual, que o arquivo de 2026 já não mostra), a ocupação dos lugares nas ruas vizinhas, e uma contagem do atraso de quem segue de carro atrás de um autocarro parado.

@@ -156,7 +156,7 @@ low = 0.25
 central = 0.45
 high = 0.70
 grade = "P"
-label = "Opção G: parte do valor do lugar perdida das 16h às 20h nos dias úteis"
+label = "Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis"
 source = "Quem deixa o carro durante o dia tem de o tirar antes das 16h, e quem chega entre as 16h e as 20h não pode estacionar desse lado: são as horas de chegada a casa; sem dados de uso dos lugares, é um pressuposto, e o valor de inversão diz quanto pode valer"
 
 [appraisal.parameters.compliance_permanent]
@@ -213,21 +213,21 @@ source = "Como no registo de factos (profiles.parking_space_m)"
 
 [[appraisal.options]]
 id = "B"
-label = "Um lado, sempre, nos três troços com estacionamento dos dois lados"
+label = "um lado, sempre, nos três troços com estacionamento dos dois lados"
 blocks = ["B1", "B2", "B3"]
 compliance = "compliance_permanent"
 signs = 4
 
 [[appraisal.options]]
 id = "C"
-label = "Um lado, sempre, só no troço B2 (o mais longo)"
+label = "um lado, sempre, só no troço B2 (o mais longo)"
 blocks = ["B2"]
 compliance = "compliance_permanent"
 signs = 2
 
 [[appraisal.options]]
 id = "E"
-label = "Um lado, das 7h às 20h nos dias úteis, nos três troços"
+label = "um lado, das 7h às 20h nos dias úteis, nos três troços"
 blocks = ["B1", "B2", "B3"]
 days = "working"
 hours = [7, 20]
@@ -237,7 +237,7 @@ signs = 6
 
 [[appraisal.options]]
 id = "G"
-label = "Um lado, das 16h às 20h nos dias úteis, nos três troços"
+label = "um lado, das 16h às 20h nos dias úteis, nos três troços"
 blocks = ["B1", "B2", "B3"]
 days = "working"
 hours = [16, 20]
@@ -247,7 +247,7 @@ signs = 6
 
 [[appraisal.options]]
 id = "H"
-label = "Um lado, das 16h às 20h nos dias úteis, só no troço B2"
+label = "um lado, das 16h às 20h nos dias úteis, só no troço B2"
 blocks = ["B2"]
 days = "working"
 hours = [16, 20]

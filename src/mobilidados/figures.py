@@ -55,6 +55,8 @@ def make_all(run: Run) -> None:
             figs["area_streets"] = fig
         if cfg.delay and cfg.transit:
             figs["delay_by_hour"] = delay_by_hour(run, lang)
+        if cfg.appraisal and cfg.delay and cfg.envelope and run.two_strips:
+            figs["appraisal_npv"] = appraisal_npv(run, lang)
         note = credit(run.case)
         for old in out.glob("*.png"):
             if old.stem not in figs:  # made by an earlier configuration
@@ -270,5 +272,30 @@ def delay_by_hour(run: Run, lang: Lang) -> Figure:
     ax.grid(axis="y", color=GRID, lw=0.6)
     ax.legend(frameon=False, loc="upper left", fontsize=9)
     ax.set_title(t("delay_title", lang, length=i18n.num(dl.s_to - dl.s_from, lang, 0)), loc="left", fontsize=10, color=INK)
+    fig.tight_layout()
+    return fig
+
+
+def appraisal_npv(run: Run, lang: Lang) -> Figure:
+    """Each option's net present value: the central value and the spread of the simulations (10% to 90%), against
+    zero. A bar wholly left of zero is an option that loses in most of the uncertain worlds simulated."""
+    a = run.cfg.appraisal
+    assert a is not None
+    res = run.table("appraisal_results").set_index("option")
+    mc = run.table("appraisal_montecarlo").set_index("option")
+    ids = [o.id for o in a.options][::-1]
+    fig = Figure(figsize=(9.5, 0.55 * len(ids) + 1.6))
+    ax = fig.subplots()
+    y = np.arange(len(ids))
+    ax.hlines(y, mc.loc[ids, "p10"] / 1000, mc.loc[ids, "p90"] / 1000, color=FREE_ALT, lw=7, label=t("appraisal_spread", lang))
+    ax.plot(res.loc[ids, "npv"] / 1000, y, "D", color=ALERT, ms=6, label=t("appraisal_central", lang))
+    ax.axvline(0, color=INK, lw=0.8)
+    ax.set_yticks(y, [f"{i}" for i in ids])
+    ax.set_xlabel(t("appraisal_npv", lang))
+    ax.grid(axis="x", color=GRID, lw=0.6)
+    ax.legend(frameon=False, loc="upper right", fontsize=9)
+    ax.set_title(
+        t("appraisal_title", lang, years=a.horizon_years, rate=i18n.num(100 * a.discount_rate, lang, 0)), loc="left", fontsize=10, color=INK
+    )
     fig.tight_layout()
     return fig

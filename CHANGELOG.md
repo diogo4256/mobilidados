@@ -5,6 +5,26 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Feasibility study and cost-benefit analysis** (the `appraisal` stage, `[appraisal]` in a case; method in
+  docs/appraisal.md). Each option removes the parking on one side in some sections, always or at some hours; the
+  study values the buses' time at the evening peak that it can remove against the places it removes, the works and the
+  enforcement, following the European Commission's *Economic Appraisal Vademecum 2021-2027* (5%, 10 years). Every input
+  has a range, a grade and a source; the result comes with switching values, a tornado, a Monte Carlo simulation with
+  PERT distributions, who gains and who loses, the feasibility checks (widths, places against the parking mapped
+  nearby, the law and the plans) and alternatives whose effect cannot be estimated, with the saving they need to pay
+  for themselves. It writes `results/appraisal.md`, in the case's language, whose conclusions are chosen by the numbers.
+- The `delay` stage measures the excess on each part of the stretch (`delay_by_part.csv`) and how often buses on each
+  part have an oncoming bus on the street, against chance (`delay_copresence.csv`): where buses give way. The
+  appraisal reads from them how much of the excess each option can remove.
+- Rua Ricardo Jorge: more than half the peak excess sits at the junctions between the narrow sections; at the first
+  one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 1.5 × 10⁻⁶). Counting only the
+  peak time, no option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on
+  working days in section B2 only, has an NPV of about −9 300 € (benefit/cost 0.60; positive in 7% of the
+  simulations). Priority signs at the narrowings (B5/B6), which remove no place, pay for themselves if they save about
+  one bus-hour a year.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added

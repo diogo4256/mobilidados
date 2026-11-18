@@ -105,7 +105,7 @@
           24
         ],
         "id": "B",
-        "label": "Um lado, sempre, nos três troços com estacionamento dos dois lados",
+        "label": "um lado, sempre, nos três troços com estacionamento dos dois lados",
         "parking_share": null,
         "signs": 4
       },
@@ -120,7 +120,7 @@
           24
         ],
         "id": "C",
-        "label": "Um lado, sempre, só no troço B2 (o mais longo)",
+        "label": "um lado, sempre, só no troço B2 (o mais longo)",
         "parking_share": null,
         "signs": 2
       },
@@ -137,7 +137,7 @@
           20
         ],
         "id": "E",
-        "label": "Um lado, das 7h às 20h nos dias úteis, nos três troços",
+        "label": "um lado, das 7h às 20h nos dias úteis, nos três troços",
         "parking_share": "share_E",
         "signs": 6
       },
@@ -154,7 +154,7 @@
           20
         ],
         "id": "G",
-        "label": "Um lado, das 16h às 20h nos dias úteis, nos três troços",
+        "label": "um lado, das 16h às 20h nos dias úteis, nos três troços",
         "parking_share": "share_G",
         "signs": 6
       },
@@ -169,7 +169,7 @@
           20
         ],
         "id": "H",
-        "label": "Um lado, das 16h às 20h nos dias úteis, só no troço B2",
+        "label": "um lado, das 16h às 20h nos dias úteis, só no troço B2",
         "parking_share": "share_G",
         "signs": 3
       }
@@ -269,7 +269,7 @@
         "central": 0.45,
         "grade": "P",
         "high": 0.7,
-        "label": "Opção G: parte do valor do lugar perdida das 16h às 20h nos dias úteis",
+        "label": "Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis",
         "low": 0.25,
         "source": "Quem deixa o carro durante o dia tem de o tirar antes das 16h, e quem chega entre as 16h e as 20h não pode estacionar desse lado: são as horas de chegada a casa; sem dados de uso dos lugares, é um pressuposto, e o valor de inversão diz quanto pode valer",
         "unit": ""

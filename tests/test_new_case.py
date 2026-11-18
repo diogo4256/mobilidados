@@ -341,5 +341,6 @@ def test_a_draft_leaves_out_the_time_measured_on_a_stretch_of_the_model_street(t
     draft = Case.load(out)
     # the stretch, its stops and its routes are the model street's: nothing of it is carried over
     assert draft.config.delay is None
+    assert draft.config.appraisal is None
     assert "positions" not in draft.config.sources
-    assert "# - [delay] the time measured on a stretch of the street" in text
+    assert "# - [delay] and [appraisal]: the time measured on a stretch of the street" in text

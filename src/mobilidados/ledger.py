@@ -413,6 +413,8 @@ def build(r: Run) -> list[Finding]:
     dl = cfg.delay
     if dl and tr:
         F += delay_findings(r, say, method, caveat, n)
+        if cfg.appraisal and r.two_strips and cfg.envelope:
+            F += appraisal_findings(r, say, method, caveat, n)
 
     o = cfg.occurrences
     if o:
@@ -646,6 +648,69 @@ def delay_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[F
                     caveat("delay_passages", pct=n(100 * counted, 0), day=tr.service_date) if math.isfinite(counted) else "",
                     common[0],
                 ),
+            )
+        )
+    return out
+
+
+def appraisal_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:
+    """One finding per option of the appraisal (its net present value, with the spread of the simulations), and one per
+    alternative whose effect cannot be estimated (the saving it needs to pay for itself)."""
+    from .appraisal_report import money
+
+    a, lang = r.cfg.appraisal, r.case.lang
+    assert a is not None
+    res = r.table("appraisal_results").set_index("option")
+    mc = r.table("appraisal_montecarlo").set_index("option")
+    common = {"sources": ["delay", "free_width", "parking_removed", "appraisal_inputs.csv"], "method": method("appraisal", year=a.price_year),
+              "caveat": caveat("appraisal")}  # fmt: skip
+    out = []
+    for o in a.options:
+        row, sim = res.loc[o.id], mc.loc[o.id]
+        out.append(
+            Finding(
+                id=f"appraisal_{o.id}",
+                grade="I",
+                statement=say(
+                    "appraisal",
+                    id=o.id,
+                    label=o.label,
+                    years=a.horizon_years,
+                    rate=n(100 * a.discount_rate, 0),
+                    npv=money(row.npv, lang),
+                    bcr=n(row.bcr, 2),
+                    p10=money(sim.p10, lang),
+                    p90=money(sim.p90, lang),
+                    prob=n(100 * sim.probability_positive, 0),
+                    benefit=money(row.benefit_year, lang),
+                    places=n(row.places, 0),
+                    parking=money(row.parking_year + row.enforcement_year, lang),
+                    works=money(row.works, lang),
+                ),
+                values={
+                    "npv": round(float(row.npv), 2),
+                    "bcr": round(float(row.bcr), 4),
+                    "npv_p10_p90": [round(float(sim.p10), 2), round(float(sim.p90), 2)],
+                    "probability_positive": round(float(sim.probability_positive), 4),
+                },
+                **common,
+            )
+        )
+    for alt in r.table("appraisal_alternatives").itertuples():
+        out.append(
+            Finding(
+                id=f"appraisal_alternative_{alt.alternative}",
+                grade="I",
+                statement=say(
+                    "appraisal_alternative",
+                    id=alt.alternative,
+                    label=alt.label,
+                    cost=money(alt.pv_cost, lang),
+                    hours=n(alt.breakeven_bus_hours_per_year, 1),
+                    secs=n(alt.breakeven_seconds_per_peak_passage, 1) if math.isfinite(alt.breakeven_seconds_per_peak_passage) else "—",
+                ),
+                values={"breakeven_bus_hours_per_year": round(float(alt.breakeven_bus_hours_per_year), 3)},
+                **common,
             )
         )
     return out

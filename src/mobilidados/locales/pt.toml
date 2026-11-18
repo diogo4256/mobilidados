@@ -33,7 +33,13 @@ delay_controls = "troços vizinhos, à mesma escala"
 delay_s = "segundos por passagem"
 delay_interval = "intervalo de confiança de 90% (reamostragem de dias)"
 delay_peak = "ponta"
+appraisal_title = "Valor atual líquido de cada opção ({years} anos, {rate}%): central e 80% das simulações"
+appraisal_npv = "valor atual líquido (milhares de €)"
+appraisal_central = "valor central"
+appraisal_spread = "10% a 90% das simulações"
 [ledger]
+appraisal = "Opção {id} ({label}): em {years} anos, a {rate}%, o valor atual líquido é de {npv} (benefício/custo {bcr}; entre {p10} e {p90} em 80% das simulações; probabilidade de ser positivo: {prob}%). Conta só o tempo dos autocarros na ponta da tarde ({benefit} por ano) contra o valor dos cerca de {places} lugares retirados e a fiscalização ({parking} por ano) e a obra ({works})."
+appraisal_alternative = "Alternativa {id} ({label}): custa cerca de {cost} e paga-se se poupar {hours} horas de autocarro por ano, ou {secs} s por passagem na ponta; o efeito não se pode estimar com estes dados."
 length = "O eixo da rua tem {length} m."
 traffic = { one = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} ponto verificado ao longo da rua, a circulação é permitida em ambos os sentidos.", other = "Segundo a rede viária da Câmara, a rua tem {traffic}: em {k} de {n} pontos verificados ao longo da rua, a circulação é permitida em ambos os sentidos." }
 free = "Nos troços com estacionamento cartografado dos dois lados ({metres} m da rua), a largura livre entre eles vai de {fmin} a {fmax} m (mediana de {fmed} m)."
@@ -70,6 +76,7 @@ places_range = "cerca de {lo} a {hi} lugares"
 
 # Como cada afirmação do registo foi obtida.
 [method]
+appraisal = "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de {year}; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md."
 length = "Comprimento do eixo da rua, em coordenadas projetadas."
 traffic = "Consulta à rede viária municipal em pontos ao longo do eixo."
 free_width = "Perfis transversais a cada {step} m; as larguras são lidas só nos polígonos cartografados."
@@ -87,6 +94,7 @@ area_pattern = "Perfis a cada {step} m em todos os eixos de rua por onde passam 
 
 # Limites de cada afirmação do registo. Uma ressalva composta junta várias destas frases.
 [caveat]
+appraisal = "Os benefícios estão subestimados: não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência. Várias entradas são pressupostos (grau P), testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv)."
 free_filter = { one = "Só contam os perfis com estacionamento cartografado dos dois lados e até {max} m de largura livre: {k} dos {n} perfis com estacionamento dos dois lados tem mais largura livre e ficou de fora.", other = "Só contam os perfis com estacionamento cartografado dos dois lados e até {max} m de largura livre: {k} dos {n} perfis com estacionamento dos dois lados têm mais largura livre e ficaram de fora." }
 survey = "Cartografia: {survey}."
 budget_inside = "Admite que os carros estacionados ficam dentro das faixas cartografadas; overhang_sensitivity.csv mostra quanto a folga diminui se saírem delas."
@@ -160,9 +168,9 @@ header_one_way = """
 #   Aqui os autocarros só passam num sentido, e a pergunta parte do princípio de que cabe um ligeiro ao lado do
 #   autocarro, ou seja, de que a rua tem dois sentidos ou duas vias. Se a rua tiver um só sentido e uma só via, a
 #   pergunta não se aplica tal como está: reescreva-a depois de o `mobilidados run` mostrar o sentido do trânsito."""
-header_delay = """# - [delay] o tempo medido num troço da rua (posições GPS arquivadas) não foi copiado: depende das paragens e das
-#   carreiras da rua. Para o medir, escolha um troço entre paragens e acrescente [delay] e a fonte das posições,
-#   como em docs/methodology.md;"""
+header_delay = """# - [delay] e [appraisal]: o tempo medido num troço da rua (posições GPS arquivadas) e a sua avaliação não foram
+#   copiados, porque dependem das paragens, das carreiras e dos troços da rua. Para os ter, escolha um troço entre
+#   paragens e acrescente [delay], a fonte das posições e [appraisal], como em docs/methodology.md e docs/appraisal.md;"""
 header_inherited = "# O resto (dados fixados, veículos, parâmetros, lacunas comuns) é herdado, tal como em {model}."
 
 [appraisal]
@@ -205,7 +213,7 @@ cba_method = "Análise económica incremental de cada opção face a não fazer 
 inputs_header = "| valor | mínimo | central | máximo | unidade | grau | fonte |"
 measured_header = "| medido nas tabelas do caso | mínimo | central | máximo |"
 results_header = "| opção | benefício/ano | estacionamento e fiscalização/ano | obra | VAL ({years} anos, {rate}%) | benefício/custo | VAL a {r1}% | VAL a {r2}% |"
-mc_intro = "Simulação de Monte Carlo com {draws} sorteios de todos os valores (distribuições triangulares, semente fixa); os mesmos sorteios servem todas as opções."
+mc_intro = "Simulação de Monte Carlo com {draws} sorteios de todos os valores (distribuições PERT entre o mínimo, o valor central e o máximo, semente fixa); os mesmos sorteios servem todas as opções."
 mc_header = "| opção | VAL P10 | VAL mediano | VAL P90 | probabilidade de VAL > 0 | probabilidade de ser a melhor |"
 switching_intro = "Para cada opção, o valor de cada entrada que poria o VAL a zero, mantendo as outras no valor central (— : nenhum valor possível o faz)."
 switching_header = "| opção | entrada | valor central | valor de inversão | dentro do intervalo testado? |"
@@ -213,7 +221,7 @@ tornado_intro = "Entradas que mais mudam o VAL da opção {id} (do mínimo ao m�
 tornado_header = "| entrada | VAL no mínimo | VAL no máximo |"
 distribution_header = "| opção | horas de passageiros poupadas | valor para os passageiros | horas de autocarro poupadas | valor para a Carris | lugares retirados | custo para quem estaciona |"
 alternative = "{label}: custa cerca de {cost} ({signs} sinais) e não retira nenhum lugar. O efeito não se pode estimar com estes dados; paga-se se poupar {hours} horas de autocarro por ano, ou seja {secs} s por passagem na ponta, quando o excesso medido removível é de cerca de {attr_s} s. Não alarga a rua: um dos autocarros continua a esperar, mas a espera fica organizada (circulação alternada) em vez de decidida no momento."
-gaps_intro = "Os benefícios estão subestimados, porque não se monetizam:"
+gaps_intro = "O que falta saber, e o que fica fora das contas (por isso os benefícios estão subestimados):"
 conclusion_none = "Contando só o tempo dos autocarros na ponta da tarde, nenhuma opção de retirar estacionamento compensa os lugares que retira: a de menor perda é a {best} (VAL de {npv}, benefício/custo {bcr}, probabilidade de VAL > 0 de {prob}%)."
 conclusion_some = "A opção {best} tem o maior VAL esperado ({npv}, benefício/custo {bcr}) e uma probabilidade de VAL > 0 de {prob}%."
 conclusion_switch = "Para a opção {best} compensar, seria preciso, por exemplo, {list}."

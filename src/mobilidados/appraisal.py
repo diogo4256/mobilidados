@@ -27,7 +27,7 @@ of people in cars; safety; emergency access; the search for a place.
 
 **Uncertainty:** every input has a low, central and high value (a measured input: its 90% interval). The appraisal
 gives the central result, the value of each input at which the result changes sign (switching values), each input's
-swing (tornado) and a Monte Carlo simulation with triangular distributions (fixed seed): the probability that an
+swing (tornado) and a Monte Carlo simulation with PERT distributions (fixed seed): the probability that an
 option is worth doing and the spread of its value.
 """
 
@@ -59,9 +59,9 @@ class Measured:
 
 def working_days(year: int, holidays: list[dt.date]) -> int:
     """Monday to Friday in ``year``, without the holidays that fall on them."""
-    days = pd.date_range(f"{year}-01-01", f"{year}-12-31")
-    off = set(holidays)
-    return int(sum(1 for d in days if d.dayofweek < 5 and d.date() not in off))
+    first, off = dt.date(year, 1, 1), set(holidays)
+    days = (first + dt.timedelta(days=i) for i in range((dt.date(year + 1, 1, 1) - first).days))
+    return sum(1 for d in days if d.weekday() < 5 and d not in off)
 
 
 def attribution(by_part: pd.DataFrame, copresence: pd.DataFrame, blocks: list[str], significance: float) -> tuple[float, float, float]:
@@ -197,12 +197,26 @@ def option_inputs(o: Option) -> list[str]:
     return shared + ([o.parking_share] if o.parking_share else []) + [o.compliance] + (["enforcement_year"] if timed else [])
 
 
+def pert(rng: np.random.Generator, lo: float, mode: float, hi: float, size: int) -> np.ndarray:
+    """Draws from the PERT distribution on [lo, hi] with its mode at ``mode``: a beta distribution with
+    α = 1 + 4 (mode − lo)/(hi − lo) and β = 1 + 4 (hi − mode)/(hi − lo), so the mean is (lo + 4 mode + hi)/6.
+
+    The usual distribution for a three-point estimate in project risk analysis: unlike the triangular one, it keeps
+    most of its weight near the central value, so a long range on one side (a place worth up to a garage's rent) does
+    not drag the mean far from the value the evidence points to."""
+    if hi == lo:
+        return np.full(size, mode)
+    a = 1 + 4 * (mode - lo) / (hi - lo)
+    b = 1 + 4 * (hi - mode) / (hi - lo)
+    return lo + (hi - lo) * rng.beta(a, b, size)
+
+
 def simulate(cfg: Appraisal, m: Measured) -> pd.DataFrame:
-    """Net present values over ``cfg.draws`` draws of every input from its triangular distribution (fixed seed). The same
-    draws serve every option, so the options are compared on the same uncertain world."""
+    """Net present values over ``cfg.draws`` draws of every input from its PERT distribution (fixed seed). The same draws
+    serve every option, so the options are compared on the same uncertain world."""
     rng = np.random.default_rng(cfg.seed)
     rg = ranges(cfg, m)
-    draws = {k: (np.full(cfg.draws, c) if lo == hi else rng.triangular(lo, c, hi, cfg.draws)) for k, (lo, c, hi) in sorted(rg.items())}
+    draws = {k: pert(rng, lo, c, hi, cfg.draws) for k, (lo, c, hi) in sorted(rg.items())}
     out = {}
     for o in cfg.options:
         out[o.id] = [evaluate(o, {k: float(v[i]) for k, v in draws.items()}, m, cfg)["npv"] for i in range(cfg.draws)]
@@ -255,12 +269,13 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
     value_bus_hour = c["load_peak"] * c["downstream"] * c["vot"] * c["time_weight"] + c["bus_cost_h"]
     annuity = float(np.sum((1 + cfg.discount_rate) ** -np.arange(1, cfg.horizon_years + 1, dtype=float)))
     alternatives = []
+    passages_year = m.peak_passages_per_day * m.working_days  # 0 where no bus is scheduled at peak: no time to save per passage
     for alt in cfg.alternatives:
         pv_cost = alt.signs * c["sign_cost"] + alt.works + alt.yearly * annuity
         hours = pv_cost / annuity / value_bus_hour
         alternatives.append(
             {"alternative": alt.id, "label": alt.label, "pv_cost": pv_cost, "value_per_bus_hour": value_bus_hour, "breakeven_bus_hours_per_year": hours,
-             "breakeven_seconds_per_peak_passage": hours * 3600 / (m.peak_passages_per_day * m.working_days), "keeps_parking": alt.keeps_parking}
+             "breakeven_seconds_per_peak_passage": hours * 3600 / passages_year if passages_year else np.nan, "keeps_parking": alt.keeps_parking}
         )  # fmt: skip
     tor = pd.DataFrame(tornado)
     tor["swing"] = (tor.npv_at_high - tor.npv_at_low).abs()

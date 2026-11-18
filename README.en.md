@@ -105,6 +105,7 @@ flowchart LR
 | `occurrences` | geolocated citizen reports per 100 m of street, compared with neighbouring streets |
 | `area` | the streets with buses in the surrounding area where parking squeezes their passage in the same way |
 | `standards` | measured width against design references, each with its page and scope |
+| `appraisal` | feasibility study and cost-benefit analysis of the options for removing the parking on one side (always or at some hours): NPV, benefit/cost, switching values, Monte Carlo simulation, technical, legal and social feasibility, and the full study in `appraisal.md` ([docs/appraisal.md](https://github.com/diogo4256/mobilidados/blob/main/docs/appraisal.md)) |
 | `ledger` | `findings.md` / `findings.json`: every statement with grade, sources, method and caveats |
 
 ## What it does not do (yet)

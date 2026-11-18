@@ -33,7 +33,13 @@ delay_controls = "neighbouring stretches, same length"
 delay_s = "seconds per passage"
 delay_interval = "90% confidence interval (resampled days)"
 delay_peak = "peak"
+appraisal_title = "Net present value of each option ({years} years, {rate}%): central and 80% of the simulations"
+appraisal_npv = "net present value (thousand €)"
+appraisal_central = "central value"
+appraisal_spread = "10% to 90% of the simulations"
 [ledger]
+appraisal = "Option {id} ({label}): over {years} years at {rate}%, the net present value is {npv} (benefit/cost {bcr}; between {p10} and {p90} in 80% of the simulations; probability of being positive: {prob}%). It counts only the buses' time at the evening peak ({benefit} a year) against the value of the about {places} places removed and the enforcement ({parking} a year) and the works ({works})."
+appraisal_alternative = "Alternative {id} ({label}): costs about {cost} and pays for itself if it saves {hours} bus-hours a year, or {secs} s per peak passage; its effect cannot be estimated from these data."
 length = "The street axis is {length} m long."
 traffic = { one = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} point checked along it.", other = "The municipal routing network marks the street as {traffic}: an edge is open in both directions at {k} of {n} points checked along it." }
 free = "Where parking strips are mapped on both sides ({metres} m of the street), the mapped free width between them is {fmin}–{fmax} m (median {fmed} m)."
@@ -70,6 +76,7 @@ places_range = "about {lo} to {hi} places"
 
 # How each statement of the ledger was obtained.
 [method]
+appraisal = "Incremental cost-benefit analysis against doing nothing (European Commission, Economic Appraisal Vademecum 2021-2027), constant {year} prices; inputs, grades and sources in appraisal_inputs.csv; the full study is in appraisal.md."
 length = "Axis polyline length (projected CRS)."
 traffic = "Identify on the municipal routing network at stations along the axis."
 free_width = "Transects every {step} m; widths read from mapped polygons only."
@@ -87,6 +94,7 @@ area_pattern = "Stations every {step} m on every street axis with buses, measure
 
 # Limits of each statement of the ledger. A caveat made of several parts joins several of these sentences.
 [caveat]
+appraisal = "The benefits are understated: the time lost off-peak, the delay of people in cars, safety and emergency access are not monetised. Several inputs are assumptions (grade P), tested over their ranges (appraisal_switching.csv, appraisal_tornado.csv)."
 free_filter = { one = "Only transects with parking mapped on both sides and a free width of at most {max} m count: {k} of the {n} transects with parking on both sides is wider and was left out.", other = "Only transects with parking mapped on both sides and a free width of at most {max} m count: {k} of the {n} transects with parking on both sides are wider and were left out." }
 survey = "Cartography: {survey}."
 budget_inside = "Assumes parked vehicles stay inside the mapped strips; overhang_sensitivity.csv shows how much the margin shrinks if they do not."
@@ -161,9 +169,9 @@ header_one_way = """
 #   Here buses run one way only, and the question assumes a car fits beside the bus, that is, that the street is
 #   two-way or has two lanes. If the street is one-way with a single lane, the question does not apply as
 #   written: rewrite it once `mobilidados run` shows the direction of traffic."""
-header_delay = """# - [delay] the time measured on a stretch of the street (archived GPS positions) was not copied: it depends on the
-#   street's stops and routes. To measure it, choose a stretch between stops and add [delay] and the positions
-#   source, as in docs/methodology.md;"""
+header_delay = """# - [delay] and [appraisal]: the time measured on a stretch of the street (archived GPS positions) and its appraisal
+#   were not copied, as they depend on the street's stops, routes and sections. To have them, choose a stretch between
+#   stops and add [delay], the positions source and [appraisal], as in docs/methodology.md and docs/appraisal.md;"""
 header_inherited = "# Everything else (data pins, vehicles, parameters, shared known gaps) is inherited, as for {model}."
 
 [appraisal]
@@ -206,7 +214,7 @@ cba_method = "Incremental economic analysis of each option against doing nothing
 inputs_header = "| value | low | central | high | unit | grade | source |"
 measured_header = "| measured in the case's tables | low | central | high |"
 results_header = "| option | benefit/year | parking and enforcement/year | works | NPV ({years} years, {rate}%) | benefit/cost | NPV at {r1}% | NPV at {r2}% |"
-mc_intro = "Monte Carlo simulation with {draws} draws of every value (triangular distributions, fixed seed); the same draws serve every option."
+mc_intro = "Monte Carlo simulation with {draws} draws of every value (PERT distributions between the low, central and high values, fixed seed); the same draws serve every option."
 mc_header = "| option | NPV P10 | median NPV | NPV P90 | probability NPV > 0 | probability of being best |"
 switching_intro = "For each option, the value of each input that would bring the NPV to zero, the others at their central values (— : no value does)."
 switching_header = "| option | input | central value | switching value | within the range tested? |"
@@ -214,7 +222,7 @@ tornado_intro = "The inputs that move option {id}'s NPV the most (from each one'
 tornado_header = "| input | NPV at low | NPV at high |"
 distribution_header = "| option | passenger hours saved | value to passengers | bus hours saved | value to the operator | places removed | cost to those who park |"
 alternative = "{label}: costs about {cost} ({signs} signs) and removes no place. Its effect cannot be estimated from these data; it pays for itself if it saves {hours} bus-hours a year, that is {secs} s per peak passage, against a removable measured excess of about {attr_s} s. It does not widen the street: one of the buses still waits, but the wait is organised (alternating traffic) instead of decided on the spot."
-gaps_intro = "The benefits are understated, because these are not monetised:"
+gaps_intro = "What is not known, and what stays out of the sums (so the benefits are understated):"
 conclusion_none = "Counting only the buses' time at the evening peak, no option that removes parking makes up for the places it removes: the one that loses least is {best} (NPV {npv}, benefit/cost {bcr}, probability of NPV > 0 of {prob}%)."
 conclusion_some = "Option {best} has the highest expected NPV ({npv}, benefit/cost {bcr}) and a probability of NPV > 0 of {prob}%."
 conclusion_switch = "For option {best} to pay, it would take, for example, {list}."
