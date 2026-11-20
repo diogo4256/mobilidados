@@ -97,6 +97,9 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- The Monte Carlo's probability that an option is the best counts doing nothing as a choice: an option is best only
+  in the draws where it beats every other and pays. It had compared the options among themselves only, so the least bad
+  of several losing options read as "best", and an option could be the best more often than it paid.
 - `verify` and the data test only looked at the sources the lock lists, so a case that was never fetched passed
   `verify` ("0/0 files match the lock") and the data test then crashed on a missing file. Every source the case
   configures is now checked, and one the lock has no entry for is reported as `not fetched`.

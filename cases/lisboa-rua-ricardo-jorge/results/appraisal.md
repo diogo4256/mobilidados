@@ -184,18 +184,18 @@ Quanto acrescenta cada mecanismo ao VAL, ligado um de cada vez por esta ordem, a
 
 Simulação de Monte Carlo com 20 000 sorteios de todos os valores (distribuições PERT entre o mínimo, o valor central e o máximo, semente fixa); os mesmos sorteios servem todas as opções.
 
-| camada | opção | VAL P10 | VAL mediano | VAL P90 | probabilidade de VAL > 0 | probabilidade de ser a melhor |
+| camada | opção | VAL P10 | VAL mediano | VAL P90 | probabilidade de VAL > 0 | probabilidade de ser a melhor escolha, contando com não fazer nada |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | núcleo | B | −157 000 € | −86 000 € | −42 200 € | 0% | 0% |
-| núcleo | C | −64 700 € | −31 800 € | −10 100 € | 2% | 12% |
+| núcleo | C | −64 700 € | −31 800 € | −10 100 € | 2% | 1% |
 | núcleo | E | −85 000 € | −47 200 € | −21 600 € | 0% | 0% |
 | núcleo | G | −70 400 € | −37 800 € | −14 700 € | 1% | 0% |
-| núcleo | H | −34 700 € | −17 100 € | −1 700 € | 8% | 88% |
-| alargada | B | −69 900 € | −10 600 € | 42 700 € | 40% | 10% |
-| alargada | C | −17 500 € | 16 600 € | 56 800 € | 73% | 74% |
+| núcleo | H | −34 700 € | −17 100 € | −1 700 € | 8% | 7% |
+| alargada | B | −69 900 € | −10 600 € | 42 700 € | 40% | 9% |
+| alargada | C | −17 500 € | 16 600 € | 56 800 € | 73% | 60% |
 | alargada | E | −40 700 € | −6 800 € | 28 100 € | 40% | 4% |
 | alargada | G | −46 300 € | −18 300 € | 6 000 € | 17% | 0% |
-| alargada | H | −24 800 € | −6 700 € | 12 200 € | 32% | 12% |
+| alargada | H | −24 800 € | −6 700 € | 12 200 € | 32% | 2% |
 
 ### O que teria de mudar
 

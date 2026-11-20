@@ -531,9 +531,11 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
                 if name == "extended":
                     tornado.append({"option": o.id, "input": k, "low": lo, "high": hi, "npv_at_low": npv_at(lo), "npv_at_high": npv_at(hi)})
         s = sims[name]
+        # the choice includes doing nothing (NPV 0): an option is best only where it beats every other and pays
+        best = s.idxmax(axis=1).where(s.max(axis=1) > 0, "")
         mc += [
             {"layer": name, "option": k, "mean": float(v.mean()), "p10": float(v.quantile(0.10)), "p50": float(v.median()),
-             "p90": float(v.quantile(0.90)), "probability_positive": float((v > 0).mean()), "probability_best": float((s.idxmax(axis=1) == k).mean())}
+             "p90": float(v.quantile(0.90)), "probability_positive": float((v > 0).mean()), "probability_best": float((best == k).mean())}
             for k, v in s.items()
         ]  # fmt: skip
     core = layer(c, "core")

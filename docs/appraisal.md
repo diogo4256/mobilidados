@@ -123,11 +123,12 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   the NPV is zero, and whether it lies within the range tested. A share is searched within [0, 1]; a positive
   quantity never at zero.
 * **Tornado** (`appraisal_tornado.csv`, extended layer): the NPV at each input's low and high value.
-* **Monte Carlo** (`appraisal_montecarlo.csv`, both layers): `draws` draws of every input, independently, from a PERT
+* **Monte Carlo** (`appraisal_montecarlo.csv`, both layers): `draws` draws of every input from a PERT
   distribution on its low, central and high value (fixed `seed`, so every run gives the same numbers). PERT, the usual
   distribution for three-point estimates, keeps most of its weight near the central value: a long range on one side
   (a place worth up to a garage's rent) does not drag the mean far from the value the evidence points to, as a
-  triangular distribution would. The same draws serve every option and both layers.
+  triangular distribution would. The same draws serve every option and both layers. The probability that an option
+  is the best counts doing nothing as a choice: an option is best in a draw only if it beats every other and pays.
 * **Correlated inputs** (`correlations`): two inputs that move together, such as the peak and the off-peak excess (the
   same encounters in the same sections), are paired by Iman-Conover rank reordering: each keeps its own distribution,
   and their ranks follow a correlated normal pair with correlation `rho`.

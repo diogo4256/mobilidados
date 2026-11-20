@@ -798,7 +798,10 @@ def test_the_appraisal_writes_its_tables_its_study_its_figure_and_its_findings(t
     )
     sims = pd.read_csv(tables / "appraisal_montecarlo.csv")
     for layer in ("core", "extended"):
-        assert sims[sims.layer == layer].probability_best.sum() == pytest.approx(1.0)
+        part = sims[sims.layer == layer]
+        # doing nothing is a choice too: an option can be best only where it pays
+        assert part.probability_best.sum() <= 1.0
+        assert (part.probability_best <= part.probability_positive).all()
     criteria = pd.read_csv(tables / "appraisal_criteria.csv").set_index("criterion")
     assert (criteria.loc["reliability", "B"], criteria.loc["reliability", "G"]) == ("++", "+")
     feasibility = pd.read_csv(tables / "appraisal_feasibility.csv")
