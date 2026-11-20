@@ -77,9 +77,9 @@
         },
         "grade": "P",
         "id": "street",
-        "indicator": "Arranques e esperas de autocarros com o motor ligado; carros a circular à procura de lugar",
+        "indicator": "Paragens, recuos e arranques de autocarros com o motor ligado; carros a circular à procura de lugar",
         "label": "Ruído e ar na rua",
-        "note": "Menos esperas e arranques de autocarros numa rua estreita, com prédios dos dois lados; do outro lado, mais carros às voltas à procura de lugar se não houver lugares livres perto. A camada alargada conta os custos externos das viagens tiradas ao carro; o ruído na própria rua não tem medição.",
+        "note": "Menos paragens, recuos e arranques de autocarros numa rua estreita, com prédios dos dois lados; do outro lado, mais carros às voltas à procura de lugar se não houver lugares livres perto. A camada alargada conta os custos externos das viagens tiradas ao carro; o ruído na própria rua não tem medição.",
         "source": "Handbook on the external costs of transport (2019), quadro 37"
       },
       {
@@ -353,7 +353,7 @@
         "central": 0.5,
         "grade": "P",
         "high": 2.0,
-        "label": "Carros retidos atrás de um autocarro que espera",
+        "label": "Carros retidos atrás de um autocarro parado ou preso",
         "low": 0.0,
         "source": "Sem contagem de tráfego na rua (NE); uma contagem num dia útil fixa-o",
         "unit": ""
