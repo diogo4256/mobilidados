@@ -360,3 +360,60 @@ def test_correlated_inputs_move_together_and_keep_their_distributions():
     assert np.sort(d["offpeak_s"]).mean() == pytest.approx(np.sort(independent["offpeak_s"]).mean(), rel=0.05)
     with pytest.raises(ValidationError, match="correlations name inputs"):
         config(correlations=[{"a": "excess_s", "b": "nothing", "rho": 0.5}])
+
+
+def test_a_junction_counts_only_if_buses_meet_there_when_whole_days_are_resampled():
+    parts, cop = parts_and_copresence()
+    # positions of one standoff are not independent: the day-resampled p-value decides where the table has it
+    cop["p_value_by_day"] = [0.5, 0.2, 0.5, 0.5, 0.5]
+    assert appraisal.attribution(parts, cop, ["B2"], 0.01)[1] == pytest.approx(4 / 13)
+    cop["p_value_by_day"] = [0.5, 0.0005, 0.5, 0.5, 0.5]
+    assert appraisal.attribution(parts, cop, ["B2"], 0.01)[1] == pytest.approx(8 / 13)
+
+
+def copresence_by_period(off_with=17, p_peak=0.0005):
+    rows = []
+    for period, k, n, chance, p in (("peak", 34, 132, 0.109, p_peak), ("off_peak", off_with, 191, 0.063, 0.1)):
+        rows += [
+            {
+                "part": "76–95 m",
+                "period": period,
+                "positions": n,
+                "with_oncoming_bus": k,
+                "chance": chance,
+                "p_value": p,
+                "p_value_by_day": p,
+            }
+        ]
+    return pd.DataFrame(rows)
+
+
+def test_the_off_peak_ratio_is_how_much_more_often_buses_meet_off_peak_than_at_peak_where_they_meet():
+    parts, _ = parts_and_copresence()
+    ratio = appraisal.offpeak_ratio(copresence_by_period(), parts, 0.01)
+    assert ratio == pytest.approx((17 / 191 - 0.063) / (34 / 132 - 0.109))
+    # off-peak no more often than chance: no off-peak meetings to scale by; no junction where buses meet: no ratio
+    assert appraisal.offpeak_ratio(copresence_by_period(off_with=5), parts, 0.01) == 0.0
+    assert appraisal.offpeak_ratio(copresence_by_period(p_peak=0.2), parts, 0.01) is None
+
+
+def test_the_central_off_peak_excess_is_the_peak_excess_scaled_by_the_ratio_and_kept_in_its_range():
+    cfg = config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0)}, offpeak_from_copresence=True)
+    assert appraisal.ranges(cfg, measured(offpeak_ratio=0.2))["offpeak_s"] == (0.0, 2.0, 8.0)  # 10 s at peak × 0.2
+    assert appraisal.ranges(cfg, measured(offpeak_ratio=1.0))["offpeak_s"] == (0.0, 8.0, 8.0)  # cut to the range
+    assert appraisal.ranges(cfg, measured(offpeak_ratio=None))["offpeak_s"] == (0.0, 5.0, 8.0)  # nothing to scale by
+    assert appraisal.ranges(config(parameters=EXTENDED), measured(offpeak_ratio=0.2))["offpeak_s"] == (5.0, 5.0, 5.0)  # not asked for
+
+
+def test_the_off_peak_break_even_rises_when_the_parking_assumptions_are_least_favourable_together():
+    extra = {"room_nearby": parameter(0.5, 0.0, 1.0), "carpark_walk": parameter(30.0), "spare_capacity": parameter(0.5, 0.0, 1.0),
+             "offpeak_s": parameter(5.0, 0.0, 60.0), "car_value": parameter(1000.0, 50.0, 4000.0)}  # fmt: skip
+    cfg = config(parameters=EXTENDED | extra)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    t = appraisal.offpeak_thresholds(cfg, m, appraisal.central(cfg, m)).set_index("condition").switching_value
+    assert t["no_room_and_car_parks_full"] >= max(t["no_room_nearby"], t["car_parks_full"]) > t["central"]
+    assert t["no_other_mechanism"] > t["central"]
+    # each is where the option's NPV crosses zero, with that condition's inputs
+    q = appraisal.layer(appraisal.central(cfg, m), "extended") | {"room_nearby": 0.0, "spare_capacity": 0.0}
+    npv = appraisal.evaluate(cfg.options[0], q | {"offpeak_s": t["no_room_and_car_parks_full"]}, m, cfg)["npv"]
+    assert npv == pytest.approx(0.0, abs=1.0)

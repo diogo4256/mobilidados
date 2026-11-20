@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import pandas as pd
 
-from . import envelope
+from . import appraisal, envelope
 from .i18n import num, t
 
 if TYPE_CHECKING:
@@ -45,12 +45,8 @@ def money(x: float, lang: str) -> str:
 
 
 def pvalue(p: float, lang: str) -> str:
-    """A small p-value as a power of ten: ``1,5 × 10⁻⁶``."""
-    if p >= 0.001:
-        return num(p, lang, 3)
-    exp = math.floor(math.log10(p))
-    sup = str(exp).translate(str.maketrans("-0123456789", "⁻⁰¹²³⁴⁵⁶⁷⁸⁹"))
-    return f"{num(p / 10**exp, lang, 1)} × 10{sup}"
+    """A p-value after ``p``: ``= 0,04``, or ``< 0,001`` below that (a resampled p-value cannot go lower)."""
+    return f"= {num(p, lang, 3)}" if p >= 0.001 else f"< {num(0.001, lang, 3)}"
 
 
 def first_lower(text: str) -> str:
@@ -156,14 +152,14 @@ def build(r: Run) -> str:
     )
     peak = copres[copres.period == "peak"].set_index("part")
     gaps = parts[~parts.narrow.astype(bool)]
-    giving = [p for p in gaps.part if p in peak.index and peak.p_value[p] < a.significance]
+    giving = [p for p in gaps.part if p in peak.index and appraisal.p_value(peak.loc[p]) < a.significance]
     total = float(parts.excess_s.sum())
     narrow_s = float(parts[parts.narrow.astype(bool)].excess_s.sum())
     attr = float(measured.loc[f"attribution_{a.options[0].id}", "central"]) if a.options else 0.0
     if giving:
         g = peak.loc[giving[0]]
         parts_text = say("problem_parts", narrow=n(narrow_s, 1), gaps=n(total - narrow_s, 1), giving=part_label(giving[0]), share=n(100 * g.share, 0),
-                         chance=n(100 * g.chance, 0), p=pvalue(g.p_value, lang), attr=n(100 * attr, 0))  # fmt: skip
+                         chance=n(100 * g.chance, 0), p=pvalue(appraisal.p_value(g), lang), attr=n(100 * attr, 0))  # fmt: skip
     else:
         parts_text = say("problem_parts_none", narrow=n(narrow_s, 1), gaps=n(total - narrow_s, 1), attr=n(100 * attr, 0))
     problem_block = [f"## {say('h_problem')}", "", problem, "", parts_text, ""]

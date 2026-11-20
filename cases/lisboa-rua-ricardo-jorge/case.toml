@@ -70,8 +70,12 @@ discount_rate = 0.05             # EAV 2021-2027, p. 20: 5 % for cohesion countr
 discount_rates_tested = [0.03, 0.07]
 horizons_tested = [20]
 seed = 20261118
-# the off-peak delay and the peak delay come from the same encounters in the same narrow sections: they move together
-correlations = [{ a = "excess_s", b = "offpeak_s", rho = 0.5 }]
+# the off-peak delay and the peak delay come from the same encounters in the same narrow sections: they move together;
+# where the streets nearby have no room at night, the car parks are likely to be fuller too
+correlations = [{ a = "excess_s", b = "offpeak_s", rho = 0.5 }, { a = "room_nearby", b = "spare_capacity", rho = 0.5 }]
+# the central off-peak excess: the peak excess scaled by how often buses meet off-peak relative to the peak, at the
+# junction where they demonstrably meet (delay_copresence.csv); the range stays as below
+offpeak_from_copresence = true
 
 references = [
   "Comissão Europeia (2021), Economic Appraisal Vademecum 2021-2027: General Principles and Sector Applications, <https://jaspers.eib.org/LibraryNP/EC%20Reports/Economic%20Appraisal%20Vademecum%202021-2027%20-%20General%20Principles%20and%20Sector%20Applications.pdf>",
@@ -236,10 +240,10 @@ source = "Como no registo de factos (profiles.parking_space_m)"
 low = 0.0
 central = 3.0
 high = 8.0
-grade = "P"
+grade = "I"
 unit = "s"
 label = "Excesso por passagem fora da ponta (todos os dias)"
-source = "Não medido: o método compara a ponta com o resto do dia, que é a sua base. O horário prevê 2 a 3 encontros por dia útil nos 153 m entre o início de B1 e o fim de B3, onde nenhum autocarro tem espaço para parar e deixar passar outro (encounters_detail.csv); mas na ponta os autocarros cruzam-se lá muito mais do que o acaso explica (26 % contra 11 %); admite-se fora da ponta cerca de um quinto dos 14,5 s medidos na ponta, removível na mesma parte. Os registos de passagem pedidos à Carris medem-no"
+source = "Inferido, não medido: o método compara a ponta com o resto do dia, que é a sua base, e não pode medir o resto do dia. O valor central (que substitui o 3,0 acima) é o excesso medido na ponta multiplicado pela razão entre o excesso de encontros fora da ponta e na ponta, no cruzamento onde os autocarros comprovadamente se encontram (delay_copresence.csv): admite o mesmo tempo perdido por encontro. Mínimo 0: fora da ponta, o tempo no troço é igual ao dos troços de controlo à mesma escala (delay_by_hour.csv), e o excesso de encontros fora da ponta não é significativo (p ≈ 0,10). Os registos de passagem pedidos à Carris medem-no"
 
 [appraisal.parameters.load_offpeak]
 low = 8.0

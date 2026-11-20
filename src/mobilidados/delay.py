@@ -536,20 +536,47 @@ def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[tuple[str, floa
     period (chance), with the one-sided binomial p-value of seeing that many or more by chance.
 
     ``on``: fresh positions on the street with ``s`` (along the axis) and ``heading``; ``prepare`` must have run on both.
-    A part where buses wait with an oncoming bus present far more often than chance is where they give way to it."""
+    A part where buses are held with an oncoming bus present far more often than chance is where they meet it.
+
+    Positions of the same bus held in the same standoff are not independent, so the binomial p-value overstates the
+    evidence. ``p_value_by_day`` resamples whole working days instead (``cfg.bootstrap`` times, seed ``cfg.seed``): the
+    share of resamples in which the excess over chance is not positive, with the 90% interval of that excess."""
     on = on[on.weekday].assign(period=lambda d: period_of(d.hour, cfg))
     on = on[on.period != ""]
     work = snaps[snaps.weekday].assign(period=lambda d: period_of(d.hour, cfg))
     present = on.groupby("t").heading.agg(set)
     on = on.assign(opposing=[(-h) in present.get(t, set()) for t, h in zip(on.t, on.heading, strict=True)])
     rows = []
+    rng = np.random.default_rng(cfg.seed)
     for period in (PEAK, OFF):
-        times = set(work[work.period == period].t)
+        w = work[work.period == period]
+        times = set(w.t)
         chance = {h: len(set(on[(on.period == period) & (on.heading == h)].t) & times) / len(times) if times else np.nan for h in (1, -1)}
+        # per working day: the period's snapshots, and those with a bus of each heading on the street
+        days = sorted(set(w.date))
+        snaps_d = w.groupby("date").t.nunique().reindex(days, fill_value=0).to_numpy(float)
+        seen = on[(on.period == period) & on.t.isin(times)].drop_duplicates(["t", "heading"])
+        seen_d = {h: seen[seen.heading == h].groupby("date").size().reindex(days, fill_value=0).to_numpy(float) for h in (1, -1)}
+        pick = rng.integers(0, len(days), size=(cfg.bootstrap, len(days))) if days else np.zeros((0, 0), int)
         for name, a, b, narrow in cuts:
             g = on[(on.period == period) & on.s.between(a, b, inclusive="left")]
             p0 = float(np.mean([chance[-h] for h in g.heading])) if len(g) else np.nan
             k = int(g.opposing.sum())
+            gd = g.assign(up=g.heading == 1, down=g.heading == -1).groupby("date")
+            by_day = {c: gd[c].sum().reindex(days, fill_value=0).to_numpy(float) for c in ("opposing", "up", "down")}
+            with np.errstate(divide="ignore", invalid="ignore"):
+                n_b = (by_day["up"] + by_day["down"])[pick].sum(axis=1)
+                t_b = snaps_d[pick].sum(axis=1)
+                p0_b = (
+                    (
+                        by_day["up"][pick].sum(axis=1) * seen_d[-1][pick].sum(axis=1)
+                        + by_day["down"][pick].sum(axis=1) * seen_d[1][pick].sum(axis=1)
+                    )
+                    / t_b
+                    / n_b
+                )
+                excess_b = by_day["opposing"][pick].sum(axis=1) / n_b - p0_b
+            excess_b = excess_b[np.isfinite(excess_b)]
             rows.append(
                 {
                     "part": name,
@@ -560,6 +587,9 @@ def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[tuple[str, floa
                     "share": round(k / len(g), 3) if len(g) else np.nan,
                     "chance": round(p0, 3),
                     "p_value": binomial_tail(k, len(g), p0) if len(g) and np.isfinite(p0) else np.nan,
+                    "excess_ci90_low": round(float(np.quantile(excess_b, 0.05)), 3) if len(excess_b) else np.nan,
+                    "excess_ci90_high": round(float(np.quantile(excess_b, 0.95)), 3) if len(excess_b) else np.nan,
+                    "p_value_by_day": float((1 + (excess_b <= 0).sum()) / (1 + len(excess_b))) if len(excess_b) else np.nan,
                 }
             )
     return pd.DataFrame(rows)

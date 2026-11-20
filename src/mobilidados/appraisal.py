@@ -104,6 +104,7 @@ class Measured:
     metres: dict[str, float]  # option id -> metres of parking strip removed (one side, in its sections)
     passages: dict[str, tuple[float, float]]  # option id -> passages a year while it is in force: (at peak, other)
     passages_year: float  # every passage of the year
+    offpeak_ratio: float | None = None  # off-peak excess co-presence ÷ peak, where buses meet (``offpeak_ratio``)
 
 
 def working_days(year: int, holidays: list[dt.date]) -> int:
@@ -158,12 +159,39 @@ def attribution(by_part: pd.DataFrame, copresence: pd.DataFrame, blocks: list[st
 
     widened = [i for i, p in parts.iterrows() if p.narrow and block(p.part) in blocks]
     gaps = [i for i, p in parts.iterrows() if not p.narrow and any(j in widened for j in (i - 1, i + 1))]
-    giving_way = [i for i in gaps if parts.part[i] in peak.index and peak.p_value[parts.part[i]] < significance]
+    giving_way = [i for i in gaps if parts.part[i] in peak.index and p_value(peak.loc[parts.part[i]]) < significance]
     low = sum(parts.excess_s[i] for i in widened) / total
     central = low + sum(parts.excess_s[i] for i in giving_way) / total
     high = low + sum(parts.excess_s[i] for i in gaps) / total
     lo, ce, hi = sorted(min(max(x, 0.0), 1.0) for x in (low, central, high))
     return (lo, ce, hi)
+
+
+def p_value(row: pd.Series) -> float:
+    """A part's co-presence p-value: resampling whole days where the table has it (positions of one standoff are not
+    independent), else the binomial one."""
+    return float(row["p_value_by_day"]) if "p_value_by_day" in row.index and pd.notna(row["p_value_by_day"]) else float(row["p_value"])
+
+
+def offpeak_ratio(copresence: pd.DataFrame, by_part: pd.DataFrame, significance: float) -> float | None:
+    """How often oncoming buses meet off-peak relative to the peak, where they demonstrably meet: at the gaps between
+    narrow sections where the peak co-presence is significant, the off-peak excess over chance ÷ the peak excess
+    (pooled, cut to [0, 1]). None where no gap qualifies or the peak excess is not positive.
+
+    The method measures the peak against the off-peak, so it cannot measure off-peak delay itself; scaling the peak
+    excess by this ratio assumes the time lost per meeting is the same at both periods."""
+    gaps = set(by_part.part[~by_part.narrow.astype(bool)])
+    c = copresence[copresence.part.isin(gaps)]
+    peak, off = c[c.period == "peak"].set_index("part"), c[c.period == "off_peak"].set_index("part")
+    met = [p for p in peak.index if p in off.index and p_value(peak.loc[p]) < significance]
+    if not met:
+        return None
+
+    def excess(t: pd.DataFrame) -> float:
+        return float(sum(t.with_oncoming_bus[p] - t.chance[p] * t.positions[p] for p in met) / sum(t.positions[p] for p in met))
+
+    e_peak = excess(peak)
+    return None if e_peak <= 0 else min(max(excess(off) / e_peak, 0.0), 1.0)
 
 
 def measured(tables: dict[str, pd.DataFrame], cfg: Appraisal, block_metres: dict[str, float], peak_hours: list[int], year: int,
@@ -186,6 +214,7 @@ def measured(tables: dict[str, pd.DataFrame], cfg: Appraisal, block_metres: dict
         metres={o.id: round(sum(block_metres.get(b, 0.0) for b in o.blocks), 1) for o in cfg.options},
         passages={o.id: passages(hourly, days, o, peak_hours) for o in cfg.options},
         passages_year=sum(passages(hourly, days, None, peak_hours)),
+        offpeak_ratio=offpeak_ratio(tables["delay_copresence"], tables["delay_by_part"], cfg.significance),
     )
 
 
@@ -199,6 +228,9 @@ def ranges(cfg: Appraisal, m: Measured) -> dict[str, tuple[float, float, float]]
     """Every input's low, central and high value."""
     r = {k: (v.low, v.central, v.high) for k, v in cfg.parameters.items()}
     r["excess_s"] = m.excess_s
+    if cfg.offpeak_from_copresence and "offpeak_s" in r and m.offpeak_ratio is not None:
+        lo, _, hi = r["offpeak_s"]
+        r["offpeak_s"] = (lo, round(min(max(m.excess_s[1] * m.offpeak_ratio, lo), hi), 1), hi)
     r |= {f"attribution_{o}": a for o, a in m.attribution.items()}
     return r
 
@@ -513,6 +545,44 @@ def scenarios(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+#: The conditions the off-peak break-even is shown under (``offpeak_thresholds``): name -> the extended inputs changed.
+#: The parking ones are the least favourable ends of their ranges, alone and together, since they can coincide.
+THRESHOLD_CONDITIONS: dict[str, dict[str, str]] = {
+    "central": {},
+    "no_other_mechanism": {"*": "off"},
+    "no_room_nearby": {"room_nearby": "low"},
+    "car_parks_full": {"spare_capacity": "low"},
+    "no_room_and_car_parks_full": {"room_nearby": "low", "spare_capacity": "low"},
+}
+
+
+def offpeak_thresholds(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
+    """For each option, the off-peak excess per passage at which its extended NPV is zero under each of
+    ``THRESHOLD_CONDITIONS`` (the other inputs central); NaN where none within the search domain."""
+    if "offpeak_s" not in cfg.parameters:
+        return pd.DataFrame(columns=["option", "condition", "switching_value", "central"])
+    rg, q = ranges(cfg, m), layer(c, "extended")
+    lo, ce, hi = rg["offpeak_s"]
+    rows = []
+    for o in cfg.options:
+        for name, change in THRESHOLD_CONDITIONS.items():
+            base = dict(q)
+            for k, end in change.items():
+                if k == "*":
+                    base |= {j: off for j, off in MECHANISMS.items() if j != "offpeak_s"}
+                elif k in rg:
+                    base[k] = rg[k][0] if end == "low" else rg[k][2]
+            if any(k != "*" and k not in rg for k in change):
+                continue
+
+            def npv_at(x: float, opt: Option = o, b: dict[str, Any] = base) -> float:
+                return float(evaluate(opt, b | {"offpeak_s": x}, m, cfg)["npv"])
+
+            sv = switching_value(npv_at, *search_domain(lo, hi))
+            rows.append({"option": o.id, "condition": name, "switching_value": sv, "central": ce, "npv_at_central": npv_at(ce)})
+    return pd.DataFrame(rows)
+
+
 def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
     """Every table of the appraisal (see ``docs/appraisal.md``)."""
     c, rg = central(cfg, m), ranges(cfg, m)
@@ -587,6 +657,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
         "appraisal_scenarios": scenarios(cfg, m, c),
         "appraisal_criteria": criteria_table(cfg),
         "appraisal_alternatives": pd.DataFrame(alternatives, columns=alt_columns),
+        "appraisal_offpeak_thresholds": offpeak_thresholds(cfg, m, c),
     }
 
 

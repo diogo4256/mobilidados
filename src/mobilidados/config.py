@@ -497,6 +497,11 @@ class Appraisal(Model):
     significance: float = Field(
         0.01, gt=0, lt=1, description="p-value below which a junction counts as where buses lose time to oncoming buses"
     )
+    offpeak_from_copresence: bool = Field(
+        False,
+        description="Take the central off-peak excess (parameter offpeak_s) as the peak excess scaled by how often oncoming"
+        " buses meet off-peak relative to the peak, where they demonstrably meet (appraisal.offpeak_ratio); its range stays",
+    )
     parameters: dict[str, Parameter]
     options: list[Option] = Field(min_length=1)
     alternatives: list[Alternative] = []

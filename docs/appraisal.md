@@ -102,7 +102,9 @@ Both the benefits and the parking cost scale with `compliance`: a car that stays
 The `delay` stage also measures the excess on each part of the stretch on its own (`delay_by_part.csv`): each section
 with parking on both sides, and each piece between them (usually a junction). And it counts, for buses on each part
 at peak, how often a bus in the other direction is on the street at the same snapshot, against how often one is
-there at any snapshot (`delay_copresence.csv`, with an exact binomial p-value). A part where buses have an oncoming bus
+there at any snapshot (`delay_copresence.csv`). Positions of the same bus held in the same standoff are not independent,
+so the exact binomial p-value overstates the evidence; the table also resamples whole working days (`p_value_by_day`,
+with the 90% interval of the excess over chance), and that is the p-value the attribution uses. A part where buses have an oncoming bus
 present far more often than chance is where they **lose time to oncoming buses**. Snapshots minutes apart cannot show
 what the buses do there (wait, stand face to face, reverse), only that the time is lost there when another bus is
 coming; the attribution needs no more than that.
@@ -114,9 +116,20 @@ For an option widening the sections of some blocks:
 
 Shares are of the sum of the parts' excesses. In Rua Ricardo Jorge, more than half the excess sits at the two
 junctions between the narrow sections; at the first one, buses have an oncoming bus present 26% of the time against
-11% by chance (p ≈ 1.5 × 10⁻⁶), and at the second, no more than chance: the central attribution counts the first
-junction and not the second. The same share applies off-peak: where the time is lost along the stretch does not
-depend on the hour.
+11% by chance (binomial p ≈ 1.5 × 10⁻⁶; p < 0.001 resampling whole days, none of 2,000 resamples at or below
+chance), and at the second, no more than chance: the central attribution counts the first junction and not the second.
+The same share applies off-peak: where the time is lost along the stretch does not depend on the hour. The shares are
+of the parts' sum (13.8 s there), and they are applied to the excess measured on the whole stretch between stops
+(14.5 s), so the 0.7 s the parts do not place is spread in the same proportions.
+
+**The off-peak excess.** The method measures the peak against the rest of the day, so it cannot measure the rest of
+the day. With `offpeak_from_copresence`, the central off-peak excess is the peak excess scaled by how often buses meet
+off-peak relative to the peak, at the junctions where they demonstrably meet (`appraisal.offpeak_ratio`: the off-peak
+excess of co-presence over chance ÷ the peak's), which assumes the same time lost per meeting. In Rua Ricardo Jorge:
+(8.9% − 6.3%) ÷ (25.8% − 10.9%) ≈ 0.17, so about 2.5 s. The range keeps 0 at its low end: off-peak, the time on the
+stretch is the controls' time at the same length (`delay_by_hour.csv`), and the off-peak excess of meetings is not
+significant (p ≈ 0.10). Any off-peak delay also makes the measured peak excess an underestimate (the baseline would
+carry it): by about 1.24 × the off-peak excess there, which the appraisal does not claim.
 
 ## Uncertainty
 
@@ -126,6 +139,10 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
 * **Switching values** (`appraisal_switching.csv`, both layers): the value of each input, the others central, at which
   the NPV is zero, and whether it lies within the range tested. A share is searched within [0, 1]; a positive
   quantity never at zero.
+* **The off-peak break-even under conditions** (`appraisal_offpeak_thresholds.csv`): the off-peak excess at which each
+  option's extended NPV is zero, with the other inputs central; with no other mechanism; with no displaced driver
+  finding room nearby; with the car parks full; and with both, since the two parking conditions can coincide and one
+  at a time hides it.
 * **Tornado** (`appraisal_tornado.csv`, extended layer): the NPV at each input's low and high value.
 * **Monte Carlo** (`appraisal_montecarlo.csv`, both layers): `draws` draws of every input from a PERT
   distribution on its low, central and high value (fixed `seed`, so every run gives the same numbers). PERT, the usual
@@ -134,7 +151,7 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   triangular distribution would. The same draws serve every option and both layers. The probability that an option
   is the best counts doing nothing as a choice: an option is best in a draw only if it beats every other and pays.
 * **Correlated inputs** (`correlations`): two inputs that move together, such as the peak and the off-peak excess (the
-  same encounters in the same sections), are paired by Iman-Conover rank reordering: each keeps its own distribution,
+  same encounters in the same sections), or room nearby and room in the car parks (the same parking pressure), are paired by Iman-Conover rank reordering: each keeps its own distribution,
   and their ranks follow a correlated normal pair with correlation `rho`.
 * **Scenarios** (`appraisal_scenarios.csv`): the core; the extended layer with every input the measurement does not
   cover at the end of its range least favourable to the option (*cautious*), central, and most favourable

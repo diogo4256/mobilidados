@@ -97,6 +97,16 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- The co-presence test counted every position as independent, so a bus held for several snapshots in one standoff
+  counted several times and the binomial p-value overstated the evidence. `delay_copresence.csv` now also resamples
+  whole working days (`p_value_by_day`, with the 90% interval of the excess over chance), and the attribution uses it.
+- The off-peak break-even was shown with one parking assumption at a time, which hid that the two can coincide: with
+  no room nearby and full car parks together, Rua Ricardo Jorge's option C needs 3.4 s off-peak, not 0.5 s. The new
+  `appraisal_offpeak_thresholds.csv` gives it under each condition and both; room nearby and room in the car parks are
+  now drawn correlated.
+- The central off-peak excess was typed in (3 s). With `offpeak_from_copresence` it is derived from the data: the peak
+  excess scaled by how often buses meet off-peak relative to the peak where they demonstrably meet (2.5 s in Rua
+  Ricardo Jorge).
 - The parking cost counted what a displaced driver pays for a car park as a cost to society, although the appraisal
   treats fees and permits as transfers. The extended layer now counts that payment for the driver (in the
   distribution) and nets it out of the economic case where the car park has room to spare (`spare_capacity`); it also
