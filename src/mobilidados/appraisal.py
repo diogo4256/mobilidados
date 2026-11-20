@@ -266,10 +266,12 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     works = o.signs * p["sign_cost"] + marking + p["calming_cost"]
     repaints = range(cfg.repaint_every_years, cfg.horizon_years + 1, cfg.repaint_every_years)
     repaint_pv = sum(0.5 * marking * (1 + r) ** -t for t in repaints)  # half the marking, every few years
-    pv_benefit = (time_value + traffic_value + new_rider_value) * growing("time") + operator_value * growing("operator")
-    pv_benefit = pv_benefit + external_value * growing("external") + damage_value * annuity
+    pv_time, pv_traffic, pv_new = (x * growing("time") for x in (time_value, traffic_value, new_rider_value))
+    pv_operator, pv_external, pv_damage = operator_value * growing("operator"), external_value * growing("external"), damage_value * annuity
+    pv_benefit = pv_time + pv_operator + pv_traffic + pv_new + pv_external + pv_damage
     pv_parking = parking * growing("parking")
-    pv_public = enforcement * annuity + works + repaint_pv
+    pv_works, pv_enforcement = works + repaint_pv, enforcement * annuity
+    pv_public = pv_works + pv_enforcement
     pv_cost = pv_parking + pv_public
     flows = {
         "bus_hours": bus_hours,
@@ -291,7 +293,15 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "works": works,
         "pv_benefit": pv_benefit,
         "pv_cost": pv_cost,
+        "pv_time": pv_time,
+        "pv_operator": pv_operator,
+        "pv_traffic": pv_traffic,
+        "pv_new_riders": pv_new,
+        "pv_external": pv_external,
+        "pv_damage": pv_damage,
         "pv_parking": pv_parking,
+        "pv_works": pv_works,
+        "pv_enforcement": pv_enforcement,
         "pv_public": pv_public,
         "npv": pv_benefit - pv_cost,
         "bcr": pv_benefit / pv_cost,
