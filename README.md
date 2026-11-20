@@ -108,6 +108,7 @@ flowchart LR
 | `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
 | `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
 | `standards` | largura medida comparada com as referências de desenho de rua, cada uma com página e âmbito |
+| `appraisal` | estudo de viabilidade e análise custo-benefício das opções de retirar o estacionamento de um lado (sempre ou a certas horas): VAL, benefício/custo, valores de inversão, simulação de Monte Carlo, viabilidade técnica, legal e social, e o estudo completo em `appraisal.md` ([docs/appraisal.md](https://github.com/diogo4256/mobilidados/blob/main/docs/appraisal.md)) |
 | `ledger` | `findings.md` / `findings.json`: cada afirmação com a sua base, fontes, método e reservas |
 
 ## O que (ainda) não faz

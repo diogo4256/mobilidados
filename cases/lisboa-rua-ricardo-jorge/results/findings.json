@@ -321,6 +321,147 @@
       "caveat": "O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s (delay_sensitivity.csv); o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença."
     },
     {
+      "id": "appraisal_B",
+      "grade": "I",
+      "statement": "Opção B (um lado, sempre, nos três troços com estacionamento dos dois lados): em 10 anos, a 5%, o valor atual líquido é de −64 200 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 500 € por ano) contra o valor dos cerca de 21 lugares retirados e a fiscalização (10 100 € por ano) e a obra (1 800 €): benefício/custo 0,24, entre −158 800 € e −37 600 € em 80% das simulações, probabilidade de ser positivo de 0%. Juntando os mecanismos ainda não medidos, a valores centrais de fontes publicadas, é de −2 100 € (benefício/custo 0,97; probabilidade de ser positivo de 50%).",
+      "values": {
+        "npv": -64183.15,
+        "bcr": 0.242,
+        "npv_p10_p90": [
+          -158840.57,
+          -37560.09
+        ],
+        "probability_positive": 0.0009,
+        "npv_extended": -2136.82,
+        "bcr_extended": 0.9656,
+        "probability_positive_extended": 0.5038
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_C",
+      "grade": "I",
+      "statement": "Opção C (um lado, sempre, só no troço B2, o mais longo): em 10 anos, a 5%, o valor atual líquido é de −22 200 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 100 € por ano) contra o valor dos cerca de 10 lugares retirados e a fiscalização (4 700 € por ano) e a obra (870 €): benefício/custo 0,43, entre −65 600 € e −8 100 € em 80% das simulações, probabilidade de ser positivo de 3%. Juntando os mecanismos ainda não medidos, a valores centrais de fontes publicadas, é de 17 800 € (benefício/custo 1,57; probabilidade de ser positivo de 79%).",
+      "values": {
+        "npv": -22197.19,
+        "bcr": 0.4303,
+        "npv_p10_p90": [
+          -65630.68,
+          -8085.66
+        ],
+        "probability_positive": 0.0323,
+        "npv_extended": 17772.3,
+        "bcr_extended": 1.5678,
+        "probability_positive_extended": 0.7859
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_E",
+      "grade": "I",
+      "statement": "Opção E (um lado, das 7h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −32 600 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 200 € por ano) contra o valor dos cerca de 21 lugares retirados e a fiscalização (6 000 € por ano) e a obra (2 400 €): benefício/custo 0,36, entre −85 200 € e −19 700 € em 80% das simulações, probabilidade de ser positivo de 1%. Juntando os mecanismos ainda não medidos, a valores centrais de fontes publicadas, é de 1 400 € (benefício/custo 1,03; probabilidade de ser positivo de 47%).",
+      "values": {
+        "npv": -32627.14,
+        "bcr": 0.3583,
+        "npv_p10_p90": [
+          -85231.73,
+          -19664.78
+        ],
+        "probability_positive": 0.0052,
+        "npv_extended": 1356.81,
+        "bcr_extended": 1.032,
+        "probability_positive_extended": 0.4714
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_G",
+      "grade": "I",
+      "statement": "Opção G (um lado, das 16h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −25 300 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 200 € por ano) contra o valor dos cerca de 21 lugares retirados e a fiscalização (5 100 € por ano) e a obra (2 400 €): benefício/custo 0,42, entre −71 100 € e −13 100 € em 80% das simulações, probabilidade de ser positivo de 2%. Juntando os mecanismos ainda não medidos, a valores centrais de fontes publicadas, é de −7 600 € (benefício/custo 0,80; probabilidade de ser positivo de 24%).",
+      "values": {
+        "npv": -25295.92,
+        "bcr": 0.4186,
+        "npv_p10_p90": [
+          -71113.38,
+          -13135.39
+        ],
+        "probability_positive": 0.0157,
+        "npv_extended": -7631.45,
+        "bcr_extended": 0.7964,
+        "probability_positive_extended": 0.235
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_H",
+      "grade": "I",
+      "statement": "Opção H (um lado, das 16h às 20h nos dias úteis, só no troço B2): em 10 anos, a 5%, o valor atual líquido é de −9 300 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (1 800 € por ano) contra o valor dos cerca de 10 lugares retirados e a fiscalização (2 900 € por ano) e a obra (1 200 €): benefício/custo 0,61, entre −34 800 € e −1 200 € em 80% das simulações, probabilidade de ser positivo de 8%. Juntando os mecanismos ainda não medidos, a valores centrais de fontes publicadas, é de 250 € (benefício/custo 1,01; probabilidade de ser positivo de 38%).",
+      "values": {
+        "npv": -9339.36,
+        "bcr": 0.6147,
+        "npv_p10_p90": [
+          -34806.3,
+          -1208.25
+        ],
+        "probability_positive": 0.081,
+        "npv_extended": 246.79,
+        "bcr_extended": 1.0102,
+        "probability_positive_extended": 0.3769
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_alternative_R",
+      "grade": "I",
+      "statement": "Alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar): retira cerca de 4 lugares, custa cerca de 15 500 € em valor atual e paga-se se poupar 9,4 horas de autocarro por ano, ou 7,5 s por passagem na ponta; o efeito não se pode estimar com estes dados.",
+      "values": {
+        "breakeven_bus_hours_per_year": 9.366
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
       "id": "occurrences",
       "grade": "M",
       "statement": "Foram atribuídas à rua 6 ocorrências da categoria «Estacionamento abusivo» (2017-05-05 – 2026-05-31, a ≤12 m do eixo): 2,87 por 100 m, 1.ª de 25 ruas com pelo menos 100 m na envolvente.",

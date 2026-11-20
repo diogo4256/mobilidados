@@ -43,6 +43,7 @@ operation as recorded in the archive, not the timetable.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, replace
 from typing import Any
 
@@ -492,3 +493,155 @@ def analyse(
 def routes_with(rts: list[Route], cfg: Delay) -> list[Route]:
     """The same routes with their controls and reach recomputed for ``cfg`` (sensitivity variants)."""
     return [replace(r, controls=c, reach=reach) for r in rts for c, reach in [windows(r.line, *r.stretch, cfg)]]
+
+
+# --- where the excess sits along the stretch ------------------------------------------------------------------------
+def parts(narrow: list[tuple[float, float, str]], s_from: float, s_to: float) -> list[tuple[str, float, float, bool]]:
+    """The stretch cut into the sections with parking on both sides (``narrow``: their extents) and what lies between
+    them: (name, from, to, is_narrow), in order along the street. Pieces shorter than 5 m are left to their neighbour."""
+    cuts: list[tuple[str, float, float, bool]] = []
+    s = s_from
+    for a, z, block in sorted(narrow):
+        a, z = max(a, s_from), min(z, s_to)
+        if z - a < 5:
+            continue
+        if a - s >= 5:
+            cuts.append((f"{s:g}–{a:g} m", s, a, False))
+        cuts.append((f"{block} {a:g}–{z:g} m", a, z, True))
+        s = z
+    if s_to - s >= 5:
+        cuts.append((f"{s:g}–{s_to:g} m", s, s_to, False))
+    return cuts
+
+
+def binomial_tail(k: int, n: int, p: float) -> float:
+    """P(X ≥ k) for X ~ Binomial(n, p), exactly (log-space sums, no extra dependency)."""
+    if k <= 0:
+        return 1.0
+    if p <= 0:
+        return 0.0
+    if p >= 1:
+        return 1.0
+    log = [
+        math.lgamma(n + 1) - math.lgamma(i + 1) - math.lgamma(n - i + 1) + i * math.log(p) + (n - i) * math.log1p(-p)
+        for i in range(k, n + 1)
+    ]
+    top = max(log)
+    return float(min(1.0, math.exp(top) * sum(math.exp(x - top) for x in log)))
+
+
+def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[tuple[str, float, float, bool]], cfg: Delay) -> pd.DataFrame:
+    """For buses seen on each part of the stretch on working days, at peak and off-peak: how often a bus in the other
+    direction was on the street at the same snapshot, against how often one is there at any snapshot of the same
+    period (chance), with the one-sided binomial p-value of seeing that many or more by chance.
+
+    ``on``: fresh positions on the street with ``s`` (along the axis) and ``heading``; ``prepare`` must have run on both.
+    A part where buses are held with an oncoming bus present far more often than chance is where they meet it.
+
+    Positions of the same bus held in the same standoff are not independent, so the binomial p-value overstates the
+    evidence. ``p_value_by_day`` resamples whole working days instead (``cfg.bootstrap`` times, seed ``cfg.seed``): the
+    share of resamples in which the excess over chance is not positive, with the 90% interval of that excess."""
+    on = on[on.weekday].assign(period=lambda d: period_of(d.hour, cfg))
+    on = on[on.period != ""]
+    work = snaps[snaps.weekday].assign(period=lambda d: period_of(d.hour, cfg))
+    present = on.groupby("t").heading.agg(set)
+    on = on.assign(opposing=[(-h) in present.get(t, set()) for t, h in zip(on.t, on.heading, strict=True)])
+    rows = []
+    rng = np.random.default_rng(cfg.seed)
+    for period in (PEAK, OFF):
+        w = work[work.period == period]
+        times = set(w.t)
+        chance = {h: len(set(on[(on.period == period) & (on.heading == h)].t) & times) / len(times) if times else np.nan for h in (1, -1)}
+        # per working day: the period's snapshots, and those with a bus of each heading on the street
+        days = sorted(set(w.date))
+        snaps_d = w.groupby("date").t.nunique().reindex(days, fill_value=0).to_numpy(float)
+        seen = on[(on.period == period) & on.t.isin(times)].drop_duplicates(["t", "heading"])
+        seen_d = {h: seen[seen.heading == h].groupby("date").size().reindex(days, fill_value=0).to_numpy(float) for h in (1, -1)}
+        pick = rng.integers(0, len(days), size=(cfg.bootstrap, len(days))) if days else np.zeros((0, 0), int)
+        for name, a, b, narrow in cuts:
+            g = on[(on.period == period) & on.s.between(a, b, inclusive="left")]
+            p0 = float(np.mean([chance[-h] for h in g.heading])) if len(g) else np.nan
+            k = int(g.opposing.sum())
+            gd = g.assign(up=g.heading == 1, down=g.heading == -1).groupby("date")
+            by_day = {c: gd[c].sum().reindex(days, fill_value=0).to_numpy(float) for c in ("opposing", "up", "down")}
+            with np.errstate(divide="ignore", invalid="ignore"):
+                n_b = (by_day["up"] + by_day["down"])[pick].sum(axis=1)
+                t_b = snaps_d[pick].sum(axis=1)
+                p0_b = (
+                    (
+                        by_day["up"][pick].sum(axis=1) * seen_d[-1][pick].sum(axis=1)
+                        + by_day["down"][pick].sum(axis=1) * seen_d[1][pick].sum(axis=1)
+                    )
+                    / t_b
+                    / n_b
+                )
+                excess_b = by_day["opposing"][pick].sum(axis=1) / n_b - p0_b
+            excess_b = excess_b[np.isfinite(excess_b)]
+            rows.append(
+                {
+                    "part": name,
+                    "narrow": narrow,
+                    "period": period,
+                    "positions": len(g),
+                    "with_oncoming_bus": k,
+                    "share": round(k / len(g), 3) if len(g) else np.nan,
+                    "chance": round(p0, 3),
+                    "p_value": binomial_tail(k, len(g), p0) if len(g) and np.isfinite(p0) else np.nan,
+                    "excess_ci90_low": round(float(np.quantile(excess_b, 0.05)), 3) if len(excess_b) else np.nan,
+                    "excess_ci90_high": round(float(np.quantile(excess_b, 0.95)), 3) if len(excess_b) else np.nan,
+                    "p_value_by_day": float((1 + (excess_b <= 0).sum()) / (1 + len(excess_b))) if len(excess_b) else np.nan,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def by_part(
+    pos: pd.DataFrame,
+    snaps: pd.DataFrame,
+    cuts: list[tuple[str, float, float, bool]],
+    cfg: Delay,
+    feed: Feed,
+    names: list[str],
+    axis: LineString,
+    crs: int,
+) -> pd.DataFrame:
+    """The ratio and the excess (with their 90% intervals) on each part of the stretch, each measured as a stretch of its
+    own against the same controls; ``pos`` are the loaded positions (``load``) and ``snaps`` the prepared snapshots."""
+    rows = []
+    for name, a, b, narrow in cuts:
+        part = cfg.model_copy(update={"s_from": a, "s_to": b})
+        rts = routes(feed, names, axis, crs, part)
+        placed = place(pos, rts, crs, part.max_offset_m)
+        prepare(placed, snaps, part)
+        d, _ = daily(placed, snaps, rts, part)
+        e, bt = estimate(d, 2 * part.control_m), bootstrap(d, 2 * part.control_m, part.bootstrap, part.seed)
+        rows.append(
+            {
+                "part": name,
+                "narrow": narrow,
+                "from_m": a,
+                "to_m": b,
+                "length_m": round(b - a, 1),
+                "ratio": round(e["ratio"], 3),
+                "ratio_ci90_low": round(float(bt.ratio.quantile(0.05)), 3),
+                "ratio_ci90_high": round(float(bt.ratio.quantile(0.95)), 3),
+                "excess_s": round(e["excess_s"], 1),
+                "excess_ci90_low_s": round(float(bt.excess_s.quantile(0.05)), 1),
+                "excess_ci90_high_s": round(float(bt.excess_s.quantile(0.95)), 1),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def on_axis(placed: pd.DataFrame, rts: list[Route], axis: LineString, crs: int, near_m: float = 12.0) -> pd.DataFrame:
+    """Fresh positions on the street itself (within ``near_m`` of the axis), with ``s`` along it and their ``heading``."""
+    x, y = Transformer.from_crs(4326, crs, always_xy=True).transform(
+        placed.longitude.astype(float).to_numpy(), placed.latitude.astype(float).to_numpy()
+    )
+    pts = shapely.points(x, y)
+    out = placed.assign(
+        s=shapely.line_locate_point(axis, pts),
+        d=shapely.distance(axis, pts),
+        heading=placed.key.map({r.key: heading(r, axis) for r in rts}),
+    )
+    return out[(out.d <= near_m) & out.s.between(0, axis.length)]

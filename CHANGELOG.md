@@ -5,6 +5,53 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Feasibility study and cost-benefit analysis** (the `appraisal` stage, `[appraisal]` in a case; method in
+  docs/appraisal.md). Each option removes the parking on one side in some sections, always or at some hours; the
+  study values the buses' time at the evening peak that it can remove against the places it removes, the works and the
+  enforcement, following the European Commission's *Economic Appraisal Vademecum 2021-2027* (5%, 10 years). Every input
+  has a range, a grade and a source; the result comes with switching values, a tornado, a Monte Carlo simulation with
+  PERT distributions, who gains and who loses, the feasibility checks (widths, places against the parking mapped
+  nearby, the law and the plans) and alternatives whose effect cannot be estimated, with the saving they need to pay
+  for themselves. It writes `results/appraisal.md`, in the case's language, whose conclusions are chosen by the numbers.
+- The `delay` stage measures the excess on each part of the stretch (`delay_by_part.csv`) and how often buses on each
+  part have an oncoming bus on the street, against chance (`delay_copresence.csv`): where buses give way. The
+  appraisal reads from them how much of the excess each option can remove.
+- **The appraisal in two layers.** The *core* counts only what is measured or documented; the *extended layer* adds,
+  each with a unit value from a published source, a range and a grade, the mechanisms the measurement cannot see yet:
+  the time lost at every hour and day (the passages of a working day, a Saturday and a Sunday from the timetable,
+  `appraisal_passages.csv`), reliability (unexpected delay and missed rail and metro connections, weighted as
+  lateness), the cars held behind buses, the new passengers a faster bus attracts and the external costs of the car
+  trips they leave (EC *Handbook on the external costs of transport*, Portugal's values, in 2025 prices), damage from
+  scrapes; and on the cost side, the displaced cars that find room nearby, and traffic calming. The core is the
+  extended layer with those mechanisms off, so the difference between them is exactly what remains to be measured.
+- The value of information (`appraisal_voi.csv`): what knowing each input before deciding is worth, from the
+  simulation. Who gains and who loses (`appraisal_distribution.csv`), per group, a year. The effects without a price
+  (`[[appraisal.criteria]]`, `appraisal_criteria.csv`): reliability, access to rail and metro, residents' quality of
+  life, noise and air, safety, emergency access, the municipal design references, equity, reversibility, with how
+  each option moves them and why; no weights, which are the decision-maker's.
+- **Standard and practice** (docs/appraisal.md): the EAV for Portugal, and the UK DfT's practice where the EAV is
+  silent. Unit values grow in real terms with income per head on both sides of the account (EAV p. 59). Two
+  benefit-cost ratios are reported, the EAV's and the DfT's (to the public budget), with the DfT's value-for-money
+  category. The NPV decides. A bridge (`appraisal_bridge.csv`) goes from the core's NPV to the extended layer's one
+  mechanism at a time, so the study shows what its result rests on. The study lists the limits of the method.
+- Alternatives may remove parking (`parking_m`), valued as an option's places; they give the saving needed per peak
+  passage and per passage at any hour.
+- docs/field/: templates for the three counts anyone can make in the street (free places at night, deadlocks,
+  traffic), each replacing an assumed input with a measured one.
+- Scenarios (`appraisal_scenarios.csv`): cautious, central and favourable values of the inputs not yet measured, and
+  the central NPV over longer periods (`horizons_tested`). Inputs can be correlated in the simulation (`correlations`,
+  Iman-Conover rank reordering); Rua Ricardo Jorge correlates the peak and off-peak excess.
+- Rua Ricardo Jorge: more than half the peak excess sits at the junctions between the narrow sections; at the first
+  one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 1.5 × 10⁻⁶). In the core, no
+  option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on working days in
+  section B2 only, has an NPV of about −9 300 € (benefit/cost 0.60). In the extended layer, at central values, removing
+  one side's parking in section B2 alone, always (about 10 places), pays: NPV about 18 300 €, benefit/cost 1.52;
+  one side in all three sections reaches 0.93. The bridge shows the result rests mostly on the off-peak delay
+  (assumed, 3 s per passage), reliability and connections, and free places nearby: what Carris's passage records
+  and a night count of free places would settle.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added
@@ -50,6 +97,26 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- The co-presence test counted every position as independent, so a bus held for several snapshots in one standoff
+  counted several times and the binomial p-value overstated the evidence. `delay_copresence.csv` now also resamples
+  whole working days (`p_value_by_day`, with the 90% interval of the excess over chance), and the attribution uses it.
+- The off-peak break-even was shown with one parking assumption at a time, which hid that the two can coincide: with
+  no room nearby and full car parks together, Rua Ricardo Jorge's option C needs 3.4 s off-peak, not 0.5 s. The new
+  `appraisal_offpeak_thresholds.csv` gives it under each condition and both; room nearby and room in the car parks are
+  now drawn correlated.
+- The central off-peak excess was typed in (3 s). With `offpeak_from_copresence` it is derived from the data: the peak
+  excess scaled by how often buses meet off-peak relative to the peak where they demonstrably meet (2.5 s in Rua
+  Ricardo Jorge).
+- The parking cost counted what a displaced driver pays for a car park as a cost to society, although the appraisal
+  treats fees and permits as transfers. The extended layer now counts that payment for the driver (in the
+  distribution) and nets it out of the economic case where the car park has room to spare (`spare_capacity`); it also
+  counts the walk from the car park (`carpark_walk`), which was left out. The core still counts the price in full.
+- The study no longer says that buses wait at the junction where they lose time to oncoming buses. Snapshots minutes
+  apart show where the time is lost, not what the buses do there, and a 12 m bus cannot step aside in a short junction
+  to let another by. A passing place is described as a place to pull aside, and a junction as a natural test of one.
+- The Monte Carlo's probability that an option is the best counts doing nothing as a choice: an option is best only
+  in the draws where it beats every other and pays. It had compared the options among themselves only, so the least bad
+  of several losing options read as "best", and an option could be the best more often than it paid.
 - `verify` and the data test only looked at the sources the lock lists, so a case that was never fetched passed
   `verify` ("0/0 files match the lock") and the data test then crashed on a missing file. Every source the case
   configures is now checked, and one the lock has no entry for is reported as `not fetched`.

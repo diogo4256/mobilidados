@@ -125,11 +125,14 @@ def stops_near(feed: Feed, axis: LineString, crs: int, max_dist: float = 40.0) -
     return near[["stop_id", "stop_name", "stop_lat", "stop_lon", "dist_m", "s_m"]].round({"dist_m": 1, "s_m": 1})
 
 
-def reference_passings(feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame, refs: list[ReferenceStop], day: dt.date) -> pd.DataFrame:
+def reference_passings(
+    feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame, refs: list[ReferenceStop], day: dt.date, strict: bool = True
+) -> pd.DataFrame:
     """Scheduled arrival at each route/direction's reference stop, for trips running on ``day``.
 
     ``stop_times`` must cover ``trips``. One row per trip: route, direction_id, heading, s_ref (the stop's position
-    along the axis), arrival_time and t (seconds after midnight).
+    along the axis), arrival_time and t (seconds after midnight). A route/direction with no trip at its reference stop
+    that day is an error, unless ``strict`` is false (a route that does not run on Sundays, say): then it has no rows.
     """
     active = active_service_ids(feed, day)
     keyed = {(r.route, str(r.direction_id)): r for r in refs}
@@ -142,14 +145,18 @@ def reference_passings(feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame
         at_ref = st[st.stop_id == ref.stop_id].sort_values("stop_sequence").drop_duplicates("trip_id")  # a loop passes once
         t = sel[(sel.route_short_name == rt) & (sel.direction_id == d)].merge(at_ref, on="trip_id")
         if not (t.stop_sequence < t.trip_id.map(last)).any():  # scheduled_runtimes needs the next stop
+            if not strict:
+                continue
             raise MobilidadosError(
                 f"route {rt} direction {d}: no trip serves stop {ref.stop_id} on {day} with a following stop; "
                 "check reference_stops and service_date"
             )
         rows.append(t.assign(ref_stop=ref.stop_id, s_ref=ref.s_m, heading=ref.heading))
+    cols = ["route_short_name", "direction_id", "trip_id", "ref_stop", "s_ref", "heading", "arrival_time", "t"]
+    if not rows:
+        return pd.DataFrame(columns=cols)
     out = pd.concat(rows, ignore_index=True)
     out["t"] = out.arrival_time.map(seconds)
-    cols = ["route_short_name", "direction_id", "trip_id", "ref_stop", "s_ref", "heading", "arrival_time", "t"]
     return out.sort_values(["t", "route_short_name"])[cols].reset_index(drop=True)
 
 
