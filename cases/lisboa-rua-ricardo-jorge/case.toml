@@ -239,7 +239,7 @@ high = 8.0
 grade = "P"
 unit = "s"
 label = "Excesso por passagem fora da ponta (todos os dias)"
-source = "Não medido: o método compara a ponta com o resto do dia, que é a sua base. O horário prevê 1–2 encontros por dia útil nos troços estreitos, mas na ponta os autocarros cruzam-se lá muito mais do que o acaso explica (26 % contra 11 %); admite-se fora da ponta cerca de um quinto dos 14,5 s medidos na ponta, removível na mesma parte. Os registos de passagem pedidos à Carris medem-no"
+source = "Não medido: o método compara a ponta com o resto do dia, que é a sua base. O horário prevê 2 a 3 encontros por dia útil nos 153 m entre o início de B1 e o fim de B3, onde nenhum autocarro tem espaço para parar e deixar passar outro (encounters_detail.csv); mas na ponta os autocarros cruzam-se lá muito mais do que o acaso explica (26 % contra 11 %); admite-se fora da ponta cerca de um quinto dos 14,5 s medidos na ponta, removível na mesma parte. Os registos de passagem pedidos à Carris medem-no"
 
 [appraisal.parameters.load_offpeak]
 low = 8.0
