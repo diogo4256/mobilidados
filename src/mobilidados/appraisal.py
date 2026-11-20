@@ -367,9 +367,17 @@ def pert(rng: np.random.Generator, lo: float, mode: float, hi: float, size: int)
 
 
 def draws(cfg: Appraisal, m: Measured) -> dict[str, np.ndarray]:
-    """``cfg.draws`` draws of every input from its PERT distribution (fixed seed)."""
+    """``cfg.draws`` draws of every input from its PERT distribution (fixed seed). Inputs that ``cfg.correlations``
+    pairs are then reordered so their ranks follow a correlated normal pair (Iman-Conover): each keeps its own
+    distribution, and the two move together."""
     rng = np.random.default_rng(cfg.seed)
-    return {k: pert(rng, lo, c, hi, cfg.draws) for k, (lo, c, hi) in sorted(ranges(cfg, m).items())}
+    d = {k: pert(rng, lo, c, hi, cfg.draws) for k, (lo, c, hi) in sorted(ranges(cfg, m).items())}
+    for pair in cfg.correlations:
+        z1 = rng.standard_normal(cfg.draws)
+        z2 = pair.rho * z1 + np.sqrt(1 - pair.rho**2) * rng.standard_normal(cfg.draws)
+        for key, z in ((pair.a, z1), (pair.b, z2)):
+            d[key] = np.sort(d[key])[np.argsort(np.argsort(z))]
+    return d
 
 
 def simulate(cfg: Appraisal, m: Measured, d: dict[str, np.ndarray], name: str) -> pd.DataFrame:
@@ -458,6 +466,41 @@ def criteria_table(cfg: Appraisal) -> pd.DataFrame:
     )
 
 
+def scenarios(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
+    """Each option's NPV in named scenarios: the core; the extended layer with every input the measurement does not
+    cover at the end of its range that is least favourable to the option (*cautious*), at its central value, and at the
+    most favourable end (*favourable*); and the central extended layer over each of ``cfg.horizons_tested`` years.
+    Which end is least favourable is read input by input, the others central, so the cautious scenario is the
+    worst combination of those ends, not a probability."""
+    rg = ranges(cfg, m)
+    unmeasured = [k for k in [*MECHANISMS, *COMPANIONS] if k in cfg.parameters]
+    rows = []
+    for o in cfg.options:
+        central_q = layer(c, "extended")
+
+        def npv(q: dict[str, Any], conf: Appraisal = cfg, opt: Option = o) -> float:
+            return float(evaluate(opt, q, m, conf)["npv"])
+
+        worst, best = dict(central_q), dict(central_q)
+        for k in unmeasured:
+            lo, _, hi = rg[k]
+            at_lo, at_hi = npv(central_q | {k: lo}), npv(central_q | {k: hi})
+            worst[k], best[k] = (lo, hi) if at_lo <= at_hi else (hi, lo)
+        rows += [
+            {"option": o.id, "scenario": "core", "years": cfg.horizon_years, "npv": npv(layer(c, "core"))},
+            {"option": o.id, "scenario": "cautious", "years": cfg.horizon_years, "npv": npv(worst)},
+            {"option": o.id, "scenario": "central", "years": cfg.horizon_years, "npv": npv(central_q)},
+            {"option": o.id, "scenario": "favourable", "years": cfg.horizon_years, "npv": npv(best)},
+        ]
+        for h in cfg.horizons_tested:
+            longer = cfg.model_copy(update={"horizon_years": h})
+            rows += [
+                {"option": o.id, "scenario": "core", "years": h, "npv": npv(layer(c, "core"), longer)},
+                {"option": o.id, "scenario": "central", "years": h, "npv": npv(central_q, longer)},
+            ]
+    return pd.DataFrame(rows)
+
+
 def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
     """Every table of the appraisal (see ``docs/appraisal.md``)."""
     c, rg = central(cfg, m), ranges(cfg, m)
@@ -527,6 +570,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
         "appraisal_voi": value_of_information(sims["extended"], d),
         "appraisal_distribution": distribution(cfg, m, c),
         "appraisal_bridge": bridge(cfg, m, c),
+        "appraisal_scenarios": scenarios(cfg, m, c),
         "appraisal_criteria": criteria_table(cfg),
         "appraisal_alternatives": pd.DataFrame(alternatives, columns=alt_columns),
     }

@@ -454,6 +454,14 @@ class Alternative(Model):
     parking_m: float = Field(0.0, ge=0, description="Metres of parking strip it removes (0: none), valued as an option's places")
 
 
+class Correlation(Model):
+    """Two inputs that move together in the simulation, with a rank correlation ``rho`` (Iman-Conover)."""
+
+    a: str
+    b: str
+    rho: float = Field(gt=-1, lt=1)
+
+
 class Criterion(Model):
     """An effect the appraisal does not put a price on (quality of life, access to the rail network, safety...): how
     each option moves it, with the evidence. The weights between criteria are the decision-maker's, so none are given."""
@@ -480,6 +488,8 @@ class Appraisal(Model):
     horizon_years: int = Field(10, ge=1)
     discount_rate: float = Field(0.05, gt=0, lt=1)
     discount_rates_tested: list[float] = [0.03, 0.07]
+    horizons_tested: list[int] = Field([20], description="Other appraisal periods (years) the central NPV is shown for")
+    correlations: list[Correlation] = []
     price_year: int
     repaint_every_years: int = Field(5, ge=1)
     draws: int = Field(20000, ge=1000)
@@ -501,6 +511,10 @@ class Appraisal(Model):
         ids = [o.id for o in self.options]
         if len(set(ids)) != len(ids):
             raise ValueError(f"appraisal: option ids repeat: {ids}")
+        known = set(self.parameters) | {"excess_s"} | {f"attribution_{i}" for i in ids}
+        loose = sorted({x for c in self.correlations for x in (c.a, c.b)} - known)
+        if loose:
+            raise ValueError(f"appraisal: correlations name inputs that do not exist: {loose}")
         stray = sorted({k for c in self.criteria for k in c.effects} - set(ids) - {"*"})
         if stray:
             raise ValueError(f"appraisal: criteria name options that do not exist: {stray}")

@@ -114,6 +114,7 @@ def build(r: Run) -> str:
     tor = tab("appraisal_tornado")
     voi = tab("appraisal_voi")
     bridge = tab("appraisal_bridge")
+    scen = tab("appraisal_scenarios")
     dist = tab("appraisal_distribution")
     crit = tab("appraisal_criteria")
     inputs = tab("appraisal_inputs").set_index("input")
@@ -297,6 +298,15 @@ def build(r: Run) -> str:
     else:
         cba.append(say("voi_none"))
     ids = [o.id for o in a.options]
+    base_years = a.horizon_years
+    cols = [("core", base_years), ("cautious", base_years), ("central", base_years), ("favourable", base_years)]
+    cols += [(sc, h) for h in a.horizons_tested for sc in ("core", "central")]
+    cba += ["", f"### {say('h_scenarios')}", "", say("scenarios_intro"), "",
+            "| " + say("option") + " | " + " | ".join(say(f"sc_{sc}", years=h) for sc, h in cols) + " |", "| --- |" + " ---: |" * len(cols)]  # fmt: skip
+    for oid in ids:
+        sub = scen[scen.option == oid]
+        vals = [float(sub[(sub.scenario == sc) & (sub.years == h)].npv.iloc[0]) for sc, h in cols]
+        cba.append(f"| {oid} | " + " | ".join(money(v, lang) for v in vals) + " |")
     cba += ["", f"### {say('h_distribution')}", "", say("distribution_intro"), "", "| " + say("group") + " | " + " | ".join(ids) + " |",
             "| --- |" + " ---: |" * len(ids)]  # fmt: skip
     cba.append(f"| {say('g_trips')} | " + " | ".join(grouped(float(ext.loc[i, "riders"]), lang) for i in ids) + " |")

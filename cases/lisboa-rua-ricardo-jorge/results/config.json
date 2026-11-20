@@ -10,6 +10,13 @@
         "yearly": 0.0
       }
     ],
+    "correlations": [
+      {
+        "a": "excess_s",
+        "b": "offpeak_s",
+        "rho": 0.5
+      }
+    ],
     "criteria": [
       {
         "dimension": "passengers",
@@ -151,6 +158,9 @@
     ],
     "draws": 20000,
     "horizon_years": 10,
+    "horizons_tested": [
+      20
+    ],
     "notes": [
       {
         "dimension": "legal",

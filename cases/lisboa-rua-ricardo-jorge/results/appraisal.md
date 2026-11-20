@@ -8,8 +8,8 @@ Gerado por `mobilidados run` a partir das tabelas em `tables/` e da configuraç�
 - Nos dias úteis, às 17h–19h, a diferença entre o tempo dos autocarros no troço entre paragens e o que os troços vizinhos explicariam foi de +49% (intervalo de 90%: +34% a +65%), cerca de 14 s por passagem (6 a 24 s), segundo posições GPS arquivadas por terceiros (por ano: 2025: +60%; 2026: +4%, não informa: o arquivo guardou muito menos registos nesse ano).
 - No núcleo, só com o medido e o documentado, nenhuma opção compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,61, probabilidade de VAL > 0 de 8%).
 - Para a opção H compensar no núcleo, seria preciso, por exemplo, um excesso de 23,6 s por passagem (medido: 14,5 s, até 23,9 s); ou que um lugar valesse no máximo 210 € por ano a quem o perde (central: 560 €).
-- Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 18 300 €, benefício/custo 1,52, positivo em 75% das simulações (benefício/custo de cada opção: B 0,93; C 1,52; E 1,01; G 0,74; H 0,97).
-- O que mais pode mudar a decisão, e por isso mais vale medir: custo anual, para quem perde o lugar, de estacionar noutro sítio; excesso por passagem fora da ponta (todos os dias); opção C: parte do excesso que pode remover.
+- Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 18 300 €, benefício/custo 1,52, positivo em 73% das simulações (benefício/custo de cada opção: B 0,93; C 1,52; E 1,01; G 0,74; H 0,97).
+- O que mais pode mudar a decisão, e por isso mais vale medir: excesso por passagem fora da ponta (todos os dias); custo anual, para quem perde o lugar, de estacionar noutro sítio; excesso de tempo por passagem na ponta (s, intervalo de 90%).
 - Fora das contas, a opção C melhora: fiabilidade da viagem de autocarro (o stress de não saber quando se chega); acesso ao comboio e ao metro; ruído e ar na rua; acesso de veículos de socorro; referência municipal de desenho de rua; reversibilidade; e piora: qualidade de vida de quem estaciona na rua.
 - A alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro espera enquanto o outro passa) retira cerca de 4 lugares e paga-se com 7,5 s poupados por passagem na ponta (0,8 s a qualquer hora): merece um estudo de geometria.
 - Os dados que fecham estas contas: os registos de passagem pedidos à Carris (o atraso de hoje, a qualquer hora, e a sua dispersão), uma contagem noturna dos lugares livres a menos de 150 m, e uma contagem do tráfego na rua.
@@ -186,16 +186,16 @@ Simulação de Monte Carlo com 20 000 sorteios de todos os valores (distribuiç�
 
 | camada | opção | VAL P10 | VAL mediano | VAL P90 | probabilidade de VAL > 0 | probabilidade de ser a melhor |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| núcleo | B | −157 000 € | −86 300 € | −42 600 € | 0% | 0% |
-| núcleo | C | −65 000 € | −31 800 € | −10 200 € | 2% | 12% |
-| núcleo | E | −84 800 € | −47 100 € | −21 700 € | 0% | 0% |
-| núcleo | G | −70 500 € | −37 800 € | −14 500 € | 1% | 0% |
-| núcleo | H | −34 700 € | −17 000 € | −1 700 € | 8% | 88% |
-| alargada | B | −68 400 € | −9 200 € | 39 100 € | 40% | 10% |
-| alargada | C | −15 700 € | 16 900 € | 54 000 € | 75% | 74% |
-| alargada | E | −39 700 € | −6 200 € | 25 800 € | 40% | 4% |
-| alargada | G | −45 800 € | −18 000 € | 5 500 € | 16% | 0% |
-| alargada | H | −24 500 € | −6 600 € | 11 700 € | 32% | 11% |
+| núcleo | B | −157 000 € | −86 000 € | −42 200 € | 0% | 0% |
+| núcleo | C | −64 700 € | −31 800 € | −10 100 € | 2% | 12% |
+| núcleo | E | −85 000 € | −47 200 € | −21 600 € | 0% | 0% |
+| núcleo | G | −70 400 € | −37 800 € | −14 700 € | 1% | 0% |
+| núcleo | H | −34 700 € | −17 100 € | −1 700 € | 8% | 88% |
+| alargada | B | −69 900 € | −10 600 € | 42 700 € | 40% | 10% |
+| alargada | C | −17 500 € | 16 600 € | 56 800 € | 73% | 74% |
+| alargada | E | −40 700 € | −6 800 € | 28 100 € | 40% | 4% |
+| alargada | G | −46 300 € | −18 300 € | 6 000 € | 17% | 0% |
+| alargada | H | −24 800 € | −6 700 € | 12 200 € | 32% | 12% |
 
 ### O que teria de mudar
 
@@ -291,13 +291,26 @@ Entradas que mais mudam o VAL da opção C na camada alargada (do mínimo ao má
 
 ### O que vale a pena medir
 
-Quanto vale saber cada entrada antes de decidir, em valor atual (valor esperado da informação perfeita parcial, da simulação da camada alargada): só conta o que pode mudar a decisão. Saber tudo valeria cerca de 5 600 €.
+Quanto vale saber cada entrada antes de decidir, em valor atual (valor esperado da informação perfeita parcial, da simulação da camada alargada): só conta o que pode mudar a decisão. Saber tudo valeria cerca de 6 200 €.
 
 | entrada | valor de saber antes de decidir |
 | --- | ---: |
-| Custo anual, para quem perde o lugar, de estacionar noutro sítio | 760 € |
-| Excesso por passagem fora da ponta (todos os dias) | 390 € |
-| Opção C: parte do excesso que pode remover | 250 € |
+| Excesso por passagem fora da ponta (todos os dias) | 1 100 € |
+| Custo anual, para quem perde o lugar, de estacionar noutro sítio | 800 € |
+| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 510 € |
+| Opção C: parte do excesso que pode remover | 290 € |
+
+### Cenários
+
+VAL de cada opção em cenários com nome. Prudente: cada entrada que a medição ainda não cobre no extremo do seu intervalo menos favorável à opção, todas ao mesmo tempo; favorável: no extremo oposto. É um limite, não uma probabilidade: a simulação diz quão provável é cada resultado.
+
+| opção | núcleo, 10 anos | prudente, 10 anos | central, 10 anos | favorável, 10 anos | núcleo, 20 anos | central, 20 anos |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| B | −64 200 € | −85 500 € | −5 300 € | 215 100 € | −106 500 € | −4 400 € |
+| C | −22 200 € | −40 200 € | 18 300 € | 196 000 € | −36 600 € | 34 600 € |
+| E | −32 600 € | −50 500 € | 260 € | 142 100 € | −52 600 € | 5 800 € |
+| G | −25 300 € | −43 500 € | −10 500 € | 53 800 € | −40 300 € | −12 200 € |
+| H | −9 300 € | −28 500 € | −900 € | 45 000 € | −14 400 € | 3 200 € |
 
 ### Quem ganha e quem perde (camada alargada, valores centrais, por ano)
 
@@ -349,8 +362,8 @@ O que falta saber, e o que mais mudaria estas conclusões:
 
 1. No núcleo, só com o medido e o documentado, nenhuma opção compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,61, probabilidade de VAL > 0 de 8%).
 2. Para a opção H compensar no núcleo, seria preciso, por exemplo, um excesso de 23,6 s por passagem (medido: 14,5 s, até 23,9 s); ou que um lugar valesse no máximo 210 € por ano a quem o perde (central: 560 €).
-3. Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 18 300 €, benefício/custo 1,52, positivo em 75% das simulações (benefício/custo de cada opção: B 0,93; C 1,52; E 1,01; G 0,74; H 0,97).
-4. O que mais pode mudar a decisão, e por isso mais vale medir: custo anual, para quem perde o lugar, de estacionar noutro sítio; excesso por passagem fora da ponta (todos os dias); opção C: parte do excesso que pode remover.
+3. Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 18 300 €, benefício/custo 1,52, positivo em 73% das simulações (benefício/custo de cada opção: B 0,93; C 1,52; E 1,01; G 0,74; H 0,97).
+4. O que mais pode mudar a decisão, e por isso mais vale medir: excesso por passagem fora da ponta (todos os dias); custo anual, para quem perde o lugar, de estacionar noutro sítio; excesso de tempo por passagem na ponta (s, intervalo de 90%).
 5. Fora das contas, a opção C melhora: fiabilidade da viagem de autocarro (o stress de não saber quando se chega); acesso ao comboio e ao metro; ruído e ar na rua; acesso de veículos de socorro; referência municipal de desenho de rua; reversibilidade; e piora: qualidade de vida de quem estaciona na rua.
 6. A alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro espera enquanto o outro passa) retira cerca de 4 lugares e paga-se com 7,5 s poupados por passagem na ponta (0,8 s a qualquer hora): merece um estudo de geometria.
 7. Os dados que fecham estas contas: os registos de passagem pedidos à Carris (o atraso de hoje, a qualquer hora, e a sua dispersão), uma contagem noturna dos lugares livres a menos de 150 m, e uma contagem do tráfego na rua.

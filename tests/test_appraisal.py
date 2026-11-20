@@ -313,3 +313,31 @@ def test_the_bridge_goes_from_the_core_to_the_extended_layer():
     assert b.npv.iloc[-1] == pytest.approx(extended)
     assert b.change.sum() == pytest.approx(extended)  # the core's NPV plus every step
     assert b.step.tolist() == ["core", *[k for k in appraisal.MECHANISMS if k in cfg.parameters]]
+
+
+def test_the_scenarios_bracket_the_central_value_and_longer_periods_are_shown():
+    cfg = config(
+        parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0), "room_nearby": parameter(0.5, 0.0, 1.0)}, horizons_tested=[20]
+    )
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    s = appraisal.scenarios(cfg, m, appraisal.central(cfg, m)).set_index(["scenario", "years"]).npv
+    assert s["cautious", 10] < s["central", 10] < s["favourable", 10]
+    # 20 years: ten more years of the same yearly flows, less the repainting, so the NPV moves the way the yearly flow points
+    assert ("central", 20) in s.index
+    assert ("core", 20) in s.index
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+    yearly = e["benefit_year"] - e["parking_year"]
+    assert (s["central", 20] > s["central", 10]) == (yearly > 0)
+
+
+def test_correlated_inputs_move_together_and_keep_their_distributions():
+    cfg = config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0)}, draws=4000,
+                 correlations=[{"a": "excess_s", "b": "offpeak_s", "rho": 0.6}])  # fmt: skip
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    d = appraisal.draws(cfg, m)
+    ranks = pd.DataFrame({"a": d["excess_s"], "b": d["offpeak_s"]}).rank()
+    assert 0.5 < ranks.corr().iloc[0, 1] < 0.7
+    independent = appraisal.draws(config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0)}, draws=4000), m)
+    assert np.sort(d["offpeak_s"]).mean() == pytest.approx(np.sort(independent["offpeak_s"]).mean(), rel=0.05)
+    with pytest.raises(ValidationError, match="correlations name inputs"):
+        config(correlations=[{"a": "excess_s", "b": "nothing", "rho": 0.5}])

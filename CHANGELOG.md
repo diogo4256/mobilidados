@@ -40,6 +40,9 @@ and the project uses [Semantic Versioning](https://semver.org/).
   passage and per passage at any hour.
 - docs/field/: templates for the three counts anyone can make in the street (free places at night, deadlocks,
   traffic), each replacing an assumed input with a measured one.
+- Scenarios (`appraisal_scenarios.csv`): cautious, central and favourable values of the inputs not yet measured, and
+  the central NPV over longer periods (`horizons_tested`). Inputs can be correlated in the simulation (`correlations`,
+  Iman-Conover rank reordering); Rua Ricardo Jorge correlates the peak and off-peak excess.
 - Rua Ricardo Jorge: more than half the peak excess sits at the junctions between the narrow sections; at the first
   one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 1.5 × 10⁻⁶). In the core, no
   option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on working days in

@@ -128,6 +128,13 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   distribution for three-point estimates, keeps most of its weight near the central value: a long range on one side
   (a place worth up to a garage's rent) does not drag the mean far from the value the evidence points to, as a
   triangular distribution would. The same draws serve every option and both layers.
+* **Correlated inputs** (`correlations`): two inputs that move together, such as the peak and the off-peak excess (the
+  same encounters in the same sections), are paired by Iman-Conover rank reordering: each keeps its own distribution,
+  and their ranks follow a correlated normal pair with correlation `rho`.
+* **Scenarios** (`appraisal_scenarios.csv`): the core; the extended layer with every input the measurement does not
+  cover at the end of its range least favourable to the option (*cautious*), central, and most favourable
+  (*favourable*); and the central NPV over each of `horizons_tested` years. The cautious scenario is a bound, the worst
+  combination of those ends, not a probability.
 * **Value of information** (`appraisal_voi.csv`): what knowing each input before deciding is worth, in present value:
   the expected value of partial perfect information, estimated from the extended layer's draws by grouping them by
   the input. The decision is to do the best option or nothing, so an input is worth measuring only if knowing it could
