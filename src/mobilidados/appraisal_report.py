@@ -113,6 +113,7 @@ def build(r: Run) -> str:
     sw = tab("appraisal_switching")
     tor = tab("appraisal_tornado")
     voi = tab("appraisal_voi")
+    bridge = tab("appraisal_bridge")
     dist = tab("appraisal_distribution")
     crit = tab("appraisal_criteria")
     inputs = tab("appraisal_inputs").set_index("input")
@@ -242,6 +243,24 @@ def build(r: Run) -> str:
             f"{money(row.external_value, lang)} | {money(row.damage_value, lang)} | {money(row.benefit_year, lang)} | "
             f"{money(row.parking_year + row.enforcement_year, lang)} | {money(row.works, lang)} | {money(row.npv, lang)} | {n(row.bcr, 2)} |"
         )
+    cba += ["", f"### {say('h_vfm')}", "", say("vfm_intro"), "", say("vfm_header"), "| --- | --- | ---: | ---: | ---: | --- |"]
+    for row in results.itertuples():
+        cba.append(
+            f"| {layer_name[row.layer]} | {row.option} | {money(row.npv, lang)} | {n(row.bcr, 2)} | {n(row.bcr_budget, 2)} | {say('vfm_' + row.vfm)} |"
+        )
+    ids_b = list(dict.fromkeys(bridge.option))
+    cba += ["", f"### {say('h_bridge')}", "", say("bridge_intro"), "", "| " + say("bridge_step") + " | " + " | ".join(ids_b) + " |",
+            "| --- |" + " ---: |" * len(ids_b)]  # fmt: skip
+    for step in dict.fromkeys(bridge.step):
+        vals = bridge[bridge.step == step].set_index("option").change
+        sign = step != "core"
+        cba.append(
+            f"| {say('bridge_' + step)} | "
+            + " | ".join((("+" if vals[i] > 0 and sign else "") + money(float(vals[i]), lang)) for i in ids_b)
+            + " |"
+        )
+    final = bridge.groupby("option").npv.last()
+    cba.append(f"| **{say('bridge_extended')}** | " + " | ".join(f"**{money(float(final[i]), lang)}**" for i in ids_b) + " |")
     cba += ["", f"### {say('h_uncertainty')}", "", say("mc_intro", draws=f"{a.draws:,}".replace(",", " " if lang == "pt" else ",")), "", say("mc_header"),
             "| --- | --- | ---: | ---: | ---: | ---: | ---: |"]  # fmt: skip
     for row in mcs.itertuples():

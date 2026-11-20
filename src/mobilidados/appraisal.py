@@ -77,8 +77,16 @@ COMPANIONS = {
     "trip_km": 0.0,
     "external_cost_pkm": 0.0,
     "walk_cost": 0.0,
+    "income_growth": 0.0,
 }
 LAYERS = ("core", "extended")
+#: Elasticity of each stream's unit value to real income (GDP per capita), for its real growth over the years (EAV
+#: 2021-2027, p. 59: 1 for values of time set from Eurostat labour costs; 0.8 for externalities other than CO2).
+#: The operator's cost (mostly wages) and the value of a place to whoever parks are given 1 too, so that both sides of
+#: the account grow alike; damage, works and enforcement are held at their prices.
+GROWTH = {"time": 1.0, "operator": 1.0, "external": 0.8, "parking": 1.0}
+#: DfT Value for Money Framework (May 2025), box 5.1: lower bound of each category's benefit-cost ratio.
+VFM_CATEGORIES = (("very_high", 4.0), ("high", 2.0), ("medium", 1.5), ("low", 1.0), ("poor", 0.0))
 
 
 @dataclass(frozen=True)
@@ -221,6 +229,12 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     r = cfg.discount_rate if rate is None else rate
     years = np.arange(1, cfg.horizon_years + 1)
     annuity = float(np.sum((1 + r) ** -years.astype(float)))
+    g = p["income_growth"]
+
+    def growing(kind: str) -> Any:
+        """The present value of 1 a year whose unit value grows with income at the elasticity of ``kind``."""
+        return sum((1 + g) ** (GROWTH[kind] * t) / (1 + r) ** t for t in range(1, cfg.horizon_years + 1))
+
     comply = p[o.compliance]
     peak_y, other_y = m.passages[o.id]
     share_removed = p[f"attribution_{o.id}"]  # where the time is lost along the stretch: the same at every hour
@@ -252,8 +266,11 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     works = o.signs * p["sign_cost"] + marking + p["calming_cost"]
     repaints = range(cfg.repaint_every_years, cfg.horizon_years + 1, cfg.repaint_every_years)
     repaint_pv = sum(0.5 * marking * (1 + r) ** -t for t in repaints)  # half the marking, every few years
-    pv_benefit = benefit * annuity
-    pv_cost = (parking + enforcement) * annuity + works + repaint_pv
+    pv_benefit = (time_value + traffic_value + new_rider_value) * growing("time") + operator_value * growing("operator")
+    pv_benefit = pv_benefit + external_value * growing("external") + damage_value * annuity
+    pv_parking = parking * growing("parking")
+    pv_public = enforcement * annuity + works + repaint_pv
+    pv_cost = pv_parking + pv_public
     flows = {
         "bus_hours": bus_hours,
         "passenger_hours": passenger_hours,
@@ -274,8 +291,12 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "works": works,
         "pv_benefit": pv_benefit,
         "pv_cost": pv_cost,
+        "pv_parking": pv_parking,
+        "pv_public": pv_public,
         "npv": pv_benefit - pv_cost,
         "bcr": pv_benefit / pv_cost,
+        # the DfT's ratio: the parking lost is a disbenefit to its users, the cost is what the public budget pays
+        "bcr_budget": (pv_benefit - pv_parking) / pv_public,
     }
     return {k: _num(v) for k, v in flows.items()}
 
@@ -317,7 +338,8 @@ def option_inputs(o: Option, cfg: Appraisal, name: str = "extended") -> list[str
     timed = o.days != "all" or o.hours != (0, 24)
     own = ([o.parking_share] if o.parking_share else []) + [o.compliance] + (["enforcement_year"] if timed else [])
     extra = [k for k in [*MECHANISMS, *COMPANIONS] if k in cfg.parameters] if name == "extended" else []
-    return shared + own + extra
+    growth = ["income_growth"] if "income_growth" in cfg.parameters and name == "core" else []
+    return shared + own + growth + extra
 
 
 def pert(rng: np.random.Generator, lo: float, mode: float, hi: float, size: int) -> np.ndarray:
@@ -388,6 +410,32 @@ def distribution(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFra
     return pd.DataFrame(rows)
 
 
+def vfm_category(bcr_budget: float, npv: float) -> str:
+    """The DfT value-for-money category of a benefit-cost ratio to the public budget (``very_poor`` below 0)."""
+    if npv < 0 and bcr_budget < 0:
+        return "very_poor"
+    return next((name for name, low in VFM_CATEGORIES if bcr_budget >= low), "very_poor")
+
+
+def bridge(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
+    """From the core's NPV to the extended layer's, one mechanism at a time (in the order of ``MECHANISMS``), at central
+    values: how much of the difference each mechanism makes. With the interactions between them, a step depends on the
+    ones before it; the order is fixed so the table is the same in every run."""
+    rows = []
+    for o in cfg.options:
+        q = layer(c, "core")
+        npv = float(evaluate(o, q, m, cfg)["npv"])
+        rows.append({"option": o.id, "step": "core", "npv": npv, "change": npv})
+        for k in MECHANISMS:
+            if k not in cfg.parameters:
+                continue
+            q = q | {k: c[k]}
+            after = float(evaluate(o, q, m, cfg)["npv"])
+            rows.append({"option": o.id, "step": k, "npv": after, "change": after - npv})
+            npv = after
+    return pd.DataFrame(rows)
+
+
 def criteria_table(cfg: Appraisal) -> pd.DataFrame:
     """The effects not priced: one row per criterion, one column per option."""
     rows = []
@@ -415,6 +463,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
                 {"layer": name, "option": o.id, "label": o.label, "metres": m.metres[o.id], "passages_peak": m.passages[o.id][0],
                  "passages_other": m.passages[o.id][1], "attribution_low": lo_a, "attribution": ce_a, "attribution_high": hi_a}
                 | e
+                | {"vfm": vfm_category(e["bcr_budget"], e["npv"])}
                 | {f"npv_at_{int(r * 100)}pct": evaluate(o, q, m, cfg, rate=r)["npv"] for r in cfg.discount_rates_tested}
             )  # fmt: skip
             for k in option_inputs(o, cfg, name):
@@ -467,6 +516,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
         "appraisal_montecarlo": pd.DataFrame(mc),
         "appraisal_voi": value_of_information(sims["extended"], d),
         "appraisal_distribution": distribution(cfg, m, c),
+        "appraisal_bridge": bridge(cfg, m, c),
         "appraisal_criteria": criteria_table(cfg),
         "appraisal_alternatives": pd.DataFrame(alternatives, columns=alt_columns),
     }

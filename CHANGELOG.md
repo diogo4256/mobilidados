@@ -31,6 +31,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
   (`[[appraisal.criteria]]`, `appraisal_criteria.csv`): reliability, access to rail and metro, residents' quality of
   life, noise and air, safety, emergency access, the municipal design references, equity, reversibility, with how
   each option moves them and why; no weights, which are the decision-maker's.
+- **Standard and practice** (docs/appraisal.md): the EAV for Portugal, and the UK DfT's practice where the EAV is
+  silent. Unit values grow in real terms with income per head on both sides of the account (EAV p. 59). Two
+  benefit-cost ratios are reported, the EAV's and the DfT's (to the public budget), with the DfT's value-for-money
+  category. The NPV decides. A bridge (`appraisal_bridge.csv`) goes from the core's NPV to the extended layer's one
+  mechanism at a time, so the study shows what its result rests on. The study lists the limits of the method.
 - Alternatives may remove parking (`parking_m`), valued as an option's places; they give the saving needed per peak
   passage and per passage at any hour.
 - docs/field/: templates for the three counts anyone can make in the street (free places at night, deadlocks,
@@ -39,10 +44,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
   one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 1.5 × 10⁻⁶). In the core, no
   option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on working days in
   section B2 only, has an NPV of about −9 300 € (benefit/cost 0.60). In the extended layer, at central values, removing
-  one side's parking in section B2 alone, always (about 10 places), pays: NPV about 17 200 €, benefit/cost 1.51,
-  positive in 75% of the simulations; one side in all three sections reaches 0.92. What can change the decision most
-  is the value of a place to whoever loses it and the off-peak delay: a night count of free places and Carris's
-  passage records.
+  one side's parking in section B2 alone, always (about 10 places), pays: NPV about 18 300 €, benefit/cost 1.52;
+  one side in all three sections reaches 0.93. The bridge shows the result rests mostly on the off-peak delay
+  (assumed, 3 s per passage), reliability and connections, and free places nearby: what Carris's passage records
+  and a night count of free places would settle.
 
 ## [0.4.0] - 2026-11-15
 

@@ -278,3 +278,38 @@ def test_a_criterion_must_say_how_every_option_moves_it():
     table = appraisal.criteria_table(config(criteria=[crit | {"effects": {"*": "?", "A": "+"}}]))
     assert table.loc[0, "A"] == "+"
     assert Criterion(**crit, effects={"*": "0"}).effects == {"*": "0"}
+
+
+def test_unit_values_grow_with_income_on_both_sides_of_the_account():
+    cfg = config(parameters={"income_growth": parameter(0.02)})
+    m = measured()
+    o = cfg.options[0]
+    flat = appraisal.evaluate(o, appraisal.layer(appraisal.central(config(), m), "core"), m, config())
+    grown = appraisal.evaluate(o, appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    factor = sum(1.02**t / 1.05**t for t in range(1, 11)) / sum(1.05**-t for t in range(1, 11))
+    # time (elasticity 1), the operator's cost (1) and the value of a place (1) grow alike; the works do not
+    assert grown["pv_benefit"] == pytest.approx(flat["pv_benefit"] * factor)
+    assert grown["pv_parking"] == pytest.approx(flat["pv_parking"] * factor)
+    assert grown["pv_public"] == pytest.approx(flat["pv_public"])
+
+
+def test_the_dft_ratio_counts_the_parking_as_a_disbenefit_and_the_budget_as_the_cost():
+    cfg, m = config(), measured()
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert e["bcr_budget"] == pytest.approx((e["pv_benefit"] - e["pv_parking"]) / e["pv_public"])
+    assert e["npv"] == pytest.approx(e["pv_benefit"] - e["pv_parking"] - e["pv_public"])  # the same NPV either way
+    assert [appraisal.vfm_category(x, 1.0) for x in (4.0, 3.9, 1.5, 1.2, 0.5)] == ["very_high", "high", "medium", "low", "poor"]
+    assert appraisal.vfm_category(-0.3, -10.0) == "very_poor"
+
+
+def test_the_bridge_goes_from_the_core_to_the_extended_layer():
+    cfg = config(parameters=EXTENDED)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    c = appraisal.central(cfg, m)
+    b = appraisal.bridge(cfg, m, c)
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(c, "core"), m, cfg)["npv"]
+    extended = appraisal.evaluate(cfg.options[0], appraisal.layer(c, "extended"), m, cfg)["npv"]
+    assert b.npv.iloc[0] == pytest.approx(core)
+    assert b.npv.iloc[-1] == pytest.approx(extended)
+    assert b.change.sum() == pytest.approx(extended)  # the core's NPV plus every step
+    assert b.step.tolist() == ["core", *[k for k in appraisal.MECHANISMS if k in cfg.parameters]]

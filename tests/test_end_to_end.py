@@ -779,7 +779,7 @@ def test_the_appraisal_writes_its_tables_its_study_its_figure_and_its_findings(t
     tables = case.results_dir / "tables"
     for name in ("delay_by_part", "delay_copresence", "appraisal_inputs", "appraisal_measured", "appraisal_results", "appraisal_switching",
                  "appraisal_tornado", "appraisal_montecarlo", "appraisal_alternatives", "appraisal_feasibility", "appraisal_passages",
-                 "appraisal_voi", "appraisal_distribution", "appraisal_criteria"):  # fmt: skip
+                 "appraisal_voi", "appraisal_distribution", "appraisal_criteria", "appraisal_bridge"):  # fmt: skip
         assert (tables / f"{name}.csv").exists(), name
     both = pd.read_csv(tables / "appraisal_results.csv")
     results = both[both.layer == "core"].set_index("option")

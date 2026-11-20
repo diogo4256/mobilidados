@@ -8,13 +8,50 @@ and is it feasible?** It writes a study, `results/appraisal.md`, in the case's l
 It needs `[delay]`: the benefit it starts from is the time buses lose at the evening peak, measured from archived
 vehicle positions (docs/methodology.md, *Time on a stretch*).
 
+## Standard and practice
+
+Portugal has no national appraisal manual for municipal transport schemes; the reference for public investment in
+Portugal is the European Commission's *Economic Appraisal Vademecum 2021-2027* (EAV), and the most complete public
+practice on the points the EAV leaves open is the UK Department for Transport's (TAG, and its *Value for Money
+Framework*, May 2025). The appraisal takes:
+
+* from the EAV: the incremental analysis at constant prices, the discount rate for cohesion countries, the values of
+  time and their real growth with income (p. 59: elasticity 1 for values of time set from Eurostat labour costs, 0.8
+  for externalities), the weights of delay and lateness (Table 7), safety treated qualitatively for small projects,
+  and **proportionality**: the effort matches what is at stake;
+* from the DfT: two benefit-cost ratios (below), the value-for-money categories, a table of the effects without a
+  price beside the money (its *Appraisal Summary Table*), distributional analysis (who gains and who loses), switching
+  values, and the rule that the category is adjusted for what has no price. The UK Treasury's *Green Book Review
+  2025* also warns against reading benefit-cost ratios against fixed thresholds: the NPV and the effects without a
+  price decide together.
+
+What a larger scheme would add and this one does not: a traffic model, local stated-preference surveys for the
+values of time and of a parking place, and an optimism-bias uplift on costs (the works here are a small share of the
+costs). Each is listed among the study's limits.
+
 ## Method
 
-An incremental economic analysis of each option against doing nothing, following the European Commission's
-*Economic Appraisal Vademecum 2021-2027* (EAV): constant prices of `price_year`, `horizon_years` years, a social
-discount rate of `discount_rate` (5% for cohesion countries such as Portugal, EAV p. 20; `discount_rates_tested` as a
-test). Each option removes the parking on one side in the sections with parking on both sides of the `blocks` it
-names, always or only on some days and hours. Fees, fares and permits are transfers between parties and stay out.
+An incremental economic analysis of each option against doing nothing, following the EAV: constant prices of
+`price_year`, `horizon_years` years, a social discount rate of `discount_rate` (5% for cohesion countries such as
+Portugal, EAV p. 20; `discount_rates_tested` as a test). Each option removes the parking on one side in the sections
+with parking on both sides of the `blocks` it names, always or only on some days and hours. Fees, fares and permits
+are transfers between parties and stay out.
+
+Unit values grow in real terms with income per head (`income_growth`): the values of time, the operator's cost and the
+value of a place at elasticity 1, the external costs at 0.8 (`GROWTH` in the code); damage, works and enforcement stay
+at their prices. Both sides of the account grow alike, so growth does not favour removing parking or keeping it.
+
+## Value for money
+
+Two conventions divide the same account differently:
+
+* **the EAV's ratio**: all the benefits over all the costs, with the value of the places lost among the costs;
+* **the DfT's ratio**: the places lost are a disbenefit to those who use them, netted from the benefits, over what the
+  public budget pays (works, calming, enforcement). Its categories (Value for Money Framework, box 5.1): very high from
+  4, high from 2 to 4, medium from 1.5 to 2, low from 1 to 1.5, poor from 0 to 1, very poor below 0.
+
+The NPV is the same in both, and it is what decides. The DfT's ratio rises steeply when the works are cheap and the
+users' losses are large, so the study never reports it alone.
 
 ## Two layers
 
@@ -96,6 +133,13 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   the input. The decision is to do the best option or nothing, so an input is worth measuring only if knowing it could
   change that decision. The expected value of perfect information (all inputs known) bounds them all. It ranks the
   field counts and the data requests by what they can change.
+
+## From the core to the extended layer
+
+`appraisal_bridge.csv` switches the mechanisms on one at a time, at central values, from the core's NPV to the
+extended layer's, and records what each adds. It is the most direct answer to "what does this result rest on?": a
+positive extended result that depends on one assumed mechanism is only as good as that assumption, and the bridge says
+which.
 
 ## Who gains and who loses
 
