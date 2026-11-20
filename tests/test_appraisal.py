@@ -143,12 +143,12 @@ def parts_and_copresence(p_gap_before=1e-6, p_gap_after=0.5):
 
 def test_attribution_counts_the_widened_sections_and_the_junctions_where_buses_give_way():
     parts, cop = parts_and_copresence()
-    # total 13 s: B1+B2+B3 = 5 s; the junction before B2 (4 s) shows buses giving way, the one after (4 s) does not
+    # total 13 s: B1+B2+B3 = 5 s; the junction before B2 (4 s) shows buses losing time to oncoming buses, the one after (4 s) does not
     lo, ce, hi = appraisal.attribution(parts, cop, ["B1", "B2", "B3"], 0.01)
     assert (lo, ce, hi) == pytest.approx((5 / 13, 9 / 13, 1.0))
     # only B2 widened: its own 4 s, plus the junction before it; at most both junctions next to it
     assert appraisal.attribution(parts, cop, ["B2"], 0.01) == pytest.approx((4 / 13, 8 / 13, 12 / 13))
-    # no junction shows giving way: the central value is the narrow sections alone
+    # no junction shows buses losing time to oncoming buses: the central value is the narrow sections alone
     parts, cop = parts_and_copresence(p_gap_before=0.2)
     assert appraisal.attribution(parts, cop, ["B1", "B2", "B3"], 0.01)[1] == pytest.approx(5 / 13)
 

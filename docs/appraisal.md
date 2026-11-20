@@ -101,11 +101,13 @@ The `delay` stage also measures the excess on each part of the stretch on its ow
 with parking on both sides, and each piece between them (usually a junction). And it counts, for buses on each part
 at peak, how often a bus in the other direction is on the street at the same snapshot, against how often one is
 there at any snapshot (`delay_copresence.csv`, with an exact binomial p-value). A part where buses have an oncoming bus
-present far more often than chance is where they **give way**: they wait there for the narrow section ahead to clear.
+present far more often than chance is where they **lose time to oncoming buses**. Snapshots minutes apart cannot show
+what the buses do there (wait, stand face to face, reverse), only that the time is lost there when another bus is
+coming; the attribution needs no more than that.
 For an option widening the sections of some blocks:
 
 * **low**: the excess inside those sections;
-* **central**: plus the excess at the junctions next to them where buses give way (p below `significance`);
+* **central**: plus the excess at the junctions next to them where buses lose time to oncoming buses (p below `significance`);
 * **high**: plus the excess at every junction next to them.
 
 Shares are of the sum of the parts' excesses. In Rua Ricardo Jorge, more than half the excess sits at the two
@@ -171,7 +173,9 @@ decision-maker's.
 ## Alternatives whose effect cannot be estimated
 
 `[[appraisal.alternatives]]` lists measures the data cannot value, such as a passing place: the parking on one side
-removed over a short length where a bus can wait while the other passes. For each, the study gives its cost (the
+removed over a short length where one bus can pull aside while the other passes. A junction between two narrow
+sections is a natural test of one: if buses lose the most time there, a passing place no longer than the junction is
+unlikely to work. For each, the study gives its cost (the
 places it removes, `parking_m`, valued as an option's places, and its works) and the bus-hours a year (and seconds per
 peak passage, and per passage at any hour) it must save to pay for itself (`appraisal_alternatives.csv`), not an NPV
 the data could not support.

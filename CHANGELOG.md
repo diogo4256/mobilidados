@@ -97,6 +97,9 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- The study no longer says that buses wait at the junction where they lose time to oncoming buses. Snapshots minutes
+  apart show where the time is lost, not what the buses do there, and a 12 m bus cannot step aside in a short junction
+  to let another by. A passing place is described as a place to pull aside, and a junction as a natural test of one.
 - The Monte Carlo's probability that an option is the best counts doing nothing as a choice: an option is best only
   in the draws where it beats every other and pays. It had compared the options among themselves only, so the least bad
   of several losing options read as "best", and an option could be the best more often than it paid.

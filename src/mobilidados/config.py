@@ -494,7 +494,7 @@ class Appraisal(Model):
     repaint_every_years: int = Field(5, ge=1)
     draws: int = Field(20000, ge=1000)
     seed: int = 1
-    significance: float = Field(0.01, gt=0, lt=1, description="p-value below which buses at a junction count as giving way")
+    significance: float = Field(0.01, gt=0, lt=1, description="p-value below which a junction counts as where buses lose time to oncoming buses")
     parameters: dict[str, Parameter]
     options: list[Option] = Field(min_length=1)
     alternatives: list[Alternative] = []

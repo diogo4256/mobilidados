@@ -415,7 +415,7 @@ signs = 3
 
 [[appraisal.alternatives]]
 id = "R"
-label = "um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro espera enquanto o outro passa"
+label = "um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar"
 parking_m = 20.0
 signs = 2
 works = 100.0
@@ -427,7 +427,7 @@ label = "Fiabilidade da viagem de autocarro (o stress de não saber quando se ch
 indicator = "Dispersão do tempo de passagem; impasses por semana"
 effects = { B = "++", C = "+", E = "+", G = "+", H = "+" }
 grade = "I"
-note = "Sem o estacionamento de um lado, dois autocarros cruzam-se sem esperar (6,91 m livres; precisam de 5,80 m com espelhos): acabam os impasses e a espera no cruzamento com a R. Cor. Marques Leitão. B em toda a rua e a toda a hora; C só no troço mais longo; E, G e H só nas horas em que vigoram."
+note = "Sem o estacionamento de um lado, dois autocarros cruzam-se sem esperar (6,91 m livres; precisam de 5,80 m com espelhos): acabam os impasses e o tempo perdido no cruzamento com a R. Cor. Marques Leitão. B em toda a rua e a toda a hora; C só no troço mais longo; E, G e H só nas horas em que vigoram."
 source = "without_parking.csv, width_budget.csv, delay_copresence.csv"
 
 [[appraisal.criteria]]

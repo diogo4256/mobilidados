@@ -448,7 +448,7 @@
     {
       "id": "appraisal_alternative_R",
       "grade": "I",
-      "statement": "Alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro espera enquanto o outro passa): retira cerca de 4 lugares, custa cerca de 15 500 € em valor atual e paga-se se poupar 9,4 horas de autocarro por ano, ou 7,5 s por passagem na ponta; o efeito não se pode estimar com estes dados.",
+      "statement": "Alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar): retira cerca de 4 lugares, custa cerca de 15 500 € em valor atual e paga-se se poupar 9,4 horas de autocarro por ano, ou 7,5 s por passagem na ponta; o efeito não se pode estimar com estes dados.",
       "values": {
         "breakeven_bus_hours_per_year": 9.366
       },
