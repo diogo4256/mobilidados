@@ -19,7 +19,7 @@ from .i18n import num, t
 if TYPE_CHECKING:
     from .pipeline import Run
 
-MONEY_INPUTS = ("excess_s", "load_peak", "car_value", "occupancy", "enforcement_year", "share_E", "share_G")
+MONEY_INPUTS = ("excess_s", "load_peak", "car_value", "occupancy", "enforcement_year", "share_E", "share_G", "offpeak_s", "room_nearby")
 
 
 def grouped(x: float, lang: str, d: int = 0) -> str:
@@ -51,6 +51,11 @@ def pvalue(p: float, lang: str) -> str:
     exp = math.floor(math.log10(p))
     sup = str(exp).translate(str.maketrans("-0123456789", "⁻⁰¹²³⁴⁵⁶⁷⁸⁹"))
     return f"{num(p / 10**exp, lang, 1)} × 10{sup}"
+
+
+def first_lower(text: str) -> str:
+    """A label inside a sentence: its first letter in lower case, the rest as written (``Opção C`` stays ``opção C``)."""
+    return text[:1].lower() + text[1:]
 
 
 def build(r: Run) -> str:
@@ -85,6 +90,11 @@ def build(r: Run) -> str:
             return say("m_peak_passages")
         if k == "working_days_per_year":
             return say("m_working_days")
+        if k == "passages_year":
+            return say("m_passages_year")
+        if head == "passages":
+            part, _, oid = tail.partition("_")
+            return say(f"m_passages_{part}", id=oid)
         return say("m_attribution" if head == "attribution" else "m_metres", id=tail)
 
     def label_of(k: str) -> str:
@@ -94,10 +104,17 @@ def build(r: Run) -> str:
         return n((float(ratio) - 1) * 100, 0, sign=True)
 
     tab = r.table
-    res = tab("appraisal_results").set_index("option")
-    mc = tab("appraisal_montecarlo").set_index("option")
+    results = tab("appraisal_results")
+    res = results[results.layer == "core"].set_index("option")
+    ext = results[results.layer == "extended"].set_index("option")
+    mcs = tab("appraisal_montecarlo")
+    mc = mcs[mcs.layer == "core"].set_index("option")
+    mce = mcs[mcs.layer == "extended"].set_index("option")
     sw = tab("appraisal_switching")
     tor = tab("appraisal_tornado")
+    voi = tab("appraisal_voi")
+    dist = tab("appraisal_distribution")
+    crit = tab("appraisal_criteria")
     inputs = tab("appraisal_inputs").set_index("input")
     measured = tab("appraisal_measured").set_index("input")
     feas = tab("appraisal_feasibility")
@@ -185,58 +202,101 @@ def build(r: Run) -> str:
     # --- cost-benefit --------------------------------------------------------------------------------------------------
     rate = n(100 * a.discount_rate, 0)
     tested = " / ".join(f"{n(100 * x, 0)}%" for x in a.discount_rates_tested)
-    cba = [f"## {say('h_cba')}", "", say("cba_method", year=a.price_year, years=a.horizon_years, rate=rate, tested=tested), ""]
-    cba += [f"### {say('h_inputs')}", "", say("inputs_header"), "| --- | ---: | ---: | ---: | --- | --- | --- |"]
+    layer_name = {"core": say("layer_core"), "extended": say("layer_extended")}
+    cba = [
+        f"## {say('h_cba')}",
+        "",
+        say("cba_method", year=a.price_year, years=a.horizon_years, rate=rate, tested=tested),
+        "",
+        say("layers_intro"),
+        "",
+    ]
+    cba += [f"### {say('h_inputs')}", "", say("inputs_header"), "| --- | --- | ---: | ---: | ---: | --- | --- | --- |"]
     for _, row in inputs.iterrows():
         cba.append(
-            f"| {row.label} | {n(row.low, 2)} | {n(row['central'], 2)} | {n(row.high, 2)} | {row.unit if pd.notna(row.unit) else ''} | {row.grade} | {row.source} |"
+            f"| {row.label} | {layer_name[row.layer]} | {n(row.low, 2)} | {n(row['central'], 2)} | {n(row.high, 2)} | "
+            f"{row.unit if pd.notna(row.unit) else ''} | {row.grade} | {row.source} |"
         )
     cba += ["", say("measured_header"), "| --- | ---: | ---: | ---: |"]
     for k, row in measured.iterrows():
-        d = (
-            0
-            if str(k) in ("peak_passages_per_working_day", "working_days_per_year")
-            else 1
-            if str(k).startswith(("metres_", "excess_"))
-            else 2
-        )
+        d = 0 if str(k).startswith(("peak_passages", "working_days", "passages")) else 1 if str(k).startswith(("metres_", "excess_")) else 2
         cba.append(f"| {measured_label(str(k))} | {n(row.low, d)} | {n(row['central'], d)} | {n(row.high, d)} |")
     r1, r2 = (round(100 * x) for x in a.discount_rates_tested[:2]) if len(a.discount_rates_tested) >= 2 else (3, 7)
-    cba += [
-        "",
-        f"### {say('h_results')}",
-        "",
-        say("results_header", years=a.horizon_years, rate=rate, r1=r1, r2=r2),
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ]
+    cba += ["", f"### {say('h_results')}", "", say("results_core_intro"), "", say("results_header", years=a.horizon_years, rate=rate, r1=r1, r2=r2),
+            "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]  # fmt: skip
     for oid, row in res.iterrows():
         cba.append(
             f"| {oid} | {money(row.benefit_year, lang)} | {money(row.parking_year + row.enforcement_year, lang)} | {money(row.works, lang)} | "
             f"{money(row.npv, lang)} | {n(row.bcr, 2)} | {money(row.get(f'npv_at_{r1}pct', np.nan), lang)} | {money(row.get(f'npv_at_{r2}pct', np.nan), lang)} |"
         )
-    cba += ["", f"### {say('h_uncertainty')}", "", say("mc_intro", draws=f"{a.draws:,}".replace(",", " " if lang == "pt" else ",")), "", say("mc_header"),
-            "| --- | ---: | ---: | ---: | ---: | ---: |"]  # fmt: skip
-    for oid, row in mc.iterrows():
+    cba += [
+        "",
+        say("results_ext_intro"),
+        "",
+        say("results_ext_header"),
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for oid, row in ext.iterrows():
         cba.append(
-            f"| {oid} | {money(row.p10, lang)} | {money(row.p50, lang)} | {money(row.p90, lang)} | {n(100 * row.probability_positive, 0)}% | {n(100 * row.probability_best, 0)}% |"
+            f"| {oid} | {money(row.time_value, lang)} | {money(row.operator_value, lang)} | {money(row.traffic_value, lang)} | {money(row.new_rider_value, lang)} | "
+            f"{money(row.external_value, lang)} | {money(row.damage_value, lang)} | {money(row.benefit_year, lang)} | "
+            f"{money(row.parking_year + row.enforcement_year, lang)} | {money(row.works, lang)} | {money(row.npv, lang)} | {n(row.bcr, 2)} |"
         )
-    cba += ["", f"### {say('h_switching')}", "", say("switching_intro"), "", say("switching_header"), "| --- | --- | ---: | ---: | --- |"]
+    cba += ["", f"### {say('h_uncertainty')}", "", say("mc_intro", draws=f"{a.draws:,}".replace(",", " " if lang == "pt" else ",")), "", say("mc_header"),
+            "| --- | --- | ---: | ---: | ---: | ---: | ---: |"]  # fmt: skip
+    for row in mcs.itertuples():
+        cba.append(
+            f"| {layer_name[row.layer]} | {row.option} | {money(row.p10, lang)} | {money(row.p50, lang)} | {money(row.p90, lang)} | "
+            f"{n(100 * row.probability_positive, 0)}% | {n(100 * row.probability_best, 0)}% |"
+        )
+    cba += [
+        "",
+        f"### {say('h_switching')}",
+        "",
+        say("switching_intro"),
+        "",
+        say("switching_header"),
+        "| --- | --- | --- | ---: | ---: | --- |",
+    ]
     key = sw[sw.input.isin(MONEY_INPUTS) | sw.input.str.startswith("attribution_")]
     for row in key.itertuples():
         sv = "—" if pd.isna(row.switching_value) else n(row.switching_value, 2)
-        label = label_of(row.input)
-        cba.append(f"| {row.option} | {label} | {n(row.central, 2)} | {sv} | {'✓' if row.within_range else '✗'} |")
-    best = str(mc["mean"].idxmax())
-    top = tor[tor.option == best].head(6)
+        cba.append(
+            f"| {layer_name[row.layer]} | {row.option} | {label_of(row.input)} | {n(row.central, 2)} | {sv} | {'✓' if row.within_range else '✗'} |"
+        )
+    best = str(mce["mean"].idxmax())
+    top = tor[tor.option == best].head(8)
     cba += ["", say("tornado_intro", id=best), "", say("tornado_header"), "| --- | ---: | ---: |"]
     cba += [f"| {label_of(row.input)} | {money(row.npv_at_low, lang)} | {money(row.npv_at_high, lang)} |" for row in top.itertuples()]
-    cba += ["", f"### {say('h_distribution')}", "", say("distribution_header"), "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
-    for oid, row in res.iterrows():
-        cba.append(
-            f"| {oid} | {n(row.passenger_hours, 0)} h | {money(row.time_value, lang)} | {n(row.bus_hours, 1)} h | {money(row.operator_value, lang)} | "
-            f"{n(row.places, 0)} | {money(-row.parking_year, lang)} |"
-        )
+    evpi = float(voi.loc[voi.input == "(all)", "evppi"].iloc[0]) if len(voi) else 0.0
+    worth = voi[(voi.input != "(all)") & (voi.evppi >= max(50.0, 0.01 * evpi))]
+    cba += ["", f"### {say('h_voi')}", "", say("voi_intro", evpi=money(evpi, lang)), ""]
+    if len(worth):
+        cba += [say("voi_header"), "| --- | ---: |"] + [
+            f"| {label_of(row.input)} | {money(row.evppi, lang)} |" for row in worth.itertuples()
+        ]
+    else:
+        cba.append(say("voi_none"))
+    ids = [o.id for o in a.options]
+    cba += ["", f"### {say('h_distribution')}", "", say("distribution_intro"), "", "| " + say("group") + " | " + " | ".join(ids) + " |",
+            "| --- |" + " ---: |" * len(ids)]  # fmt: skip
+    cba.append(f"| {say('g_trips')} | " + " | ".join(grouped(float(ext.loc[i, "riders"]), lang) for i in ids) + " |")
+    cba.append(f"| {say('g_saved')} | " + " | ".join(n(float(ext.loc[i, "saved_s_per_passenger"]), 1) for i in ids) + " |")
+    cba.append(f"| {say('g_places')} | " + " | ".join(n(float(ext.loc[i, "places"]), 0) for i in ids) + " |")
+    for g in dist.group.drop_duplicates():
+        vals = dist[dist.group == g].set_index("option").value
+        cba.append(f"| {say('g_' + g)} | " + " | ".join(money(float(vals[i]), lang) for i in ids) + " |")
     cba.append("")
+
+    # --- what has no price ---------------------------------------------------------------------------------------------
+    crit_block: list[str] = []
+    if len(crit):
+        crit_block = [f"## {say('h_criteria')}", "", say("criteria_intro"), "", "| " + say("criteria_head") + " | " + " | ".join(ids) + " | " + say("criteria_tail") + " |",
+                      "| --- | --- |" + " :---: |" * len(ids) + " --- | --- |"]  # fmt: skip
+        for row in crit.itertuples():
+            cells = " | ".join(str(getattr(row, i)).replace("-", "−") for i in ids)
+            crit_block.append(f"| {row.label} | {row.indicator} | {cells} | {row.grade} | {row.note} |")
+        crit_block.append("")
 
     # --- the alternative, the gaps, the conclusions -------------------------------------------------------------------
     alt_block: list[str] = []
@@ -244,25 +304,26 @@ def build(r: Run) -> str:
     if len(alts):
         alt_block = [f"## {say('h_alternatives')}", ""]
         for row in alts.itertuples():
-            spec = next(x for x in a.alternatives if x.id == row.alternative)
-            alt_block += [say("alternative", label=row.label[:1].upper() + row.label[1:], cost=money(row.pv_cost, lang), signs=spec.signs, hours=n(row.breakeven_bus_hours_per_year, 1),
-                              secs=n(row.breakeven_seconds_per_peak_passage, 1), attr_s=n(removable_s, 0)), ""]  # fmt: skip
+            alt_block += [say("alternative", label=row.label[:1].upper() + row.label[1:], places=n(row.places, 0), cost=money(row.pv_cost, lang),
+                              hours=n(row.breakeven_bus_hours_per_year, 1), secs=n(row.breakeven_seconds_per_peak_passage, 1),
+                              secs_all=n(row.breakeven_seconds_per_passage, 1), attr_s=n(removable_s, 0)), ""]  # fmt: skip
     gaps_block = (
         [f"## {say('h_gaps')}", "", say("gaps_intro"), ""] + [f"- {nt.text}" for nt in a.notes if nt.dimension == "evidence"] + [""]
     )
 
-    b = res.loc[best]
-    prob = float(mc.loc[best, "probability_positive"])
+    core_best = str(mc["mean"].idxmax())
+    b = res.loc[core_best]
+    prob = float(mc.loc[core_best, "probability_positive"])
     conclusions = [
         say(
             "conclusion_none" if prob < 0.5 else "conclusion_some",
-            best=best,
+            best=core_best,
             npv=money(b.npv, lang),
             bcr=n(b.bcr, 2),
             prob=n(100 * prob, 0),
         )
     ]
-    svb = sw[sw.option == best].set_index("input").switching_value
+    svb = sw[(sw.option == core_best) & (sw.layer == "core")].set_index("input").switching_value
     if prob < 0.5:
         p = a.parameters
         ways = []  # only the inputs whose switching value exists: none is printed as a blank
@@ -273,24 +334,36 @@ def build(r: Run) -> str:
         if pd.notna(svb.get("enforcement_year", np.nan)):
             ways.append(say("switch_enf", sv=money(svb["enforcement_year"], lang), central=money(p["enforcement_year"].central, lang)))
         if ways:
-            conclusions.append(say("conclusion_switch", best=best, list=say("switch_join").join(ways)))
-    for row in alts.itertuples():
-        conclusions.append(
-            say(
-                "conclusion_alt",
-                id=row.alternative,
-                label=row.label,
-                cost=money(row.pv_cost, lang),
-                secs=n(row.breakeven_seconds_per_peak_passage, 1),
-            )
+            conclusions.append(say("conclusion_switch", best=core_best, list=say("switch_join").join(ways)))
+    e_best, e_prob = ext.loc[best], float(mce.loc[best, "probability_positive"])
+    conclusions.append(
+        say(
+            "conclusion_ext_some" if e_best.npv > 0 else "conclusion_ext_none",
+            best=best,
+            npv=money(e_best.npv, lang),
+            bcr=n(e_best.bcr, 2),
+            prob=n(100 * e_prob, 0),
+            list="; ".join(f"{i} {n(float(ext.loc[i, 'bcr']), 2)}" for i in ids),
         )
+    )
+    if len(worth):
+        conclusions.append(say("conclusion_voi", list="; ".join(first_lower(label_of(x)) for x in worth.input.head(3))))
+    if len(crit):
+        effects = crit.set_index("label")[best]
+        plus = [first_lower(k) for k, v in effects.items() if v in ("+", "++")]
+        minus = [first_lower(k) for k, v in effects.items() if v in ("-", "--")]
+        if plus or minus:
+            conclusions.append(say("conclusion_criteria", best=best, plus="; ".join(plus) or "—", minus="; ".join(minus) or "—"))
+    for row in alts.itertuples():
+        conclusions.append(say("conclusion_alt", id=row.alternative, label=row.label, places=n(row.places, 0), secs=n(row.breakeven_seconds_per_peak_passage, 1),
+                               secs_all=n(row.breakeven_seconds_per_passage, 1)))  # fmt: skip
     conclusions.append(say("conclusion_data"))
     lead = [s_ + "." for s_ in problem.split(". ")[:3:2]]  # the width, and the measured time
     summary = [f"## {say('h_summary')}", ""] + [f"- {c.rstrip('.')}." for c in lead + conclusions] + [""]
     concl_block = [f"## {say('h_conclusions')}", ""] + [f"{i}. {c}" for i, c in enumerate(conclusions, 1)] + [""]
 
     src_block = [f"## {say('h_sources')}", ""] + [f"- {s_}" for s_ in a.references] + [""]
-    out += summary + problem_block + opts + fe + cba + alt_block + gaps_block + concl_block + src_block
+    out += summary + problem_block + opts + fe + cba + crit_block + alt_block + gaps_block + concl_block + src_block
     return "\n".join(out).rstrip("\n") + "\n"
 
 

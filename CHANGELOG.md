@@ -18,12 +18,31 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - The `delay` stage measures the excess on each part of the stretch (`delay_by_part.csv`) and how often buses on each
   part have an oncoming bus on the street, against chance (`delay_copresence.csv`): where buses give way. The
   appraisal reads from them how much of the excess each option can remove.
+- **The appraisal in two layers.** The *core* counts only what is measured or documented; the *extended layer* adds,
+  each with a unit value from a published source, a range and a grade, the mechanisms the measurement cannot see yet:
+  the time lost at every hour and day (the passages of a working day, a Saturday and a Sunday from the timetable,
+  `appraisal_passages.csv`), reliability (unexpected delay and missed rail and metro connections, weighted as
+  lateness), the cars held behind buses, the new passengers a faster bus attracts and the external costs of the car
+  trips they leave (EC *Handbook on the external costs of transport*, Portugal's values, in 2025 prices), damage from
+  scrapes; and on the cost side, the displaced cars that find room nearby, and traffic calming. The core is the
+  extended layer with those mechanisms off, so the difference between them is exactly what remains to be measured.
+- The value of information (`appraisal_voi.csv`): what knowing each input before deciding is worth, from the
+  simulation. Who gains and who loses (`appraisal_distribution.csv`), per group, a year. The effects without a price
+  (`[[appraisal.criteria]]`, `appraisal_criteria.csv`): reliability, access to rail and metro, residents' quality of
+  life, noise and air, safety, emergency access, the municipal design references, equity, reversibility, with how
+  each option moves them and why; no weights, which are the decision-maker's.
+- Alternatives may remove parking (`parking_m`), valued as an option's places; they give the saving needed per peak
+  passage and per passage at any hour.
+- docs/field/: templates for the three counts anyone can make in the street (free places at night, deadlocks,
+  traffic), each replacing an assumed input with a measured one.
 - Rua Ricardo Jorge: more than half the peak excess sits at the junctions between the narrow sections; at the first
-  one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 1.5 × 10⁻⁶). Counting only the
-  peak time, no option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on
-  working days in section B2 only, has an NPV of about −9 300 € (benefit/cost 0.60; positive in 7% of the
-  simulations). Priority signs at the narrowings (B5/B6), which remove no place, pay for themselves if they save about
-  one bus-hour a year.
+  one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 1.5 × 10⁻⁶). In the core, no
+  option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on working days in
+  section B2 only, has an NPV of about −9 300 € (benefit/cost 0.60). In the extended layer, at central values, removing
+  one side's parking in section B2 alone, always (about 10 places), pays: NPV about 17 200 €, benefit/cost 1.51,
+  positive in 75% of the simulations; one side in all three sections reaches 0.92. What can change the decision most
+  is the value of a place to whoever loses it and the off-peak delay: a night count of free places and Carris's
+  passage records.
 
 ## [0.4.0] - 2026-11-15
 

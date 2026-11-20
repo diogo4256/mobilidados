@@ -8,6 +8,7 @@ an earlier run wrote, and a missing table is an error that names the stage to ru
 
 from __future__ import annotations
 
+import datetime as dt
 import functools
 import json
 import logging
@@ -353,6 +354,8 @@ def stage_appraisal(r: Run) -> None:
         block_metres[block] = block_metres.get(block, 0.0) + (z - x)
     tables = {k: r.table(k) for k in ("delay_summary", "delay_by_part", "delay_copresence", "passings")}
     holidays = sorted(set(dl.exclude_dates) | set(r.cfg.city.holidays))
+    tables["appraisal_passages"] = a_passages(r, holidays)
+    r.save("appraisal_passages", tables["appraisal_passages"])
     m = appraisal.measured(tables, a, block_metres, dl.peak_hours, t.service_date.year, holidays)
     for name, table in appraisal.appraise(a, m).items():
         r.save(name, table)
@@ -362,6 +365,9 @@ def stage_appraisal(r: Run) -> None:
         + [{"input": "peak_passages_per_working_day", "low": m.peak_passages_per_day, "central": m.peak_passages_per_day, "high": m.peak_passages_per_day},
            {"input": "working_days_per_year", "low": m.working_days, "central": m.working_days, "high": m.working_days}]
         + [{"input": f"metres_{k}", "low": v, "central": v, "high": v} for k, v in m.metres.items()]
+        + [{"input": f"passages_{part}_{k}", "low": v[i], "central": v[i], "high": v[i]}
+           for k, v in m.passages.items() for i, part in enumerate(("peak", "other"))]
+        + [{"input": "passages_year", "low": m.passages_year, "central": m.passages_year, "high": m.passages_year}]
     ))  # fmt: skip
     # the parking mapped around the street, as places at the central length of a place (occupancy is not known)
     roles = r.cfg.cartography.roles()
@@ -395,6 +401,31 @@ def stage_appraisal(r: Run) -> None:
         a, r.table("without_parking"), envelope.widths(bus, bus, False), envelope.widths(bus, bus, True), refs, places, supply, say
     ))  # fmt: skip
     appraisal_report.write(r)
+
+
+def a_passages(r: Run, holidays: list[dt.date]) -> pd.DataFrame:
+    """Passages the timetable schedules through the street in each clock hour of a representative day of each kind: the
+    service day (a working day), and the first Saturday and the first Sunday after it that are not holidays."""
+    t = r.cfg.transit
+    assert t is not None
+    shapes = gtfs.shapes_along(r.feed, r.axis, r.case.crs, buffer_m=t.buffer_m)
+    trips = gtfs.trips_on_shapes(r.feed, shapes)
+    on_routes = trips[trips.route_short_name.isin(t.routes)]
+    stop_times = r.feed.stop_times(set(on_routes.trip_id))
+    off = set(holidays)
+
+    def next_day(weekday: int) -> dt.date:
+        d = t.service_date + dt.timedelta(days=1)
+        while d.weekday() != weekday or d in off:
+            d += dt.timedelta(days=1)
+        return d
+
+    rows = []
+    for kind, day in (("working", t.service_date), ("saturday", next_day(5)), ("sunday", next_day(6))):
+        p = gtfs.reference_passings(r.feed, on_routes, stop_times, t.reference_stops, day, strict=kind == "working")
+        hours = (p.t.astype(int) // 3600 % 24).value_counts() if len(p) else pd.Series(dtype=int)
+        rows += [{"day_kind": kind, "date": day.isoformat(), "hour": h, "passages": int(hours.get(h, 0))} for h in range(24)]
+    return pd.DataFrame(rows)
 
 
 def a_cartography(r: Run) -> str:

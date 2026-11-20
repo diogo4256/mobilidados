@@ -721,6 +721,9 @@ enforcement_year = {p(1000.0, 0.0, 5000.0)}
 stall_m = {p(5.5, 5.0, 6.0)}
 compliance = {p(0.9, 0.8, 1.0)}
 share = {p(0.45, 0.25, 0.7)}
+offpeak_s = {p(3.0, 0.0, 8.0)}
+room_nearby = {p(0.3, 0.0, 1.0)}
+walk_cost = {p(130.0, 65.0, 260.0)}
 
 [[appraisal.options]]
 id = "B"
@@ -741,8 +744,18 @@ signs = 6
 
 [[appraisal.alternatives]]
 id = "P"
-label = "priority at the narrowings"
-signs = 4
+label = "a passing place"
+parking_m = 20.0
+signs = 2
+
+[[appraisal.criteria]]
+id = "reliability"
+dimension = "passengers"
+label = "Reliability of the bus trip"
+indicator = "Spread of the passage times"
+effects = {{ B = "++", "*" = "+" }}
+grade = "I"
+note = "Two buses pass each other without waiting."
 
 [[appraisal.notes]]
 dimension = "legal"
@@ -765,20 +778,37 @@ def test_the_appraisal_writes_its_tables_its_study_its_figure_and_its_findings(t
     run(case, offline=True)
     tables = case.results_dir / "tables"
     for name in ("delay_by_part", "delay_copresence", "appraisal_inputs", "appraisal_measured", "appraisal_results", "appraisal_switching",
-                 "appraisal_tornado", "appraisal_montecarlo", "appraisal_alternatives", "appraisal_feasibility"):  # fmt: skip
+                 "appraisal_tornado", "appraisal_montecarlo", "appraisal_alternatives", "appraisal_feasibility", "appraisal_passages",
+                 "appraisal_voi", "appraisal_distribution", "appraisal_criteria"):  # fmt: skip
         assert (tables / f"{name}.csv").exists(), name
-    results = pd.read_csv(tables / "appraisal_results.csv").set_index("option")
-    assert results.index.tolist() == ["B", "G"]
+    both = pd.read_csv(tables / "appraisal_results.csv")
+    results = both[both.layer == "core"].set_index("option")
+    extended = both[both.layer == "extended"].set_index("option")
+    assert results.index.tolist() == extended.index.tolist() == ["B", "G"]
     # the synthetic buses run at the same speed at every hour: no excess to remove, so removing parking only costs
     assert (results.npv < 0).all()
     assert results.loc["B", "parking_year"] > results.loc["G", "parking_year"]  # by hours, only a share of the parking is lost
-    mc = pd.read_csv(tables / "appraisal_montecarlo.csv").set_index("option")
-    assert mc.probability_best.sum() == pytest.approx(1.0)
+    # the extended layer adds the off-peak time and lets some displaced cars park nearby: more benefit, less cost
+    assert (extended.benefit_year >= results.benefit_year).all()
+    assert (extended.parking_year < results.parking_year).all()
+    # always in force, B covers every passage of the week; G only the working days' 16h-20h
+    assert (
+        extended.loc["B", "passages_peak"] + extended.loc["B", "passages_other"]
+        > extended.loc["G", "passages_peak"] + extended.loc["G", "passages_other"]
+    )
+    sims = pd.read_csv(tables / "appraisal_montecarlo.csv")
+    for layer in ("core", "extended"):
+        assert sims[sims.layer == layer].probability_best.sum() == pytest.approx(1.0)
+    criteria = pd.read_csv(tables / "appraisal_criteria.csv").set_index("criterion")
+    assert (criteria.loc["reliability", "B"], criteria.loc["reliability", "G"]) == ("++", "+")
     feasibility = pd.read_csv(tables / "appraisal_feasibility.csv")
     assert {"technical", "social", "legal", "evidence"} <= set(feasibility.dimension)
     study = (case.results_dir / "appraisal.md").read_text(encoding="utf-8")
     assert study.startswith("# Feasibility study and cost-benefit analysis: Rua do Teste")
     assert "## Conclusions" in study
+    assert "## What has no price" in study
+    assert "| Reliability of the bus trip | Spread of the passage times | ++ | + |" in study
+    assert "**Extended layer**" in study
     assert "- A document, <https://example.org/doc.pdf>" in study
     assert (case.results_dir / "figures" / "appraisal_npv.png").exists()
     findings = ledger_of(case)

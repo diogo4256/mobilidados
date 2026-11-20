@@ -81,6 +81,11 @@ references = [
   "Junta de Freguesia de Alvalade, Plano de Atividades e Orçamento 2022: manutenção e gestão do espaço público, <https://www.jf-alvalade.pt/wp-content/uploads/manutencaogestaodoespacopublicoequipamentos-pao2022-jfa-web.pdf>",
   "Decreto Regulamentar n.º 22-A/98, Regulamento de Sinalização do Trânsito, <https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/22-a-1998-302974>",
   "Lei n.º 75/2013, de 12 de setembro, Regime Jurídico das Autarquias Locais (Diário da República, 1.ª série, n.º 176/2013)",
+  "Carris, Relatório e Contas 2025, <https://www.carris.pt/media/huxjvfft/relat%C3%B3rio-e-contas-carris-2025_vers%C3%A3o-site.pdf>",
+  "Comissão Europeia, DG MOVE (2019), Handbook on the external costs of transport, versão 2019 – 1.1, CE Delft, <https://op.europa.eu/en/publication-detail/-/publication/9781f65f-8448-11ea-bf12-01aa75ed71a1>",
+  "Eurostat, HICP – índice anual (prc_hicp_aind), Portugal, 2016 e 2025, <https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_aind/default/table>",
+  "RAND Europe e SYSTRA para o Department for Transport (2018), Bus fare and journey time elasticities and diversion factors for all modes, <https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/719278/bus-fare-journey-time-elasticities.pdf>",
+  "Paulley, N. et al. (2006), The demand for public transport: the effects of fares, quality of service, income and car ownership, Transport Policy 13(4), 295–306, <https://doi.org/10.1016/j.tranpol.2005.12.004>",
 ]
 
 [appraisal.parameters.vot]
@@ -211,6 +216,145 @@ unit = "m"
 label = "Comprimento de um lugar"
 source = "Como no registo de factos (profiles.parking_space_m)"
 
+# --- the extended layer: mechanisms the measurement does not cover yet (docs/appraisal.md, "Two layers") ----------
+
+[appraisal.parameters.offpeak_s]
+low = 0.0
+central = 3.0
+high = 8.0
+grade = "P"
+unit = "s"
+label = "Excesso por passagem fora da ponta (todos os dias)"
+source = "Não medido: o método compara a ponta com o resto do dia, que é a sua base. O horário prevê 1–2 encontros por dia útil nos troços estreitos, mas na ponta os autocarros cruzam-se lá muito mais do que o acaso explica (26 % contra 11 %); admite-se fora da ponta cerca de um quinto dos 14,5 s medidos na ponta, removível na mesma parte. Os registos de passagem pedidos à Carris medem-no"
+
+[appraisal.parameters.load_offpeak]
+low = 8.0
+central = 12.0
+high = 13.8
+grade = "I"
+unit = "passageiros"
+label = "Passageiros a bordo, fora da ponta"
+source = "Carris, Relatório e Contas 2025, p. 16: 488,5 milhões de passageiros·km ÷ 35,4 milhões de veículos·km = 13,8 passageiros em média, todo o dia e toda a rede; fora da ponta, menos (P)"
+
+[appraisal.parameters.unexpected_share]
+low = 0.0
+central = 0.3
+high = 0.7
+grade = "P"
+label = "Parte do atraso que o passageiro não pode prever (um autocarro retido por outro)"
+source = "Sem dados da distribuição dos tempos de passagem; a cauda dessa distribuição (passagens de minutos em vez de segundos) nos registos pedidos à Carris mede-a"
+
+[appraisal.parameters.lateness_weight]
+low = 2.5
+central = 3.0
+high = 4.0
+grade = "D"
+label = "Peso do atraso imprevisto face ao tempo a bordo"
+source = "EAV 2021-2027, quadro 7: atraso no transporte público, 2,5 a 4 vezes o tempo a bordo"
+
+[appraisal.parameters.transfer_share]
+low = 0.10
+central = 0.25
+high = 0.40
+grade = "P"
+label = "Parte dos passageiros que muda para o comboio ou o metro mais adiante"
+source = "Horário GTFS da Carris: a 744 liga a rua à Estação de Entrecampos (cerca de 12 min; CP, Fertagus, metro) e à Gare do Oriente (cerca de 14 min); a 46B ao Campo Grande e a Entrecampos (metro). Um atraso faz perder o comboio marcado: para quem muda, o atraso pesa como atraso imprevisto. A parte dos que mudam não é publicada"
+
+[appraisal.parameters.cars_behind]
+low = 0.0
+central = 0.5
+high = 2.0
+grade = "P"
+label = "Carros retidos atrás de um autocarro que espera"
+source = "Sem contagem de tráfego na rua (NE); uma contagem num dia útil fixa-o"
+
+[appraisal.parameters.car_occupancy]
+low = 1.2
+central = 1.4
+high = 1.7
+grade = "I"
+unit = "pessoas"
+label = "Pessoas por carro"
+source = "Handbook on the external costs of transport (2019), quadro 94: 1,7 pessoas por carro na UE28; nas deslocações urbanas e pendulares é menos (P)"
+
+[appraisal.parameters.elasticity_ivt]
+low = 0.40
+central = 0.60
+high = 0.65
+grade = "D"
+label = "Elasticidade da procura do autocarro ao tempo a bordo (valor absoluto)"
+source = "RAND Europe e SYSTRA para o DfT (2018), secção 6.6: −0,60 a longo prazo (Wardman 2012: −0,55 lazer, −0,65 pendular); Paulley et al. (2006): cerca de −0,4"
+
+[appraisal.parameters.journey_min]
+low = 10.0
+central = 16.0
+high = 25.0
+grade = "I"
+unit = "min"
+label = "Tempo a bordo de uma viagem de autocarro, em média"
+source = "Carris, Relatório e Contas 2025, p. 16: 488,5 milhões de passageiros·km ÷ 131,8 milhões de passageiros = 3,7 km por viagem; a cerca de 14 km/h (P), cerca de 16 min"
+
+[appraisal.parameters.diversion_car]
+low = 0.24
+central = 0.25
+high = 0.30
+grade = "D"
+label = "Parte dos novos passageiros que deixa o carro"
+source = "RAND Europe e SYSTRA para o DfT (2018), quadro 26: numa melhoria do autocarro, 0,25 dos novos passageiros vinham do carro (áreas metropolitanas), 0,30 onde não há metro ligeiro, 0,24 na média nacional"
+
+[appraisal.parameters.trip_km]
+low = 2.5
+central = 3.7
+high = 5.0
+grade = "I"
+unit = "km"
+label = "Comprimento da viagem de carro substituída"
+source = "Igual à viagem média de autocarro: 3,7 km (Carris, Relatório e Contas 2025)"
+
+[appraisal.parameters.external_cost_pkm]
+low = 0.038
+central = 0.198
+high = 0.478
+grade = "I"
+unit = "€/pkm"
+label = "Custos externos evitados por passageiro·km que deixa o carro"
+source = "Handbook on the external costs of transport (2019), quadros 125 e 115, preços de 2016 × 1,240 (IHPC de Portugal, Eurostat, 2016 → 2025): acidentes 1,41, poluição 0,14–0,86, clima 0,88–1,00, ruído 0,5–1,1 e a montante 0,14–0,26 cêntimos por passageiro·km (tráfego metropolitano denso, de dia); congestionamento em Portugal, outras vias urbanas, 41,1 (perto da capacidade) a 57,7 (acima) cêntimos por veículo·km ÷ 1,7 pessoas por carro. Mínimo: sem congestionamento; central: metade das viagens perto da capacidade; máximo: todas acima"
+
+[appraisal.parameters.damage_year]
+low = 0.0
+central = 500.0
+high = 3000.0
+grade = "P"
+unit = "€/ano"
+label = "Danos em autocarros e carros estacionados por toques nos estreitamentos"
+source = "Em toda a rua, nos troços estreitos e nos cruzamentos entre eles; sem dados (NE): o registo de ocorrências pedido à Carris fixa-o; central: um espelho de autocarro por ano (P)"
+
+[appraisal.parameters.room_nearby]
+low = 0.0
+central = 0.3
+high = 1.0
+grade = "P"
+label = "Parte dos carros deslocados que encontra lugar a menos de 150 m"
+source = "Há cerca de 780 lugares cartografados a menos de 150 m (appraisal_feasibility.csv): bastam 21 livres (2,7 %) à noite. A ocupação noturna não é conhecida (NE), e a Junta e a EMEL apontam pressão; uma contagem noturna fixa-o"
+
+[appraisal.parameters.walk_cost]
+low = 65.0
+central = 130.0
+high = 260.0
+grade = "I"
+unit = "€/ano"
+label = "Custo anual, para quem estaciona perto, de procurar e andar mais"
+source = "Mais 2, 4 ou 8 minutos por dia, 365 dias, ao valor do tempo de lazer (5,34 €/h, como no mínimo do custo de estacionar noutro sítio)"
+
+[appraisal.parameters.calming_cost]
+low = 0.0
+central = 5000.0
+high = 20000.0
+grade = "P"
+unit = "€"
+label = "Acalmia de tráfego, se a velocidade subir na faixa mais larga"
+source = "Pressuposto: uma faixa mais larga convida a ir mais depressa; passadeiras sobrelevadas ou outras medidas, se a medição antes e depois o mostrar. Não se encontrou um preço unitário público"
+
 [[appraisal.options]]
 id = "B"
 label = "um lado, sempre, nos três troços com estacionamento dos dois lados"
@@ -220,7 +364,7 @@ signs = 4
 
 [[appraisal.options]]
 id = "C"
-label = "um lado, sempre, só no troço B2 (o mais longo)"
+label = "um lado, sempre, só no troço B2, o mais longo"
 blocks = ["B2"]
 compliance = "compliance_permanent"
 signs = 2
@@ -256,21 +400,107 @@ compliance = "compliance_hours"
 signs = 3
 
 [[appraisal.alternatives]]
-id = "P"
-label = "prioridade nos estreitamentos com os sinais B5 e B6, sem retirar estacionamento"
-signs = 6
+id = "R"
+label = "um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro espera enquanto o outro passa"
+parking_m = 20.0
+signs = 2
+works = 100.0
+
+[[appraisal.criteria]]
+id = "reliability"
+dimension = "passengers"
+label = "Fiabilidade da viagem de autocarro (o stress de não saber quando se chega)"
+indicator = "Dispersão do tempo de passagem; impasses por semana"
+effects = { B = "++", C = "+", E = "+", G = "+", H = "+" }
+grade = "I"
+note = "Sem o estacionamento de um lado, dois autocarros cruzam-se sem esperar (6,91 m livres; precisam de 5,80 m com espelhos): acabam os impasses e a espera no cruzamento com a R. Cor. Marques Leitão. B em toda a rua e a toda a hora; C só no troço mais longo; E, G e H só nas horas em que vigoram."
+source = "without_parking.csv, width_budget.csv, delay_copresence.csv"
+
+[[appraisal.criteria]]
+id = "rail"
+dimension = "network"
+label = "Acesso ao comboio e ao metro"
+indicator = "Ligações perdidas em Entrecampos, no Oriente e no Campo Grande"
+effects = { B = "+", C = "+", E = "+", G = "+", H = "+" }
+grade = "I"
+note = "A 744 liga a rua à Estação de Entrecampos (cerca de 12 min) e à Gare do Oriente (cerca de 14 min); a 46B ao Campo Grande e a Entrecampos. Um comboio perdido custa o intervalo até ao seguinte; a camada alargada conta o atraso de quem muda como atraso imprevisto, mas não a confiança de poder contar com a ligação."
+source = "Horário GTFS da Carris (outubro de 2026)"
+
+[[appraisal.criteria]]
+id = "residents"
+dimension = "residents"
+label = "Qualidade de vida de quem estaciona na rua"
+indicator = "Minutos a mais por dia a procurar lugar e a andar; lugares de cargas e de pessoas com mobilidade reduzida"
+effects = { B = "--", C = "-", E = "-", G = "-", H = "-" }
+grade = "I"
+note = "Cerca de 21 lugares em B, E e G; 10 em C e H; nas opções por horas, só nessas horas. O custo em dinheiro está nas contas; aqui fica o resto: a incerteza de encontrar lugar, as cargas e descargas, quem tem mobilidade reduzida."
+source = "appraisal_results.csv; cartografia municipal"
+
+[[appraisal.criteria]]
+id = "street"
+dimension = "environment"
+label = "Ruído e ar na rua"
+indicator = "Arranques e esperas de autocarros com o motor ligado; carros a circular à procura de lugar"
+effects = { B = "+", C = "+", E = "+", G = "+", H = "+" }
+grade = "P"
+note = "Menos esperas e arranques de autocarros numa rua estreita, com prédios dos dois lados; do outro lado, mais carros às voltas à procura de lugar se não houver lugares livres perto. A camada alargada conta os custos externos das viagens tiradas ao carro; o ruído na própria rua não tem medição."
+source = "Handbook on the external costs of transport (2019), quadro 37"
+
+[[appraisal.criteria]]
+id = "safety"
+dimension = "safety"
+label = "Segurança"
+indicator = "Toques e manobras de recuo; velocidade; visibilidade nos cruzamentos"
+effects = { "*" = "?" }
+grade = "P"
+note = "Acabam os toques entre autocarros e carros estacionados e as manobras de recuo, e vê-se melhor quem atravessa; mas uma faixa mais larga convida a ir mais depressa (a camada alargada inclui medidas de acalmia). O efeito líquido só se sabe medindo a velocidade e os incidentes antes e depois."
+source = "Registo de ocorrências pedido à Carris"
+
+[[appraisal.criteria]]
+id = "emergency"
+dimension = "safety"
+label = "Acesso de veículos de socorro"
+indicator = "Veículos de socorro retidos na rua"
+effects = { B = "+", C = "+", E = "+", G = "+", H = "+" }
+grade = "NE"
+note = "Uma ambulância ou um pronto-socorro também não cruza um autocarro em 4,90 m. A paragem seguinte chama-se Bombeiros Alvalade, mas não se verificou se os veículos do Regimento de Sapadores Bombeiros ou do INEM usam a rua."
+source = ""
+
+[[appraisal.criteria]]
+id = "design"
+dimension = "policy"
+label = "Referência municipal de desenho de rua"
+indicator = "Largura livre face ao perfil do manual (6,80 m entre faixas de estacionamento)"
+effects = { B = "++", C = "+", E = "+", G = "+", H = "+" }
+grade = "D"
+note = "Com estacionamento só de um lado, a largura livre passa a 6,91 m, acima dos 6,80 m do manual: em toda a rua em B, só no troço mais longo em C, e só nas horas em que vigoram em E, G e H."
+source = "Lisboa: o Desenho da Rua – Manual de espaço público, p. 152; standards_comparison.csv"
+
+[[appraisal.criteria]]
+id = "equity"
+dimension = "equity"
+label = "Quem ganha e quem perde"
+indicator = "Viagens de passageiros por ano face a lugares retirados"
+effects = { "*" = "?" }
+grade = "I"
+note = "Os ganhos repartem-se por cerca de meio milhão de viagens de passageiros por ano, muitas de quem não tem carro; a perda concentra-se em cerca de 21 lugares. Quanto pesa cada grupo é uma escolha da Câmara: o quadro de quem ganha e quem perde dá os números."
+source = "appraisal_distribution.csv"
+
+[[appraisal.criteria]]
+id = "reversible"
+dimension = "policy"
+label = "Reversibilidade"
+indicator = "Custo e tempo de desfazer"
+effects = { "*" = "+" }
+grade = "I"
+note = "Sinais e tinta: qualquer opção se desfaz em dias e por pouco dinheiro."
+source = ""
 
 [[appraisal.notes]]
 dimension = "legal"
 grade = "D"
-text = "Numa faixa de rodagem estreitada por obras ou obstáculos ocasionais, salvo se houver circulação alternada, a largura deixada à circulação não pode ser inferior a 5,8 m onde circulem automóveis pesados. A regra é para obras e obstáculos, não para estacionamento; mas a largura livre medida, 4,90 m, fica abaixo dela, e a circulação alternada é o que os sinais B5 e B6 organizam."
+text = "Numa faixa de rodagem estreitada por obras ou obstáculos ocasionais, salvo se houver circulação alternada, a largura deixada à circulação não pode ser inferior a 5,8 m onde circulem automóveis pesados. A regra é para obras e obstáculos, não para estacionamento; mas mostra a largura que o próprio Regulamento considera necessária para pesados nos dois sentidos, e a largura livre medida, 4,90 m, fica abaixo dela."
 source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 22-A/98), art. 87.º, n.º 4"
-
-[[appraisal.notes]]
-dimension = "legal"
-grade = "D"
-text = "O sinal B5 obriga a ceder a passagem a quem vem em sentido contrário num estreitamento; o B6 dá prioridade sobre quem vem em sentido contrário."
-source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 22-A/98), sinais de cedência de passagem"
 
 [[appraisal.notes]]
 dimension = "legal"
@@ -287,8 +517,8 @@ source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 2
 [[appraisal.notes]]
 dimension = "operational"
 grade = "D"
-text = "A Carris registou em 2024 1 365 interrupções por estacionamento indevido, com 983 horas de impacto, e diz trabalhar com a Câmara em medidas na rede viária para cumprir horários."
-source = "Carris, Relatório e Contas 2024, p. 26–27"
+text = "A Carris registou 1 284 interrupções por estacionamento indevido em 2025 (1 365 em 2024), com 824 horas de impacto, em 229 arruamentos; a velocidade média de exploração desceu, e a Carris diz trabalhar com a Câmara em medidas na rede viária para cumprir horários."
+source = "Carris, Relatório e Contas 2025, p. 29–30; Relatório e Contas 2024, p. 26–27"
 
 [[appraisal.notes]]
 dimension = "social"
@@ -304,12 +534,12 @@ text = "A ocupação do estacionamento nas ruas vizinhas não foi encontrada: n�
 [[appraisal.notes]]
 dimension = "evidence"
 grade = "NE"
-text = "O atraso medido vem de um arquivo de terceiros com poucos registos em 2026; os dados de localização da própria Carris mostrariam se se mantém."
+text = "O atraso medido vem de um arquivo de terceiros que, em 2026, guardou uma cópia do feed a cada 8 a 45 minutos, em vez de 3 a 4 em 2025: o valor de 2026 não informa. Os registos de passagem pedidos à Carris (Lei n.º 26/2016) e os dados da PGIL pedidos à Câmara mostrariam o atraso atual."
 
 [[appraisal.notes]]
 dimension = "evidence"
 grade = "NE"
-text = "Não se monetizam o tempo perdido fora da ponta, o atraso de quem segue de carro, a segurança nem o acesso de emergência: os benefícios estão subestimados."
+text = "O tempo fora da ponta, os carros retidos, a fiabilidade, as ligações ao comboio, os novos passageiros e os danos só entram na camada alargada, com valores pressupostos até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam nos critérios sem preço."
 
 [[appraisal.notes]]
 dimension = "options"

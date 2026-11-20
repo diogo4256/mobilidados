@@ -660,13 +660,14 @@ def appraisal_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> li
 
     a, lang = r.cfg.appraisal, r.case.lang
     assert a is not None
-    res = r.table("appraisal_results").set_index("option")
-    mc = r.table("appraisal_montecarlo").set_index("option")
+    results, sims = r.table("appraisal_results"), r.table("appraisal_montecarlo")
+    res, ext = (results[results.layer == x].set_index("option") for x in ("core", "extended"))
+    mc, mce = (sims[sims.layer == x].set_index("option") for x in ("core", "extended"))
     common = {"sources": ["delay", "free_width", "parking_removed", "appraisal_inputs.csv"], "method": method("appraisal", year=a.price_year),
               "caveat": caveat("appraisal")}  # fmt: skip
     out = []
     for o in a.options:
-        row, sim = res.loc[o.id], mc.loc[o.id]
+        row, sim, row_e, sim_e = res.loc[o.id], mc.loc[o.id], ext.loc[o.id], mce.loc[o.id]
         out.append(
             Finding(
                 id=f"appraisal_{o.id}",
@@ -686,12 +687,18 @@ def appraisal_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> li
                     places=n(row.places, 0),
                     parking=money(row.parking_year + row.enforcement_year, lang),
                     works=money(row.works, lang),
+                    npv_ext=money(row_e.npv, lang),
+                    bcr_ext=n(row_e.bcr, 2),
+                    prob_ext=n(100 * sim_e.probability_positive, 0),
                 ),
                 values={
                     "npv": round(float(row.npv), 2),
                     "bcr": round(float(row.bcr), 4),
                     "npv_p10_p90": [round(float(sim.p10), 2), round(float(sim.p90), 2)],
                     "probability_positive": round(float(sim.probability_positive), 4),
+                    "npv_extended": round(float(row_e.npv), 2),
+                    "bcr_extended": round(float(row_e.bcr), 4),
+                    "probability_positive_extended": round(float(sim_e.probability_positive), 4),
                 },
                 **common,
             )
@@ -706,6 +713,7 @@ def appraisal_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> li
                     id=alt.alternative,
                     label=alt.label,
                     cost=money(alt.pv_cost, lang),
+                    places=n(alt.places, 0),
                     hours=n(alt.breakeven_bus_hours_per_year, 1),
                     secs=n(alt.breakeven_seconds_per_peak_passage, 1) if math.isfinite(alt.breakeven_seconds_per_peak_passage) else "—",
                 ),

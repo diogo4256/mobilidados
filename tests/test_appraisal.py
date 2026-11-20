@@ -1,5 +1,6 @@
-"""The appraisal's arithmetic on numbers that can be checked by hand: working days, attribution, the yearly flows and
-their present values, switching values, the PERT draws, and the configuration's checks."""
+"""The appraisal's arithmetic on numbers that can be checked by hand: working days, the days of each timetable, the
+passages an option covers, attribution, the yearly flows and their present values in both layers, switching values,
+the PERT draws, the value of information, and the configuration's checks."""
 
 import dataclasses
 import datetime as dt
@@ -11,7 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from mobilidados import appraisal, delay
-from mobilidados.config import Appraisal, Option
+from mobilidados.config import Appraisal, Criterion, Option
 
 LISBON_2026 = [dt.date(2026, m, d) for m, d in [(1, 1), (2, 17), (4, 3), (4, 5), (4, 25), (5, 1), (6, 4), (6, 10), (6, 13), (8, 15),
                                                 (10, 5), (11, 1), (12, 1), (12, 8), (12, 25)]]  # fmt: skip
@@ -51,8 +52,9 @@ def config(**kw):
 
 def measured(**kw):
     base = appraisal.Measured(
-        excess_s=(5.0, 10.0, 15.0), peak_passages_per_day=36.0, working_days=100, attribution={"A": (0.5, 1.0, 1.0)}, metres={"A": 55.0}
-    )
+        excess_s=(5.0, 10.0, 15.0), peak_passages_per_day=36.0, working_days=100, attribution={"A": (0.5, 1.0, 1.0)}, metres={"A": 55.0},
+        passages={"A": (3600.0, 0.0)}, passages_year=3600.0,
+    )  # fmt: skip
     return dataclasses.replace(base, **kw)
 
 
@@ -63,7 +65,7 @@ def test_working_days_leave_out_weekends_and_the_holidays_on_weekdays():
 
 def test_the_yearly_flows_and_present_values_are_the_hand_computed_ones():
     cfg, m = config(), measured()
-    e = appraisal.evaluate(cfg.options[0], appraisal.central(cfg, m), m, cfg)
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
     # 10 s × 36 passages × 100 days = 10 bus-hours; a bus-hour is worth 10 passengers × 6 €/h + 40 € = 100 €
     assert e["bus_hours"] == pytest.approx(10.0)
     assert e["benefit_year"] == pytest.approx(1000.0)
@@ -92,14 +94,14 @@ def test_a_restriction_by_hours_pays_only_the_share_of_the_parking_and_its_enfor
         "signs": 2,
     }
     cfg, m = config(parameters=params, options=[option]), measured()
-    e = appraisal.evaluate(cfg.options[0], appraisal.central(cfg, m), m, cfg)
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
     assert e["parking_year"] == pytest.approx(250.0)
     assert e["enforcement_year"] == pytest.approx(300.0)
 
 
 def test_the_switching_value_brings_the_present_value_to_zero():
     cfg, m = config(), measured()
-    c = appraisal.central(cfg, m)
+    c = appraisal.layer(appraisal.central(cfg, m), "core")
     o = cfg.options[0]
     sv = appraisal.switching_value(
         lambda x: appraisal.evaluate(o, c | {"car_value": x}, m, cfg)["npv"], *appraisal.search_domain(50.0, 400.0)
@@ -174,3 +176,105 @@ def test_a_missing_parameter_or_a_repeated_option_is_refused():
         config(parameters={"vot": parameter(6.0, 7.0, 8.0)})
     with pytest.raises(ValidationError, match="hours"):
         Option(id="A", label="x", blocks=["B2"], compliance="comply", signs=0, hours=(20, 16))
+
+
+def test_the_days_of_each_timetable_add_up_to_the_year():
+    days = appraisal.day_counts(2026, LISBON_2026)
+    # 52 Saturdays, three of them holidays (25 April, 13 June, 15 August), which run the Sunday timetable with the 52
+    # Sundays and the 10 holidays on weekdays
+    assert days == {"working": 251, "saturday": 49, "sunday": 65}
+    assert sum(days.values()) == 365
+
+
+def test_an_option_covers_only_the_passages_of_its_days_and_hours():
+    hourly = pd.DataFrame(
+        [{"day_kind": k, "hour": h, "passages": n} for k, n in (("working", 6), ("saturday", 4), ("sunday", 2)) for h in range(7, 21)]
+    )
+    days = {"working": 10, "saturday": 2, "sunday": 3}
+    always = Option(id="A", label="x", blocks=["B2"], compliance="comply", signs=0)
+    late = Option(id="B", label="x", blocks=["B2"], compliance="comply", signs=0, days="working", hours=(16, 20))
+    # the peak is 17h and 18h on working days: 2 hours × 6 × 10 days
+    assert appraisal.passages(hourly, days, always, [17, 18]) == (120.0, (14 * 6 - 12) * 10 + 14 * 4 * 2 + 14 * 2 * 3)
+    assert appraisal.passages(hourly, days, late, [17, 18]) == (120.0, 2 * 6 * 10)  # 16h and 19h
+    assert sum(appraisal.passages(hourly, days, None, [17, 18])) == 14 * (6 * 10 + 4 * 2 + 2 * 3)
+
+
+EXTENDED = {
+    "offpeak_s": parameter(5.0),
+    "load_offpeak": parameter(8.0),
+    "unexpected_share": parameter(0.5),
+    "transfer_share": parameter(0.0),
+    "lateness_weight": parameter(3.0),
+    "cars_behind": parameter(1.0),
+    "car_occupancy": parameter(1.5),
+    "elasticity_ivt": parameter(0.6),
+    "journey_min": parameter(10.0),
+    "diversion_car": parameter(0.25),
+    "trip_km": parameter(4.0),
+    "external_cost_pkm": parameter(0.2),
+    "damage_year": parameter(400.0),
+    "room_nearby": parameter(0.5),
+    "walk_cost": parameter(20.0),
+    "calming_cost": parameter(1000.0),
+}
+
+
+def test_the_core_is_the_extended_layer_with_its_mechanisms_switched_off():
+    cfg = config(parameters=EXTENDED)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    plain = appraisal.evaluate(config().options[0], appraisal.layer(appraisal.central(config(), m), "extended"), m, config())
+    assert core["npv"] == pytest.approx(plain["npv"])  # a case without the mechanisms: both layers are the core
+
+
+def test_the_extended_layer_adds_each_mechanism_as_computed_by_hand():
+    cfg = config(parameters=EXTENDED)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+    peak_bh, other_bh = 10 * 3600 / 3600, 5 * 7200 / 3600  # 10 bus-hours at peak, 10 off-peak (attribution 1, compliance 1)
+    assert e["bus_hours"] == pytest.approx(peak_bh + other_bh)
+    on_board = peak_bh * 10 + other_bh * 8  # 180 passenger-hours
+    weight = 1.0 + (3.0 - 1.0) * 0.5  # half the delay is unexpected: weighted 3 instead of 1
+    assert e["time_value"] == pytest.approx(on_board * 6.0 * weight)
+    assert e["traffic_value"] == pytest.approx(20 * 1.0 * 1.5 * 6.0 * 1.0)
+    riders = 3600 * 10 + 7200 * 8
+    saved = 3600 * on_board / riders
+    new = 0.6 * saved / 600 * riders
+    assert e["new_riders"] == pytest.approx(new)
+    assert e["new_rider_value"] == pytest.approx(0.5 * new * saved / 3600 * 6.0)
+    assert e["external_value"] == pytest.approx(new * 0.25 * 4.0 * 0.2)
+    assert e["damage_value"] == pytest.approx(400.0)  # in force at every passage, on the whole stretch
+    # half the displaced cars find a place nearby (20 € a year), the other half pay 100 €
+    assert e["parking_year"] == pytest.approx(10.0 * (0.5 * 20 + 0.5 * 100))
+    assert e["works"] == pytest.approx(2 * 100 + 55 * 2 + 1000)
+
+
+def test_a_draw_through_the_simulation_is_the_same_as_evaluating_it_alone():
+    cfg = config(parameters=EXTENDED | {"vot": parameter(6.0, 4.0, 8.0), "room_nearby": parameter(0.5, 0.0, 1.0)}, draws=1000)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    d = appraisal.draws(cfg, m)
+    sims = appraisal.simulate(cfg, m, d, "extended")
+    i = 17
+    one = appraisal.evaluate(cfg.options[0], appraisal.layer({k: float(v[i]) for k, v in d.items()}, "extended"), m, cfg)
+    assert sims.A[i] == pytest.approx(one["npv"])
+
+
+def test_the_value_of_information_goes_to_the_input_that_can_change_the_decision():
+    rng = np.random.default_rng(3)
+    decisive, idle = rng.uniform(-1, 1, 4000), rng.uniform(-1, 1, 4000)
+    sims = pd.DataFrame({"A": 1000 * decisive})  # worth doing exactly when ``decisive`` > 0
+    voi = appraisal.value_of_information(sims, {"decisive": decisive, "idle": idle}).set_index("input").evppi
+    assert voi["(all)"] == pytest.approx(np.maximum(1000 * decisive, 0).mean() - max(0, 1000 * decisive.mean()))
+    assert voi["decisive"] == pytest.approx(voi["(all)"], rel=0.05)
+    assert voi["idle"] < 0.1 * voi["(all)"]
+
+
+def test_a_criterion_must_say_how_every_option_moves_it():
+    crit = {"id": "x", "dimension": "safety", "label": "x", "indicator": "x", "grade": "P", "note": "x"}
+    with pytest.raises(ValidationError, match="do not say how every option"):
+        config(criteria=[crit | {"effects": {}}])
+    with pytest.raises(ValidationError, match="options that do not exist"):
+        config(criteria=[crit | {"effects": {"Z": "+", "*": "?"}}])
+    table = appraisal.criteria_table(config(criteria=[crit | {"effects": {"*": "?", "A": "+"}}]))
+    assert table.loc[0, "A"] == "+"
+    assert Criterion(**crit, effects={"*": "0"}).effects == {"*": "0"}

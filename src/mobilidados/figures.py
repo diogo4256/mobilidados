@@ -277,23 +277,28 @@ def delay_by_hour(run: Run, lang: Lang) -> Figure:
 
 
 def appraisal_npv(run: Run, lang: Lang) -> Figure:
-    """Each option's net present value: the central value and the spread of the simulations (10% to 90%), against
-    zero. A bar wholly left of zero is an option that loses in most of the uncertain worlds simulated."""
+    """Each option's net present value in both layers: the central value and the spread of the simulations (10% to
+    90%), against zero. The core counts only what is measured; the extended layer adds the mechanisms not yet measured.
+    A bar wholly left of zero is an option that loses in most of the uncertain worlds simulated."""
     a = run.cfg.appraisal
     assert a is not None
-    res = run.table("appraisal_results").set_index("option")
-    mc = run.table("appraisal_montecarlo").set_index("option")
+    results, sims = run.table("appraisal_results"), run.table("appraisal_montecarlo")
     ids = [o.id for o in a.options][::-1]
-    fig = Figure(figsize=(9.5, 0.55 * len(ids) + 1.6))
+    fig = Figure(figsize=(9.5, 0.8 * len(ids) + 1.8))
     ax = fig.subplots()
     y = np.arange(len(ids))
-    ax.hlines(y, mc.loc[ids, "p10"] / 1000, mc.loc[ids, "p90"] / 1000, color=FREE_ALT, lw=7, label=t("appraisal_spread", lang))
-    ax.plot(res.loc[ids, "npv"] / 1000, y, "D", color=ALERT, ms=6, label=t("appraisal_central", lang))
+    for layer, dy, colour, mark in (("core", 0.17, FREE_ALT, "D"), ("extended", -0.17, STRIP, "o")):
+        res = results[results.layer == layer].set_index("option")
+        mc = sims[sims.layer == layer].set_index("option")
+        ax.hlines(y + dy, mc.loc[ids, "p10"] / 1000, mc.loc[ids, "p90"] / 1000, color=colour, lw=6, alpha=0.55)
+        ax.plot(
+            res.loc[ids, "npv"] / 1000, y + dy, mark, color=ALERT if layer == "core" else INK, ms=6, label=t(f"appraisal_{layer}", lang)
+        )
     ax.axvline(0, color=INK, lw=0.8)
     ax.set_yticks(y, [f"{i}" for i in ids])
     ax.set_xlabel(t("appraisal_npv", lang))
     ax.grid(axis="x", color=GRID, lw=0.6)
-    ax.legend(frameon=False, loc="upper right", fontsize=9)
+    ax.legend(frameon=False, loc="lower right", fontsize=9, title=t("appraisal_spread", lang), title_fontsize=8)
     ax.set_title(
         t("appraisal_title", lang, years=a.horizon_years, rate=i18n.num(100 * a.discount_rate, lang, 0)), loc="left", fontsize=10, color=INK
     )

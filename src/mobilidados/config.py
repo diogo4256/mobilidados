@@ -451,7 +451,23 @@ class Alternative(Model):
     signs: int = Field(0, ge=0)
     works: float = Field(0.0, ge=0, description="Other one-off cost (€)")
     yearly: float = Field(0.0, ge=0, description="Recurring cost (€ a year)")
-    keeps_parking: bool = True
+    parking_m: float = Field(0.0, ge=0, description="Metres of parking strip it removes (0: none), valued as an option's places")
+
+
+class Criterion(Model):
+    """An effect the appraisal does not put a price on (quality of life, access to the rail network, safety...): how
+    each option moves it, with the evidence. The weights between criteria are the decision-maker's, so none are given."""
+
+    id: str = Field(pattern=r"^[A-Za-z0-9_]+$")
+    dimension: Literal["passengers", "residents", "network", "environment", "safety", "policy", "equity"]
+    label: str
+    indicator: str = Field(description="What would measure it")
+    effects: dict[str, Literal["++", "+", "0", "-", "--", "?"]] = Field(
+        description="Option id (or '*' for every option) -> ++, +, 0, -, -- or ? (not known)"
+    )
+    grade: Grade
+    note: str = Field(description="Why each option moves it as stated")
+    source: str = ""
 
 
 REQUIRED_PARAMETERS = ("vot", "time_weight", "load_peak", "downstream", "bus_cost_h", "occupancy", "car_value",
@@ -472,6 +488,7 @@ class Appraisal(Model):
     parameters: dict[str, Parameter]
     options: list[Option] = Field(min_length=1)
     alternatives: list[Alternative] = []
+    criteria: list[Criterion] = []
     notes: list[Note] = []
     references: list[str] = Field([], description="The documents the values and notes come from, cited in full with their address")
 
@@ -484,6 +501,12 @@ class Appraisal(Model):
         ids = [o.id for o in self.options]
         if len(set(ids)) != len(ids):
             raise ValueError(f"appraisal: option ids repeat: {ids}")
+        stray = sorted({k for c in self.criteria for k in c.effects} - set(ids) - {"*"})
+        if stray:
+            raise ValueError(f"appraisal: criteria name options that do not exist: {stray}")
+        bare = [c.id for c in self.criteria if not set(ids) <= set(c.effects) and "*" not in c.effects]
+        if bare:
+            raise ValueError(f"appraisal: criteria {bare} do not say how every option moves them (give each option, or '*')")
         return self
 
 
