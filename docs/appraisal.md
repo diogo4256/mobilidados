@@ -140,7 +140,8 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   the NPV is zero, and whether it lies within the range tested. A share is searched within [0, 1]; a positive
   quantity never at zero.
 * **The off-peak break-even under conditions** (`appraisal_offpeak_thresholds.csv`): the off-peak excess at which each
-  option's extended NPV is zero, with the other inputs central; with no other mechanism; with no displaced driver
+  option's extended NPV is zero, and the bus time saved per passage at that point (what a before-and-after evaluation
+  would have to find), with the other inputs central; with no other mechanism; with no displaced driver
   finding room nearby; with the car parks full; and with both, since the two parking conditions can coincide and one
   at a time hides it.
 * **Tornado** (`appraisal_tornado.csv`, extended layer): the NPV at each input's low and high value.

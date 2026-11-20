@@ -417,3 +417,8 @@ def test_the_off_peak_break_even_rises_when_the_parking_assumptions_are_least_fa
     q = appraisal.layer(appraisal.central(cfg, m), "extended") | {"room_nearby": 0.0, "spare_capacity": 0.0}
     npv = appraisal.evaluate(cfg.options[0], q | {"offpeak_s": t["no_room_and_car_parks_full"]}, m, cfg)["npv"]
     assert npv == pytest.approx(0.0, abs=1.0)
+    # and the bus time saved per passage there is what a before-and-after evaluation would have to find
+    saved = appraisal.offpeak_thresholds(cfg, m, appraisal.central(cfg, m)).set_index("condition").saved_s_per_passage
+    bh = appraisal.evaluate(cfg.options[0], q | {"offpeak_s": t["no_room_and_car_parks_full"]}, m, cfg)["bus_hours"]
+    assert saved["no_room_and_car_parks_full"] == pytest.approx(bh * 3600 / 10800.0)
+    assert saved["no_room_and_car_parks_full"] > saved["central"]

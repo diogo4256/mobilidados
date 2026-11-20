@@ -558,9 +558,11 @@ THRESHOLD_CONDITIONS: dict[str, dict[str, str]] = {
 
 def offpeak_thresholds(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
     """For each option, the off-peak excess per passage at which its extended NPV is zero under each of
-    ``THRESHOLD_CONDITIONS`` (the other inputs central); NaN where none within the search domain."""
+    ``THRESHOLD_CONDITIONS`` (the other inputs central; NaN where none within the search domain), and the bus time
+    saved per passage, every hour of the year it is in force together, at that point: the criterion a before-and-after
+    evaluation of the option can test directly."""
     if "offpeak_s" not in cfg.parameters:
-        return pd.DataFrame(columns=["option", "condition", "switching_value", "central"])
+        return pd.DataFrame(columns=["option", "condition", "switching_value", "central", "npv_at_central", "saved_s_per_passage"])
     rg, q = ranges(cfg, m), layer(c, "extended")
     lo, ce, hi = rg["offpeak_s"]
     rows = []
@@ -579,7 +581,11 @@ def offpeak_thresholds(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.D
                 return float(evaluate(opt, b | {"offpeak_s": x}, m, cfg)["npv"])
 
             sv = switching_value(npv_at, *search_domain(lo, hi))
-            rows.append({"option": o.id, "condition": name, "switching_value": sv, "central": ce, "npv_at_central": npv_at(ce)})
+            # what a before-and-after measurement would see at that point: bus time saved per passage, every hour together
+            per = sum(m.passages[o.id])
+            saved = float(evaluate(o, base | {"offpeak_s": sv}, m, cfg)["bus_hours"]) * 3600 / per if sv is not None and per else None
+            rows.append({"option": o.id, "condition": name, "switching_value": sv, "central": ce, "npv_at_central": npv_at(ce),
+                         "saved_s_per_passage": saved})  # fmt: skip
     return pd.DataFrame(rows)
 
 
