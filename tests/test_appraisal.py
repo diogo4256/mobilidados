@@ -249,6 +249,25 @@ def test_the_extended_layer_adds_each_mechanism_as_computed_by_hand():
     assert e["works"] == pytest.approx(2 * 100 + 55 * 2 + 1000)
 
 
+def test_what_a_displaced_driver_pays_a_car_park_with_room_to_spare_is_a_transfer():
+    cfg = config(parameters=EXTENDED | {"carpark_walk": parameter(30.0), "spare_capacity": parameter(0.25)})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+    # 10 places: half find a place nearby (20 €), half pay 100 € for a car park and walk 30 € from it
+    private = 10.0 * (0.5 * 20 + 0.5 * (100 + 30))
+    revenue = 10.0 * 0.5 * 0.25 * 100  # a quarter of what they pay goes to spare room: a transfer, not a cost
+    assert e["parking_private_year"] == pytest.approx(private)
+    assert e["carpark_revenue_year"] == pytest.approx(revenue)
+    assert e["parking_year"] == pytest.approx(private - revenue)
+    # the distribution shows both sides; the economic case only their difference
+    dist = appraisal.distribution(cfg, m, appraisal.central(cfg, m)).set_index("group")
+    assert dist.loc["parkers", "value"] == pytest.approx(-private)
+    assert dist.loc["car_parks", "value"] == pytest.approx(revenue)
+    # the core counts the price paid in full, with no walk and no transfer
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert core["parking_year"] == pytest.approx(10.0 * 100)
+
+
 def test_a_draw_through_the_simulation_is_the_same_as_evaluating_it_alone():
     cfg = config(parameters=EXTENDED | {"vot": parameter(6.0, 4.0, 8.0), "room_nearby": parameter(0.5, 0.0, 1.0)}, draws=1000)
     m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)

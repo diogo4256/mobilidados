@@ -97,6 +97,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- The parking cost counted what a displaced driver pays for a car park as a cost to society, although the appraisal
+  treats fees and permits as transfers. The extended layer now counts that payment for the driver (in the
+  distribution) and nets it out of the economic case where the car park has room to spare (`spare_capacity`); it also
+  counts the walk from the car park (`carpark_walk`), which was left out. The core still counts the price in full.
 - The study no longer says that buses wait at the junction where they lose time to oncoming buses. Snapshots minutes
   apart show where the time is lost, not what the buses do there, and a 12 m bus cannot step aside in a short junction
   to let another by. A passing place is described as a place to pull aside, and a junction as a natural test of one.

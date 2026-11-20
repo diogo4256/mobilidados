@@ -145,13 +145,13 @@ label = "Ocupação dos lugares retirados"
 source = "A ocupação das ruas vizinhas não foi encontrada (NE); a Junta de Freguesia (Plano de Atividades 2022) pede um parque subterrâneo junto à Av. da Igreja para as necessidades dos moradores, e a EMEL (Plano 2026-2029) aponta a pressão dos dísticos de residente"
 
 [appraisal.parameters.car_value]
-low = 325.0
+low = 264.0
 central = 555.6
 high = 2100.0
 grade = "I"
 unit = "€/ano"
-label = "Custo anual, para quem perde o lugar, de estacionar noutro sítio"
-source = "Mínimo: mais 10 min a pé por dia, ao valor do tempo de lazer (5,34 €/h). Central: avença R24 da EMEL para residentes, 46,30 €/mês (DN, citando a EMEL). Máximo: lugar de garagem arrendado em Alvalade, cerca de 175 €/mês (anúncios Imovirtual, 150–200 €/mês)"
+label = "Preço anual de estacionar noutro sítio, para quem perde o lugar"
+source = "Mínimo: avença noturna da EMEL e da Telpark, 22 €/mês (Observador, 20/03/2025). Central: avença R24 da EMEL para residentes, 46,30 €/mês (DN, citando a EMEL). Máximo: lugar de garagem arrendado em Alvalade, cerca de 175 €/mês (anúncios Imovirtual, 150–200 €/mês). O tempo a pé até ao parque conta à parte (carpark_walk)"
 
 [appraisal.parameters.share_E]
 low = 0.40
@@ -350,6 +350,24 @@ high = 1.0
 grade = "P"
 label = "Parte dos carros deslocados que encontra lugar a menos de 150 m"
 source = "Há cerca de 780 lugares cartografados a menos de 150 m (appraisal_feasibility.csv): bastam 21 livres (2,7 %) à noite. A ocupação noturna não é conhecida (NE), e a Junta e a EMEL apontam pressão; uma contagem noturna fixa-o"
+
+[appraisal.parameters.carpark_walk]
+low = 65.0
+central = 195.0
+high = 390.0
+grade = "P"
+unit = "€/ano"
+label = "Custo anual, para quem passa a estacionar num parque, do tempo a pé até casa"
+source = "Mais 2, 6 ou 12 minutos por dia, 365 dias, ao valor do tempo de lazer (5,34 €/h, como walk_cost); a distância ao parque mais próximo com avença não é conhecida (NE)"
+
+[appraisal.parameters.spare_capacity]
+low = 0.0
+central = 0.5
+high = 1.0
+grade = "P"
+unit = ""
+label = "Parte do preço do parque que é uma transferência: o parque tem lugares vagos"
+source = "A ocupação dos parques perto não é conhecida (NE). Em 2025 a Câmara abriu 3 500 lugares noturnos em parques da EMEL e da Telpark (Observador, 20/03/2025), sinal de capacidade livre à noite. Com lugares vagos, a avença é uma transferência para o operador do parque e fica fora das contas da sociedade (EAV 2021-2027; DfT TAG A1.3: as tarifas de estacionamento são transferências entre utilizadores e operadores), e só o tempo a pé é custo; num parque cheio, o preço mede o custo de oportunidade do lugar. A EMEL pode dar a ocupação"
 
 [appraisal.parameters.walk_cost]
 low = 65.0

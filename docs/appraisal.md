@@ -89,6 +89,8 @@ hours on working days.
 | --- | --- | --- | --- |
 | The places removed | core | `car_value`, `occupancy`, `stall_m`, the option's `parking_share` | places × occupancy × what parking elsewhere costs, for the share of the day the restriction applies |
 | Room nearby | extended | `room_nearby`, `walk_cost` | the displaced cars that find a free place within 150 m lose only a walk; the others what parking elsewhere costs |
+| Walk from a car park | extended | `carpark_walk` | those who park in a car park instead also walk further, every day |
+| Room in the car park | extended | `spare_capacity` | where the car park has room to spare, the pass the displaced driver pays is a transfer to its operator, netted out of the economic case; the distribution shows the driver's loss and the operator's revenue |
 | Works | core | `signs`, `sign_cost`, `marking_cost_m` | signs and markings; half the marking repainted every `repaint_every_years` |
 | Traffic calming | extended | `calming_cost` | a wider carriageway invites higher speeds; measures if the speed rises |
 | Enforcement | core | `enforcement_year` | for a restriction by hours |

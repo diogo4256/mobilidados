@@ -26,8 +26,10 @@ the damage to buses and parked cars the narrowness causes (``damage_year``, in t
 the passages the option is in force).
 
 **Costs.** The places removed, valued for whoever loses them: (extended) those who find a free place nearby
-(``room_nearby``) lose a walk (``walk_cost``), the others what parking elsewhere costs (``car_value``); for the part of
-the day the restriction applies, times how many places are occupied. The works (signs, markings, repainted
+(``room_nearby``) lose a walk (``walk_cost``), the others what parking elsewhere costs (``car_value``) and (extended)
+the walk from it (``carpark_walk``); for the part of the day the restriction applies, times how many places are
+occupied. Where the car park has room to spare (extended, ``spare_capacity``), what the driver pays for it is a
+transfer to its operator, not a cost to society: the economic case nets it out, the distribution shows both sides. The works (signs, markings, repainted
 periodically, and (extended) traffic calming, ``calming_cost``) and, for a restriction by hours, its enforcement.
 Benefits and the parking cost scale with compliance: a car that stays blocks the bus and keeps its place. Fees and
 fares are transfers and stay out.
@@ -65,6 +67,8 @@ MECHANISMS = {
     "elasticity_ivt": 0.0,
     "damage_year": 0.0,
     "room_nearby": 0.0,
+    "carpark_walk": 0.0,
+    "spare_capacity": 0.0,
     "calming_cost": 0.0,
 }
 #: Inputs that only matter through a mechanism; a case that leaves the mechanism out need not give them.
@@ -259,8 +263,13 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     benefit = time_value + operator_value + traffic_value + new_rider_value + external_value + damage_value
     places = m.metres[o.id] / p["stall_m"]
     share = p[o.parking_share] if o.parking_share else 1.0
-    place_value = p["room_nearby"] * p["walk_cost"] + (1 - p["room_nearby"]) * p["car_value"]
-    parking = places * p["occupancy"] * place_value * share * comply
+    # those who find no place nearby pay for one elsewhere and walk from it; where that car park has room to spare,
+    # what they pay is a transfer to its operator, not a cost to society
+    elsewhere = p["car_value"] + p["carpark_walk"]
+    displaced = places * p["occupancy"] * share * comply
+    parking_private = displaced * (p["room_nearby"] * p["walk_cost"] + (1 - p["room_nearby"]) * elsewhere)
+    carpark_revenue = displaced * (1 - p["room_nearby"]) * p["spare_capacity"] * p["car_value"]
+    parking = parking_private - carpark_revenue
     enforcement = p["enforcement_year"] if (o.days != "all" or o.hours != (0, 24)) else 0.0 * comply
     marking = m.metres[o.id] * p["marking_cost_m"]
     works = o.signs * p["sign_cost"] + marking + p["calming_cost"]
@@ -289,6 +298,8 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "benefit_year": benefit,
         "places": places,
         "parking_year": parking,
+        "parking_private_year": parking_private,
+        "carpark_revenue_year": carpark_revenue,
         "enforcement_year": enforcement,
         "works": works,
         "pv_benefit": pv_benefit,
@@ -422,7 +433,8 @@ def distribution(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFra
             {"option": o.id, "group": "new_passengers", "people": e["new_riders"], "quantity": None, "unit": "", "value": e["new_rider_value"]},
             {"option": o.id, "group": "society", "people": None, "quantity": None, "unit": "", "value": e["external_value"]},
             {"option": o.id, "group": "vehicle_owners", "people": None, "quantity": None, "unit": "", "value": e["damage_value"]},
-            {"option": o.id, "group": "parkers", "people": e["places"], "quantity": e["places"], "unit": "places", "value": -e["parking_year"]},
+            {"option": o.id, "group": "parkers", "people": e["places"], "quantity": e["places"], "unit": "places", "value": -e["parking_private_year"]},
+            {"option": o.id, "group": "car_parks", "people": None, "quantity": None, "unit": "", "value": e["carpark_revenue_year"]},
             {"option": o.id, "group": "public_bodies", "people": None, "quantity": None, "unit": "", "value": -(e["enforcement_year"] + works_year)},
         ]  # fmt: skip
     return pd.DataFrame(rows)
