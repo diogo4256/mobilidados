@@ -37,6 +37,7 @@ from . import (
     i18n,
     ledger,
     occurrences,
+    reroute,
     standards,
 )
 from .arcgis import to_line
@@ -400,7 +401,75 @@ def stage_appraisal(r: Run) -> None:
     r.save("appraisal_feasibility", appraisal.feasibility(
         a, r.table("without_parking"), envelope.widths(bus, bus, False), envelope.widths(bus, bus, True), refs, places, supply, say
     ))  # fmt: skip
+    if a.reroutes:
+        route_days = a_route_passages(r, holidays)
+        r.save("appraisal_route_passages", route_days)
+        detours = a_detours(r, sorted({mv for rr in a.reroutes for mv in rr.moves}))
+        r.save("appraisal_detours", detours)
+        all_blocks = sorted({b for o in a.options for b in o.blocks})
+        attr_all = appraisal.attribution(tables["delay_by_part"], tables["delay_copresence"], all_blocks, a.significance)[1]
+        r.save("appraisal_reroutes", appraisal.reroutes(a, m, appraisal.central(a, m), attr_all, route_days, detours))
     appraisal_report.write(r)
+
+
+def a_route_passages(r: Run, holidays: list[dt.date]) -> pd.DataFrame:
+    """Passages a day of each route and direction through the street, on the representative day of each kind."""
+    t = r.cfg.transit
+    assert t is not None
+    shapes = gtfs.shapes_along(r.feed, r.axis, r.case.crs, buffer_m=t.buffer_m)
+    trips = gtfs.trips_on_shapes(r.feed, shapes)
+    on_routes = trips[trips.route_short_name.isin(t.routes)]
+    stop_times = r.feed.stop_times(set(on_routes.trip_id))
+    days = sorted({row.date for row in r.table("appraisal_passages")[["day_kind", "date"]].drop_duplicates().itertuples()})
+    kinds = dict(r.table("appraisal_passages")[["date", "day_kind"]].drop_duplicates().itertuples(index=False, name=None))
+    rows = []
+    for day in days:
+        kind = kinds[day]
+        p = gtfs.reference_passings(
+            r.feed, on_routes, stop_times, t.reference_stops, dt.date.fromisoformat(str(day)), strict=kind == "working"
+        )
+        for (route, d, h), g in p.groupby(["route_short_name", "direction_id", "heading"]) if len(p) else []:
+            rows.append({"day_kind": kind, "key": f"{route} {d}", "heading": int(h), "passages": len(g)})
+    return pd.DataFrame(rows, columns=["day_kind", "key", "heading", "passages"])
+
+
+def a_detours(r: Run, keys: list[str]) -> pd.DataFrame:
+    """For each 'route direction_id' in ``keys``: its busiest shape on the street, the smallest detour round the street
+    on the area's street network (``reroute.detour``), the streets it uses that carry no bus today, and the stops on
+    the street it would no longer serve."""
+    t = r.cfg.transit
+    assert t is not None
+    source = r.cfg.area_scan.axes if r.cfg.area_scan else r.cfg.profiles.axes
+    net = reroute.Network(r.axes(source).items())
+    shapes = gtfs.shapes_along(r.feed, r.axis, r.case.crs, buffer_m=t.buffer_m)
+    trips = gtfs.trips_on_shapes(r.feed, shapes)
+    pts = r.feed.table("shapes")
+    stops = r.feed.table("stops", dtype={"stop_id": str})
+    tr = Transformer.from_crs(4326, r.case.crs, always_xy=True)
+    with_buses = set(r.table("area_streets").street) if r.cfg.area_scan else set()
+    rows = []
+    for key in keys:
+        route, d = key.split()
+        mine = trips[(trips.route_short_name == route) & (trips.direction_id == d) & (trips.heading != 0)]
+        if mine.empty:
+            raise MobilidadosError(f"appraisal.reroutes: {key} does not run along {r.cfg.street.name}")
+        sid = mine.shape_id.value_counts().index[0]
+        g = pts[pts.shape_id.astype(str) == sid].sort_values("shape_pt_sequence")
+        x, y = tr.transform(g.shape_pt_lon.to_numpy(), g.shape_pt_lat.to_numpy())
+        found = reroute.detour(net, LineString(list(zip(x, y, strict=True))), r.axis, r.cfg.street.name, bus_streets=with_buses)
+        if found is None:
+            raise MobilidadosError(f"appraisal.reroutes: no way round {r.cfg.street.name} found for {key}")
+        trip = mine.trip_id.iloc[0]
+        served = r.feed.stop_times({trip}).merge(stops, on="stop_id")
+        sx, sy = tr.transform(served.stop_lon.to_numpy(), served.stop_lat.to_numpy())
+        shape = LineString(list(zip(x, y, strict=True)))
+        skipped = reroute.skipped(zip(served.stop_id, sx, sy, strict=True), shape, found.from_m, found.to_m, found.path)
+        rows.append({"key": key, "shape_id": sid, "lead_in_m": found.lead_in_m, "current_route_m": found.to_m - found.from_m,
+                     "with_street_m": found.with_street_m, "without_street_m": found.without_street_m, "detour_m": found.detour_m,
+                     "detour_min_m": found.detour_min_m, "detour_max_m": found.detour_max_m, "on_bus_streets": found.on_bus_streets,
+                     "via": "; ".join(found.via), "via_without_buses_today": "; ".join(v for v in found.via if with_buses and v not in with_buses),
+                     "stops_skipped": " ".join(f"{s} ({n})" for s, n in zip(served.stop_id, served.stop_name, strict=True) if s in skipped)})  # fmt: skip
+    return pd.DataFrame(rows)
 
 
 def a_passages(r: Run, holidays: list[dt.date]) -> pd.DataFrame:

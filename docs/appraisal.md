@@ -118,7 +118,9 @@ Shares are of the sum of the parts' excesses. In Rua Ricardo Jorge, more than ha
 junctions between the narrow sections; at the first one, buses have an oncoming bus present 26% of the time against
 11% by chance (binomial p ≈ 1.5 × 10⁻⁶; p < 0.001 resampling whole days, none of 2,000 resamples at or below
 chance), and at the second, no more than chance: the central attribution counts the first junction and not the second.
-The same share applies off-peak: where the time is lost along the stretch does not depend on the hour. The shares are
+The same share applies off-peak: where the time is lost along the stretch does not depend on the hour. With `offpeak_scales_with_service`, an off-peak passage on a Saturday or a Sunday counts at that day's buses ÷ a
+working day's (`appraisal.offpeak_scale`): the off-peak excess is inferred from working days, and with fewer buses
+coming the other way there are fewer meetings per passage. The shares are
 of the parts' sum (13.8 s there), and they are applied to the excess measured on the whole stretch between stops
 (14.5 s), so the 0.7 s the parts do not place is spread in the same proportions.
 
@@ -189,6 +191,30 @@ but higher speeds on a wider carriageway), emergency access, the municipal desig
 For each, the case says how each option moves it (`++`, `+`, `0`, `−`, `−−` or `?`), with the indicator that would
 measure it, the grade of the evidence and why (`appraisal_criteria.csv`). No weights are given: they are the
 decision-maker's.
+
+## Reroutes: taking buses off the street instead of parking
+
+`[[appraisal.reroutes]]` names lines and directions moved to another way round the street (`moves`, as
+`"route direction_id"`). No parking is removed. For each moved line and direction (`appraisal_detours.csv`):
+
+* **The detour.** The line's busiest shape is followed from a lead-in before it reaches the street to the same
+  distance after it leaves; on the area's street axes (an undirected network: one-way rules and turns are not in the
+  data), the shortest path between those points without the street, less the shortest path with it, is the detour.
+  It depends on the lead-in (200 to 500 m are tried; the range is reported), so the smallest detour among the paths
+  that use only streets with buses today is kept, or, if none does, the smallest of all, with its other streets
+  listed to be checked on site. Detours within 10 m of each other keep the shorter lead-in.
+* **The stops left behind.** The stops the line serves between the two points that lie more than 50 m from the new
+  path.
+
+The value (`appraisal_reroutes.csv`, both layers, central values): the buses that move stop meeting those coming the
+other way. The meetings removed are the share of the product of the two directions' buses on a working day that
+goes (`appraisal_route_passages.csv`); they remove that share of the excess where buses meet (the attribution of the
+narrow sections and of the junction where buses meet), at peak and (extended) off-peak, valued as delay exactly as in
+the options. The buses that move run the detour at `detour_speed_kmh`, valued as ordinary time on board (weight 1)
+for the passengers and as the operator's time. Who boards or alights at the stops left behind is not known, so the
+table gives the **boardings a day** at which their extra walk (`walk_extra_min`, weighted `access_weight`: EAV,
+Table 7, walk time 1.5–2) cancels the gain. A reroute is worth more than an option only where the stops it leaves
+behind are used by fewer people than that, after the option's own NPV is taken off.
 
 ## Alternatives whose effect cannot be estimated
 

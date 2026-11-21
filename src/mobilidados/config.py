@@ -454,6 +454,18 @@ class Alternative(Model):
     parking_m: float = Field(0.0, ge=0, description="Metres of parking strip it removes (0: none), valued as an option's places")
 
 
+class Reroute(Model):
+    """Taking some of the street's buses off it by another way round (``mobilidados.reroute``): no parking removed,
+    the meetings between the buses that move and those coming the other way gone, a detour for the buses that move."""
+
+    id: str = Field(pattern=r"^[A-Za-z0-9_]+$")
+    label: str
+    moves: list[str] = Field(min_length=1, description="Routes and directions moved off the street, as 'route direction_id' (e.g. '744 0')")
+
+
+REROUTE_PARAMETERS = ("detour_speed_kmh", "walk_extra_min", "access_weight")
+
+
 class Correlation(Model):
     """Two inputs that move together in the simulation, with a rank correlation ``rho`` (Iman-Conover)."""
 
@@ -502,8 +514,18 @@ class Appraisal(Model):
         description="Take the central off-peak excess (parameter offpeak_s) as the peak excess scaled by how often oncoming"
         " buses meet off-peak relative to the peak, where they demonstrably meet (appraisal.offpeak_ratio); its range stays",
     )
+    offpeak_scales_with_service: bool = Field(
+        False,
+        description="Count off-peak passages on Saturdays and Sundays at that day's buses ÷ a working day's: fewer buses"
+        " coming the other way, fewer meetings per passage (appraisal.offpeak_scale)",
+    )
     parameters: dict[str, Parameter]
     options: list[Option] = Field(min_length=1)
+    reroutes: list[Reroute] = []
+    reroute_parameters: dict[str, Parameter] = Field(
+        {},
+        description=f"For the reroutes: {', '.join(REROUTE_PARAMETERS)}; valued at their central value, the range bracketing the break-even",
+    )
     alternatives: list[Alternative] = []
     criteria: list[Criterion] = []
     notes: list[Note] = []
@@ -518,6 +540,13 @@ class Appraisal(Model):
         ids = [o.id for o in self.options]
         if len(set(ids)) != len(ids):
             raise ValueError(f"appraisal: option ids repeat: {ids}")
+        if self.reroutes:
+            lacking = [k for k in REROUTE_PARAMETERS if k not in self.reroute_parameters]
+            if lacking:
+                raise ValueError(f"appraisal: reroutes need reroute_parameters {lacking}")
+            bad = [mv for r in self.reroutes for mv in r.moves if len(mv.split()) != 2]
+            if bad:
+                raise ValueError(f"appraisal: reroute moves are 'route direction_id', not {bad}")
         known = set(self.parameters) | {"excess_s"} | {f"attribution_{i}" for i in ids}
         loose = sorted({x for c in self.correlations for x in (c.a, c.b)} - known)
         if loose:

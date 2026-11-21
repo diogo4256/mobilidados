@@ -7,6 +7,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Reroutes** (`[[appraisal.reroutes]]`, `mobilidados.reroute`): taking a line and direction off the street instead
+  of parking. The detour round the street on the area's street network (preferring streets with buses today), the
+  stops left behind, the share of meetings removed, and the value in both layers before the cost to those who lose
+  their stop, with the boardings a day at which that cost cancels the gain (`appraisal_detours.csv`,
+  `appraisal_reroutes.csv`, `appraisal_route_passages.csv`). In Rua Ricardo Jorge, moving the 744 north-eastbound
+  adds 46 m and, in the extended layer, gains about €20,000 before its riders' extra walk: more than option C only
+  if fewer than about 3 people a day use the stops it leaves behind.
 - **Feasibility study and cost-benefit analysis** (the `appraisal` stage, `[appraisal]` in a case; method in
   docs/appraisal.md). Each option removes the parking on one side in some sections, always or at some hours; the
   study values the buses' time at the evening peak that it can remove against the places it removes, the works and the
@@ -97,6 +104,9 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Saturdays and Sundays took the full off-peak excess per passage, though it is inferred from working days and fewer
+  buses meet when fewer run. With `offpeak_scales_with_service`, their passages count at that day's buses ÷ a working
+  day's (Rua Ricardo Jorge's option C: NPV with all impacts +€15,500, was +€17,800).
 - The co-presence test counted every position as independent, so a bus held for several snapshots in one standoff
   counted several times and the binomial p-value overstated the evidence. `delay_copresence.csv` now also resamples
   whole working days (`p_value_by_day`, with the 90% interval of the excess over chance), and the attribution uses it.

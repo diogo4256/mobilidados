@@ -235,6 +235,7 @@
       }
     ],
     "offpeak_from_copresence": true,
+    "offpeak_scales_with_service": true,
     "options": [
       {
         "blocks": [
@@ -647,6 +648,74 @@
       "Paulley, N. et al. (2006), The demand for public transport: the effects of fares, quality of service, income and car ownership, Transport Policy 13(4), 295–306, <https://doi.org/10.1016/j.tranpol.2005.12.004>"
     ],
     "repaint_every_years": 5,
+    "reroute_parameters": {
+      "access_weight": {
+        "central": 1.75,
+        "grade": "D",
+        "high": 2.0,
+        "label": "Peso do tempo a pé face ao tempo a bordo",
+        "low": 1.5,
+        "source": "EAV 2021-2027, quadro 7: tempo a pé, 1,5 a 2 vezes o tempo a bordo",
+        "unit": ""
+      },
+      "detour_speed_kmh": {
+        "central": 18.0,
+        "grade": "P",
+        "high": 25.0,
+        "label": "Velocidade de um autocarro no desvio",
+        "low": 12.7,
+        "source": "Pressuposto: o desvio acrescenta percurso, não paragens. Mínimo: a velocidade programada na própria rua, com paragens (encounters_summary.csv, 12,7 km/h); máximo: 25 km/h. Mais depressa favorece o desvio",
+        "unit": "km/h"
+      },
+      "walk_extra_min": {
+        "central": 3.0,
+        "grade": "P",
+        "high": 5.0,
+        "label": "Caminho a mais para quem usava uma paragem que deixa de ser servida",
+        "low": 2.0,
+        "source": "Pressuposto: cerca de 250 m (2 a 5 minutos a pé) até à paragem mais próxima no novo percurso; a localização dessa paragem depende do desenho do desvio",
+        "unit": "min"
+      }
+    },
+    "reroutes": [
+      {
+        "id": "R744NE",
+        "label": "a 744 para nordeste por outras ruas: a rua fica só com autocarros para sudoeste, sem encontros",
+        "moves": [
+          "744 0"
+        ]
+      },
+      {
+        "id": "R744SW",
+        "label": "a 744 para sudoeste por outras ruas: na rua, a 744 para nordeste só se cruza com a 46B",
+        "moves": [
+          "744 1"
+        ]
+      },
+      {
+        "id": "R744",
+        "label": "a 744 nos dois sentidos por outras ruas: na rua fica só a 46B",
+        "moves": [
+          "744 0",
+          "744 1"
+        ]
+      },
+      {
+        "id": "R46B",
+        "label": "a 46B por outras ruas: a 744 para nordeste deixa de se cruzar com ela",
+        "moves": [
+          "46B 0"
+        ]
+      },
+      {
+        "id": "RSW",
+        "label": "a 744 para sudoeste e a 46B por outras ruas: a rua fica só com autocarros para nordeste, sem encontros",
+        "moves": [
+          "744 1",
+          "46B 0"
+        ]
+      }
+    ],
     "seed": 20261118,
     "significance": 0.01
   },

@@ -76,6 +76,8 @@ correlations = [{ a = "excess_s", b = "offpeak_s", rho = 0.5 }, { a = "room_near
 # the central off-peak excess: the peak excess scaled by how often buses meet off-peak relative to the peak, at the
 # junction where they demonstrably meet (delay_copresence.csv); the range stays as below
 offpeak_from_copresence = true
+# the off-peak excess comes from working days; on Saturdays and Sundays fewer buses run, so they meet less often
+offpeak_scales_with_service = true
 
 references = [
   "Comissão Europeia (2021), Economic Appraisal Vademecum 2021-2027: General Principles and Sector Applications, <https://jaspers.eib.org/LibraryNP/EC%20Reports/Economic%20Appraisal%20Vademecum%202021-2027%20-%20General%20Principles%20and%20Sector%20Applications.pdf>",
@@ -441,6 +443,58 @@ label = "um espaço de cruzamento: o estacionamento de um lado retirado em cerca
 parking_m = 20.0
 signs = 2
 works = 100.0
+
+# --- taking buses off the street instead of parking (appraisal.reroutes; docs/appraisal.md, "Reroutes") ------------
+[[appraisal.reroutes]]
+id = "R744NE"
+label = "a 744 para nordeste por outras ruas: a rua fica só com autocarros para sudoeste, sem encontros"
+moves = ["744 0"]
+
+[[appraisal.reroutes]]
+id = "R744SW"
+label = "a 744 para sudoeste por outras ruas: na rua, a 744 para nordeste só se cruza com a 46B"
+moves = ["744 1"]
+
+[[appraisal.reroutes]]
+id = "R744"
+label = "a 744 nos dois sentidos por outras ruas: na rua fica só a 46B"
+moves = ["744 0", "744 1"]
+
+[[appraisal.reroutes]]
+id = "R46B"
+label = "a 46B por outras ruas: a 744 para nordeste deixa de se cruzar com ela"
+moves = ["46B 0"]
+
+[[appraisal.reroutes]]
+id = "RSW"
+label = "a 744 para sudoeste e a 46B por outras ruas: a rua fica só com autocarros para nordeste, sem encontros"
+moves = ["744 1", "46B 0"]
+
+[appraisal.reroute_parameters.detour_speed_kmh]
+low = 12.7
+central = 18.0
+high = 25.0
+grade = "P"
+unit = "km/h"
+label = "Velocidade de um autocarro no desvio"
+source = "Pressuposto: o desvio acrescenta percurso, não paragens. Mínimo: a velocidade programada na própria rua, com paragens (encounters_summary.csv, 12,7 km/h); máximo: 25 km/h. Mais depressa favorece o desvio"
+
+[appraisal.reroute_parameters.walk_extra_min]
+low = 2.0
+central = 3.0
+high = 5.0
+grade = "P"
+unit = "min"
+label = "Caminho a mais para quem usava uma paragem que deixa de ser servida"
+source = "Pressuposto: cerca de 250 m (2 a 5 minutos a pé) até à paragem mais próxima no novo percurso; a localização dessa paragem depende do desenho do desvio"
+
+[appraisal.reroute_parameters.access_weight]
+low = 1.5
+central = 1.75
+high = 2.0
+grade = "D"
+label = "Peso do tempo a pé face ao tempo a bordo"
+source = "EAV 2021-2027, quadro 7: tempo a pé, 1,5 a 2 vezes o tempo a bordo"
 
 [[appraisal.criteria]]
 id = "reliability"

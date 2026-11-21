@@ -10,8 +10,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from pydantic import ValidationError
+from shapely.geometry import LineString
 
-from mobilidados import appraisal, delay
+from mobilidados import appraisal, delay, reroute
 from mobilidados.config import Appraisal, Criterion, Option
 
 LISBON_2026 = [dt.date(2026, m, d) for m, d in [(1, 1), (2, 17), (4, 3), (4, 5), (4, 25), (5, 1), (6, 4), (6, 10), (6, 13), (8, 15),
@@ -422,3 +423,85 @@ def test_the_off_peak_break_even_rises_when_the_parking_assumptions_are_least_fa
     bh = appraisal.evaluate(cfg.options[0], q | {"offpeak_s": t["no_room_and_car_parks_full"]}, m, cfg)["bus_hours"]
     assert saved["no_room_and_car_parks_full"] == pytest.approx(bh * 3600 / 10800.0)
     assert saved["no_room_and_car_parks_full"] > saved["central"]
+
+
+# --- reroutes: taking a line off the street (mobilidados.reroute) -------------------------------------------------------
+
+# A 3 x 2 grid of 100 m blocks: the street runs along the middle row; a bus street runs parallel to the north and a
+# lane to the south. Going round costs two 100 m legs, by either side.
+AXES = [
+    ("Main Street", LineString([(0, 100), (100, 100), (200, 100), (300, 100)])),
+    ("North Avenue", LineString([(0, 200), (100, 200), (200, 200), (300, 200)])),
+    ("South Lane", LineString([(0, 0), (100, 0), (200, 0), (300, 0)])),
+    ("West Cross", LineString([(0, 0), (0, 100), (0, 200)])),
+    ("East Cross", LineString([(300, 0), (300, 100), (300, 200)])),
+    ("Link North", LineString([(100, 100), (100, 200)])),
+    ("Link South", LineString([(200, 100), (200, 0)])),
+]
+
+
+def test_the_shortest_path_avoids_the_street_when_asked():
+    net = reroute.Network(AXES)
+    length, streets, line = net.shortest((0, 100), (300, 100))
+    assert length == pytest.approx(300)
+    assert streets == ["Main Street"]
+    length, streets, line = net.shortest((0, 100), (300, 100), avoid="Main")
+    assert length == pytest.approx(500)
+    assert "Main Street" not in streets
+    assert line.length == pytest.approx(500)
+
+
+def test_the_detour_prefers_streets_with_buses_and_lists_the_stops_left_behind():
+    net = reroute.Network(AXES)
+    shape = LineString([(-100, 100), (400, 100)])  # the line runs along the whole street
+    axis = LineString([(50, 100), (250, 100)])  # the narrow street is its middle 200 m
+    d = reroute.detour(net, shape, axis, "Main", lead_ins=(50.0,), bus_streets={"North Avenue", "West Cross", "East Cross"})
+    assert d is not None
+    assert d.detour_m == pytest.approx(200)
+    assert set(d.via) <= {"North Avenue", "West Cross", "East Cross", "Link North"} or set(d.via) <= {
+        "South Lane",
+        "West Cross",
+        "East Cross",
+        "Link South",
+    }
+    stops = [("on the street", 150, 100), ("before it", -60, 100), ("on the avenue", 150, 200)]
+    gone = reroute.skipped(stops, shape, d.from_m, d.to_m, d.path, near_m=20)
+    assert "on the street" in gone
+    assert "before it" not in gone
+    assert reroute.detour(net, LineString([(0, 300), (300, 300)]), axis, "Main") is None  # a line that never uses the street
+
+
+def test_weekend_passages_count_at_the_share_of_buses_that_run_then():
+    hourly = pd.DataFrame(
+        [{"day_kind": k, "hour": 10, "passages": n} for k, n in (("working", 10), ("saturday", 5), ("sunday", 5))]
+        + [{"day_kind": "working", "hour": 17, "passages": 10}]
+    )
+    days = {"working": 250, "saturday": 50, "sunday": 65}
+    # off-peak: 2500 working passages at full weight, 575 weekend ones at 5/20 of a working day's buses
+    scale = appraisal.offpeak_scale(hourly, days, None, [17])
+    assert scale == pytest.approx((2500 + 575 * 0.25) / (2500 + 575))
+    assert appraisal.offpeak_scale(hourly.assign(passages=0), days, None, [17]) == 1.0
+
+
+def test_moving_one_whole_direction_removes_every_meeting_and_adds_its_detour():
+    cfg = config(parameters=EXTENDED, reroutes=[{"id": "X", "label": "x", "moves": ["1 0"]}],
+                 reroute_parameters={"detour_speed_kmh": parameter(18.0), "walk_extra_min": parameter(3.0), "access_weight": parameter(2.0)})  # fmt: skip
+    m = measured(passages_all=(3600.0, 7200.0), days={"working": 250, "saturday": 0, "sunday": 0})
+    route_days = pd.DataFrame([{"day_kind": "working", "key": "1 0", "heading": 1, "passages": 40},
+                               {"day_kind": "working", "key": "1 1", "heading": -1, "passages": 40}])  # fmt: skip
+    detours = pd.DataFrame([{"key": "1 0", "detour_m": 90.0}])
+    t = appraisal.reroutes(cfg, m, appraisal.central(cfg, m), 0.5, route_days, detours).set_index("layer")
+    assert t.loc["core", "meetings_removed"] == pytest.approx(1.0)
+    assert t.loc["core", "delay_bus_hours_saved"] == pytest.approx(10 * 0.5 * 3600 / 3600)  # peak only in the core
+    assert t.loc["extended", "delay_bus_hours_saved"] == pytest.approx((10 * 3600 + 5 * 7200) * 0.5 / 3600)
+    assert t.loc["core", "detour_bus_hours"] == pytest.approx(40 * 250 * 90 / 5 / 3600)  # 18 km/h = 5 m/s
+    # moving half of one direction removes half the meetings
+    half = pd.DataFrame([{"day_kind": "working", "key": "1 0", "heading": 1, "passages": 20},
+                         {"day_kind": "working", "key": "2 0", "heading": 1, "passages": 20},
+                         {"day_kind": "working", "key": "1 1", "heading": -1, "passages": 40}])  # fmt: skip
+    t2 = appraisal.reroutes(cfg, m, appraisal.central(cfg, m), 0.5, half, detours).set_index("layer")
+    assert t2.loc["core", "meetings_removed"] == pytest.approx(0.5)
+    # a gain before the walk to the lost stop turns into the boardings a day that would cancel it
+    row = t.loc["extended"]
+    if row.npv_before_stop_access > 0:
+        assert row.breakeven_boardings_per_day > 0

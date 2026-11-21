@@ -46,6 +46,7 @@ them are the decision-maker's.
 
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -105,6 +106,10 @@ class Measured:
     passages: dict[str, tuple[float, float]]  # option id -> passages a year while it is in force: (at peak, other)
     passages_year: float  # every passage of the year
     offpeak_ratio: float | None = None  # off-peak excess co-presence ÷ peak, where buses meet (``offpeak_ratio``)
+    offpeak_scale: dict[str, float] = dataclasses.field(default_factory=dict)  # option id -> ``offpeak_scale`` (absent: 1)
+    passages_all: tuple[float, float] = (0.0, 0.0)  # every passage of the year: (at peak, other)
+    offpeak_scale_all: float = 1.0  # ``offpeak_scale`` for every passage
+    days: dict[str, int] = dataclasses.field(default_factory=dict)  # days of each timetable kind in the reference year
 
 
 def working_days(year: int, holidays: list[dt.date]) -> int:
@@ -142,6 +147,26 @@ def passages(hourly: pd.DataFrame, days: dict[str, int], option: Option | None, 
         else:
             other += n
     return peak, other
+
+
+def offpeak_scale(hourly: pd.DataFrame, days: dict[str, int], option: Option | None, peak_hours: list[int]) -> float:
+    """How much of an option's off-peak passages to count at the full off-peak excess, when buses meet less often on
+    days with fewer of them: each passage on a Saturday or a Sunday counts at that day's passages ÷ a working day's
+    (meetings per passage scale with the buses coming the other way). 1 where there is no off-peak passage."""
+    daily = hourly.groupby("day_kind").passages.sum()
+    work = float(daily.get("working", 0))
+    if work <= 0:
+        return 1.0
+    a, b = option.hours if option else (0, 24)
+    kinds = ("working",) if option and option.days == "working" else DAY_KINDS
+    other = weighted = 0.0
+    for r in hourly.itertuples():
+        if r.day_kind not in kinds or not a <= r.hour < b or (r.day_kind == "working" and r.hour in peak_hours):
+            continue
+        n = r.passages * days[r.day_kind]
+        other += n
+        weighted += n * min(float(daily.get(r.day_kind, 0)) / work, 1.0)
+    return weighted / other if other else 1.0
 
 
 def attribution(by_part: pd.DataFrame, copresence: pd.DataFrame, blocks: list[str], significance: float) -> tuple[float, float, float]:
@@ -215,6 +240,10 @@ def measured(tables: dict[str, pd.DataFrame], cfg: Appraisal, block_metres: dict
         passages={o.id: passages(hourly, days, o, peak_hours) for o in cfg.options},
         passages_year=sum(passages(hourly, days, None, peak_hours)),
         offpeak_ratio=offpeak_ratio(tables["delay_copresence"], tables["delay_by_part"], cfg.significance),
+        offpeak_scale={o.id: offpeak_scale(hourly, days, o, peak_hours) for o in cfg.options} if cfg.offpeak_scales_with_service else {},
+        passages_all=passages(hourly, days, None, peak_hours),
+        offpeak_scale_all=offpeak_scale(hourly, days, None, peak_hours) if cfg.offpeak_scales_with_service else 1.0,
+        days=days,
     )
 
 
@@ -275,7 +304,7 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     peak_y, other_y = m.passages[o.id]
     share_removed = p[f"attribution_{o.id}"]  # where the time is lost along the stretch: the same at every hour
     peak_bh = p["excess_s"] * share_removed * peak_y / 3600 * comply
-    other_bh = p["offpeak_s"] * share_removed * other_y / 3600 * comply
+    other_bh = p["offpeak_s"] * share_removed * other_y * m.offpeak_scale.get(o.id, 1.0) / 3600 * comply
     bus_hours = peak_bh + other_bh
     on_board_h = peak_bh * p["load_peak"] + other_bh * p["load_offpeak"]
     passenger_hours = on_board_h * p["downstream"]
@@ -665,6 +694,70 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
         "appraisal_alternatives": pd.DataFrame(alternatives, columns=alt_columns),
         "appraisal_offpeak_thresholds": offpeak_thresholds(cfg, m, c),
     }
+
+
+def present_value(cfg: Appraisal, growth: float, elasticity: float, rate: float | None = None) -> float:
+    """The present value of 1 a year over the appraisal period, its unit value growing with income at ``elasticity``."""
+    r = cfg.discount_rate if rate is None else rate
+    return float(sum((1 + growth) ** (elasticity * t) / (1 + r) ** t for t in range(1, cfg.horizon_years + 1)))
+
+
+def reroutes(cfg: Appraisal, m: Measured, c: dict[str, float], attribution_all: float, route_days: pd.DataFrame,
+             detours: pd.DataFrame) -> pd.DataFrame:  # fmt: skip
+    """Each reroute's value in each layer, before the cost to those who lose their stop (``mobilidados.reroute``).
+
+    The buses that move stop meeting those coming the other way: the meetings removed are the share of the products of
+    the two directions' buses a working day that goes (``route_days``). They remove that share of the excess where buses
+    meet (``attribution_all``: the narrow sections and the junction where buses meet), at every hour, valued as delay
+    as in ``evaluate``. The buses that move run the detour (``detours``) at ``detour_speed_kmh``, valued as ordinary time
+    on board and the operator's time. Who boards or alights at the stops they no longer serve is not known: the table
+    gives the boardings a day at which the extra walk (``walk_extra_min`` weighted ``access_weight``) cancels the gain."""
+    rp = {k: v.central for k, v in cfg.reroute_parameters.items()}
+    work = route_days[route_days.day_kind == "working"]
+    up, down = float(work[work.heading > 0].passages.sum()), float(work[work.heading < 0].passages.sum())
+    peak_all, other_all = m.passages_all
+    rows = []
+    for rr in cfg.reroutes:
+        moved = route_days[route_days.key.isin(rr.moves)]
+        mw = moved[moved.day_kind == "working"]
+        mu, md = float(mw[mw.heading > 0].passages.sum()), float(mw[mw.heading < 0].passages.sum())
+        removed = 1 - (up - mu) * (down - md) / (up * down) if up and down else 0.0
+        moved_year = float(sum(r.passages * m.days.get(r.day_kind, 0) for r in moved.itertuples()))
+        days_served = max((sum(m.days.get(k, 0) for k in set(g[g.passages > 0].day_kind)) for _, g in moved.groupby("key")), default=0)
+        geo = detours[detours.key.isin(rr.moves)]
+        detour_bh = 0.0
+        for r in moved.itertuples():
+            d = geo[geo.key == r.key]
+            if len(d):
+                detour_bh += r.passages * m.days.get(r.day_kind, 0) * float(d.detour_m.iloc[0]) / (rp["detour_speed_kmh"] / 3.6) / 3600
+        for name in LAYERS:
+            p = layer(c, name)
+            peak_bh = p["excess_s"] * attribution_all * removed * peak_all / 3600
+            other_bh = p["offpeak_s"] * attribution_all * removed * other_all * m.offpeak_scale_all / 3600
+            late = 1 - (1 - p["unexpected_share"]) * (1 - p["transfer_share"])
+            weight = p["time_weight"] + (p["lateness_weight"] - p["time_weight"]) * late
+            on_board = (peak_bh * p["load_peak"] + other_bh * p["load_offpeak"]) * p["downstream"]
+            saved_time = (
+                on_board * p["vot"] * weight + (peak_bh + other_bh) * p["cars_behind"] * p["car_occupancy"] * p["vot"] * p["time_weight"]
+            )
+            saved_operator = (peak_bh + other_bh) * p["bus_cost_h"]
+            saved_damage = p["damage_year"] * attribution_all * removed
+            load = (peak_all * p["load_peak"] + other_all * p["load_offpeak"]) / (peak_all + other_all) if peak_all + other_all else 0.0
+            detour_time = detour_bh * load * p["downstream"] * p["vot"]  # ordinary time on board: weight 1
+            detour_operator = detour_bh * p["bus_cost_h"]
+            g = p["income_growth"]
+            time_pv, op_pv = present_value(cfg, g, GROWTH["time"]), present_value(cfg, g, GROWTH["operator"])
+            pv_saved = saved_time * time_pv + saved_operator * op_pv + saved_damage * present_value(cfg, 0.0, 0.0)
+            pv_detour = detour_time * time_pv + detour_operator * op_pv
+            npv = pv_saved - pv_detour
+            per_boarding = rp["walk_extra_min"] / 60 * rp["access_weight"] * p["vot"] * days_served * time_pv
+            rows.append(
+                {"reroute": rr.id, "label": rr.label, "layer": name, "moves": " + ".join(rr.moves), "moved_passages_year": moved_year,
+                 "meetings_removed": removed, "delay_bus_hours_saved": peak_bh + other_bh, "detour_bus_hours": detour_bh,
+                 "pv_delay_saved": pv_saved, "pv_detour": pv_detour, "npv_before_stop_access": npv,
+                 "breakeven_boardings_per_day": npv / per_boarding if npv > 0 and per_boarding else 0.0}
+            )  # fmt: skip
+    return pd.DataFrame(rows)
 
 
 def feasibility(cfg: Appraisal, without: pd.DataFrame, two_buses_m: float, two_buses_mirrors_m: float, references: list[tuple[str, float]],
