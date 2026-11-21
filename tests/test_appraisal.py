@@ -442,10 +442,14 @@ AXES = [
 
 def test_the_shortest_path_avoids_the_street_when_asked():
     net = reroute.Network(AXES)
-    length, streets, line = net.shortest((0, 100), (300, 100))
+    found = net.shortest((0, 100), (300, 100))
+    assert found is not None
+    length, streets, line = found
     assert length == pytest.approx(300)
     assert streets == ["Main Street"]
-    length, streets, line = net.shortest((0, 100), (300, 100), avoid="Main")
+    found = net.shortest((0, 100), (300, 100), avoid="Main")
+    assert found is not None
+    length, streets, line = found
     assert length == pytest.approx(500)
     assert "Main Street" not in streets
     assert line.length == pytest.approx(500)
