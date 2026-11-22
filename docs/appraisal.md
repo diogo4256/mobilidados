@@ -146,7 +146,8 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   option's extended NPV is zero, and the bus time saved per passage at that point (what a before-and-after evaluation
   would have to find), with the other inputs central; with no other mechanism; with no displaced driver
   finding room nearby; with the car parks full; and with both, since the two parking conditions can coincide and one
-  at a time hides it.
+  at a time hides it. Where an option is worth it with no off-peak delay at all, the break-even is 0 and the table
+  gives instead the evening-peak excess at which it breaks even (`peak_excess_s`) and the saving per passage there.
 * **Tornado** (`appraisal_tornado.csv`, extended layer): the NPV at each input's low and high value.
 * **Monte Carlo** (`appraisal_montecarlo.csv`, both layers): `draws` draws of every input from a PERT
   distribution on its low, central and high value (fixed `seed`, so every run gives the same numbers). PERT, the usual

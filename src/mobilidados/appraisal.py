@@ -597,9 +597,11 @@ def offpeak_thresholds(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.D
     """For each option, the off-peak excess per passage at which its extended NPV is zero under each of
     ``THRESHOLD_CONDITIONS`` (the other inputs central; NaN where none within the search domain), and the bus time
     saved per passage, every hour of the year it is in force together, at that point: the criterion a before-and-after
-    evaluation of the option can test directly."""
+    evaluation of the option can test directly. Where the option is worth it with no off-peak delay at all, the
+    switching value is 0 and ``peak_excess_s`` is the evening-peak excess at which it breaks even, with none off-peak."""
     if "offpeak_s" not in cfg.parameters:
-        return pd.DataFrame(columns=["option", "condition", "switching_value", "central", "npv_at_central", "saved_s_per_passage"])
+        return pd.DataFrame(columns=["option", "condition", "switching_value", "central", "npv_at_central", "peak_excess_s",
+                                     "saved_s_per_passage"])  # fmt: skip
     rg, q = ranges(cfg, m), layer(c, "extended")
     lo, ce, hi = rg["offpeak_s"]
     rows = []
@@ -618,11 +620,21 @@ def offpeak_thresholds(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.D
                 return float(evaluate(opt, b | {"offpeak_s": x}, m, cfg)["npv"])
 
             sv = switching_value(npv_at, *search_domain(lo, hi))
+            at = base | {"offpeak_s": sv}
+            peak = None
+            if sv is None and npv_at(0.0) > 0:
+                # worth it with no off-peak delay at all: then the evening-peak excess at which it breaks even
+                def npv_peak(x: float, opt: Option = o, b: dict[str, Any] = base) -> float:
+                    return float(evaluate(opt, b | {"offpeak_s": 0.0, "excess_s": x}, m, cfg)["npv"])
+
+                peak = switching_value(npv_peak, 0.0, base["excess_s"])
+                if peak is not None:
+                    sv, at = 0.0, base | {"offpeak_s": 0.0, "excess_s": peak}
             # what a before-and-after measurement would see at that point: bus time saved per passage, every hour together
             per = sum(m.passages[o.id])
-            saved = float(evaluate(o, base | {"offpeak_s": sv}, m, cfg)["bus_hours"]) * 3600 / per if sv is not None and per else None
+            saved = float(evaluate(o, at, m, cfg)["bus_hours"]) * 3600 / per if sv is not None and per else None
             rows.append({"option": o.id, "condition": name, "switching_value": sv, "central": ce, "npv_at_central": npv_at(ce),
-                         "saved_s_per_passage": saved})  # fmt: skip
+                         "peak_excess_s": peak, "saved_s_per_passage": saved})  # fmt: skip
     return pd.DataFrame(rows)
 
 

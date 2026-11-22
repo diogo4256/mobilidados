@@ -444,6 +444,19 @@ def test_the_off_peak_break_even_rises_when_the_parking_assumptions_are_least_fa
     assert saved["no_room_and_car_parks_full"] > saved["central"]
 
 
+def test_an_option_worth_it_with_no_off_peak_delay_reports_the_peak_saving_it_needs():
+    cfg = config(parameters={"offpeak_s": parameter(5.0, 0.0, 60.0)})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0, excess_s=(5.0, 30.0, 40.0))
+    c = appraisal.central(cfg, m)
+    t = appraisal.offpeak_thresholds(cfg, m, c).set_index("condition").loc["central"]
+    assert t.switching_value == 0.0  # it needs no off-peak delay: 30 s at the peak alone pay the places
+    q = appraisal.layer(c, "extended") | {"offpeak_s": 0.0, "excess_s": t.peak_excess_s}
+    e = appraisal.evaluate(cfg.options[0], q, m, cfg)
+    assert e["npv"] == pytest.approx(0.0, abs=1.0)
+    assert t.saved_s_per_passage == pytest.approx(e["bus_hours"] * 3600 / 10800.0)
+    assert 0 < t.peak_excess_s < 30.0
+
+
 # --- reroutes: taking a line off the street (mobilidados.reroute) -------------------------------------------------------
 
 # A 3 x 2 grid of 100 m blocks: the street runs along the middle row; a bus street runs parallel to the north and a
