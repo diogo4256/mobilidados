@@ -4,6 +4,7 @@ the PERT draws, the value of information, and the configuration's checks."""
 
 import dataclasses
 import datetime as dt
+import itertools
 import math
 
 import numpy as np
@@ -352,6 +353,22 @@ def test_the_bridge_goes_from_the_core_to_the_extended_layer():
     assert b.npv.iloc[-1] == pytest.approx(extended)
     assert b.change.sum() == pytest.approx(extended)  # the core's NPV plus every step
     assert b.step.tolist() == ["core", *[k for k in appraisal.MECHANISMS if k in cfg.parameters]]
+
+
+def test_the_cautious_and_favourable_scenarios_are_the_worst_and_best_corners():
+    # positive at the centre, so faster income growth looks favourable there; at the cautious ends the NPV is
+    # negative, and the same growth makes it worse: each end must be read at the combination, not only at the centre
+    ranged = {"offpeak_s": (5.0, 0.0, 8.0), "room_nearby": (0.5, 0.0, 1.0), "income_growth": (0.01, 0.0, 0.08)}
+    cfg = config(parameters=EXTENDED | {k: parameter(*v) for k, v in ranged.items()} | {"car_value": parameter(300.0)})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    c = appraisal.central(cfg, m)
+    s = appraisal.scenarios(cfg, m, c).set_index(["scenario", "years"]).npv
+    q = appraisal.layer(c, "extended")
+    corners = [appraisal.evaluate(cfg.options[0], q | dict(zip(ranged, ends, strict=True)), m, cfg)["npv"]
+               for ends in itertools.product(*[(lo, hi) for _, lo, hi in ranged.values()])]  # fmt: skip
+    assert s["central", 10] > 0 > s["cautious", 10]
+    assert s["cautious", 10] == pytest.approx(min(corners))
+    assert s["favourable", 10] == pytest.approx(max(corners))
 
 
 def test_the_scenarios_bracket_the_central_value_and_longer_periods_are_shown():

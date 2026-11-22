@@ -5,6 +5,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- The cautious and favourable scenarios now read each input's worse (better) end at the combination found, not only
+  with the others central, until none changes. An input whose direction depends on the sign of the NPV, such as
+  income growth, was put at the wrong end: in Rua Ricardo Jorge, the cautious scenario of option C goes from about
+  −€65,500 to about −€69,800.
+
 ### Added
 
 - An extended mechanism, `other_vehicle_share`: buses held by oncoming cars, vans and trucks, which they cannot pass

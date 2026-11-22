@@ -551,8 +551,9 @@ def scenarios(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
     """Each option's NPV in named scenarios: the core; the extended layer with every input the measurement does not
     cover at the end of its range that is least favourable to the option (*cautious*), at its central value, and at the
     most favourable end (*favourable*); and the central extended layer over each of ``cfg.horizons_tested`` years.
-    Which end is least favourable is read input by input, the others central, so the cautious scenario is the
-    worst combination of those ends, not a probability."""
+    Which end is least favourable is read input by input, first with the others central, then again at the
+    combination found until none changes, so the cautious scenario is the worst combination of those ends (a local
+    one: each input at the end that is worse given the others), not a probability."""
     rg = ranges(cfg, m)
     unmeasured = [k for k in [*MECHANISMS, *COMPANIONS] if k in cfg.parameters]
     rows = []
@@ -567,6 +568,18 @@ def scenarios(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
             lo, _, hi = rg[k]
             at_lo, at_hi = npv(central_q | {k: lo}), npv(central_q | {k: hi})
             worst[k], best[k] = (lo, hi) if at_lo <= at_hi else (hi, lo)
+        # an input's worse end can depend on where the others are (income growth raises a positive NPV and lowers a
+        # negative one), so each end is read again at the combination found, until none changes
+        for _ in range(len(unmeasured)):
+            changed = False
+            for k in unmeasured:
+                lo, _, hi = rg[k]
+                w = lo if npv(worst | {k: lo}) <= npv(worst | {k: hi}) else hi
+                b = hi if npv(best | {k: hi}) >= npv(best | {k: lo}) else lo
+                changed |= w != worst[k] or b != best[k]
+                worst[k], best[k] = w, b
+            if not changed:
+                break
         rows += [
             {"option": o.id, "scenario": "core", "years": cfg.horizon_years, "npv": npv(layer(c, "core"))},
             {"option": o.id, "scenario": "cautious", "years": cfg.horizon_years, "npv": npv(worst)},
