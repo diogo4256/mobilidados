@@ -14,6 +14,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- An extended mechanism, `cruise_km_day`: the external costs of the kilometres driven by displaced drivers who look
+  for a space nearby. In Rua Ricardo Jorge (0.5 km a day, 0–1.3) it takes about €1,000 off option C's NPV.
 - **Crash equivalents** (`appraisal_safety.csv`, `[appraisal.safety_references]`): how many crashes of a given cost,
   over the appraisal period, are worth each option's NPV. In Rua Ricardo Jorge, with the national cost of a crash with
   slight injuries only (ISEG for ANSR: €63,276 at 2019 prices, €76,160 at 2025), the proposal's NPV with all impacts

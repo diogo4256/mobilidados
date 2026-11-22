@@ -222,10 +222,40 @@
         "text": "Sentido único para o trânsito geral, mantendo os autocarros nos dois sentidos: exige uma via BUS em contrassentido que não cabe em 4,90 m com estacionamento dos dois lados, e mudaria o trânsito das ruas vizinhas; fica fora deste estudo, que não tem modelo de tráfego."
       },
       {
+        "dimension": "legal",
+        "grade": "D",
+        "source": "Código da Estrada, art. 18.º, n.os 2 a 4; width_budget.csv, passing_practice.csv",
+        "text": "O Código da Estrada obriga quem conduz a manter «distância lateral suficiente para evitar acidentes» dos veículos que transitam na mesma faixa, no mesmo sentido ou em sentido oposto (coima de 60 € a 300 €), e fixa 1,5 m para ultrapassar uma bicicleta. Com 4,90 m livres, um autocarro e um ligeiro que se cruzam ficam com 0,60 m entre eles e os carros estacionados, dos dois lados somados."
+      },
+      {
+        "dimension": "legal",
+        "grade": "D",
+        "source": "Portaria n.º 1532/2008, republicada pela Portaria n.º 135/2020, art. 4.º, n.º 7, e art. 5.º, n.º 1, al. a)",
+        "text": "O regulamento de segurança contra incêndio em edifícios pede 6 m de largura útil nas vias de acesso a edifícios com mais de 9 m de altura e admite outras características, fundamentadas, em zonas edificadas cuja rede viária não possa ser corrigida. Aplica-se no licenciamento dos edifícios; para esta rua é uma referência, não uma regra que ela viole. Hoje há 4,90 m livres; com um lado livre, 6,91 m."
+      },
+      {
+        "dimension": "operational",
+        "grade": "D",
+        "source": "Cartografia municipal 1:1000, camada QuartelDeBombeiros; passing_practice.csv",
+        "text": "A cartografia municipal mostra um quartel de bombeiros a cerca de 36 m da rua (a paragem no extremo sudoeste chama-se Bombeiros Alvalade). Um veículo de bombeiros (até 2,55 m) e um autocarro precisam de 6,25 m para se cruzarem com a margem dos guias de desenho; hoje há 4,90 m. Se os veículos de socorro usam a rua, o Regimento de Sapadores Bombeiros o dirá."
+      },
+      {
+        "dimension": "social",
+        "grade": "D",
+        "source": "Cartografia municipal 1:1000, camadas EscolaPrimaria, EscolaPreparatoriaEOuSecundaria, Creche e JardimDeInfancia; delay_by_hour.csv",
+        "text": "Há escolas perto: uma escola básica e secundária a cerca de 90 m, uma creche a cerca de 100 m e escolas primárias a partir de cerca de 130 m. As saídas das escolas podem explicar parte do atraso concentrado entre as 17h e as 18h; e, numa rua mais larga junto a escolas, a velocidade dos automóveis tem de ser medida antes e durante o ensaio."
+      },
+      {
+        "dimension": "evidence",
+        "grade": "M",
+        "source": "occurrences_by_street.csv (Na Minha Rua, CML)",
+        "text": "Na plataforma Na Minha Rua, a Rua Ricardo Jorge tem a maior densidade de queixas de estacionamento abusivo das 25 ruas da zona (2,9 por 100 m, de maio de 2017 a maio de 2026), mas são apenas 6: um sinal, não uma prova."
+      },
+      {
         "dimension": "options",
         "grade": "P",
         "source": "",
-        "text": "Desviar uma das carreiras: passa o problema para outra rua e tira paragens a quem as usa; é uma decisão de rede da Carris, fora deste estudo."
+        "text": "Desviar uma das carreiras: medido na rede de ruas em appraisal_reroutes.csv. Acaba com os encontros entre autocarros, mas não com os encontros com ligeiros e furgões; alonga o percurso e tira paragens a quem as usa. A decisão é de rede, da Carris, com as entradas e saídas por paragem."
       },
       {
         "dimension": "options",
@@ -391,6 +421,15 @@
         "low": 0.8,
         "source": "Pressuposto; a Carris registou 1 365 interrupções por estacionamento indevido em 2024 (Relatório e Contas 2024, p. 26)",
         "unit": ""
+      },
+      "cruise_km_day": {
+        "central": 0.5,
+        "grade": "P",
+        "high": 1.3,
+        "label": "Quilómetros a mais por dia, à procura de lugar, de quem encontra lugar perto",
+        "low": 0.0,
+        "source": "Pressuposto: dos 4 minutos por dia de procura e caminhada de quem encontra lugar a menos de 150 m (walk_cost), cerca de 2 a circular a 15 km/h (0,5 km); máximo: os 4 minutos a circular a 20 km/h (1,3 km). Valorizados aos custos externos por passageiro·km (external_cost_pkm) × pessoas por carro: congestionamento, poluição, clima, ruído e acidentes",
+        "unit": "km por dia"
       },
       "damage_year": {
         "central": 500.0,

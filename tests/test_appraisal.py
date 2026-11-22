@@ -355,6 +355,23 @@ def test_the_bridge_goes_from_the_core_to_the_extended_layer():
     assert b.step.tolist() == ["core", *[k for k in appraisal.MECHANISMS if k in cfg.parameters]]
 
 
+def test_drivers_cruising_for_a_space_nearby_cost_the_external_cost_of_their_kilometres():
+    base = EXTENDED | {"external_cost_pkm": parameter(0.2), "car_occupancy": parameter(1.5)}
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+
+    def ev(extra):
+        cfg = config(parameters=base | extra)
+        return appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+
+    without, with_cruise = ev({}), ev({"cruise_km_day": parameter(1.0)})
+    # 10 places, half the drivers find a space nearby (EXTENDED): 5 drivers × 1 km × 365 days × 0.2 €/pkm × 1.5 people
+    assert without["external_value"] - with_cruise["external_value"] == pytest.approx(5 * 1.0 * 365 * 0.2 * 1.5)
+    assert without["benefit_year"] - with_cruise["benefit_year"] == pytest.approx(5 * 365 * 0.3)
+    cfg = config(parameters=base | {"cruise_km_day": parameter(1.0)})
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert core["external_value"] == pytest.approx(0.0)  # a mechanism of the extended layer only
+
+
 def test_crash_equivalents_are_the_crashes_over_the_period_worth_the_npv():
     cfg = config(parameters={"income_growth": parameter(0.0)})
     cfg = cfg.model_copy(update={"safety_references": {"slight": Parameter(**parameter(50000.0) | {"label": "crash", "source": "x"})}})

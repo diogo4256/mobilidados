@@ -73,6 +73,7 @@ MECHANISMS = {
     "damage_year": 0.0,
     "room_nearby": 0.0,
     "carpark_walk": 0.0,
+    "cruise_km_day": 0.0,
     "spare_capacity": 0.0,
     "calming_cost": 0.0,
 }
@@ -339,6 +340,11 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     parking_private = displaced * (p["room_nearby"] * p["walk_cost"] + (1 - p["room_nearby"]) * elsewhere)
     carpark_revenue = displaced * (1 - p["room_nearby"]) * p["spare_capacity"] * p["car_value"]
     parking = parking_private - carpark_revenue
+    # (extended) those who find a space nearby drive round for it: the external costs of those kilometres, per vehicle-km
+    # taken as per passenger-km × people per car
+    cruising = displaced * p["room_nearby"] * p.get("cruise_km_day", 0.0) * 365 * p["external_cost_pkm"] * p["car_occupancy"]
+    external_value -= cruising
+    benefit -= cruising
     enforcement = p["enforcement_year"] if (o.days != "all" or o.hours != (0, 24)) else 0.0 * comply
     marking = m.metres[o.id] * p["marking_cost_m"]
     works = o.signs * p["sign_cost"] + marking + p["calming_cost"]
