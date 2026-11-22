@@ -97,6 +97,9 @@ references = [
   "Department for Transport (2025), Value for Money Framework, maio de 2025, caixa 5.1, <https://assets.publishing.service.gov.uk/media/682ccabf1be3f53ed5f4534e/value-for-money-framework.pdf>",
   "Rádio Renascença (15/06/2026), «Banco de Portugal prevê défice de 0,2% este ano e de 0,5% em 2027» (projeções do Boletim Económico de junho de 2026), <https://rr.pt/noticia/economia/2026/06/15/banco-de-portugal-preve-defice-de-02-este-ano-e-de-05-em-2027/474408/>",
   "Paulley, N. et al. (2006), The demand for public transport: the effects of fares, quality of service, income and car ownership, Transport Policy 13(4), 295–306, <https://doi.org/10.1016/j.tranpol.2005.12.004>",
+  "ISEG – CEsGE para a ANSR (2021), O Impacto Económico e Social da Sinistralidade Rodoviária em Portugal (dados de 2019), secção 5.4 e quadro 5.1, <https://ansr.pt/sites/default/files/noticias-docs/O%20Impacto%20Economico%20e%20Social%20da%20Sinistralidade%20-%20PT.pdf>",
+  "Código da Estrada, art. 18.º (Distância entre veículos), n.os 2 a 4, versão consolidada, <https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1994-34485875>",
+  "Portaria n.º 135/2020, de 2 de junho, que altera e republica o Regulamento Técnico de Segurança contra Incêndio em Edifícios (Portaria n.º 1532/2008), art. 4.º, n.º 7, e art. 5.º, n.º 1, <https://diariodarepublica.pt/dr/detalhe/portaria/135-2020-134991810>",
 ]
 
 [appraisal.parameters.vot]
@@ -286,7 +289,25 @@ central = 0.5
 high = 1.0
 grade = "P"
 label = "Parte do atraso nos cruzamentos sem autocarros em sentido contrário que se deve a ligeiros, furgões e pesados"
-source = "Com as margens dos guias de desenho de ruas (CIHT 2018, B.2.2: 6,2 m para dois autocarros), um autocarro também não se cruza com um ligeiro, um furgão ou um pesado em 4,90 m (passing_practice.csv); no cruzamento da R. Constantino Fernandes perdem-se 3,9 s sem mais autocarros em sentido contrário do que o acaso dá. Admite-se que metade se deve a esses encontros, que a supressão também resolve; a outra metade, ao trânsito do cruzamento. Uma contagem classificada com vídeo fixa-o"
+source = "O Código da Estrada exige «distância lateral suficiente» entre veículos que se cruzam (art. 18.º, n.º 2). Com as margens dos guias de desenho de ruas (CIHT 2018, B.2.2: 6,2 m para dois autocarros), um autocarro também não se cruza com um ligeiro, um furgão ou um pesado em 4,90 m (passing_practice.csv); no cruzamento da R. Constantino Fernandes perdem-se 3,9 s sem mais autocarros em sentido contrário do que o acaso dá. Admite-se que metade se deve a esses encontros, que a supressão também resolve; a outra metade, ao trânsito do cruzamento. Uma contagem classificada com vídeo fixa-o"
+
+[appraisal.safety_references.slight_injury]
+low = 76160.0
+central = 76160.0
+high = 76160.0
+grade = "D"
+unit = "€ por acidente"
+label = "Acidente só com feridos leves (custo médio para a sociedade)"
+source = "ISEG para a ANSR (2021), O Impacto Económico e Social da Sinistralidade Rodoviária em Portugal, secção 5.4: 63 276 € por acidente do qual resultam apenas feridos leves, a preços de 2019 (35 344 € humanos, 17 189 € produção, 1 454 € médicos, 6 735 € danos na propriedade, 1 896 € administrativos, 657 € outros) × 1,204 (IHPC de Portugal, Eurostat, 2019 → 2025: 124,83 ÷ 103,71)"
+
+[appraisal.safety_references.with_victims]
+low = 175990.0
+central = 175990.0
+high = 175990.0
+grade = "D"
+unit = "€ por acidente"
+label = "Acidente com vítimas, média nacional (custo para a sociedade)"
+source = "ISEG para a ANSR (2021), secção 5.4: 146 219 € por acidente com vítimas, a preços de 2019, × 1,204 (IHPC de Portugal, 2019 → 2025)"
 
 [appraisal.parameters.cars_behind]
 low = 0.0

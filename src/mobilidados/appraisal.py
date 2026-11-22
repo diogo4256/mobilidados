@@ -726,7 +726,28 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
         "appraisal_criteria": criteria_table(cfg),
         "appraisal_alternatives": pd.DataFrame(alternatives, columns=alt_columns),
         "appraisal_offpeak_thresholds": offpeak_thresholds(cfg, m, c),
+        "appraisal_safety": safety_equivalents(cfg, m, c),
     }
+
+
+def safety_equivalents(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
+    """For each option, layer and crash in ``cfg.safety_references``: how many such crashes, spread evenly over the
+    appraisal period, are worth the option's central NPV. The scheme's effect on crashes is not known and can go either
+    way (fewer scrapes and reversing; a wider street invites higher speeds), so it is not counted; this says how large
+    an effect would matter. A crash's cost grows with income like the values of time."""
+    if not cfg.safety_references:
+        return pd.DataFrame(columns=["option", "layer", "crash", "label", "crash_cost", "npv", "crashes_over_period", "years_per_crash"])
+    per_year = present_value(cfg, c.get("income_growth", 0.0), 1.0) / cfg.horizon_years  # PV of one crash spread over the period, per crash
+    rows = []
+    for name in LAYERS:
+        q = layer(c, name)
+        for o in cfg.options:
+            npv = float(evaluate(o, q, m, cfg)["npv"])
+            for k, ref in cfg.safety_references.items():
+                n = abs(npv) / (ref.central * per_year)
+                rows.append({"option": o.id, "layer": name, "crash": k, "label": ref.label, "crash_cost": ref.central, "npv": npv,
+                             "crashes_over_period": n, "years_per_crash": cfg.horizon_years / n if n else None})  # fmt: skip
+    return pd.DataFrame(rows)
 
 
 def present_value(cfg: Appraisal, growth: float, elasticity: float, rate: float | None = None) -> float:

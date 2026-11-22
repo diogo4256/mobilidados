@@ -14,7 +14,7 @@ from pydantic import ValidationError
 from shapely.geometry import LineString
 
 from mobilidados import appraisal, delay, reroute
-from mobilidados.config import Appraisal, Criterion, Option
+from mobilidados.config import Appraisal, Criterion, Option, Parameter
 
 LISBON_2026 = [dt.date(2026, m, d) for m, d in [(1, 1), (2, 17), (4, 3), (4, 5), (4, 25), (5, 1), (6, 4), (6, 10), (6, 13), (8, 15),
                                                 (10, 5), (11, 1), (12, 1), (12, 8), (12, 25)]]  # fmt: skip
@@ -353,6 +353,20 @@ def test_the_bridge_goes_from_the_core_to_the_extended_layer():
     assert b.npv.iloc[-1] == pytest.approx(extended)
     assert b.change.sum() == pytest.approx(extended)  # the core's NPV plus every step
     assert b.step.tolist() == ["core", *[k for k in appraisal.MECHANISMS if k in cfg.parameters]]
+
+
+def test_crash_equivalents_are_the_crashes_over_the_period_worth_the_npv():
+    cfg = config(parameters={"income_growth": parameter(0.0)})
+    cfg = cfg.model_copy(update={"safety_references": {"slight": Parameter(**parameter(50000.0) | {"label": "crash", "source": "x"})}})
+    m = measured()
+    c = appraisal.central(cfg, m)
+    t = appraisal.safety_equivalents(cfg, m, c).set_index(["layer", "crash"]).loc[("core", "slight")]
+    npv = appraisal.evaluate(cfg.options[0], appraisal.layer(c, "core"), m, cfg)["npv"]
+    annuity = sum(1.05**-t for t in range(1, 11))
+    # n crashes spread evenly over 10 years: n / 10 a year, each worth 50,000, discounted
+    assert t.crashes_over_period * 50000.0 * annuity / 10 == pytest.approx(abs(npv))
+    assert t.years_per_crash == pytest.approx(10 / t.crashes_over_period)
+    assert appraisal.safety_equivalents(config(), m, c).empty
 
 
 def test_the_cautious_and_favourable_scenarios_are_the_worst_and_best_corners():

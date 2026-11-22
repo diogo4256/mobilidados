@@ -514,6 +514,34 @@
       "caveat": "0,40 m (sobrelargura) + 3,00 m + 3,00 m + 0,40 m (sobrelargura) = 6,80 m; nota ao desenho: sem sobrelargura, a largura recomendada por via é 3,25 m, ou seja 6,50 m"
     },
     {
+      "id": "standard_ciht_bus_routes_20mph",
+      "grade": "D",
+      "statement": "Buses in Urban Developments, p. 25 (valor condicionado): Faixa de rodagem desimpedida numa rua com autocarros, para que não abrandem ao cruzar-se entre si ou com outros veículos grandes: 6,20 m. Âmbito: Ruas com autocarros nos dois sentidos (guia britânico; não é lei portuguesa). Mediana medida: 4,90 m (−1,30 m).",
+      "values": {
+        "value_m": 6.2,
+        "difference_m": -1.3
+      },
+      "sources": [
+        "ciht_bus_routes_20mph"
+      ],
+      "method": "",
+      "caveat": "6,2 m com limite de 30 km/h (20 mph) ou menos; 6,5 m nos restantes casos; livre de veículos estacionados"
+    },
+    {
+      "id": "standard_rtscie_fire_access_over_9m",
+      "grade": "D",
+      "statement": "Portaria n.º 135/2020, de 2 de junho: alteração ao Regulamento Técnico de Segurança contra Incêndio em Edifícios (RT-SCIE, Portaria n.º 1532/2008), republicado em anexo, p. 69 (valor condicionado): Via de acesso de bombeiros a edifício com mais de 9 m de altura: largura útil: 6,00 m. Âmbito: Vias de acesso a edifícios com mais de 9 m de altura, no regime de segurança contra incêndio em edifícios (aplicado no licenciamento); referência para uma rua existente, não uma regra que ela viole. Mediana medida: 4,90 m (−1,10 m).",
+      "values": {
+        "value_m": 6.0,
+        "difference_m": -1.1
+      },
+      "sources": [
+        "rtscie_fire_access_over_9m"
+      ],
+      "method": "",
+      "caveat": "RT-SCIE, art. 5.º, n.º 1, al. a): 6 m de largura útil (10 m em impasse); o art. 4.º, n.º 7, admite outras características, fundamentadas, em zonas edificadas cuja rede viária não possa ser corrigida"
+    },
+    {
       "id": "standard_rast06_bus_bus",
       "grade": "D",
       "statement": "Schriftliche Anfrage Drucksache 19/25490, Antwort vom 27.03.2026, p. 3 (citado em documento oficial): Faixa de rodagem para o cruzamento de dois autocarros de carreira (RASt 06, citada): 6,50 m. Âmbito: Diretriz técnica alemã para ruas urbanas (RASt 06), citada pelo Senado de Berlim; não é lei portuguesa. Mediana medida: 4,90 m (−1,60 m).",

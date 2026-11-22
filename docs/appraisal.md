@@ -148,6 +148,11 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   finding room nearby; with the car parks full; and with both, since the two parking conditions can coincide and one
   at a time hides it. Where an option is worth it with no off-peak delay at all, the break-even is 0 and the table
   gives instead the evening-peak excess at which it breaks even (`peak_excess_s`) and the saving per passage there.
+* **Crash equivalents** (`appraisal_safety.csv`, `[appraisal.safety_references]`): the scheme's effect on road crashes
+  is not known and can go either way, so it is not counted. For each crash cost given (e.g. a crash with slight
+  injuries only, from the national study of crash costs), the table gives how many such crashes, spread evenly over
+  the appraisal period, are worth each option's NPV, and so one every how many years: how large a safety effect
+  would decide the case.
 * **Tornado** (`appraisal_tornado.csv`, extended layer): the NPV at each input's low and high value.
 * **Monte Carlo** (`appraisal_montecarlo.csv`, both layers): `draws` draws of every input from a PERT
   distribution on its low, central and high value (fixed `seed`, so every run gives the same numbers). PERT, the usual

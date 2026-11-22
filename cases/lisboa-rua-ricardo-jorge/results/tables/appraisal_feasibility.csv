@@ -2,6 +2,8 @@ dimension,check,value_m,reference_m,share_low,share_high,status,grade,source
 technical,"Largura livre sem o estacionamento de um lado (mediana) face a dois autocarros, só carroçaria",6.91,5.0,,,ok,I,"without_parking.csv, width_budget.csv"
 technical,"Largura livre sem o estacionamento de um lado (mediana) face a dois autocarros, com espelhos",6.91,5.8,,,ok,I,"without_parking.csv, width_budget.csv"
 technical,"Largura livre sem o estacionamento de um lado (mediana) face a Lisboa: o Desenho da Rua – Manual de espaço público, p. 152",6.91,6.8,,,ok,D,standards_comparison.csv
+technical,"Largura livre sem o estacionamento de um lado (mediana) face a Buses in Urban Developments, p. 25",6.91,6.2,,,ok,D,standards_comparison.csv
+technical,"Largura livre sem o estacionamento de um lado (mediana) face a Portaria n.º 135/2020, de 2 de junho: alteração ao Regulamento Técnico de Segurança contra Incêndio em Edifícios (RT-SCIE, Portaria n.º 1532/2008), republicado em anexo, p. 69",6.91,6.0,,,ok,D,standards_comparison.csv
 technical,"Largura livre sem o estacionamento de um lado (mediana) face a Schriftliche Anfrage Drucksache 19/25490, Antwort vom 27.03.2026, p. 3",6.91,6.5,,,ok,D,standards_comparison.csv
 social,Lugares retirados face ao estacionamento cartografado a menos de 150 m,,,0.02512744639473676,0.03015293567368411,share,I,cartografia municipal: cerca de 779 lugares cartografados (área ÷ profundidade da faixa ÷ comprimento de um lugar); a ocupação não é conhecida
 social,Lugares retirados face ao estacionamento cartografado a menos de 300 m,,,0.00887292577701513,0.010647510932418157,share,I,cartografia municipal: cerca de 2207 lugares cartografados (área ÷ profundidade da faixa ÷ comprimento de um lugar); a ocupação não é conhecida

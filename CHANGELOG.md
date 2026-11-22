@@ -14,6 +14,12 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Crash equivalents** (`appraisal_safety.csv`, `[appraisal.safety_references]`): how many crashes of a given cost,
+  over the appraisal period, are worth each option's NPV. In Rua Ricardo Jorge, with the national cost of a crash with
+  slight injuries only (ISEG for ANSR: €63,276 at 2019 prices, €76,160 at 2025), the proposal's NPV with all impacts
+  is worth about 0.4 such crashes in 10 years, one every 23 years.
+- Design references: the Portuguese fire-safety regulation's 6 m access road to buildings taller than 9 m (RT-SCIE,
+  art. 5) and CIHT's 6.2 m for bus routes (*Buses in Urban Developments*, B.2.2), each with its document's hash.
 - An extended mechanism, `other_vehicle_share`: buses held by oncoming cars, vans and trucks, which they cannot pass
   with design clearances either. It credits that share of the excess the measurement leaves out of the attribution
   (the junctions next to the widened sections, where oncoming buses are no more frequent than chance), up to the

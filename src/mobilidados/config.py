@@ -532,6 +532,12 @@ class Appraisal(Model):
         {},
         description=f"For the reroutes: {', '.join(REROUTE_PARAMETERS)}; valued at their central value, the range bracketing the break-even",
     )
+    safety_references: dict[str, Parameter] = Field(
+        {},
+        description="Unit costs of a road crash (e.g. one with slight injuries only), at the appraisal's prices: not counted,"
+        " since the scheme's effect on crashes is not known, but shown as the crashes over the period that would equal"
+        " each option's NPV (appraisal.safety_equivalents)",
+    )
     alternatives: list[Alternative] = []
     criteria: list[Criterion] = []
     notes: list[Note] = []
