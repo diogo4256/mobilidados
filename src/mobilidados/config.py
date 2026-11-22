@@ -347,6 +347,12 @@ class Envelope(Model):
     bus: str
     car: str
     scenarios: list[Annotated[list[str], Field(min_length=1, max_length=2)]] = Field(min_length=1)
+    practical_clearance_m: float | None = Field(
+        None,
+        ge=0,
+        description="Room for movement, mirrors and safety that two meeting vehicles need beyond their bodies, from design guidance",
+    )
+    practical_clearance_source: str = ""
 
 
 class Occurrences(Model):

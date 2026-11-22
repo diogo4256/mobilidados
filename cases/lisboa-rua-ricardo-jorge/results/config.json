@@ -853,6 +853,8 @@
   "envelope": {
     "bus": "carris_man_city_gold",
     "car": "car_typical",
+    "practical_clearance_m": 1.2,
+    "practical_clearance_source": "CIHT (2018), Buses in Urban Developments, B.2.2: 6.2 m unobstructed for two buses at 20 mph or less, less two 2.50 m bodies",
     "scenarios": [
       [
         "carris_man_city_gold"

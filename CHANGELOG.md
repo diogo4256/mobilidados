@@ -7,6 +7,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Passing in practice, not only on paper (`passing_practice.csv`, `[envelope] practical_clearance_m`): two vehicles
+  need their bodies plus the room design guidance leaves for movement, mirrors and safety. Lisbon takes 1.2 m, from
+  CIHT's *Buses in Urban Developments* (2018), B.2.2: 6.2 m unobstructed for two buses at 20 mph or less. In Rua Ricardo
+  Jorge, only two cars pass today; with one side's parking removed, every pair does.
 - Vehicles: a large van (Mercedes-Benz Sprinter, Ford Transit), a large SUV (Volvo XC90) and a truck at the legal
   maximum width, with the manufacturers' widths; Lisbon's width budget pairs them with buses and with each other. In
   Rua Ricardo Jorge, a bus cannot pass a large van (−0.34 to −0.47 m) or a truck (−0.95 m) either, and two large

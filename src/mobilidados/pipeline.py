@@ -247,6 +247,9 @@ def stage_envelope(r: Run) -> None:
     r.save("width_budget", envelope.width_budget(free, vehicles, e.scenarios))
     r.save("overhang_sensitivity", envelope.overhang_sensitivity(free["median"], vehicles, e.scenarios))
     r.save("without_parking", envelope.without_parking(r.table("profiles"), r.two_strips_m, r.cfg.profiles.parking_space_m))
+    if e.practical_clearance_m is not None:
+        one_side = float(r.table("without_parking").set_index("without").loc[["L", "R"], "free_median"].min())
+        r.save("passing_practice", envelope.practical_passing(free["median"], one_side, vehicles, e.scenarios, e.practical_clearance_m))
 
 
 def stage_encounters(r: Run) -> None:
