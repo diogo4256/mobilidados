@@ -8,8 +8,8 @@ Gerado por `mobilidados run` a partir das tabelas em `tables/` e da configuraç�
 - Nos dias úteis, às 17h–19h, a diferença entre o tempo dos autocarros no troço entre paragens e o que os troços vizinhos explicariam foi de +49% (intervalo de 90%: +34% a +65%), cerca de 14 s por passagem (6 a 24 s), segundo posições GPS arquivadas por terceiros (por ano: 2025: +60%; 2026: +4%, não informa: o arquivo guardou muito menos registos nesse ano).
 - No núcleo, só com o medido e o documentado, nenhuma opção compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,61, probabilidade de VAL > 0 de 8%).
 - Para a opção H compensar no núcleo, seria preciso, por exemplo, um excesso de 23,6 s por passagem (medido: 14,5 s, até 23,9 s); ou que um lugar valesse no máximo 210 € por ano a quem o perde (central: 560 €).
-- Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 15 500 €, benefício/custo 1,50, positivo em 76% das simulações (benefício/custo de cada opção: B 0,92; C 1,50; E 1,03; G 0,80; H 1,01).
-- O que mais pode mudar a decisão, e por isso mais vale medir: excesso por passagem fora da ponta (todos os dias); excesso de tempo por passagem na ponta (s, intervalo de 90%); opção C: parte do excesso que pode remover.
+- Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 26 800 €, benefício/custo 1,86, positivo em 87% das simulações (benefício/custo de cada opção: B 1,10; C 1,86; E 1,24; G 0,95; H 1,25).
+- O que mais pode mudar a decisão, e por isso mais vale medir: excesso por passagem fora da ponta (todos os dias).
 - Fora das contas, a opção C melhora: fiabilidade da viagem de autocarro (o stress de não saber quando se chega); acesso ao comboio e ao metro; ruído e ar na rua; acesso de veículos de socorro; referência municipal de desenho de rua; reversibilidade; e piora: qualidade de vida de quem estaciona na rua.
 - A alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar) retira cerca de 4 lugares e paga-se com 7,5 s poupados por passagem na ponta (0,8 s a qualquer hora): merece um estudo de geometria.
 - Os dados que fecham estas contas: os registos de passagem pedidos à Carris (o atraso de hoje, a qualquer hora, e a sua dispersão), uma contagem noturna dos lugares livres a menos de 150 m, e uma contagem do tráfego na rua.
@@ -85,6 +85,7 @@ As contas fazem-se em duas camadas. O **núcleo** conta só o que os dados medem
 | Parte do atraso que o passageiro não pode prever (um autocarro retido por outro) | alargada | 0,00 | 0,30 | 0,70 |  | P | Sem dados da distribuição dos tempos de passagem; a cauda dessa distribuição (passagens de minutos em vez de segundos) nos registos pedidos à Carris mede-a |
 | Peso do atraso imprevisto face ao tempo a bordo | alargada | 2,50 | 3,00 | 4,00 |  | D | EAV 2021-2027, quadro 7: atraso no transporte público, 2,5 a 4 vezes o tempo a bordo |
 | Parte dos passageiros que muda para o comboio ou o metro mais adiante | alargada | 0,10 | 0,25 | 0,40 |  | P | Horário GTFS da Carris: a 744 liga a rua à Estação de Entrecampos (cerca de 12 min; CP, Fertagus, metro) e à Gare do Oriente (cerca de 14 min); a 46B ao Campo Grande e a Entrecampos (metro). Um atraso faz perder o comboio marcado: para quem muda, o atraso pesa como atraso imprevisto. A parte dos que mudam não é publicada |
+| Parte do atraso nos cruzamentos sem autocarros em sentido contrário que se deve a ligeiros, furgões e pesados | alargada | 0,00 | 0,50 | 1,00 |  | P | Com as margens dos guias de desenho de ruas (CIHT 2018, B.2.2: 6,2 m para dois autocarros), um autocarro também não se cruza com um ligeiro, um furgão ou um pesado em 4,90 m (passing_practice.csv); no cruzamento da R. Constantino Fernandes perdem-se 3,9 s sem mais autocarros em sentido contrário do que o acaso dá. Admite-se que metade se deve a esses encontros, que a supressão também resolve; a outra metade, ao trânsito do cruzamento. Uma contagem classificada com vídeo fixa-o |
 | Carros retidos atrás de um autocarro parado ou preso | alargada | 0,00 | 0,50 | 2,00 |  | P | Sem contagem de tráfego na rua (NE); uma contagem num dia útil fixa-o |
 | Pessoas por carro | alargada | 1,20 | 1,40 | 1,70 | pessoas | I | Handbook on the external costs of transport (2019), quadro 94: 1,7 pessoas por carro na UE28; nas deslocações urbanas e pendulares é menos (P) |
 | Elasticidade da procura do autocarro ao tempo a bordo (valor absoluto) | alargada | 0,40 | 0,60 | 0,65 |  | D | RAND Europe e SYSTRA para o DfT (2018), secção 6.6: −0,60 a longo prazo (Wardman 2012: −0,55 lazer, −0,65 pendular); Paulley et al. (2006): cerca de −0,4 |
@@ -142,11 +143,11 @@ As contas fazem-se em duas camadas. O **núcleo** conta só o que os dados medem
 
 | opção | tempo dos passageiros | Carris | carros retidos | novos passageiros | custos externos evitados | danos evitados | benefício/ano | estacionamento e fiscalização/ano | obra | VAL | benefício/custo |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| B | 5 500 € | 920 € | 170 € | 0 € | 170 € | 320 € | 7 100 € | 6 800 € | 6 800 € | −4 900 € | 0,92 |
-| C | 4 500 € | 750 € | 140 € | 0 € | 140 € | 260 € | 5 800 € | 3 100 € | 5 900 € | 15 500 € | 1,50 |
-| E | 4 300 € | 680 € | 120 € | 0 € | 130 € | 190 € | 5 400 € | 4 300 € | 7 400 € | 1 400 € | 1,03 |
-| G | 3 000 € | 420 € | 80 € | 0 € | 90 € | 60 € | 3 700 € | 3 700 € | 7 400 € | −7 600 € | 0,80 |
-| H | 2 500 € | 340 € | 60 € | 0 € | 80 € | 50 € | 3 000 € | 2 200 € | 6 200 € | 250 € | 1,01 |
+| B | 6 600 € | 1 100 € | 200 € | 0 € | 200 € | 390 € | 8 500 € | 6 800 € | 6 800 € | 6 400 € | 1,10 |
+| C | 5 600 € | 930 € | 170 € | 0 € | 170 € | 330 € | 7 200 € | 3 100 € | 5 900 € | 26 800 € | 1,86 |
+| E | 5 100 € | 820 € | 150 € | 0 € | 160 € | 230 € | 6 500 € | 4 300 € | 7 400 € | 10 000 € | 1,24 |
+| G | 3 600 € | 500 € | 90 € | 10 € | 110 € | 70 € | 4 400 € | 3 700 € | 7 400 € | −1 700 € | 0,95 |
+| H | 3 100 € | 420 € | 80 € | 0 € | 100 € | 60 € | 3 700 € | 2 200 € | 6 200 € | 6 100 € | 1,25 |
 
 ### Valor pelo dinheiro
 
@@ -159,11 +160,11 @@ Duas convenções para a mesma conta. O EAV divide todos os benefícios por todo
 | núcleo | E | −32 600 € | 0,36 | −2,10 | muito fraco |
 | núcleo | G | −25 300 € | 0,42 | −1,40 | muito fraco |
 | núcleo | H | −9 300 € | 0,61 | −0,03 | muito fraco |
-| alargada | B | −4 900 € | 0,92 | 0,32 | fraco |
-| alargada | C | 15 500 € | 1,50 | 3,56 | alto |
-| alargada | E | 1 400 € | 1,03 | 1,09 | baixo |
-| alargada | G | −7 600 € | 0,80 | 0,51 | fraco |
-| alargada | H | 250 € | 1,01 | 1,02 | baixo |
+| alargada | B | 6 400 € | 1,10 | 1,89 | médio |
+| alargada | C | 26 800 € | 1,86 | 5,42 | muito alto |
+| alargada | E | 10 000 € | 1,24 | 1,64 | médio |
+| alargada | G | −1 700 € | 0,95 | 0,89 | fraco |
+| alargada | H | 6 100 € | 1,25 | 1,44 | baixo |
 
 ### Do núcleo à camada alargada, mecanismo a mecanismo
 
@@ -176,13 +177,14 @@ Quanto acrescenta cada mecanismo ao VAL, ligado um de cada vez por esta ordem, a
 | Fiabilidade: o atraso imprevisto | +9 100 € | +7 400 € | +7 000 € | +5 000 € | +4 100 € |
 | Ligações ao comboio e ao metro | +5 300 € | +4 300 € | +4 100 € | +2 900 € | +2 400 € |
 | Carros retidos atrás dos autocarros | +1 400 € | +1 100 € | +1 000 € | +620 € | +500 € |
-| Novos passageiros e viagens tiradas ao carro | +1 400 € | +1 100 € | +1 100 € | +790 € | +640 € |
-| Danos por toques | +2 500 € | +2 000 € | +1 500 € | +460 € | +380 € |
+| Autocarros retidos por ligeiros, furgões e pesados em sentido contrário | +10 500 € | +10 500 € | +8 100 € | +5 600 € | +5 600 € |
+| Novos passageiros e viagens tiradas ao carro | +1 700 € | +1 400 € | +1 300 € | +950 € | +800 € |
+| Danos por toques | +3 000 € | +2 500 € | +1 800 € | +550 € | +470 € |
 | Lugares livres perto para os carros deslocados | +19 000 € | +8 700 € | +9 300 € | +7 600 € | +3 500 € |
 | Tempo a pé de quem passa a estacionar num parque | −20 300 € | −9 300 € | −9 900 € | −8 100 € | −3 700 € |
 | Avença paga a um parque com lugares vagos: transferência | +28 900 € | +13 300 € | +14 100 € | +11 500 € | +5 300 € |
 | Acalmia de tráfego | −5 000 € | −5 000 € | −5 000 € | −5 000 € | −5 000 € |
-| **VAL da camada alargada** | **−4 900 €** | **15 500 €** | **1 400 €** | **−7 600 €** | **250 €** |
+| **VAL da camada alargada** | **6 400 €** | **26 800 €** | **10 000 €** | **−1 700 €** | **6 100 €** |
 
 ### Incerteza
 
@@ -190,16 +192,16 @@ Simulação de Monte Carlo com 20 000 sorteios de todos os valores (distribuiç�
 
 | camada | opção | VAL P10 | VAL mediano | VAL P90 | probabilidade de VAL > 0 | probabilidade de ser a melhor escolha, contando com não fazer nada |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| núcleo | B | −158 800 € | −85 000 € | −37 600 € | 0% | 0% |
-| núcleo | C | −65 600 € | −31 300 € | −8 100 € | 3% | 2% |
-| núcleo | E | −85 200 € | −46 500 € | −19 700 € | 1% | 0% |
-| núcleo | G | −71 100 € | −36 900 € | −13 100 € | 2% | 0% |
-| núcleo | H | −34 800 € | −16 600 € | −1 200 € | 8% | 7% |
-| alargada | B | −54 900 € | −2 800 € | 43 700 € | 47% | 12% |
-| alargada | C | −13 000 € | 17 400 € | 54 300 € | 76% | 59% |
-| alargada | E | −33 100 € | −1 700 € | 31 400 € | 47% | 5% |
-| alargada | G | −37 600 € | −12 700 € | 10 300 € | 24% | 0% |
-| alargada | H | −21 500 € | −4 300 € | 14 200 € | 38% | 3% |
+| núcleo | B | −159 500 € | −85 200 € | −37 000 € | 0% | 0% |
+| núcleo | C | −65 900 € | −31 400 € | −7 900 € | 3% | 2% |
+| núcleo | E | −85 500 € | −46 500 € | −19 400 € | 1% | 0% |
+| núcleo | G | −71 700 € | −37 200 € | −12 900 € | 2% | 0% |
+| núcleo | H | −35 000 € | −16 700 € | −1 100 € | 8% | 7% |
+| alargada | B | −43 300 € | 9 000 € | 62 000 € | 59% | 12% |
+| alargada | C | −3 700 € | 29 800 € | 72 200 € | 87% | 70% |
+| alargada | E | −25 200 € | 7 300 € | 44 400 € | 61% | 3% |
+| alargada | G | −32 500 € | −6 800 € | 18 200 € | 36% | 0% |
+| alargada | H | −16 700 € | 1 700 € | 22 900 € | 54% | 2% |
 
 ### O que teria de mudar
 
@@ -232,76 +234,74 @@ Para cada opção, o valor de cada entrada que poria o VAL a zero, mantendo as o
 | núcleo | G | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,10 | ✗ |
 | núcleo | G | Fiscalização a mais de uma proibição por horas | 1 000,00 | — | ✗ |
 | núcleo | H | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 23,59 | ✓ |
-| núcleo | H | Opção H: parte do excesso que pode remover | 0,59 | 0,95 | ✗ |
+| núcleo | H | Opção H: parte do excesso que pode remover | 0,59 | — | ✗ |
 | núcleo | H | Passageiros a bordo, na ponta da tarde | 20,00 | 34,94 | ✗ |
 | núcleo | H | Ocupação dos lugares retirados | 0,95 | 0,36 | ✗ |
 | núcleo | H | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 213,36 | ✗ |
 | núcleo | H | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,17 | ✗ |
 | núcleo | H | Fiscalização a mais de uma proibição por horas | 1 000,00 | — | ✗ |
-| alargada | B | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 16,86 | ✓ |
-| alargada | B | Opção B: parte do excesso que pode remover | 0,72 | 0,78 | ✓ |
-| alargada | B | Passageiros a bordo, na ponta da tarde | 20,00 | 23,74 | ✓ |
-| alargada | B | Ocupação dos lugares retirados | 0,95 | 0,87 | ✓ |
-| alargada | B | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 461,38 | ✓ |
-| alargada | B | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 3,00 | ✓ |
-| alargada | B | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,40 | ✓ |
-| alargada | C | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 5,35 | ✗ |
-| alargada | C | Opção C: parte do excesso que pode remover | 0,59 | 0,39 | ✓ |
-| alargada | C | Passageiros a bordo, na ponta da tarde | 20,00 | 5,50 | ✗ |
+| alargada | B | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 11,93 | ✓ |
+| alargada | B | Opção B: parte do excesso que pode remover | 0,72 | 0,64 | ✓ |
+| alargada | B | Passageiros a bordo, na ponta da tarde | 20,00 | 15,92 | ✓ |
+| alargada | B | Ocupação dos lugares retirados | 0,95 | — | ✗ |
+| alargada | B | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 678,44 | ✓ |
+| alargada | B | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 1,96 | ✓ |
+| alargada | B | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,17 | ✓ |
+| alargada | C | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 1,77 | ✗ |
+| alargada | C | Opção C: parte do excesso que pode remover | 0,59 | 0,25 | ✗ |
+| alargada | C | Passageiros a bordo, na ponta da tarde | 20,00 | — | ✗ |
 | alargada | C | Ocupação dos lugares retirados | 0,95 | — | ✗ |
-| alargada | C | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 1 205,41 | ✓ |
-| alargada | C | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 0,58 | ✓ |
+| alargada | C | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 1 677,62 | ✓ |
+| alargada | C | Excesso por passagem fora da ponta (todos os dias) | 2,50 | — | ✗ |
 | alargada | C | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | — | ✗ |
-| alargada | E | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 13,76 | ✓ |
-| alargada | E | Opção E: parte do excesso que pode remover | 0,72 | 0,70 | ✓ |
-| alargada | E | Passageiros a bordo, na ponta da tarde | 20,00 | 18,83 | ✓ |
-| alargada | E | Ocupação dos lugares retirados | 0,95 | 1,00 | ✓ |
-| alargada | E | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 609,02 | ✓ |
-| alargada | E | Opção E: parte do valor do lugar perdida das 7h às 20h nos dias úteis | 0,55 | 0,58 | ✓ |
-| alargada | E | Fiscalização a mais de uma proibição por horas | 1 000,00 | 1 175,71 | ✓ |
-| alargada | E | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 2,28 | ✓ |
-| alargada | E | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,25 | ✓ |
-| alargada | G | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 18,63 | ✓ |
-| alargada | G | Opção G: parte do excesso que pode remover | 0,72 | 0,90 | ✓ |
-| alargada | G | Passageiros a bordo, na ponta da tarde | 20,00 | 26,56 | ✓ |
-| alargada | G | Ocupação dos lugares retirados | 0,95 | 0,62 | ✗ |
-| alargada | G | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 188,39 | ✗ |
-| alargada | G | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,29 | ✓ |
-| alargada | G | Fiscalização a mais de uma proibição por horas | 1 000,00 | 11,69 | ✓ |
-| alargada | G | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 9,64 | ✗ |
-| alargada | G | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,67 | ✓ |
-| alargada | H | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 14,34 | ✓ |
-| alargada | H | Opção H: parte do excesso que pode remover | 0,59 | 0,58 | ✓ |
-| alargada | H | Passageiros a bordo, na ponta da tarde | 20,00 | 19,74 | ✓ |
-| alargada | H | Ocupação dos lugares retirados | 0,95 | 0,97 | ✓ |
-| alargada | H | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 581,44 | ✓ |
-| alargada | H | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,46 | ✓ |
-| alargada | H | Fiscalização a mais de uma proibição por horas | 1 000,00 | 1 031,96 | ✓ |
-| alargada | H | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 2,22 | ✓ |
-| alargada | H | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,27 | ✓ |
+| alargada | E | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 9,98 | ✓ |
+| alargada | E | Opção E: parte do excesso que pode remover | 0,72 | 0,55 | ✓ |
+| alargada | E | Passageiros a bordo, na ponta da tarde | 20,00 | 12,83 | ✗ |
+| alargada | E | Ocupação dos lugares retirados | 0,95 | — | ✗ |
+| alargada | E | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 948,30 | ✓ |
+| alargada | E | Opção E: parte do valor do lugar perdida das 7h às 20h nos dias úteis | 0,55 | 0,75 | ✗ |
+| alargada | E | Fiscalização a mais de uma proibição por horas | 1 000,00 | 2 291,79 | ✓ |
+| alargada | E | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 1,16 | ✓ |
+| alargada | E | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | — | ✗ |
+| alargada | G | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 15,29 | ✓ |
+| alargada | G | Opção G: parte do excesso que pode remover | 0,72 | 0,76 | ✓ |
+| alargada | G | Passageiros a bordo, na ponta da tarde | 20,00 | 21,25 | ✓ |
+| alargada | G | Ocupação dos lugares retirados | 0,95 | 0,87 | ✓ |
+| alargada | G | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 471,71 | ✓ |
+| alargada | G | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,41 | ✓ |
+| alargada | G | Fiscalização a mais de uma proibição por horas | 1 000,00 | 774,21 | ✓ |
+| alargada | G | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 3,86 | ✓ |
+| alargada | G | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,39 | ✓ |
+| alargada | H | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 11,23 | ✓ |
+| alargada | H | Opção H: parte do excesso que pode remover | 0,59 | 0,44 | ✓ |
+| alargada | H | Passageiros a bordo, na ponta da tarde | 20,00 | 14,81 | ✓ |
+| alargada | H | Ocupação dos lugares retirados | 0,95 | — | ✗ |
+| alargada | H | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 1 197,68 | ✓ |
+| alargada | H | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,72 | ✗ |
+| alargada | H | Fiscalização a mais de uma proibição por horas | 1 000,00 | 1 794,19 | ✓ |
+| alargada | H | Excesso por passagem fora da ponta (todos os dias) | 2,50 | — | ✗ |
+| alargada | H | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | — | ✗ |
 
 Entradas que mais mudam o VAL da opção C na camada alargada (do mínimo ao máximo de cada uma):
 
 | entrada | VAL no mínimo | VAL no máximo |
 | --- | ---: | ---: |
-| Excesso por passagem fora da ponta (todos os dias) | −4 700 € | 60 000 € |
-| Opção C: parte do excesso que pode remover | −8 800 € | 38 100 € |
-| Preço anual de estacionar noutro sítio, para quem perde o lugar | 22 500 € | −21 400 € |
-| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 420 € | 31 500 € |
-| Parte do preço do parque que é uma transferência: o parque tem lugares vagos | 2 200 € | 28 800 € |
-| Valor do tempo de um passageiro | 2 200 € | 26 500 € |
-| Parte dos carros deslocados que encontra lugar a menos de 150 m | 8 500 € | 31 900 € |
-| Acalmia de tráfego, se a velocidade subir na faixa mais larga | 20 500 € | 520 € |
+| Excesso por passagem fora da ponta (todos os dias) | 1 700 € | 82 000 € |
+| Preço anual de estacionar noutro sítio, para quem perde o lugar | 33 800 € | −10 100 € |
+| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 8 100 € | 46 600 € |
+| Opção C: parte do excesso que pode remover | 2 500 € | 38 100 € |
+| Valor do tempo de um passageiro | 10 300 € | 40 500 € |
+| Parte do preço do parque que é uma transferência: o parque tem lugares vagos | 13 500 € | 40 100 € |
+| Parte dos carros deslocados que encontra lugar a menos de 150 m | 19 800 € | 43 200 € |
+| Multiplicador para quem espera nas paragens seguintes | 26 800 € | 49 400 € |
 
 ### O que vale a pena medir
 
-Quanto vale saber cada entrada antes de decidir, em valor atual (valor esperado da informação perfeita parcial, da simulação da camada alargada): só conta o que pode mudar a decisão. Saber tudo valeria cerca de 5 500 €.
+Quanto vale saber cada entrada antes de decidir, em valor atual (valor esperado da informação perfeita parcial, da simulação da camada alargada): só conta o que pode mudar a decisão. Saber tudo valeria cerca de 3 500 €.
 
 | entrada | valor de saber antes de decidir |
 | --- | ---: |
-| Excesso por passagem fora da ponta (todos os dias) | 600 € |
-| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 260 € |
-| Opção C: parte do excesso que pode remover | 130 € |
+| Excesso por passagem fora da ponta (todos os dias) | 120 € |
 
 ### Cenários
 
@@ -309,11 +309,11 @@ VAL de cada opção em cenários com nome. Prudente: cada entrada que a mediçã
 
 | opção | núcleo, 10 anos | prudente, 10 anos | central, 10 anos | favorável, 10 anos | núcleo, 20 anos | central, 20 anos |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| B | −64 200 € | −145 900 € | −4 900 € | 198 900 € | −106 500 € | −3 800 € |
-| C | −22 200 € | −65 500 € | 15 500 € | 181 400 € | −36 600 € | 29 900 € |
-| E | −32 600 € | −77 400 € | 1 400 € | 142 100 € | −52 600 € | 7 700 € |
-| G | −25 300 € | −65 500 € | −7 600 € | 53 800 € | −40 300 € | −7 300 € |
-| H | −9 300 € | −38 600 € | 250 € | 45 000 € | −14 400 € | 5 100 € |
+| B | −64 200 € | −135 000 € | 6 400 € | 306 700 € | −106 500 € | 15 100 € |
+| C | −22 200 € | −65 500 € | 26 800 € | 271 600 € | −36 600 € | 48 800 € |
+| E | −32 600 € | −77 400 € | 10 000 € | 204 200 € | −52 600 € | 22 100 € |
+| G | −25 300 € | −65 500 € | −1 700 € | 80 800 € | −40 300 € | 2 600 € |
+| H | −9 300 € | −38 600 € | 6 100 € | 71 900 € | −14 400 € | 14 900 € |
 
 ### Quem ganha e quem perde (camada alargada, valores centrais, por ano)
 
@@ -322,14 +322,14 @@ Em euros por ano; positivo é ganho, negativo é perda.
 | grupo | B | C | E | G | H |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Viagens de passageiros com a opção em vigor (por ano) | 530 688 | 530 688 | 370 476 | 138 552 | 138 552 |
-| Segundos poupados por viagem de passageiro | 2,8 | 2,3 | 3,1 | 5,9 | 4,8 |
+| Segundos poupados por viagem de passageiro | 3,4 | 2,8 | 3,7 | 7,1 | 6,0 |
 | Lugares retirados | 21 | 10 | 21 | 21 | 10 |
-| Passageiros dos autocarros: tempo | 5 500 € | 4 500 € | 4 300 € | 3 000 € | 2 500 € |
-| Carris: horas de autocarro | 920 € | 750 € | 680 € | 420 € | 340 € |
-| Quem segue de carro atrás de um autocarro | 170 € | 140 € | 120 € | 80 € | 60 € |
-| Novos passageiros | 0 € | 0 € | 0 € | 0 € | 0 € |
-| Toda a gente: custos externos das viagens que deixam o carro | 170 € | 140 € | 130 € | 90 € | 80 € |
-| Carris e donos de carros: danos evitados | 320 € | 260 € | 190 € | 60 € | 50 € |
+| Passageiros dos autocarros: tempo | 6 600 € | 5 600 € | 5 100 € | 3 600 € | 3 100 € |
+| Carris: horas de autocarro | 1 100 € | 930 € | 820 € | 500 € | 420 € |
+| Quem segue de carro atrás de um autocarro | 200 € | 170 € | 150 € | 90 € | 80 € |
+| Novos passageiros | 0 € | 0 € | 0 € | 10 € | 0 € |
+| Toda a gente: custos externos das viagens que deixam o carro | 200 € | 170 € | 160 € | 110 € | 100 € |
+| Carris e donos de carros: danos evitados | 390 € | 330 € | 230 € | 70 € | 60 € |
 | Quem estaciona na rua | −10 300 € | −4 700 € | −5 000 € | −4 100 € | −1 900 € |
 | Parques de estacionamento: avenças pagas por quem é deslocado (transferência) | 3 600 € | 1 600 € | 1 700 € | 1 400 € | 650 € |
 | Câmara e EMEL: obra e fiscalização | −880 € | −760 € | −2 000 € | −2 000 € | −1 800 € |
@@ -366,8 +366,8 @@ O que falta saber, e o que mais mudaria estas conclusões:
 
 1. No núcleo, só com o medido e o documentado, nenhuma opção compensa os lugares que retira: a de menor perda é a H (VAL de −9 300 €, benefício/custo 0,61, probabilidade de VAL > 0 de 8%).
 2. Para a opção H compensar no núcleo, seria preciso, por exemplo, um excesso de 23,6 s por passagem (medido: 14,5 s, até 23,9 s); ou que um lugar valesse no máximo 210 € por ano a quem o perde (central: 560 €).
-3. Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 15 500 €, benefício/custo 1,50, positivo em 76% das simulações (benefício/custo de cada opção: B 0,92; C 1,50; E 1,03; G 0,80; H 1,01).
-4. O que mais pode mudar a decisão, e por isso mais vale medir: excesso por passagem fora da ponta (todos os dias); excesso de tempo por passagem na ponta (s, intervalo de 90%); opção C: parte do excesso que pode remover.
+3. Juntando os mecanismos que a medição ainda não vê, a valores centrais de fontes publicadas, a opção C compensa: VAL de 26 800 €, benefício/custo 1,86, positivo em 87% das simulações (benefício/custo de cada opção: B 1,10; C 1,86; E 1,24; G 0,95; H 1,25).
+4. O que mais pode mudar a decisão, e por isso mais vale medir: excesso por passagem fora da ponta (todos os dias).
 5. Fora das contas, a opção C melhora: fiabilidade da viagem de autocarro (o stress de não saber quando se chega); acesso ao comboio e ao metro; ruído e ar na rua; acesso de veículos de socorro; referência municipal de desenho de rua; reversibilidade; e piora: qualidade de vida de quem estaciona na rua.
 6. A alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar) retira cerca de 4 lugares e paga-se com 7,5 s poupados por passagem na ponta (0,8 s a qualquer hora): merece um estudo de geometria.
 7. Os dados que fecham estas contas: os registos de passagem pedidos à Carris (o atraso de hoje, a qualquer hora, e a sua dispersão), uma contagem noturna dos lugares livres a menos de 150 m, e uma contagem do tráfego na rua.

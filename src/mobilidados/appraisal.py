@@ -13,6 +13,9 @@ differ only by them, and each mechanism can be read off on its own.
 
 * at the evening peak on working days: the ``delay`` stage's measured excess, times the share an option can remove
   (*attribution*, read from where the excess sits along the stretch and where buses give way to oncoming ones);
+* (extended) at the junctions next to the widened sections where oncoming buses are no more frequent than chance,
+  the share ``other_vehicle_share`` of their excess: buses held by oncoming cars, vans and trucks, which, with design
+  clearances, they cannot pass either (``envelope.practical_passing``); it moves the attribution toward its high bound;
 * (extended) at every other hour and day the option is in force: an excess of ``offpeak_s`` seconds per passage,
   removed in the same share, for the passages the timetable schedules then (``passages``: the reference week's hours,
   times the days of each kind in the reference year).
@@ -65,6 +68,7 @@ MECHANISMS = {
     "unexpected_share": 0.0,
     "transfer_share": 0.0,
     "cars_behind": 0.0,
+    "other_vehicle_share": 0.0,
     "elasticity_ivt": 0.0,
     "damage_year": 0.0,
     "room_nearby": 0.0,
@@ -303,6 +307,10 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     comply = p[o.compliance]
     peak_y, other_y = m.passages[o.id]
     share_removed = p[f"attribution_{o.id}"]  # where the time is lost along the stretch: the same at every hour
+    # (extended) part of the excess at the junctions next to the widened sections where buses are not held by oncoming
+    # buses: buses held by oncoming cars, vans and trucks, which the widening also lets pass (``other_vehicle_share``)
+    _, ce, hi = m.attribution.get(o.id, (0.0, 0.0, 0.0))
+    share_removed = np.minimum(share_removed + p.get("other_vehicle_share", 0.0) * max(hi - ce, 0.0), max(hi, ce))
     peak_bh = p["excess_s"] * share_removed * peak_y / 3600 * comply
     other_bh = p["offpeak_s"] * share_removed * other_y * m.offpeak_scale.get(o.id, 1.0) / 3600 * comply
     bus_hours = peak_bh + other_bh

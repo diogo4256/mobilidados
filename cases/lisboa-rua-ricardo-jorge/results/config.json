@@ -518,6 +518,15 @@
         "source": "Inferido, não medido: o método compara a ponta com o resto do dia, que é a sua base, e não pode medir o resto do dia. O valor central (que substitui o 3,0 acima) é o excesso medido na ponta multiplicado pela razão entre o excesso de encontros fora da ponta e na ponta, no cruzamento onde os autocarros comprovadamente se encontram (delay_copresence.csv): admite o mesmo tempo perdido por encontro. Mínimo 0: fora da ponta, o tempo no troço é igual ao dos troços de controlo à mesma escala (delay_by_hour.csv), e o excesso de encontros fora da ponta não é significativo (p ≈ 0,10). Os registos de passagem pedidos à Carris medem-no",
         "unit": "s"
       },
+      "other_vehicle_share": {
+        "central": 0.5,
+        "grade": "P",
+        "high": 1.0,
+        "label": "Parte do atraso nos cruzamentos sem autocarros em sentido contrário que se deve a ligeiros, furgões e pesados",
+        "low": 0.0,
+        "source": "Com as margens dos guias de desenho de ruas (CIHT 2018, B.2.2: 6,2 m para dois autocarros), um autocarro também não se cruza com um ligeiro, um furgão ou um pesado em 4,90 m (passing_practice.csv); no cruzamento da R. Constantino Fernandes perdem-se 3,9 s sem mais autocarros em sentido contrário do que o acaso dá. Admite-se que metade se deve a esses encontros, que a supressão também resolve; a outra metade, ao trânsito do cruzamento. Uma contagem classificada com vídeo fixa-o",
+        "unit": ""
+      },
       "room_nearby": {
         "central": 0.3,
         "grade": "P",

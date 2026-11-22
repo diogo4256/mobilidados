@@ -250,6 +250,25 @@ def test_the_extended_layer_adds_each_mechanism_as_computed_by_hand():
     assert e["works"] == pytest.approx(2 * 100 + 55 * 2 + 1000)
 
 
+def test_buses_held_by_oncoming_cars_move_the_attribution_toward_its_high_bound():
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    m = dataclasses.replace(m, attribution={"A": (0.2, 0.5, 0.9)})
+    base = {"offpeak_s": parameter(5.0)}
+
+    def bus_hours(share: float | None) -> float:
+        extra = {} if share is None else {"other_vehicle_share": parameter(share)}
+        cfg = config(parameters=base | extra)
+        return float(appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)["bus_hours"])
+
+    none, half, full = bus_hours(None), bus_hours(0.5), bus_hours(1.0)
+    assert half == pytest.approx(none * (0.5 + 0.5 * 0.4) / 0.5)  # half of the 0.4 left out of the attribution
+    assert full == pytest.approx(none * 0.9 / 0.5)  # never beyond the high bound
+    assert bus_hours(0.0) == pytest.approx(none)
+    cfg = config(parameters=base | {"other_vehicle_share": parameter(1.0)})
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)["bus_hours"]
+    assert core == pytest.approx(10 * 0.5)  # the core keeps the measured attribution
+
+
 def test_what_a_displaced_driver_pays_a_car_park_with_room_to_spare_is_a_transfer():
     cfg = config(parameters=EXTENDED | {"carpark_walk": parameter(30.0), "spare_capacity": parameter(0.25)})
     m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)

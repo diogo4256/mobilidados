@@ -7,6 +7,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- An extended mechanism, `other_vehicle_share`: buses held by oncoming cars, vans and trucks, which they cannot pass
+  with design clearances either. It credits that share of the excess the measurement leaves out of the attribution
+  (the junctions next to the widened sections, where oncoming buses are no more frequent than chance), up to the
+  attribution's high bound. In Rua Ricardo Jorge, half the 3.9 s at the Rua Constantino Fernandes junction (central
+  0.5, range 0–1, grade P) raises option C's extended NPV from about €15,500 to about €26,800; the core is unchanged.
 - Passing in practice, not only on paper (`passing_practice.csv`, `[envelope] practical_clearance_m`): two vehicles
   need their bodies plus the room design guidance leaves for movement, mirrors and safety. Lisbon takes 1.2 m, from
   CIHT's *Buses in Urban Developments* (2018), B.2.2: 6.2 m unobstructed for two buses at 20 mph or less. In Rua Ricardo

@@ -1,9 +1,8 @@
 input,evppi
-(all),5464.1267852577075
-offpeak_s,599.6507064621546
-excess_s,258.07696339287577
-attribution_C,132.29330848574682
-spare_capacity,38.630389939644374
+(all),3493.5091532691076
+offpeak_s,121.48245382047753
+attribution_C,3.637978807091713e-12
+car_value,3.637978807091713e-12
 journey_min,3.637978807091713e-12
 unexpected_share,3.637978807091713e-12
 attribution_B,0.0
@@ -13,7 +12,6 @@ attribution_H,0.0
 bus_cost_h,0.0
 calming_cost,0.0
 car_occupancy,0.0
-car_value,0.0
 carpark_walk,0.0
 cars_behind,0.0
 compliance_hours,0.0
@@ -23,6 +21,7 @@ diversion_car,0.0
 downstream,0.0
 elasticity_ivt,0.0
 enforcement_year,0.0
+excess_s,0.0
 external_cost_pkm,0.0
 income_growth,0.0
 lateness_weight,0.0
@@ -30,10 +29,12 @@ load_offpeak,0.0
 load_peak,0.0
 marking_cost_m,0.0
 occupancy,0.0
+other_vehicle_share,0.0
 room_nearby,0.0
 share_E,0.0
 share_G,0.0
 sign_cost,0.0
+spare_capacity,0.0
 stall_m,0.0
 time_weight,0.0
 transfer_share,0.0
