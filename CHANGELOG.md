@@ -7,6 +7,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Vehicles: a large van (Mercedes-Benz Sprinter, Ford Transit), a large SUV (Volvo XC90) and a truck at the legal
+  maximum width, with the manufacturers' widths; Lisbon's width budget pairs them with buses and with each other. In
+  Rua Ricardo Jorge, a bus cannot pass a large van (−0.34 to −0.47 m) or a truck (−0.95 m) either, and two large
+  vans touch mirrors (−0.05 m); with one side's parking removed, every pair passes.
 - **Reroutes** (`[[appraisal.reroutes]]`, `mobilidados.reroute`): taking a line and direction off the street instead
   of parking. The detour round the street on the area's street network (preferring streets with buses today), the
   stops left behind, the share of meetings removed, and the value in both layers before the cost to those who lose

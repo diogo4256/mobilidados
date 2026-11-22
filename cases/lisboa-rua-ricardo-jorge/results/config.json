@@ -868,6 +868,38 @@
       [
         "car_typical",
         "car_typical"
+      ],
+      [
+        "carris_man_city_gold",
+        "suv_large"
+      ],
+      [
+        "carris_man_city_gold",
+        "van_sprinter"
+      ],
+      [
+        "carris_man_city_gold",
+        "van_transit"
+      ],
+      [
+        "carris_man_city_gold",
+        "truck_eu_max"
+      ],
+      [
+        "van_transit",
+        "car_typical"
+      ],
+      [
+        "van_transit",
+        "van_transit"
+      ],
+      [
+        "suv_large",
+        "suv_large"
+      ],
+      [
+        "truck_eu_max",
+        "car_typical"
       ]
     ]
   },

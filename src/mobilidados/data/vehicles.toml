@@ -47,3 +47,66 @@ source_mirrors = "Assumption: typical width with mirrors unfolded; validate in t
 label = "Ligeiro típico"
 source_body = "pressuposto: largura típica de um ligeiro europeu; a validar no local"
 source_mirrors = "pressuposto: largura típica com espelhos abertos; a validar no local"
+
+[vehicles.van_sprinter]
+label = "Large van (Mercedes-Benz Sprinter)"
+category = "van"
+width_body_m = 2.02
+grade_body = "D"
+source_body = "Mercedes-Benz Sprinter (2018-), exterior width excluding mirrors, as listed by Parkers (parkers.co.uk) and auto-data.net"
+width_mirrors_m = 2.345
+grade_mirrors = "D"
+source_mirrors = "Mercedes-Benz Sprinter (2018-), exterior width including door mirrors, as listed by Parkers (parkers.co.uk)"
+mirrors_clear_cars = true  # assumption (P): mirrors mounted high, above a car's
+
+[vehicles.van_sprinter.translations.pt]
+label = "Furgão grande (Mercedes-Benz Sprinter)"
+source_body = "Mercedes-Benz Sprinter (2018-), largura sem espelhos, segundo a Parkers (parkers.co.uk) e a auto-data.net"
+source_mirrors = "Mercedes-Benz Sprinter (2018-), largura com espelhos, segundo a Parkers (parkers.co.uk)"
+
+[vehicles.van_transit]
+label = "Large van (Ford Transit)"
+category = "van"
+width_body_m = 2.059
+grade_body = "D"
+source_body = "Ford UK specification for the Transit van: overall width without mirrors (single rear wheels)"
+width_mirrors_m = 2.474
+grade_mirrors = "D"
+source_mirrors = "Ford UK specification for the Transit van: overall width with mirrors"
+mirrors_clear_cars = true  # assumption (P): mirrors mounted high, above a car's
+
+[vehicles.van_transit.translations.pt]
+label = "Furgão grande (Ford Transit)"
+source_body = "especificação da Ford (Reino Unido) da Transit: largura sem espelhos"
+source_mirrors = "especificação da Ford (Reino Unido) da Transit: largura com espelhos"
+
+[vehicles.suv_large]
+label = "Large SUV (Volvo XC90)"
+category = "car"
+width_body_m = 1.958
+grade_body = "D"
+source_body = "Volvo XC90 dimensions (volvocars.com): width without mirrors, 1923-1958 mm by wheel size; the wider is used"
+width_mirrors_m = 2.14
+grade_mirrors = "D"
+source_mirrors = "Volvo XC90 dimensions (volvocars.com): width with mirrors extended"
+
+[vehicles.suv_large.translations.pt]
+label = "SUV grande (Volvo XC90)"
+source_body = "dimensões do Volvo XC90 (volvocars.com): largura sem espelhos, 1923 a 1958 mm conforme as jantes; usa-se a maior"
+source_mirrors = "dimensões do Volvo XC90 (volvocars.com): largura com espelhos abertos"
+
+[vehicles.truck_eu_max]
+label = "Truck at the EU/PT legal maximum width (refuse collection, removals, fire engine)"
+category = "truck"
+width_body_m = 2.55
+grade_body = "D"
+source_body = "Directive 96/53/EC Annex I 1.2; PT: Decreto-Lei 132/2017, art. 3.º n.º 3 a)"
+width_mirrors_m = 2.95
+grade_mirrors = "P"
+source_mirrors = "Assumption: +0.40 m for mirrors, as for the buses"
+mirrors_clear_cars = true  # assumption (P): mirrors mounted high, above a car's
+
+[vehicles.truck_eu_max.translations.pt]
+label = "Pesado à largura máxima legal (recolha de lixo, mudanças, bombeiros)"
+source_body = "Diretiva 96/53/CE, anexo I, 1.2; Decreto-Lei 132/2017, art. 3.º, n.º 3, al. a)"
+source_mirrors = "pressuposto: +0,40 m para os espelhos, como nos autocarros"
