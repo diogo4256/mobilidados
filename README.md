@@ -164,11 +164,11 @@ Uma proposta ou um relatório escrito à mão a partir das tabelas desatualiza-s
 pode sobreviver à condição que descrevia. `mobilidados check-doc CASO documento.md --lang pt [--other document.md]`
 lê o documento exportado em markdown, sem IA, e:
 
-- confere as afirmações-chave fixadas no `doc_check.toml` do caso, cada uma presa à célula das tabelas de resultados
+* confere as afirmações-chave fixadas no `doc_check.toml` do caso, cada uma presa à célula das tabelas de resultados
   (ou a uma conta com células) que cita, à precisão impressa: uma afirmação com número errado, ou que deixou de
   estar no texto, faz o comando falhar;
-- lista os números que nenhuma tabela citada, entrada ou valor configurado explica;
-- com `--other`, lista os números que só uma das versões (português e inglês) imprime.
+* lista os números que nenhuma tabela citada, entrada ou valor configurado explica;
+* com `--other`, lista os números que só uma das versões (português e inglês) imprime.
 
 Os gráficos têm os seus próprios números: confira-os com as tabelas da mesma forma antes de publicar.
 
