@@ -7,6 +7,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Switching values and the tornado moved the peak excess with the off-peak excess held fixed, although the case
+  derives the off-peak excess from it (`offpeak_from_copresence`). The derived input now moves in proportion
+  (`appraisal.moved`). In Rua Ricardo Jorge, option C breaks even at a peak excess of 7.8 s, not 2.3 s, and at the low
+  end of the measured interval (5.6 s) its NPV is about −€8,300, not +€7,000.
 - The cautious and favourable scenarios now read each input's worse (better) end at the combination found, not only
   with the others central, until none changes. An input whose direction depends on the sign of the NPV, such as
   income growth, was put at the wrong end: in Rua Ricardo Jorge, the cautious scenario of option C goes from about
@@ -14,6 +18,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`mobilidados check-doc`** (`mobilidados.doccheck`, a case's `doc_check.toml`): checks a document exported as
+  markdown against the case's results, without AI. Its key statements are pinned to the result cells they quote (or
+  arithmetic on them) and compared at the precision printed; a wrong or vanished statement fails the command. It also
+  lists the numbers no quoted table, input or configured value explains, and the numbers only one language version
+  prints. For Rua Ricardo Jorge, 125 statements of the decision paper and 255 of the appraisal are pinned.
+- Results: `pv_parking_private` (what those who lose a place bear), `pv_carpark_revenue` (the part that is a
+  transfer) and `calming`; the distribution gives cruising for a space its own row (`cruising`), apart from the
+  external benefits of the car trips diverted.
 - An extended mechanism, `cruise_km_day`: the external costs of the kilometres driven by displaced drivers who look
   for a space nearby. In Rua Ricardo Jorge (0.5 km a day, 0–1.3) it takes about €1,000 off option C's NPV.
 - **Crash equivalents** (`appraisal_safety.csv`, `[appraisal.safety_references]`): how many crashes of a given cost,

@@ -158,6 +158,20 @@ CASO PASTA` copia para uma pasta os dados que a licença deixa redistribuir, par
 Zenodo); `mobilidados fetch CASO --from-dir PASTA` volta a pô-los no sítio, só se forem exatamente os ficheiros
 registados.
 
+### Conferir um documento escrito com os resultados
+
+Uma proposta ou um relatório escrito à mão a partir das tabelas desatualiza-se quando o modelo muda, e uma frase
+pode sobreviver à condição que descrevia. `mobilidados check-doc CASO documento.md --lang pt [--other document.md]`
+lê o documento exportado em markdown, sem IA, e:
+
+- confere as afirmações-chave fixadas no `doc_check.toml` do caso, cada uma presa à célula das tabelas de resultados
+  (ou a uma conta com células) que cita, à precisão impressa: uma afirmação com número errado, ou que deixou de
+  estar no texto, faz o comando falhar;
+- lista os números que nenhuma tabela citada, entrada ou valor configurado explica;
+- com `--other`, lista os números que só uma das versões (português e inglês) imprime.
+
+Os gráficos têm os seus próprios números: confira-os com as tabelas da mesma forma antes de publicar.
+
 ## Ferramentas com IA (opcionais)
 
 `pip install 'mobilidados[agents]'` acrescenta as ferramentas da tabela abaixo, que usam o Claude. Em todas, **o

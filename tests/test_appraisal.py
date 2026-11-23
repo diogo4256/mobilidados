@@ -372,6 +372,21 @@ def test_drivers_cruising_for_a_space_nearby_cost_the_external_cost_of_their_kil
     assert core["external_value"] == pytest.approx(0.0)  # a mechanism of the extended layer only
 
 
+def test_a_derived_off_peak_delay_moves_with_the_peak_delay_in_switching_values_and_the_tornado():
+    cfg = config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 60.0)}).model_copy(update={"offpeak_from_copresence": True})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0, offpeak_ratio=0.2)
+    c = appraisal.central(cfg, m)
+    q = appraisal.layer(c, "extended")
+    assert q["offpeak_s"] == pytest.approx(2.0)  # 10 s at peak × 0.2
+    half = appraisal.moved(cfg, m, q, "excess_s", 5.0)
+    assert half == {"excess_s": 5.0, "offpeak_s": pytest.approx(1.0)}  # half the peak excess, half the off-peak
+    assert appraisal.moved(cfg, m, q, "vot", 3.0) == {"vot": 3.0}
+    tor = appraisal.appraise(cfg, m)["appraisal_tornado"].set_index("input")
+    lo = tor.loc["excess_s", "low"]
+    expect = appraisal.evaluate(cfg.options[0], q | {"excess_s": lo, "offpeak_s": 2.0 * lo / 10.0}, m, cfg)["npv"]
+    assert tor.loc["excess_s", "npv_at_low"] == pytest.approx(expect)
+
+
 def test_crash_equivalents_are_the_crashes_over_the_period_worth_the_npv():
     cfg = config(parameters={"income_growth": parameter(0.0)})
     cfg = cfg.model_copy(update={"safety_references": {"slight": Parameter(**parameter(50000.0) | {"label": "crash", "source": "x"})}})

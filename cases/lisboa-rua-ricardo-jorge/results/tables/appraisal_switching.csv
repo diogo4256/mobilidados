@@ -75,7 +75,7 @@ core,H,share_G,0.45,0.17280550622090834,False
 core,H,compliance_hours,0.8,,False
 core,H,enforcement_year,1000.0,,False
 core,H,income_growth,0.01,,False
-extended,B,excess_s,14.5,12.827235726784224,True
+extended,B,excess_s,14.5,13.581499110502492,True
 extended,B,attribution_B,0.717391304347826,0.6653655504753484,True
 extended,B,load_peak,20.0,17.347866706812432,True
 extended,B,downstream,1.0,0.9220633459227061,False
@@ -109,7 +109,7 @@ extended,B,trip_km,3.7,,False
 extended,B,external_cost_pkm,0.198,,False
 extended,B,walk_cost,130.0,223.23961912792038,True
 extended,B,income_growth,0.01,,False
-extended,C,excess_s,14.5,2.2560521295524207,False
+extended,C,excess_s,14.5,7.777091640889733,True
 extended,C,attribution_C,0.5869565217391304,0.2640079677853775,False
 extended,C,load_peak,20.0,0.5883481926073701,False
 extended,C,downstream,1.0,0.42975618568686447,False
@@ -143,7 +143,7 @@ extended,C,trip_km,3.7,,False
 extended,C,external_cost_pkm,0.198,,False
 extended,C,walk_cost,130.0,1388.957690078612,False
 extended,C,income_growth,0.01,,False
-extended,E,excess_s,14.5,10.473588878927089,True
+extended,E,excess_s,14.5,11.952867670066997,True
 extended,E,attribution_E,0.717391304347826,0.5717140971445331,True
 extended,E,load_peak,20.0,13.616074301162225,True
 extended,E,downstream,1.0,0.7853406797561551,False
@@ -179,7 +179,7 @@ extended,E,trip_km,3.7,,False
 extended,E,external_cost_pkm,0.198,,False
 extended,E,walk_cost,130.0,538.0792888014739,False
 extended,E,income_growth,0.01,,False
-extended,G,excess_s,14.5,15.692637450365815,True
+extended,G,excess_s,14.5,15.584311321308611,True
 extended,G,attribution_G,0.717391304347826,0.7806193845101805,True
 extended,G,load_peak,20.0,21.892282284015664,True
 extended,G,downstream,1.0,1.0894773667255158,True
@@ -215,7 +215,7 @@ extended,G,trip_km,3.7,14.475321612993877,False
 extended,G,external_cost_pkm,0.198,,False
 extended,G,walk_cost,130.0,,False
 extended,G,income_growth,0.01,0.04737729318316852,False
-extended,H,excess_s,14.5,11.444327279276163,True
+extended,H,excess_s,14.5,11.721890968534478,True
 extended,H,attribution_H,0.5869565217391304,0.4495692462626356,True
 extended,H,load_peak,20.0,15.15352898129327,True
 extended,H,downstream,1.0,0.7709062477906305,False

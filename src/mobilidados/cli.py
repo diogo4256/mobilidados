@@ -32,6 +32,30 @@ def _pages(text: str) -> list[int]:
     return pages
 
 
+def _check_doc(a: argparse.Namespace) -> int:
+    from . import doccheck
+
+    root = Path(a.case).resolve()
+    configs = [root / "case.toml"]
+    while extends := doccheck.tomllib.loads(configs[-1].read_text(encoding="utf-8")).get("extends"):  # the city profiles it builds on
+        configs.append((configs[-1].parent / extends).resolve())
+    data = Path(__file__).parent / "data"
+    configs += [data / "vehicles.toml", data / "standards.toml"]
+    spec = root / "doc_check.toml"
+    text = a.doc.read_text(encoding="utf-8")
+    rep = doccheck.check(text, a.lang, root / "results", configs, spec)
+    only = None
+    if a.other:
+        other_lang = "en" if a.lang == "pt" else "pt"
+        _, ignore_values, _ = doccheck.load_spec(spec)
+        only, _ = doccheck.compare_languages(text, a.lang, a.other.read_text(encoding="utf-8"), other_lang, ignore_values)
+    out = doccheck.render(rep, a.lang, only)
+    print(out, end="")
+    if a.out:
+        a.out.write_text(out, encoding="utf-8")
+    return 1 if rep.failed else 0
+
+
 def parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="mobilidados", description=__doc__)
     ap.add_argument("-v", "--verbose", action="store_true", help="show debug messages")
@@ -60,6 +84,13 @@ def parser() -> argparse.ArgumentParser:
     p = sub.add_parser("lint", help="flag generalisations, hedges and quotes in a draft letter (no AI)")
     p.add_argument("draft", type=Path)
     p.add_argument("--lang", default="pt", choices=["pt", "en"], help="the draft's language (default: pt)")
+
+    p = sub.add_parser("check-doc", help="check a document's claims and numbers against the case's results (no AI)")
+    p.add_argument("case")
+    p.add_argument("doc", type=Path, help="the document, exported as markdown")
+    p.add_argument("--lang", default="pt", choices=["pt", "en"], help="the document's language (default: pt)")
+    p.add_argument("--other", type=Path, help="the same document in the other language, to compare their numbers")
+    p.add_argument("--out", type=Path, help="write the report here as well")
 
     p = sub.add_parser("check-claims", help="AI fact-check of a draft against the case ledger and source texts")
     p.add_argument("case")
@@ -149,6 +180,8 @@ def _dispatch(a: argparse.Namespace) -> int:
             print(f"{i.line}:{i.col}  {i.rule:14s} {i.message}\n      {i.excerpt}")
         print(f"{len(issues)} issue(s)")
         return 1 if issues else 0
+    elif a.cmd == "check-doc":
+        return _check_doc(a)
     elif a.cmd == "check-claims":
         return int(_agents("claim_checker").main(Case.load(a.case), a.draft, a.corpus, a.out))
     elif a.cmd == "extract-standard":

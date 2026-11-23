@@ -369,6 +369,7 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "traffic_value": traffic_value,
         "new_rider_value": new_rider_value,
         "external_value": external_value,
+        "cruising_year": cruising,
         "damage_value": damage_value,
         "benefit_year": benefit,
         "places": places,
@@ -386,6 +387,9 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "pv_external": pv_external,
         "pv_damage": pv_damage,
         "pv_parking": pv_parking,
+        "pv_parking_private": parking_private * growing("parking"),  # what those who lose a place bear
+        "pv_carpark_revenue": carpark_revenue * growing("parking"),  # the part of it that is a transfer to car parks
+        "calming": p["calming_cost"],
         "pv_works": pv_works,
         "pv_enforcement": pv_enforcement,
         "pv_public": pv_public,
@@ -506,7 +510,8 @@ def distribution(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFra
             {"option": o.id, "group": "operator", "people": None, "quantity": e["bus_hours"], "unit": "bus-h", "value": e["operator_value"]},
             {"option": o.id, "group": "drivers_behind", "people": None, "quantity": e["car_hours"], "unit": "h", "value": e["traffic_value"]},
             {"option": o.id, "group": "new_passengers", "people": e["new_riders"], "quantity": None, "unit": "", "value": e["new_rider_value"]},
-            {"option": o.id, "group": "society", "people": None, "quantity": None, "unit": "", "value": e["external_value"]},
+            {"option": o.id, "group": "society", "people": None, "quantity": None, "unit": "", "value": e["external_value"] + e["cruising_year"]},
+            {"option": o.id, "group": "cruising", "people": None, "quantity": None, "unit": "", "value": -e["cruising_year"]},
             {"option": o.id, "group": "vehicle_owners", "people": None, "quantity": None, "unit": "", "value": e["damage_value"]},
             {"option": o.id, "group": "parkers", "people": e["places"], "quantity": e["places"], "unit": "places", "value": -e["parking_private_year"]},
             {"option": o.id, "group": "car_parks", "people": None, "quantity": None, "unit": "", "value": e["carpark_revenue_year"]},
@@ -657,6 +662,16 @@ def offpeak_thresholds(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.D
     return pd.DataFrame(rows)
 
 
+def moved(cfg: Appraisal, m: Measured, q: dict[str, Any], key: str, x: float) -> dict[str, Any]:
+    """The inputs that change when ``key`` is set to ``x``, one at a time: ``key`` itself, and an input derived from it.
+    Where the off-peak excess is derived from the peak excess (``offpeak_from_copresence``), it moves in proportion,
+    so a switching value or a tornado bar for the peak excess does not hold a derived value fixed."""
+    out: dict[str, Any] = {key: x}
+    if key == "excess_s" and cfg.offpeak_from_copresence and m.offpeak_ratio is not None and q.get("offpeak_s") and m.excess_s[1]:
+        out["offpeak_s"] = q["offpeak_s"] * x / m.excess_s[1]
+    return out
+
+
 def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
     """Every table of the appraisal (see ``docs/appraisal.md``)."""
     c, rg = central(cfg, m), ranges(cfg, m)
@@ -679,7 +694,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
                 lo, ce, hi = rg[k]
 
                 def npv_at(x: float, key: str = k, opt: Option = o, base: dict[str, Any] = q) -> float:
-                    return float(evaluate(opt, base | {key: x}, m, cfg)["npv"])
+                    return float(evaluate(opt, base | moved(cfg, m, base, key, x), m, cfg)["npv"])
 
                 sv = switching_value(npv_at, *search_domain(lo, hi))
                 switching.append({"layer": name, "option": o.id, "input": k, "central": ce, "switching_value": sv,

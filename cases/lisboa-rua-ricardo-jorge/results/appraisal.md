@@ -248,21 +248,21 @@ Para cada opção, o valor de cada entrada que poria o VAL a zero, mantendo as o
 | núcleo | H | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 213,36 | ✗ |
 | núcleo | H | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,17 | ✗ |
 | núcleo | H | Fiscalização a mais de uma proibição por horas | 1 000,00 | — | ✗ |
-| alargada | B | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 12,83 | ✓ |
+| alargada | B | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 13,58 | ✓ |
 | alargada | B | Opção B: parte do excesso que pode remover | 0,72 | 0,67 | ✓ |
 | alargada | B | Passageiros a bordo, na ponta da tarde | 20,00 | 17,35 | ✓ |
 | alargada | B | Ocupação dos lugares retirados | 0,95 | — | ✗ |
 | alargada | B | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 635,52 | ✓ |
 | alargada | B | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 2,15 | ✓ |
 | alargada | B | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,20 | ✓ |
-| alargada | C | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 2,26 | ✗ |
+| alargada | C | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 7,78 | ✓ |
 | alargada | C | Opção C: parte do excesso que pode remover | 0,59 | 0,26 | ✗ |
 | alargada | C | Passageiros a bordo, na ponta da tarde | 20,00 | 0,59 | ✗ |
 | alargada | C | Ocupação dos lugares retirados | 0,95 | — | ✗ |
 | alargada | C | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 1 634,71 | ✓ |
 | alargada | C | Excesso por passagem fora da ponta (todos os dias) | 2,50 | — | ✗ |
 | alargada | C | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | — | ✗ |
-| alargada | E | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 10,47 | ✓ |
+| alargada | E | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 11,95 | ✓ |
 | alargada | E | Opção E: parte do excesso que pode remover | 0,72 | 0,57 | ✓ |
 | alargada | E | Passageiros a bordo, na ponta da tarde | 20,00 | 13,62 | ✓ |
 | alargada | E | Ocupação dos lugares retirados | 0,95 | — | ✗ |
@@ -271,7 +271,7 @@ Para cada opção, o valor de cada entrada que poria o VAL a zero, mantendo as o
 | alargada | E | Fiscalização a mais de uma proibição por horas | 1 000,00 | 2 150,61 | ✓ |
 | alargada | E | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 1,30 | ✓ |
 | alargada | E | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | — | ✗ |
-| alargada | G | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 15,69 | ✓ |
+| alargada | G | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 15,58 | ✓ |
 | alargada | G | Opção G: parte do excesso que pode remover | 0,72 | 0,78 | ✓ |
 | alargada | G | Passageiros a bordo, na ponta da tarde | 20,00 | 21,89 | ✓ |
 | alargada | G | Ocupação dos lugares retirados | 0,95 | 0,84 | ✗ |
@@ -280,7 +280,7 @@ Para cada opção, o valor de cada entrada que poria o VAL a zero, mantendo as o
 | alargada | G | Fiscalização a mais de uma proibição por horas | 1 000,00 | 658,70 | ✓ |
 | alargada | G | Excesso por passagem fora da ponta (todos os dias) | 2,50 | 4,56 | ✓ |
 | alargada | G | Parte dos carros deslocados que encontra lugar a menos de 150 m | 0,30 | 0,45 | ✓ |
-| alargada | H | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 11,44 | ✓ |
+| alargada | H | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 11,72 | ✓ |
 | alargada | H | Opção H: parte do excesso que pode remover | 0,59 | 0,45 | ✓ |
 | alargada | H | Passageiros a bordo, na ponta da tarde | 20,00 | 15,15 | ✓ |
 | alargada | H | Ocupação dos lugares retirados | 0,95 | — | ✗ |
@@ -295,8 +295,8 @@ Entradas que mais mudam o VAL da opção C na camada alargada (do mínimo ao má
 | entrada | VAL no mínimo | VAL no máximo |
 | --- | ---: | ---: |
 | Excesso por passagem fora da ponta (todos os dias) | 710 € | 80 900 € |
+| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | −8 300 € | 61 800 € |
 | Preço anual de estacionar noutro sítio, para quem perde o lugar | 32 700 € | −11 100 € |
-| Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 7 000 € | 45 600 € |
 | Opção C: parte do excesso que pode remover | 1 500 € | 37 000 € |
 | Valor do tempo de um passageiro | 9 300 € | 39 400 € |
 | Parte do preço do parque que é uma transferência: o parque tem lugares vagos | 12 500 € | 39 000 € |
@@ -336,7 +336,8 @@ Em euros por ano; positivo é ganho, negativo é perda.
 | Carris: horas de autocarro | 1 100 € | 930 € | 820 € | 500 € | 420 € |
 | Quem segue de carro atrás de um autocarro | 200 € | 170 € | 150 € | 90 € | 80 € |
 | Novos passageiros | 0 € | 0 € | 0 € | 10 € | 0 € |
-| Toda a gente: custos externos das viagens que deixam o carro | −70 € | 50 € | 20 € | 0 € | 40 € |
+| Toda a gente: custos externos das viagens que deixam o carro | 200 € | 170 € | 160 € | 110 € | 100 € |
+| Toda a gente: custos externos das voltas à procura de lugar | −280 € | −130 € | −140 € | −110 € | −50 € |
 | Carris e donos de carros: danos evitados | 390 € | 330 € | 230 € | 70 € | 60 € |
 | Quem estaciona na rua | −10 300 € | −4 700 € | −5 000 € | −4 100 € | −1 900 € |
 | Parques de estacionamento: avenças pagas por quem é deslocado (transferência) | 3 600 € | 1 600 € | 1 700 € | 1 400 € | 650 € |
