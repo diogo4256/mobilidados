@@ -84,3 +84,43 @@ def test_numbers_no_table_explains_are_listed_and_languages_are_compared(tmp_pat
     only_pt, only_en = doccheck.compare_languages("VAL −22 200 €, 86%", "pt", "NPV −€22,200, 87%", "en", [])
     assert [p.raw for p in only_pt] == ["86"]
     assert [p.raw for p in only_en] == ["87"]
+
+
+def test_a_claim_whose_cell_is_gone_is_reported_not_a_crash(tmp_path: Path, results: Path):
+    s = spec(
+        tmp_path,
+        """
+[[claims]]
+id = "gone"
+value = "{appraisal_results.csv:npv[layer=core,option=Z]}"
+pt = 'VAL de ([−\\d ]+) €'
+
+[[claims]]
+id = "npv"
+value = "{appraisal_results.csv:npv[layer=extended,option=C]}"
+pt = 'é positivo: (\\+[\\d ]+) €'
+""",
+    )
+    rep = doccheck.check("VAL de −22 200 €; é positivo: +25 800 €.", "pt", results, [], s)
+    assert [(c.id, status) for c, status, _, _ in rep.failed] == [("gone", "unresolved")]  # and the other claim is still checked
+    assert "selects 0 rows" in doccheck.render(rep, "pt")
+
+
+def test_an_empty_cell_is_reported_as_empty(tmp_path: Path, results: Path):
+    pd.DataFrame({"option": ["C"], "npv": [float("nan")]}).to_csv(results / "tables" / "empty.csv", index=False)
+    with pytest.raises(ValueError, match="empty or not finite"):
+        doccheck.resolve("{empty.csv:npv[option=C]}", results)
+
+
+def test_a_pattern_with_fewer_groups_than_values_fails(tmp_path: Path, results: Path):
+    s = spec(
+        tmp_path,
+        """
+[[claims]]
+id = "two"
+value = ["{appraisal_results.csv:npv[layer=extended,option=C]}", "{appraisal_results.csv:bcr[layer=extended,option=C]}"]
+pt = 'é positivo: (\\+[\\d ]+) €, rácio [\\d,]+'
+""",
+    )
+    rep = doccheck.check("é positivo: +25 800 €, rácio 9,99", "pt", results, [], s)
+    assert [(c.id, status) for c, status, _, _ in rep.failed] == [("two", "bad_pattern")]

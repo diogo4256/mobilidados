@@ -131,7 +131,12 @@ def resolve(expr: str, results: Path) -> float:
             rows = rows[col.astype(str) == v]
         if len(rows) != 1:
             raise ValueError(f"{m.group(0)} selects {len(rows)} rows, not one")
-        return repr(float(rows[column].iloc[0]))
+        if column not in rows:
+            raise ValueError(f"{m.group(0)}: {table} has no column {column!r}")
+        v = float(rows[column].iloc[0])
+        if not math.isfinite(v):
+            raise ValueError(f"{m.group(0)} is empty or not finite ({v})")
+        return repr(v)
 
     arithmetic = _REF.sub(cell, expr)
     if not re.fullmatch(r"[\d.eE+\-*/() ]+", arithmetic):
@@ -158,6 +163,7 @@ class Claim:
 class Report:
     claims: list[tuple[Claim, str, float | None, Printed | None]] = field(default_factory=list)  # (claim, status, expected, found)
     orphans: list[Printed] = field(default_factory=list)
+    why: dict[str, str] = field(default_factory=dict)  # claim id → why it could not be checked (unresolved, bad_pattern)
 
     @property
     def failed(self) -> list[tuple[Claim, str, float | None, Printed | None]]:
@@ -183,7 +189,12 @@ def check(text: str, lang: str, results: Path, configs: list[Path], spec: Path) 
         pat = c.patterns.get(lang)
         if not pat:
             continue
-        expected = [resolve(v, results) for v in c.values]
+        try:
+            expected = [resolve(v, results) for v in c.values]
+        except (ValueError, KeyError, FileNotFoundError, SyntaxError, ZeroDivisionError) as e:  # the drift to report
+            rep.claims.append((c, "unresolved", None, None))
+            rep.why[c.id] = str(e)
+            continue
         hits = list(re.finditer(pat, text, re.MULTILINE))
         if not hits:
             rep.claims.append((c, "missing", expected[0], None))
@@ -193,6 +204,10 @@ def check(text: str, lang: str, results: Path, configs: list[Path], spec: Path) 
             groups = (
                 [g for g in m.groups() if g is not None] if len(expected) == 1 else list(m.groups())
             )  # alternatives: the one that matched
+            if len(groups) < len(expected):  # a value with no group to compare it with would be skipped unseen
+                rep.claims.append((c, "bad_pattern", expected[0], None))
+                rep.why[c.id] = f"the pattern captures {len(groups)} number(s) for {len(expected)} value(s)"
+                continue
             for want, grp in zip(expected, groups, strict=False):
                 found = numbers(grp or "", lang)
                 if not found:
@@ -232,8 +247,9 @@ def compare_languages(a: str, lang_a: str, b: str, lang_b: str, ignore_values: l
 def render(rep: Report, lang: str, only_here: list[Printed] | None = None) -> str:
     lines = [f"# check-doc ({lang})", "", f"claims: {sum(1 for c in rep.claims if c[1] == 'ok')} ok, {len(rep.failed)} not"]
     for c, status, expected, p in rep.failed:
-        got = f"prints {p.raw!r} (line {p.line})" if p else "not found"
-        lines.append(f"- {status.upper()} {c.id}: model {expected:.4g}; {got}" + (f" — {c.note}" if c.note else ""))
+        got = f"prints {p.raw!r} (line {p.line})" if p else rep.why.get(c.id, "not found")
+        model = f"model {expected:.4g}" if expected is not None else "model value unknown"
+        lines.append(f"- {status.upper()} {c.id}: {model}; {got}" + (f" — {c.note}" if c.note else ""))
     lines += ["", f"numbers no result or input explains: {len(rep.orphans)}"]
     lines += [f"- line {p.line}: {p.raw!r} … {p.context}" for p in rep.orphans]
     if only_here is not None:

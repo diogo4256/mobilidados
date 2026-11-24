@@ -51,6 +51,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -217,11 +218,14 @@ def offpeak_ratio(copresence: pd.DataFrame, by_part: pd.DataFrame, significance:
     if not met:
         return None
 
-    def excess(t: pd.DataFrame) -> float:
-        return float(sum(t.with_oncoming_bus[p] - t.chance[p] * t.positions[p] for p in met) / sum(t.positions[p] for p in met))
+    def excess(t: pd.DataFrame) -> float | None:
+        n = float(sum(t.positions[p] for p in met))
+        return float(sum(t.with_oncoming_bus[p] - t.chance[p] * t.positions[p] for p in met)) / n if n > 0 else None
 
-    e_peak = excess(peak)
-    return None if e_peak <= 0 else min(max(excess(off) / e_peak, 0.0), 1.0)
+    e_peak, e_off = excess(peak), excess(off)
+    if e_peak is None or e_off is None or not (math.isfinite(e_peak) and math.isfinite(e_off)) or e_peak <= 0:
+        return None  # no positions off-peak where they meet at peak: nothing to scale by
+    return min(max(e_off / e_peak, 0.0), 1.0)
 
 
 def measured(tables: dict[str, pd.DataFrame], cfg: Appraisal, block_metres: dict[str, float], peak_hours: list[int], year: int,
@@ -293,6 +297,23 @@ def _ratio(a: Any, b: Any) -> Any:
     return np.where(b > 0, np.asarray(a, dtype=float) / np.where(b > 0, b, 1.0), 0.0)
 
 
+def _div(a: Any, b: Any) -> Any:
+    """a / b, with ±inf (or NaN for 0/0) where b is 0 instead of an error: an option that costs nothing still has a
+    net present value."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.asarray(a, dtype=float) / np.asarray(b, dtype=float)
+
+
+def rate_pct(r: float) -> float:
+    """A discount rate as a percentage, to a tenth (0.035 → 3.5)."""
+    return round(100 * r, 1)
+
+
+def rate_column(r: float) -> str:
+    """The results column of the net present value at the tested rate ``r`` (``npv_at_3pct``, ``npv_at_3.5pct``)."""
+    return f"npv_at_{rate_pct(r):g}pct"
+
+
 def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: float | None = None) -> dict[str, Any]:
     """One option's yearly flows, present values, net present value and benefit-cost ratio for inputs ``p`` (pass them
     through ``layer``). Every input may be a number or an array of draws: the arithmetic is the same."""
@@ -311,7 +332,8 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     # (extended) part of the excess at the junctions next to the widened sections where buses are not held by oncoming
     # buses: buses held by oncoming cars, vans and trucks, which the widening also lets pass (``other_vehicle_share``)
     _, ce, hi = m.attribution.get(o.id, (0.0, 0.0, 0.0))
-    share_removed = np.minimum(share_removed + p.get("other_vehicle_share", 0.0) * max(hi - ce, 0.0), max(hi, ce))
+    # (the increment stops at the high bound; a share already above it, as a switching-value search tries, stays as it is)
+    share_removed = share_removed + np.minimum(p.get("other_vehicle_share", 0.0) * max(hi - ce, 0.0), np.maximum(hi - share_removed, 0.0))
     peak_bh = p["excess_s"] * share_removed * peak_y / 3600 * comply
     other_bh = p["offpeak_s"] * share_removed * other_y * m.offpeak_scale.get(o.id, 1.0) / 3600 * comply
     bus_hours = peak_bh + other_bh
@@ -394,9 +416,9 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "pv_enforcement": pv_enforcement,
         "pv_public": pv_public,
         "npv": pv_benefit - pv_cost,
-        "bcr": pv_benefit / pv_cost,
+        "bcr": _div(pv_benefit, pv_cost),
         # the DfT's ratio: the parking lost is a disbenefit to its users, the cost is what the public budget pays
-        "bcr_budget": (pv_benefit - pv_parking) / pv_public,
+        "bcr_budget": _div(pv_benefit - pv_parking, pv_public),
     }
     return {k: _num(v) for k, v in flows.items()}
 
@@ -504,7 +526,7 @@ def distribution(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFra
     rows = []
     for o in cfg.options:
         e = evaluate(o, q, m, cfg)
-        works_year = e["works"] / annuity
+        works_year = e["pv_works"] / annuity  # the works and their repainting, as a yearly equivalent
         rows += [
             {"option": o.id, "group": "passengers", "people": e["riders"], "quantity": e["passenger_hours"], "unit": "h", "value": e["time_value"]},
             {"option": o.id, "group": "operator", "people": None, "quantity": e["bus_hours"], "unit": "bus-h", "value": e["operator_value"]},
@@ -688,7 +710,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
                  "passages_other": m.passages[o.id][1], "attribution_low": lo_a, "attribution": ce_a, "attribution_high": hi_a}
                 | e
                 | {"vfm": vfm_category(e["bcr_budget"], e["npv"])}
-                | {f"npv_at_{int(r * 100)}pct": evaluate(o, q, m, cfg, rate=r)["npv"] for r in cfg.discount_rates_tested}
+                | {rate_column(r): evaluate(o, q, m, cfg, rate=r)["npv"] for r in cfg.discount_rates_tested}
             )  # fmt: skip
             for k in option_inputs(o, cfg, name):
                 lo, ce, hi = rg[k]

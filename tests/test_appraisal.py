@@ -604,3 +604,42 @@ def test_moving_one_whole_direction_removes_every_meeting_and_adds_its_detour():
     row = t.loc["extended"]
     if row.npv_before_stop_access > 0:
         assert row.breakeven_boardings_per_day > 0
+
+
+def test_a_switching_value_above_the_high_bound_of_the_attribution_is_found():
+    # the search tries shares beyond the measured high bound: the net present value must keep moving there
+    cfg, m = config(parameters={"car_value": parameter(50.0, 25.0, 100.0)}), measured(attribution={"A": (0.1, 0.2, 0.3)})
+    c = appraisal.layer(appraisal.central(cfg, m), "core")
+    o = cfg.options[0]
+
+    def npv_at(x: float) -> float:
+        return float(appraisal.evaluate(o, c | {"attribution_A": x}, m, cfg)["npv"])
+
+    assert npv_at(0.9) > npv_at(0.5)
+    sv = appraisal.switching_value(npv_at, *appraisal.search_domain(0.1, 0.3))
+    assert sv is not None
+    assert sv > 0.3
+    assert npv_at(sv) == pytest.approx(0.0, abs=1e-6)
+
+
+def test_an_option_that_costs_nothing_has_a_value_and_no_division_error():
+    cfg = config(options=[{"id": "A", "label": "x", "blocks": ["B2"], "compliance": "comply", "signs": 0}])
+    m = measured(metres={"A": 0.0})
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert e["pv_cost"] == 0.0
+    assert e["npv"] > 0
+    assert math.isinf(e["bcr"])
+
+
+def test_each_tested_discount_rate_has_its_own_column():
+    assert appraisal.rate_column(0.03) == "npv_at_3pct"
+    assert appraisal.rate_column(0.035) == "npv_at_3.5pct"
+    assert appraisal.rate_column(0.07) == "npv_at_7pct"
+    assert len({appraisal.rate_column(r) for r in (0.015, 0.02, 0.03, 0.035)}) == 4
+
+
+def test_no_off_peak_positions_where_buses_meet_gives_no_ratio_rather_than_nan():
+    parts, _ = parts_and_copresence()
+    cp = copresence_by_period()
+    cp.loc[cp.period == "off_peak", ["positions", "with_oncoming_bus"]] = 0
+    assert appraisal.offpeak_ratio(cp.astype({"positions": "int64", "with_oncoming_bus": "int64"}), parts, 0.01) is None

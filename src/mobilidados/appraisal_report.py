@@ -19,7 +19,15 @@ from .i18n import num, t
 if TYPE_CHECKING:
     from .pipeline import Run
 
-MONEY_INPUTS = ("excess_s", "load_peak", "car_value", "occupancy", "enforcement_year", "share_E", "share_G", "offpeak_s", "room_nearby")
+MONEY_INPUTS = (
+    "excess_s",
+    "load_peak",
+    "car_value",
+    "occupancy",
+    "enforcement_year",
+    "offpeak_s",
+    "room_nearby",
+)  # and each option's parking share
 
 
 def grouped(x: float, lang: str, d: int = 0) -> str:
@@ -155,7 +163,8 @@ def build(r: Run) -> str:
     giving = [p for p in gaps.part if p in peak.index and appraisal.p_value(peak.loc[p]) < a.significance]
     total = float(parts.excess_s.sum())
     narrow_s = float(parts[parts.narrow.astype(bool)].excess_s.sum())
-    attr = float(measured.loc[f"attribution_{a.options[0].id}", "central"]) if a.options else 0.0
+    # the share every option together could remove: the narrow sections of all their blocks, and the junction
+    attr = appraisal.attribution(parts, copres, sorted({b for o in a.options for b in o.blocks}), a.significance)[1] if a.options else 0.0
     if giving:
         g = peak.loc[giving[0]]
         parts_text = say("problem_parts", narrow=n(narrow_s, 1), gaps=n(total - narrow_s, 1), giving=part_label(giving[0]), share=n(100 * g.share, 0),
@@ -198,8 +207,12 @@ def build(r: Run) -> str:
     fe.append("")
 
     # --- cost-benefit --------------------------------------------------------------------------------------------------
-    rate = n(100 * a.discount_rate, 0)
-    tested = " / ".join(f"{n(100 * x, 0)}%" for x in a.discount_rates_tested)
+    def rate_text(r: float) -> str:
+        x = appraisal.rate_pct(r)
+        return n(x, 0 if float(x).is_integer() else 1)
+
+    rate = rate_text(a.discount_rate)
+    tested = " / ".join(f"{rate_text(x)}%" for x in a.discount_rates_tested)
     layer_name = {"core": say("layer_core"), "extended": say("layer_extended")}
     cba = [
         f"## {say('h_cba')}",
@@ -219,13 +232,15 @@ def build(r: Run) -> str:
     for k, row in measured.iterrows():
         d = 0 if str(k).startswith(("peak_passages", "working_days", "passages")) else 1 if str(k).startswith(("metres_", "excess_")) else 2
         cba.append(f"| {measured_label(str(k))} | {n(row.low, d)} | {n(row['central'], d)} | {n(row.high, d)} |")
-    r1, r2 = (round(100 * x) for x in a.discount_rates_tested[:2]) if len(a.discount_rates_tested) >= 2 else (3, 7)
+    t1, t2 = [*a.discount_rates_tested, np.nan, np.nan][:2]
+    r1, r2 = (rate_text(x) if pd.notna(x) else "—" for x in (t1, t2))
+    c1, c2 = (appraisal.rate_column(x) if pd.notna(x) else "" for x in (t1, t2))
     cba += ["", f"### {say('h_results')}", "", say("results_core_intro"), "", say("results_header", years=a.horizon_years, rate=rate, r1=r1, r2=r2),
             "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]  # fmt: skip
     for oid, row in res.iterrows():
         cba.append(
             f"| {oid} | {money(row.benefit_year, lang)} | {money(row.parking_year + row.enforcement_year, lang)} | {money(row.works, lang)} | "
-            f"{money(row.npv, lang)} | {n(row.bcr, 2)} | {money(row.get(f'npv_at_{r1}pct', np.nan), lang)} | {money(row.get(f'npv_at_{r2}pct', np.nan), lang)} |"
+            f"{money(row.npv, lang)} | {n(row.bcr, 2)} | {money(row.get(c1, np.nan), lang)} | {money(row.get(c2, np.nan), lang)} |"
         )
     cba += [
         "",
@@ -274,7 +289,8 @@ def build(r: Run) -> str:
         say("switching_header"),
         "| --- | --- | --- | ---: | ---: | --- |",
     ]
-    key = sw[sw.input.isin(MONEY_INPUTS) | sw.input.str.startswith("attribution_")]
+    shares = {o.parking_share for o in a.options if o.parking_share}
+    key = sw[sw.input.isin(MONEY_INPUTS) | sw.input.isin(shares) | sw.input.str.startswith("attribution_")]
     for row in key.itertuples():
         sv = "—" if pd.isna(row.switching_value) else n(row.switching_value, 2)
         cba.append(

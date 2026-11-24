@@ -60,7 +60,7 @@ core,G,compliance_hours,0.8,,False
 core,G,enforcement_year,1000.0,,False
 core,G,income_growth,0.01,,False
 core,H,excess_s,14.5,23.587033642264743,True
-core,H,attribution_H,0.5869565217391304,,False
+core,H,attribution_H,0.5869565217391304,0.954797463779832,False
 core,H,load_peak,20.0,34.94312198950202,False
 core,H,downstream,1.0,1.747156099475101,False
 core,H,vot,6.0,10.482936596850607,False

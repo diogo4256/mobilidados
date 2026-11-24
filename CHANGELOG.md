@@ -15,6 +15,45 @@ and the project uses [Semantic Versioning](https://semver.org/).
   with the others central, until none changes. An input whose direction depends on the sign of the NPV, such as
   income growth, was put at the wrong end: in Rua Ricardo Jorge, the cautious scenario of option C goes from about
   −€65,500 to about −€69,800.
+- Saturdays and Sundays took the full off-peak excess per passage, though it is inferred from working days and fewer
+  buses meet when fewer run. With `offpeak_scales_with_service`, their passages count at that day's buses ÷ a working
+  day's (Rua Ricardo Jorge's option C: NPV with all impacts +€15,500, was +€17,800).
+- The co-presence test counted every position as independent, so a bus held for several snapshots in one standoff
+  counted several times and the binomial p-value overstated the evidence. `delay_copresence.csv` now also resamples
+  whole working days (`p_value_by_day`, with the 90% interval of the excess over chance), and the attribution uses it.
+- The off-peak break-even was shown with one parking assumption at a time, which hid that the two can coincide: with
+  no room nearby and full car parks together, Rua Ricardo Jorge's option C needs 3.4 s off-peak, not 0.5 s. The new
+  `appraisal_offpeak_thresholds.csv` gives it under each condition and both; room nearby and room in the car parks are
+  now drawn correlated.
+- The central off-peak excess was typed in (3 s). With `offpeak_from_copresence` it is derived from the data: the peak
+  excess scaled by how often buses meet off-peak relative to the peak where they demonstrably meet (2.5 s in Rua
+  Ricardo Jorge).
+- The parking cost counted what a displaced driver pays for a car park as a cost to society, although the appraisal
+  treats fees and permits as transfers. The extended layer now counts that payment for the driver (in the
+  distribution) and nets it out of the economic case where the car park has room to spare (`spare_capacity`); it also
+  counts the walk from the car park (`carpark_walk`), which was left out. The core still counts the price in full.
+- The study no longer says that buses wait at the junction where they lose time to oncoming buses. Snapshots minutes
+  apart show where the time is lost, not what the buses do there, and a 12 m bus cannot step aside in a short junction
+  to let another by. A passing place is described as a place to pull aside, and a junction as a natural test of one.
+- The Monte Carlo's probability that an option is the best counts doing nothing as a choice: an option is best only
+  in the draws where it beats every other and pays. It had compared the options among themselves only, so the least bad
+  of several losing options read as "best", and an option could be the best more often than it paid.
+- The switching value of the share of the excess an option removes was left blank whenever the break-even lay above
+  the measured high bound: the cap meant for the credit of buses held by other vehicles also held the share itself
+  there, so the net present value stopped moving. In Rua Ricardo Jorge, option H breaks even in the core only if it
+  removes 95% of the excess (the measured high bound is about 87%).
+- Who gains and who loses left the periodic repainting out of the public bodies' yearly cost, which the NPV counts. In
+  Rua Ricardo Jorge, option C's public cost is about €785 a year (was €760); option B's, about €932 (was €879).
+- A tested discount rate that is not a whole percentage (3.5%) was printed as "—" in the report and could overwrite
+  another rate's column; each now has its own column (`npv_at_3.5pct`).
+- An off-peak ratio with no off-peak positions where buses meet gave NaN, which reached every simulated NPV; it now
+  gives no ratio, and the typed-in off-peak excess is used. An option that costs nothing no longer stops the stage.
+- `check-doc` stopped with a traceback when a pinned cell could no longer be found, the drift it is meant to report;
+  such a claim is now reported as `unresolved`, with the reason, and the others are still checked. A pattern with
+  fewer groups than values is reported as `bad_pattern` instead of being partly skipped.
+- The report's switching values include each option's parking share whatever the case names it, and the share of the
+  excess the options can remove, in the problem section and for the alternatives, is that of all their sections
+  together, not the first option's.
 
 ### Added
 
@@ -144,29 +183,6 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- Saturdays and Sundays took the full off-peak excess per passage, though it is inferred from working days and fewer
-  buses meet when fewer run. With `offpeak_scales_with_service`, their passages count at that day's buses ÷ a working
-  day's (Rua Ricardo Jorge's option C: NPV with all impacts +€15,500, was +€17,800).
-- The co-presence test counted every position as independent, so a bus held for several snapshots in one standoff
-  counted several times and the binomial p-value overstated the evidence. `delay_copresence.csv` now also resamples
-  whole working days (`p_value_by_day`, with the 90% interval of the excess over chance), and the attribution uses it.
-- The off-peak break-even was shown with one parking assumption at a time, which hid that the two can coincide: with
-  no room nearby and full car parks together, Rua Ricardo Jorge's option C needs 3.4 s off-peak, not 0.5 s. The new
-  `appraisal_offpeak_thresholds.csv` gives it under each condition and both; room nearby and room in the car parks are
-  now drawn correlated.
-- The central off-peak excess was typed in (3 s). With `offpeak_from_copresence` it is derived from the data: the peak
-  excess scaled by how often buses meet off-peak relative to the peak where they demonstrably meet (2.5 s in Rua
-  Ricardo Jorge).
-- The parking cost counted what a displaced driver pays for a car park as a cost to society, although the appraisal
-  treats fees and permits as transfers. The extended layer now counts that payment for the driver (in the
-  distribution) and nets it out of the economic case where the car park has room to spare (`spare_capacity`); it also
-  counts the walk from the car park (`carpark_walk`), which was left out. The core still counts the price in full.
-- The study no longer says that buses wait at the junction where they lose time to oncoming buses. Snapshots minutes
-  apart show where the time is lost, not what the buses do there, and a 12 m bus cannot step aside in a short junction
-  to let another by. A passing place is described as a place to pull aside, and a junction as a natural test of one.
-- The Monte Carlo's probability that an option is the best counts doing nothing as a choice: an option is best only
-  in the draws where it beats every other and pays. It had compared the options among themselves only, so the least bad
-  of several losing options read as "best", and an option could be the best more often than it paid.
 - `verify` and the data test only looked at the sources the lock lists, so a case that was never fetched passed
   `verify` ("0/0 files match the lock") and the data test then crashed on a missing file. Every source the case
   configures is now checked, and one the lock has no entry for is reported as `not fetched`.

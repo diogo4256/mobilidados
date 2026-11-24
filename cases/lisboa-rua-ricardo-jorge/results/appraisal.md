@@ -242,7 +242,7 @@ Para cada opção, o valor de cada entrada que poria o VAL a zero, mantendo as o
 | núcleo | G | Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis | 0,45 | 0,10 | ✗ |
 | núcleo | G | Fiscalização a mais de uma proibição por horas | 1 000,00 | — | ✗ |
 | núcleo | H | Excesso de tempo por passagem na ponta (s, intervalo de 90%) | 14,50 | 23,59 | ✓ |
-| núcleo | H | Opção H: parte do excesso que pode remover | 0,59 | — | ✗ |
+| núcleo | H | Opção H: parte do excesso que pode remover | 0,59 | 0,95 | ✗ |
 | núcleo | H | Passageiros a bordo, na ponta da tarde | 20,00 | 34,94 | ✗ |
 | núcleo | H | Ocupação dos lugares retirados | 0,95 | 0,36 | ✗ |
 | núcleo | H | Preço anual de estacionar noutro sítio, para quem perde o lugar | 555,60 | 213,36 | ✗ |
@@ -341,7 +341,7 @@ Em euros por ano; positivo é ganho, negativo é perda.
 | Carris e donos de carros: danos evitados | 390 € | 330 € | 230 € | 70 € | 60 € |
 | Quem estaciona na rua | −10 300 € | −4 700 € | −5 000 € | −4 100 € | −1 900 € |
 | Parques de estacionamento: avenças pagas por quem é deslocado (transferência) | 3 600 € | 1 600 € | 1 700 € | 1 400 € | 650 € |
-| Câmara e EMEL: obra e fiscalização | −880 € | −760 € | −2 000 € | −2 000 € | −1 800 € |
+| Câmara e EMEL: obra e fiscalização | −930 € | −780 € | −2 000 € | −2 000 € | −1 800 € |
 
 ## O que não tem preço
 
