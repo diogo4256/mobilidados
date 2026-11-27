@@ -152,6 +152,20 @@ the pin on purpose; the Lisbon case downloads its feed from the Mobility Databas
 stays available. `mobilidados snapshot CASE DIR` copies the inputs whose licence allows redistribution into a
 folder for archiving (e.g. on Zenodo); `mobilidados fetch CASE --from-dir DIR` restores them, only if they are exactly the locked files.
 
+### Checking a written document against the results
+
+A proposal or a report written by hand from the tables goes out of date when the model changes, and a sentence can
+outlive the condition it described. `mobilidados check-doc CASE document.md --lang en [--other document.md]` reads
+the document exported as markdown, without AI, and:
+
+* checks the key statements pinned in the case's `doc_check.toml`, each tied to the result-table cell it quotes (or
+  to arithmetic on cells), at the precision printed: a statement with a wrong number, one no longer in the text, or
+  one whose cell no longer exists in the results makes the command fail, and the report says why;
+* lists the numbers no quoted table, input or configured value explains;
+* with `--other`, lists the numbers only one of the two versions (Portuguese and English) prints.
+
+Figures have numbers of their own: check them against the tables the same way before publishing.
+
 ## AI-assisted tools (optional)
 
 `pip install 'mobilidados[agents]'` adds the tools in the table below, built on Claude. In all of them, **the model

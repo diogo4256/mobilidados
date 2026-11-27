@@ -633,7 +633,7 @@ def test_an_option_that_costs_nothing_has_a_value_and_no_division_error():
 
 def test_each_tested_discount_rate_has_its_own_column():
     assert appraisal.rate_column(0.03) == "npv_at_3pct"
-    assert appraisal.rate_column(0.035) == "npv_at_3.5pct"
+    assert appraisal.rate_column(0.035) == "npv_at_3p5pct"
     assert appraisal.rate_column(0.07) == "npv_at_7pct"
     assert len({appraisal.rate_column(r) for r in (0.015, 0.02, 0.03, 0.035)}) == 4
 

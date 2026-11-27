@@ -45,7 +45,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - Who gains and who loses left the periodic repainting out of the public bodies' yearly cost, which the NPV counts. In
   Rua Ricardo Jorge, option C's public cost is about €785 a year (was €760); option B's, about €932 (was €879).
 - A tested discount rate that is not a whole percentage (3.5%) was printed as "—" in the report and could overwrite
-  another rate's column; each now has its own column (`npv_at_3.5pct`).
+  another rate's column; each now has its own column (`npv_at_3p5pct`).
 - An off-peak ratio with no off-peak positions where buses meet gave NaN, which reached every simulated NPV; it now
   gives no ratio, and the typed-in off-peak excess is used. An option that costs nothing no longer stops the stage.
 - `check-doc` stopped with a traceback when a pinned cell could no longer be found, the drift it is meant to report;
@@ -130,13 +130,16 @@ and the project uses [Semantic Versioning](https://semver.org/).
   the central NPV over longer periods (`horizons_tested`). Inputs can be correlated in the simulation (`correlations`,
   Iman-Conover rank reordering); Rua Ricardo Jorge correlates the peak and off-peak excess.
 - Rua Ricardo Jorge: more than half the peak excess sits at the junctions between the narrow sections; at the first
-  one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 1.5 × 10⁻⁶). In the core, no
-  option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on working days in
-  section B2 only, has an NPV of about −9 300 € (benefit/cost 0.60). In the extended layer, at central values, removing
-  one side's parking in section B2 alone, always (about 10 places), pays: NPV about 18 300 €, benefit/cost 1.52;
-  one side in all three sections reaches 0.93. The bridge shows the result rests mostly on the off-peak delay
-  (assumed, 3 s per passage), reliability and connections, and free places nearby: what Carris's passage records
-  and a night count of free places would settle.
+  one buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 0.0005, resampling whole days). In
+  the core, no option of removing parking pays for the places it removes: the closest, one side from 16h to 20h on
+  working days in section B2 only, has an NPV of about −€9,300 (benefit/cost 0.61). In the extended layer, at central
+  values, removing one side's parking in section B2 alone, always (about 10 places), pays: NPV about €25,800,
+  benefit/cost 1.82, positive in 86% of the simulations; one side in all three sections reaches 1.07. The bridge shows
+  what that rests on, each worth more than €10,000 of the NPV and none yet measured: the off-peak delay (2.5 s a
+  passage, derived from the peak), the car parks' room to spare (what displaced drivers pay there is then a transfer)
+  and buses held by oncoming cars and vans (an assumed share, 0–1). With none of the extended mechanisms but the
+  off-peak delay, option C needs 4.0 s off-peak. Carris's passage records, a night count of free places and a count
+  of the traffic in the street would settle them.
 
 ## [0.4.0] - 2026-11-15
 

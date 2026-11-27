@@ -310,8 +310,9 @@ def rate_pct(r: float) -> float:
 
 
 def rate_column(r: float) -> str:
-    """The results column of the net present value at the tested rate ``r`` (``npv_at_3pct``, ``npv_at_3.5pct``)."""
-    return f"npv_at_{rate_pct(r):g}pct"
+    """The results column of the net present value at the tested rate ``r`` (``npv_at_3pct``, ``npv_at_3p5pct``): a
+    name ``check-doc`` references can quote, so the decimal point is written ``p``."""
+    return f"npv_at_{rate_pct(r):g}pct".replace(".", "p")
 
 
 def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: float | None = None) -> dict[str, Any]:
