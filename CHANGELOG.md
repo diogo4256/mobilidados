@@ -63,13 +63,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
   late bus (the unforeseen share of the delay, as lateness); those who arrive at random wait longer because the gaps
   are uneven (bunching: the variance of the delay ÷ the gap). It replaces the unsourced `downstream` multiplier (1.0 at
   its central value, so not counted). Reroutes get the same. In Rua Ricardo Jorge the 744 runs 6.2–6.4 km after the
-  street and the 46B 3.6 km: option C gains about €22,900 in the extended layer (bunching itself about €1,500 of it);
-  the core is unchanged.
+  street and the 46B 3.6 km: option C gains about €22,900 in the extended layer, of which the uneven gaps (bunching)
+  are about €1,400, reported apart (`pv_downstream_bunching`); the core is unchanged. The established tier's Monte
+  Carlo draws are slightly lower, since the old multiplier was drawn up to 1.5 there.
 - **`mobilidados check-doc`** (`mobilidados.doccheck`, a case's `doc_check.toml`): checks a document exported as
   markdown against the case's results, without AI. Its key statements are pinned to the result cells they quote (or
   arithmetic on them) and compared at the precision printed; a wrong or vanished statement fails the command. It also
   lists the numbers no quoted table, input or configured value explains, and the numbers only one language version
-  prints. For Rua Ricardo Jorge, 125 statements of the decision paper and 255 of the appraisal are pinned.
+  prints. For Rua Ricardo Jorge, 146 statements of the decision paper and 289 of the appraisal are pinned.
 - Results: `pv_parking_private` (what those who lose a place bear), `pv_carpark_revenue` (the part that is a
   transfer) and `calming`; the distribution gives cruising for a space its own row (`cruising`), apart from the
   external benefits of the car trips diverted.
