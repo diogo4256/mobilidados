@@ -40,6 +40,7 @@ TABLES = {
     "overhang_sensitivity",
     "parking_strip_lengths",
     "passings",
+    "downstream_km",
     "profiles",
     "routes_on_street",
     "scheduled_runtimes",
@@ -694,3 +695,135 @@ def test_a_delay_source_of_another_kind_or_without_transit_is_refused(tmp_path):
         Case.load(root)
     assert "delay.source = 'cartography': needs a source of kind 'git_archive'" in str(e.value)
     assert "[delay] needs [transit]" in str(e.value)
+
+
+def p(central, low=None, high=None):
+    lo, hi = central if low is None else low, central if high is None else high
+    return f'{{ low = {lo}, central = {central}, high = {hi}, grade = "P", label = "x", source = "y" }}'
+
+
+APPRAISAL = f"""
+[appraisal]
+price_year = 2025
+draws = 2000
+references = ["A document, <https://example.org/doc.pdf>"]
+
+[appraisal.parameters]
+vot = {p(6.0, 4.0, 8.0)}
+time_weight = {p(1.5, 1.0, 2.5)}
+load_peak = {p(20.0, 13.0, 30.0)}
+downstream = {p(1.0)}
+bus_cost_h = {p(34.6, 0.0, 55.5)}
+occupancy = {p(0.95, 0.85, 1.0)}
+car_value = {p(555.6, 325.0, 2100.0)}
+sign_cost = {p(300.0, 150.0, 600.0)}
+marking_cost_m = {p(5.0, 2.0, 15.0)}
+enforcement_year = {p(1000.0, 0.0, 5000.0)}
+stall_m = {p(5.5, 5.0, 6.0)}
+compliance = {p(0.9, 0.8, 1.0)}
+share = {p(0.45, 0.25, 0.7)}
+offpeak_s = {p(3.0, 0.0, 8.0)}
+load_offpeak = {p(13.0, 8.0, 20.0)}
+room_nearby = {p(0.3, 0.0, 1.0)}
+walk_cost = {p(130.0, 65.0, 260.0)}
+
+[[appraisal.options]]
+id = "B"
+label = "one side, always"
+blocks = ["B1", "B2"]
+compliance = "compliance"
+signs = 4
+
+[[appraisal.options]]
+id = "G"
+label = "one side, 16h to 20h on working days"
+blocks = ["B1", "B2"]
+days = "working"
+hours = [16, 20]
+parking_share = "share"
+compliance = "compliance"
+signs = 6
+
+[[appraisal.alternatives]]
+id = "P"
+label = "a passing place"
+parking_m = 20.0
+signs = 2
+
+[[appraisal.criteria]]
+id = "reliability"
+dimension = "passengers"
+label = "Reliability of the bus trip"
+indicator = "Spread of the passage times"
+effects = {{ B = "++", "*" = "+" }}
+grade = "I"
+note = "Two buses pass each other without waiting."
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "The municipality decides on parking."
+source = "A law"
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "NE"
+text = "Off-peak time is not monetised."
+"""
+
+
+def test_the_appraisal_writes_its_tables_its_study_its_figure_and_its_findings(tmp_path):
+    root = write_case(tmp_path / "appraisal")
+    (root / "case.toml").write_text((root / "case.toml").read_text(encoding="utf-8") + DELAY + APPRAISAL, encoding="utf-8")
+    case = Case.load(root)
+    archived_positions(case)
+    run(case, offline=True)
+    tables = case.results_dir / "tables"
+    for name in ("delay_by_part", "delay_copresence", "appraisal_inputs", "appraisal_measured", "appraisal_results", "appraisal_switching",
+                 "appraisal_tornado", "appraisal_montecarlo", "appraisal_alternatives", "appraisal_feasibility", "appraisal_passages",
+                 "appraisal_voi", "appraisal_distribution", "appraisal_criteria", "appraisal_bridge"):  # fmt: skip
+        assert (tables / f"{name}.csv").exists(), name
+    both = pd.read_csv(tables / "appraisal_results.csv")
+    results = both[both.layer == "core"].set_index("option")
+    extended = both[both.layer == "extended"].set_index("option")
+    assert results.index.tolist() == extended.index.tolist() == ["B", "G"]
+    # the synthetic buses run at the same speed at every hour: no excess to remove, so removing parking only costs
+    assert (results.npv < 0).all()
+    assert results.loc["B", "parking_year"] > results.loc["G", "parking_year"]  # by hours, only a share of the parking is lost
+    # the extended layer adds the off-peak time and lets some displaced cars park nearby: more benefit, less cost
+    assert (extended.benefit_year >= results.benefit_year).all()
+    assert (extended.parking_year < results.parking_year).all()
+    # always in force, B covers every passage of the week; G only the working days' 16h-20h
+    assert (
+        extended.loc["B", "passages_peak"] + extended.loc["B", "passages_other"]
+        > extended.loc["G", "passages_peak"] + extended.loc["G", "passages_other"]
+    )
+    sims = pd.read_csv(tables / "appraisal_montecarlo.csv")
+    for layer in ("core", "extended"):
+        part = sims[sims.layer == layer]
+        # doing nothing is a choice too: an option can be best only where it pays
+        assert part.probability_best.sum() <= 1.0
+        assert (part.probability_best <= part.probability_positive).all()
+    criteria = pd.read_csv(tables / "appraisal_criteria.csv").set_index("criterion")
+    assert (criteria.loc["reliability", "B"], criteria.loc["reliability", "G"]) == ("++", "+")
+    feasibility = pd.read_csv(tables / "appraisal_feasibility.csv")
+    assert {"technical", "social", "legal", "evidence"} <= set(feasibility.dimension)
+    study = (case.results_dir / "appraisal.md").read_text(encoding="utf-8")
+    assert study.startswith("# Feasibility study and cost-benefit analysis: Rua do Teste")
+    assert "## Conclusions" in study
+    assert "## What has no price" in study
+    assert "| Reliability of the bus trip | Spread of the passage times | ++ | + |" in study
+    assert "**Extended layer**" in study
+    assert "- A document, <https://example.org/doc.pdf>" in study
+    assert (case.results_dir / "figures" / "appraisal_npv.png").exists()
+    findings = ledger_of(case)
+    assert {"appraisal_B", "appraisal_G", "appraisal_alternative_P"} <= set(findings)
+    assert findings["appraisal_G"]["grade"] == "I"
+    assert findings["appraisal_G"]["statement"].startswith("Option G (one side, 16h to 20h on working days): over 10 years at 5%")
+
+
+def test_an_appraisal_without_the_delay_it_values_is_refused(tmp_path):
+    root = write_case(tmp_path / "no-delay")
+    (root / "case.toml").write_text((root / "case.toml").read_text(encoding="utf-8") + APPRAISAL, encoding="utf-8")
+    with pytest.raises(MobilidadosError, match=r"\[appraisal\] needs \[delay\]"):
+        Case.load(root)

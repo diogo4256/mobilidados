@@ -5,6 +5,79 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Feasibility study and cost-benefit analysis** (the `appraisal` stage, `[appraisal]` in a case; method in
+  docs/appraisal.md). Each option removes the parking on one side in some sections, always or at some hours. The study
+  values the buses' time it can remove against the places it removes, the works and the enforcement, following the
+  European Commission's *Economic Appraisal Vademecum 2021-2027* (5%, 10 years, constant prices), and the UK DfT's
+  practice where the EAV is silent: unit values grow with income per head on both sides of the account, two
+  benefit-cost ratios (the EAV's, and the DfT's to the public budget, with its value-for-money category), a bridge from
+  one layer to the other, who gains and who loses, effects without a price, switching values, a tornado, scenarios, a
+  Monte Carlo simulation and the value of information. It writes `results/appraisal.md`, in the case's language, whose
+  conclusions are chosen by the numbers, a figure, and one ledger finding per option.
+- **Two layers, described by their grades.** The *core* counts the measured delay at the evening peak; the unit values
+  that turn it into money are documented, inferred or assumed, and the study says how many of each wherever it
+  describes the core. It counts the price of parking elsewhere in full, as if the car parks nearby were full, and the
+  scenarios give it with room in them too. The *extended layer* adds the mechanisms the measurement cannot see yet,
+  each with a central value, a range and a grade (assumed, `P`, where no source gives it): the delay at every other
+  hour and day, reliability and missed rail and metro connections, the cars held behind buses, buses held by oncoming
+  cars and vans, new passengers and the external costs of the car trips they leave, damage from scrapes, the walk and
+  the cruising of displaced drivers, car-park fees that are transfers where car parks have room, and traffic calming.
+  The study names the mechanisms the extended result rests on, from the bridge, with their grades, and says when the
+  options cannot be told apart (the expected NPV, the central NPV and the simulations' favourite naming different
+  options).
+- **Where the delay sits, and who it holds** (`delay_by_part.csv`, `delay_copresence.csv`). The `delay` stage measures
+  the excess on each section with parking on both sides and each junction between them, every part against the whole
+  stretch's controls and passages, so the parts add up to the stretch, with the excess of the buses heading each way;
+  and how often buses on each part have an oncoming bus on the street, against chance, with a p-value from resampling
+  whole working days. A junction counts for an option only for the buses heading into a section the option widens.
+- **The inputs' rules** come from what they mean: a mechanism must come with every input it reads; a share's switching
+  value is looked for in [0, 1] and a growth rate's above −100%, whatever range the case gives; the measured excess is
+  drawn from its 90% interval as percentiles, not bounds; the options' shares of the excess are drawn together; the
+  cautious and favourable scenarios move every typed-in input, the core's too. The off-peak excess can be derived from
+  the peak one (`offpeak_from_copresence`), and the study says when the meetings it scales by are not significant.
+- **Reroutes** (`[[appraisal.reroutes]]`, `mobilidados.reroute`): taking a line and direction off the street instead
+  of parking. The detour is the shortest way round on the area's street network less the path through the street as
+  the bus runs today, and can be negative (a line that turns in to serve its stops); the stops left behind, the
+  meetings removed, and the value before the cost to those who lose their stop, with the boardings a day at which that
+  cost cancels the gain (`appraisal_detours.csv`, `appraisal_reroutes.csv`, `appraisal_route_passages.csv`).
+- **Alternatives whose effect cannot be estimated** (`[[appraisal.alternatives]]`), such as a passing place: the saving
+  they need to pay for themselves, against the most the measured delay in their sections could give (`blocks`).
+- **Crash equivalents** (`appraisal_safety.csv`, `[appraisal.safety_references]`): how many crashes of a given cost,
+  over the appraisal period, are worth each option's NPV.
+- **Passengers boarding after the street** (extended layer: `downstream_boarders`, `downstream_timed`, `wait_weight`;
+  measured: the km each route runs after the street, from the timetable's distances, `downstream_km.csv`; the gaps
+  between buses; the share of passages at peak that meet an oncoming bus). Those who time their arrival wait for the
+  late bus (the unforeseen share of the delay, as lateness); those who arrive at random wait longer because the gaps
+  are uneven (bunching: the variance of the delay ÷ the gap). It replaces the unsourced `downstream` multiplier (1.0 at
+  its central value, so not counted). Reroutes get the same. In Rua Ricardo Jorge the 744 runs 6.2–6.4 km after the
+  street and the 46B 3.6 km. The part that comes from uneven gaps is reported apart (`pv_downstream_bunching`).
+- **`mobilidados check-doc`** (`mobilidados.doccheck`, a case's `doc_check.toml`): checks a document exported as
+  markdown against the case's results, without AI. Its key statements are pinned to the result cells they quote (or
+  arithmetic on them) and compared at the precision and scale printed (a percentage to the unit; thousands by `k`,
+  `mil` or the claim's `scale`); a wrong, vanished or unresolvable statement fails the command. It also lists the
+  numbers no quoted table, input or configured value explains, and the numbers only one language version prints.
+  For Rua Ricardo Jorge, 146 statements of the decision paper and 289 of the appraisal are pinned.
+- Passing in practice (`passing_practice.csv`, `[envelope] practical_clearance_m`): two vehicles need their bodies plus
+  the room design guidance leaves (CIHT, *Buses in Urban Developments*, 2018: 1.2 m). Vehicles: a large van, a large
+  SUV and a truck at the legal maximum width. Design references: RT-SCIE's 6 m fire access road and CIHT's 6.2 m for
+  bus routes.
+- docs/field/: templates for the three counts anyone can make in the street (free places at night, deadlocks,
+  traffic), each replacing an assumed input with a measured one.
+- Rua Ricardo Jorge: more than half the peak excess sits at the junctions between the narrow sections. At the first
+  one (R. Cor. Marques Leitão) buses have an oncoming bus present 26% of the time against 11% by chance (p ≈ 0.0005,
+  resampling whole days), and the excess there is that of the buses heading south-west, into B1. In the core, no option
+  pays for the places it removes, even with room in the car parks: the one that loses least, one side from 16h to 20h
+  on working days in section B2 only, has an NPV of about −€17,100 (−€7,300 with room in the car parks). In the
+  extended layer, one side in all three sections, always (about 21 places), has the highest expected NPV (about
+  €33,100; €31,400 at central values, benefit/cost 1.51), is positive in 71% of the simulations and is the best choice
+  in 52% (doing nothing, 20%). That result rests on values not measured: room in the car parks (about €28,900 of it,
+  assumed), the passengers who board after the street (about €27,000, inferred) and room nearby (about €19,000,
+  assumed), and on an off-peak delay derived from meetings that cannot be told from chance. A passing
+  place in B2 would need to save 7.5 s per peak passage, more than the 4 s the measured delay holds there. Carris's
+  passage records, a night count of free places and a count of the traffic in the street would settle the rest.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added

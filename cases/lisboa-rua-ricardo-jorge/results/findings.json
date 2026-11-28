@@ -321,6 +321,147 @@
       "caveat": "O excesso em segundos depende muito da hora de ponta escolhida: só às 17h, 35 s; só às 18h, 2 s (delay_sensitivity.csv); o rácio muda pouco. As passagens contadas são 91% das do horário de 2026-10-27 nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas). Posições do arquivo público LIVREpt/lisboa_carris_api (commit db6b8e782c0f), que recolhe o feed em tempo real da Carris através de um intermediário (rt.jdcp.workers.dev): não é o registo da própria Carris, e nenhum dos dois indica licença."
     },
     {
+      "id": "appraisal_B",
+      "grade": "I",
+      "statement": "Opção B (um lado, sempre, nos três troços com estacionamento dos dois lados): em 10 anos, a 5%, o valor atual líquido é de −63 900 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 600 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (10 100 € por ano) e a obra (1 800 €): benefício/custo 0,24, entre −161 600 € e −38 300 € em 80% das simulações, probabilidade de ser positivo de 0%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 31 400 € (benefício/custo 1,51; probabilidade de ser positivo de 71%).",
+      "values": {
+        "npv": -63936.48,
+        "bcr": 0.2449,
+        "npv_p10_p90": [
+          -161570.43,
+          -38272.14
+        ],
+        "probability_positive": 0.0016,
+        "npv_extended": 31446.96,
+        "bcr_extended": 1.5063,
+        "probability_positive_extended": 0.7124
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta, mas converte-o em dinheiro, e aos lugares retirados, com valores unitários documentados, inferidos ou pressupostos (o grau de cada um está em appraisal_inputs.csv), e conta por inteiro o preço de estacionar noutro sítio, como se os parques perto estivessem cheios; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_C",
+      "grade": "I",
+      "statement": "Opção C (um lado, sempre, só no troço B2, o mais longo): em 10 anos, a 5%, o valor atual líquido é de −30 900 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (990 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 10 lugares retirados e a fiscalização (4 700 € por ano) e a obra (870 €): benefício/custo 0,21, entre −74 200 € e −17 600 € em 80% das simulações, probabilidade de ser positivo de 0%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 17 000 € (benefício/custo 1,54; probabilidade de ser positivo de 78%).",
+      "values": {
+        "npv": -30941.42,
+        "bcr": 0.2059,
+        "npv_p10_p90": [
+          -74225.03,
+          -17582.64
+        ],
+        "probability_positive": 0.0014,
+        "npv_extended": 17015.57,
+        "bcr_extended": 1.5437,
+        "probability_positive_extended": 0.7753
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta, mas converte-o em dinheiro, e aos lugares retirados, com valores unitários documentados, inferidos ou pressupostos (o grau de cada um está em appraisal_inputs.csv), e conta por inteiro o preço de estacionar noutro sítio, como se os parques perto estivessem cheios; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_E",
+      "grade": "I",
+      "statement": "Opção E (um lado, das 7h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −32 400 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 300 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (6 000 € por ano) e a obra (2 400 €): benefício/custo 0,36, entre −87 800 € e −20 200 € em 80% das simulações, probabilidade de ser positivo de 1%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 30 100 € (benefício/custo 1,71; probabilidade de ser positivo de 74%).",
+      "values": {
+        "npv": -32407.87,
+        "bcr": 0.3626,
+        "npv_p10_p90": [
+          -87818.03,
+          -20245.42
+        ],
+        "probability_positive": 0.0089,
+        "npv_extended": 30134.72,
+        "bcr_extended": 1.7112,
+        "probability_positive_extended": 0.7398
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta, mas converte-o em dinheiro, e aos lugares retirados, com valores unitários documentados, inferidos ou pressupostos (o grau de cada um está em appraisal_inputs.csv), e conta por inteiro o preço de estacionar noutro sítio, como se os parques perto estivessem cheios; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_G",
+      "grade": "I",
+      "statement": "Opção G (um lado, das 16h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −25 100 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 300 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (5 100 € por ano) e a obra (2 400 €): benefício/custo 0,42, entre −73 200 € e −13 600 € em 80% das simulações, probabilidade de ser positivo de 2%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 12 500 € (benefício/custo 1,33; probabilidade de ser positivo de 55%).",
+      "values": {
+        "npv": -25076.65,
+        "bcr": 0.4237,
+        "npv_p10_p90": [
+          -73150.41,
+          -13640.22
+        ],
+        "probability_positive": 0.0204,
+        "npv_extended": 12466.02,
+        "bcr_extended": 1.3325,
+        "probability_positive_extended": 0.5451
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta, mas converte-o em dinheiro, e aos lugares retirados, com valores unitários documentados, inferidos ou pressupostos (o grau de cada um está em appraisal_inputs.csv), e conta por inteiro o preço de estacionar noutro sítio, como se os parques perto estivessem cheios; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_H",
+      "grade": "I",
+      "statement": "Opção H (um lado, das 16h às 20h nos dias úteis, só no troço B2): em 10 anos, a 5%, o valor atual líquido é de −17 100 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (880 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 10 lugares retirados e a fiscalização (2 900 € por ano) e a obra (1 200 €): benefício/custo 0,29, entre −41 800 € e −10 200 € em 80% das simulações, probabilidade de ser positivo de 1%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 1 600 € (benefício/custo 1,07; probabilidade de ser positivo de 45%).",
+      "values": {
+        "npv": -17112.01,
+        "bcr": 0.2941,
+        "npv_p10_p90": [
+          -41781.86,
+          -10213.11
+        ],
+        "probability_positive": 0.008,
+        "npv_extended": 1606.34,
+        "bcr_extended": 1.0664,
+        "probability_positive_extended": 0.4478
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta, mas converte-o em dinheiro, e aos lugares retirados, com valores unitários documentados, inferidos ou pressupostos (o grau de cada um está em appraisal_inputs.csv), e conta por inteiro o preço de estacionar noutro sítio, como se os parques perto estivessem cheios; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
+      "id": "appraisal_alternative_R",
+      "grade": "I",
+      "statement": "Alternativa R (um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar): retira cerca de 4 lugares, custa cerca de 15 500 € em valor atual e paga-se se poupar 9,4 horas de autocarro por ano, ou 7,5 s por passagem na ponta; o efeito não se pode estimar com estes dados.",
+      "values": {
+        "breakeven_bus_hours_per_year": 9.366
+      },
+      "sources": [
+        "delay",
+        "free_width",
+        "parking_removed",
+        "appraisal_inputs.csv"
+      ],
+      "method": "Análise custo-benefício incremental face a não fazer nada (Comissão Europeia, Economic Appraisal Vademecum 2021-2027), preços constantes de 2025; entradas, graus e fontes em appraisal_inputs.csv; o estudo completo está em appraisal.md.",
+      "caveat": "O núcleo conta só o tempo medido na ponta, mas converte-o em dinheiro, e aos lugares retirados, com valores unitários documentados, inferidos ou pressupostos (o grau de cada um está em appraisal_inputs.csv), e conta por inteiro o preço de estacionar noutro sítio, como se os parques perto estivessem cheios; a camada alargada junta mecanismos com valores pressupostos (grau P) até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam fora das contas (critérios sem preço). Os pressupostos são testados nos seus intervalos (appraisal_switching.csv, appraisal_tornado.csv, appraisal_voi.csv)."
+    },
+    {
       "id": "occurrences",
       "grade": "M",
       "statement": "Foram atribuídas à rua 6 ocorrências da categoria «Estacionamento abusivo» (2017-05-05 – 2026-05-31, a ≤12 m do eixo): 2,87 por 100 m, 1.ª de 25 ruas com pelo menos 100 m na envolvente.",
@@ -371,6 +512,34 @@
       ],
       "method": "",
       "caveat": "0,40 m (sobrelargura) + 3,00 m + 3,00 m + 0,40 m (sobrelargura) = 6,80 m; nota ao desenho: sem sobrelargura, a largura recomendada por via é 3,25 m, ou seja 6,50 m"
+    },
+    {
+      "id": "standard_ciht_bus_routes_20mph",
+      "grade": "D",
+      "statement": "Buses in Urban Developments, p. 25 (valor condicionado): Faixa de rodagem desimpedida numa rua com autocarros, para que não abrandem ao cruzar-se entre si ou com outros veículos grandes: 6,20 m. Âmbito: Ruas com autocarros nos dois sentidos (guia britânico; não é lei portuguesa). Mediana medida: 4,90 m (−1,30 m).",
+      "values": {
+        "value_m": 6.2,
+        "difference_m": -1.3
+      },
+      "sources": [
+        "ciht_bus_routes_20mph"
+      ],
+      "method": "",
+      "caveat": "6,2 m com limite de 30 km/h (20 mph) ou menos; 6,5 m nos restantes casos; livre de veículos estacionados"
+    },
+    {
+      "id": "standard_rtscie_fire_access_over_9m",
+      "grade": "D",
+      "statement": "Portaria n.º 135/2020, de 2 de junho: alteração ao Regulamento Técnico de Segurança contra Incêndio em Edifícios (RT-SCIE, Portaria n.º 1532/2008), republicado em anexo, p. 69 (valor condicionado): Via de acesso de bombeiros a edifício com mais de 9 m de altura: largura útil: 6,00 m. Âmbito: Vias de acesso a edifícios com mais de 9 m de altura, no regime de segurança contra incêndio em edifícios (aplicado no licenciamento); referência para uma rua existente, não uma regra que ela viole. Mediana medida: 4,90 m (−1,10 m).",
+      "values": {
+        "value_m": 6.0,
+        "difference_m": -1.1
+      },
+      "sources": [
+        "rtscie_fire_access_over_9m"
+      ],
+      "method": "",
+      "caveat": "RT-SCIE, art. 5.º, n.º 1, al. a): 6 m de largura útil (10 m em impasse); o art. 4.º, n.º 7, admite outras características, fundamentadas, em zonas edificadas cuja rede viária não possa ser corrigida"
     },
     {
       "id": "standard_rast06_bus_bus",

@@ -304,6 +304,7 @@ def draft(like: Case, street: str, out_dir: Path | None) -> Draft:
     measured = cfg.delay is not None
     if cfg.delay:
         data.pop("delay", None)
+        data.pop("appraisal", None)  # it values the measured time and names the model street's blocks
         sources.pop(cfg.delay.source, None)
     for sid in (cfg.profiles.cartography, cfg.profiles.axes):
         sources.setdefault(sid, {})["envelope"] = around(sid, AXIS_MARGIN_M)

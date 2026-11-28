@@ -39,8 +39,12 @@ class Feed:
     def stop_times(self, trip_ids: set[str]) -> pd.DataFrame:
         """stop_times for the given trips only (the full table is large; read it in chunks)."""
         cols = ["trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence"]
-        with zipfile.ZipFile(self.path) as z, z.open("stop_times.txt") as f:
-            parts = [chunk[chunk.trip_id.isin(trip_ids)] for chunk in pd.read_csv(f, usecols=cols, dtype=str, chunksize=500_000)]
+        with zipfile.ZipFile(self.path) as z:
+            with z.open("stop_times.txt") as f:
+                header = f.readline().decode("utf-8-sig").strip().split(",")
+            cols += [c for c in ("shape_dist_traveled",) if c in header]  # optional: distances along the trip, when given
+            with z.open("stop_times.txt") as f:
+                parts = [chunk[chunk.trip_id.isin(trip_ids)] for chunk in pd.read_csv(f, usecols=cols, dtype=str, chunksize=500_000)]
         st = pd.concat(parts, ignore_index=True)
         st["stop_sequence"] = st.stop_sequence.astype(int)
         return st
@@ -125,11 +129,14 @@ def stops_near(feed: Feed, axis: LineString, crs: int, max_dist: float = 40.0) -
     return near[["stop_id", "stop_name", "stop_lat", "stop_lon", "dist_m", "s_m"]].round({"dist_m": 1, "s_m": 1})
 
 
-def reference_passings(feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame, refs: list[ReferenceStop], day: dt.date) -> pd.DataFrame:
+def reference_passings(
+    feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame, refs: list[ReferenceStop], day: dt.date, strict: bool = True
+) -> pd.DataFrame:
     """Scheduled arrival at each route/direction's reference stop, for trips running on ``day``.
 
     ``stop_times`` must cover ``trips``. One row per trip: route, direction_id, heading, s_ref (the stop's position
-    along the axis), arrival_time and t (seconds after midnight).
+    along the axis), arrival_time and t (seconds after midnight). A route/direction with no trip at its reference stop
+    that day is an error, unless ``strict`` is false (a route that does not run on Sundays, say): then it has no rows.
     """
     active = active_service_ids(feed, day)
     keyed = {(r.route, str(r.direction_id)): r for r in refs}
@@ -142,15 +149,40 @@ def reference_passings(feed: Feed, trips: pd.DataFrame, stop_times: pd.DataFrame
         at_ref = st[st.stop_id == ref.stop_id].sort_values("stop_sequence").drop_duplicates("trip_id")  # a loop passes once
         t = sel[(sel.route_short_name == rt) & (sel.direction_id == d)].merge(at_ref, on="trip_id")
         if not (t.stop_sequence < t.trip_id.map(last)).any():  # scheduled_runtimes needs the next stop
+            if not strict:
+                continue
             raise MobilidadosError(
                 f"route {rt} direction {d}: no trip serves stop {ref.stop_id} on {day} with a following stop; "
                 "check reference_stops and service_date"
             )
         rows.append(t.assign(ref_stop=ref.stop_id, s_ref=ref.s_m, heading=ref.heading))
+    cols = ["route_short_name", "direction_id", "trip_id", "ref_stop", "s_ref", "heading", "arrival_time", "t"]
+    if not rows:
+        return pd.DataFrame(columns=cols)
     out = pd.concat(rows, ignore_index=True)
     out["t"] = out.arrival_time.map(seconds)
-    cols = ["route_short_name", "direction_id", "trip_id", "ref_stop", "s_ref", "heading", "arrival_time", "t"]
     return out.sort_values(["t", "route_short_name"])[cols].reset_index(drop=True)
+
+
+def downstream_km(stop_times: pd.DataFrame, passings: pd.DataFrame) -> pd.DataFrame:
+    """For each trip in ``passings``: the km it runs after the street, from the stop that follows its reference stop
+    to its last stop (``shape_dist_traveled``, in metres, as the feed gives it). Who boards after the street boards on
+    these km. Trips whose stop_times carry no distances are left out."""
+    st = stop_times[stop_times.trip_id.isin(passings.trip_id)]
+    if "shape_dist_traveled" not in st or st.shape_dist_traveled.isna().all():
+        return pd.DataFrame(columns=["route_short_name", "direction_id", "trip_id", "km_after"])
+    st = st.astype({"stop_sequence": int}).assign(dist=pd.to_numeric(st.shape_dist_traveled, errors="coerce"))
+    rows = []
+    for r in passings.itertuples():
+        t = st[st.trip_id == r.trip_id].sort_values("stop_sequence")
+        at = t.index[t.stop_id == r.ref_stop]
+        if not len(at):
+            continue
+        after = t.loc[at[0] :].iloc[1:]  # from the stop after the reference stop (beyond the street) to the end
+        if len(after) and after.dist.notna().all():
+            rows.append({"route_short_name": r.route_short_name, "direction_id": r.direction_id, "trip_id": r.trip_id,
+                         "km_after": float(after.dist.iloc[-1] - after.dist.iloc[0]) / 1000})  # fmt: skip
+    return pd.DataFrame(rows, columns=["route_short_name", "direction_id", "trip_id", "km_after"])
 
 
 def trips_per_hour(passings: pd.DataFrame) -> pd.DataFrame:

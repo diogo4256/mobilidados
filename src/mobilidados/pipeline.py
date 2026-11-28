@@ -8,12 +8,14 @@ an earlier run wrote, and a missing table is an error that names the stage to ru
 
 from __future__ import annotations
 
+import datetime as dt
 import functools
 import json
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from pyproj import Transformer
@@ -21,7 +23,23 @@ from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge, unary_union
 
-from . import area_scan, delay, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
+from . import (
+    appraisal,
+    appraisal_report,
+    area_scan,
+    delay,
+    direction,
+    encounters,
+    envelope,
+    figures,
+    geometry,
+    gtfs,
+    i18n,
+    ledger,
+    occurrences,
+    reroute,
+    standards,
+)
 from .arcgis import to_line
 from .config import ArcgisQuery, Case, Config, GitArchive, HttpFiles, MobilidadosError
 from .sources import IdentifyCache, check_lock, check_pins, load_json, raw_path
@@ -207,6 +225,7 @@ def stage_transit(r: Run) -> None:
     stop_times = r.feed.stop_times(set(on_routes.trip_id))  # the largest table: read it once
     passings = gtfs.reference_passings(r.feed, on_routes, stop_times, t.reference_stops, t.service_date)
     r.save("passings", passings)
+    r.save("downstream_km", gtfs.downstream_km(stop_times, passings))
     tph = gtfs.trips_per_hour(passings)
     tph.columns = pd.Index([r.cfg.street.heading_label(h) for h in tph.columns])
     r.save("trips_per_hour", tph.rename_axis("hour").reset_index())
@@ -229,6 +248,9 @@ def stage_envelope(r: Run) -> None:
     r.save("width_budget", envelope.width_budget(free, vehicles, e.scenarios))
     r.save("overhang_sensitivity", envelope.overhang_sensitivity(free["median"], vehicles, e.scenarios))
     r.save("without_parking", envelope.without_parking(r.table("profiles"), r.two_strips_m, r.cfg.profiles.parking_space_m))
+    if e.practical_clearance_m is not None:
+        one_side = float(r.table("without_parking").set_index("without").loc[["L", "R"], "free_median"].min())
+        r.save("passing_practice", envelope.practical_passing(free["median"], one_side, vehicles, e.scenarios, e.practical_clearance_m))
 
 
 def stage_encounters(r: Run) -> None:
@@ -273,6 +295,11 @@ def stage_delay(r: Run) -> None:
     placed = delay.place(pos, rts, r.case.crs, cfg.max_offset_m)
     for name, table in delay.analyse(placed, snaps, rts, cfg, r.axis, r.table("passings")).items():
         r.save(name, table)
+    # where along the stretch the excess sits, and whether buses there give way to oncoming ones (appraisal's attribution)
+    cuts = delay.parts(r.narrow_extents(), cfg.s_from, cfg.s_to)
+    r.save("delay_by_part", delay.by_part(placed, snaps, cuts, cfg, rts, r.axis))
+    fresh = placed[placed.age_s.abs() <= cfg.max_age_s]
+    r.save("delay_copresence", delay.copresence(delay.on_axis(fresh, rts, r.axis, r.case.crs), snaps, cuts, cfg))
 
 
 def stage_occurrences(r: Run) -> None:
@@ -323,6 +350,170 @@ def stage_standards(r: Run) -> None:
     r.save("standards_comparison", standards.compare(med, r.cfg.standards.compare))
 
 
+def stage_appraisal(r: Run) -> None:
+    a, dl, t, e = r.cfg.appraisal, r.cfg.delay, r.cfg.transit, r.cfg.envelope
+    if a is None or dl is None or t is None or e is None or not r.two_strips:
+        # no appraisal to make: a study written by an earlier run would outlive the results it described
+        (r.case.results_dir / "appraisal.md").unlink(missing_ok=True)
+        return
+    block_metres: dict[str, float] = {}
+    for x, z, block in r.narrow_extents():
+        block_metres[block] = block_metres.get(block, 0.0) + (z - x)
+    tables = {k: r.table(k) for k in ("delay_summary", "delay_by_part", "delay_copresence", "passings", "downstream_km")}
+    holidays = sorted(set(dl.exclude_dates) | set(r.cfg.city.holidays))
+    tables["appraisal_passages"] = a_passages(r, holidays)
+    r.save("appraisal_passages", tables["appraisal_passages"])
+    m = appraisal.measured(tables, a, block_metres, dl.peak_hours, t.service_date.year, holidays)
+    for name, table in appraisal.appraise(a, m).items():
+        r.save(name, table)
+    r.save("appraisal_measured", pd.DataFrame(
+        [{"input": "excess_s", "low": m.excess_s[0], "central": m.excess_s[1], "high": m.excess_s[2]}]
+        + [{"input": f"attribution_{k}", "low": v[0], "central": v[1], "high": v[2]} for k, v in m.attribution.items()]
+        + [{"input": "peak_passages_per_working_day", "low": m.peak_passages_per_day, "central": m.peak_passages_per_day, "high": m.peak_passages_per_day},
+           {"input": "working_days_per_year", "low": m.working_days, "central": m.working_days, "high": m.working_days}]
+        + [{"input": f"metres_{k}", "low": v, "central": v, "high": v} for k, v in m.metres.items()]
+        + [{"input": f"passages_{part}_{k}", "low": v[i], "central": v[i], "high": v[i]}
+           for k, v in m.passages.items() for i, part in enumerate(("peak", "other"))]
+        + [{"input": "passages_year", "low": m.passages_year, "central": m.passages_year, "high": m.passages_year}]
+        + [{"input": k, "low": v, "central": v, "high": v} for k, v in (
+            ("km_after_street", m.km_after),
+            ("headway_peak_min", 1 / m.inv_headway[0] / 60 if m.inv_headway[0] else float("nan")),
+            ("headway_other_min", 1 / m.inv_headway[1] / 60 if m.inv_headway[1] else float("nan")),
+            ("meet_share_peak", m.meet_share if m.meet_share is not None else float("nan")),
+            ("offpeak_ratio", m.offpeak_ratio if m.offpeak_ratio is not None else float("nan")))]
+    ))  # fmt: skip
+    # the parking mapped around the street, as places at the central length of a place (occupancy is not known)
+    roles = r.cfg.cartography.roles()
+    park = unary_union(
+        [
+            g
+            for _, g in geometry.classed_polygons(
+                load_json(r.case, a_cartography(r))["features"], r.cfg.cartography.class_field, roles["parking"]
+            )
+        ]
+    )
+    stall = a.parameters["stall_m"].central
+    depth = float(r.table("summary_by_block").set_index("block").loc["all", ["strip_L_median", "strip_R_median"]].mean())
+    supply = {radius: park.intersection(r.axis.buffer(radius)).area / depth / stall for radius in (150, 300)}
+    vehicles = r.cfg.all_vehicles()
+    bus = vehicles[e.bus]
+    refs = (
+        [(row.document + ", p. " + str(row.page), float(row.value_m)) for row in r.table("standards_comparison").itertuples()]
+        if r.cfg.standards.compare
+        else []
+    )
+    one_side = r.cfg.profiles.parking_space_m
+    metres = max(m.metres.values())
+    places = (metres / max(one_side), metres / min(one_side))
+    lang = r.case.lang
+
+    def say(key: str, **kw: Any) -> str:
+        return i18n.t(f"appraisal.{key}", lang, **kw)
+
+    r.save("appraisal_feasibility", appraisal.feasibility(
+        a, r.table("without_parking"), envelope.widths(bus, bus, False), envelope.widths(bus, bus, True), refs, places, supply, say
+    ))  # fmt: skip
+    if a.reroutes:
+        route_days = a_route_passages(r, holidays)
+        r.save("appraisal_route_passages", route_days)
+        detours = a_detours(r, sorted({mv for rr in a.reroutes for mv in rr.moves}))
+        r.save("appraisal_detours", detours)
+        all_blocks = sorted({b for o in a.options for b in o.blocks})
+        attr_all = appraisal.attribution(tables["delay_by_part"], tables["delay_copresence"], all_blocks, a.significance)[1]
+        r.save("appraisal_reroutes", appraisal.reroutes(a, m, appraisal.central(a, m), attr_all, route_days, detours))
+    appraisal_report.write(r)
+
+
+def a_route_passages(r: Run, holidays: list[dt.date]) -> pd.DataFrame:
+    """Passages a day of each route and direction through the street, on the representative day of each kind."""
+    t = r.cfg.transit
+    assert t is not None
+    shapes = gtfs.shapes_along(r.feed, r.axis, r.case.crs, buffer_m=t.buffer_m)
+    trips = gtfs.trips_on_shapes(r.feed, shapes)
+    on_routes = trips[trips.route_short_name.isin(t.routes)]
+    stop_times = r.feed.stop_times(set(on_routes.trip_id))
+    days = sorted({row.date for row in r.table("appraisal_passages")[["day_kind", "date"]].drop_duplicates().itertuples()})
+    kinds = dict(r.table("appraisal_passages")[["date", "day_kind"]].drop_duplicates().itertuples(index=False, name=None))
+    rows = []
+    for day in days:
+        kind = kinds[day]
+        p = gtfs.reference_passings(
+            r.feed, on_routes, stop_times, t.reference_stops, dt.date.fromisoformat(str(day)), strict=kind == "working"
+        )
+        for (route, d, h), g in p.groupby(["route_short_name", "direction_id", "heading"]) if len(p) else []:
+            rows.append({"day_kind": kind, "key": f"{route} {d}", "heading": int(h), "passages": len(g)})
+    return pd.DataFrame(rows, columns=["day_kind", "key", "heading", "passages"])
+
+
+def a_detours(r: Run, keys: list[str]) -> pd.DataFrame:
+    """For each 'route direction_id' in ``keys``: its busiest shape on the street, the smallest detour round the street
+    on the area's street network (``reroute.detour``), the streets it uses that carry no bus today, and the stops on
+    the street it would no longer serve."""
+    t = r.cfg.transit
+    assert t is not None
+    source = r.cfg.area_scan.axes if r.cfg.area_scan else r.cfg.profiles.axes
+    net = reroute.Network(r.axes(source).items())
+    shapes = gtfs.shapes_along(r.feed, r.axis, r.case.crs, buffer_m=t.buffer_m)
+    trips = gtfs.trips_on_shapes(r.feed, shapes)
+    pts = r.feed.table("shapes", dtype={"shape_id": str})
+    stops = r.feed.table("stops", dtype={"stop_id": str})
+    tr = Transformer.from_crs(4326, r.case.crs, always_xy=True)
+    with_buses = set(r.table("area_streets").street) if r.cfg.area_scan else set()
+    rows = []
+    for key in keys:
+        route, d = key.split()
+        mine = trips[(trips.route_short_name == route) & (trips.direction_id == d) & (trips.heading != 0)]
+        if mine.empty:
+            raise MobilidadosError(f"appraisal.reroutes: {key} does not run along {r.cfg.street.name}")
+        sid = str(mine.shape_id.value_counts().index[0])
+        g = pts[pts.shape_id == sid].sort_values("shape_pt_sequence")
+        x, y = tr.transform(g.shape_pt_lon.to_numpy(), g.shape_pt_lat.to_numpy())
+        found = reroute.detour(net, LineString(list(zip(x, y, strict=True))), r.axis, r.cfg.street.name, bus_streets=with_buses)
+        if found is None:
+            raise MobilidadosError(f"appraisal.reroutes: no way round {r.cfg.street.name} found for {key}")
+        trip = mine[mine.shape_id.astype(str) == sid].trip_id.iloc[0]  # the stops of the shape the detour follows
+        served = r.feed.stop_times({trip}).merge(stops, on="stop_id")
+        sx, sy = tr.transform(served.stop_lon.to_numpy(), served.stop_lat.to_numpy())
+        shape = LineString(list(zip(x, y, strict=True)))
+        skipped = reroute.skipped(zip(served.stop_id, sx, sy, strict=True), shape, found.from_m, found.to_m, found.path)
+        rows.append({"key": key, "shape_id": sid, "lead_in_m": found.lead_in_m, "current_route_m": found.to_m - found.from_m,
+                     "with_street_m": found.with_street_m, "without_street_m": found.without_street_m, "detour_m": found.detour_m,
+                     "shorter_without_street": found.shorter_without, "detour_min_m": found.detour_min_m, "detour_max_m": found.detour_max_m, "on_bus_streets": found.on_bus_streets,
+                     "via": "; ".join(found.via), "via_without_buses_today": "; ".join(v for v in found.via if with_buses and v not in with_buses),
+                     "stops_skipped": " ".join(f"{s} ({n})" for s, n in zip(served.stop_id, served.stop_name, strict=True) if s in skipped)})  # fmt: skip
+    return pd.DataFrame(rows)
+
+
+def a_passages(r: Run, holidays: list[dt.date]) -> pd.DataFrame:
+    """Passages the timetable schedules through the street in each clock hour of a representative day of each kind: the
+    service day (a working day), and the first Saturday and the first Sunday after it that are not holidays."""
+    t = r.cfg.transit
+    assert t is not None
+    shapes = gtfs.shapes_along(r.feed, r.axis, r.case.crs, buffer_m=t.buffer_m)
+    trips = gtfs.trips_on_shapes(r.feed, shapes)
+    on_routes = trips[trips.route_short_name.isin(t.routes)]
+    stop_times = r.feed.stop_times(set(on_routes.trip_id))
+    off = set(holidays)
+
+    def next_day(weekday: int) -> dt.date:
+        d = t.service_date + dt.timedelta(days=1)
+        while d.weekday() != weekday or d in off:
+            d += dt.timedelta(days=1)
+        return d
+
+    rows = []
+    for kind, day in (("working", t.service_date), ("saturday", next_day(5)), ("sunday", next_day(6))):
+        p = gtfs.reference_passings(r.feed, on_routes, stop_times, t.reference_stops, day, strict=kind == "working")
+        hours = (p.t.astype(int) // 3600 % 24).value_counts() if len(p) else pd.Series(dtype=int)
+        rows += [{"day_kind": kind, "date": day.isoformat(), "hour": h, "passages": int(hours.get(h, 0))} for h in range(24)]
+    return pd.DataFrame(rows)
+
+
+def a_cartography(r: Run) -> str:
+    """The cartography that covers the surroundings: the area scan's if there is one, else the case's."""
+    return r.cfg.area_scan.cartography if r.cfg.area_scan else r.cfg.profiles.cartography
+
+
 def stage_figures(r: Run) -> None:
     figures.make_all(r)
 
@@ -341,6 +532,7 @@ STAGES: dict[str, Callable[[Run], None]] = {
     "occurrences": stage_occurrences,
     "area": stage_area,
     "standards": stage_standards,
+    "appraisal": stage_appraisal,
     "figures": stage_figures,
     "ledger": stage_ledger,
 }

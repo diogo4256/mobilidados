@@ -108,6 +108,7 @@ flowchart LR
 | `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
 | `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
 | `standards` | largura medida comparada com as referências de desenho de rua, cada uma com página e âmbito |
+| `appraisal` | estudo de viabilidade e análise custo-benefício das opções de retirar o estacionamento de um lado (sempre ou a certas horas): VAL, benefício/custo, valores de inversão, simulação de Monte Carlo, viabilidade técnica, legal e social, e o estudo completo em `appraisal.md` ([docs/appraisal.md](https://github.com/diogo4256/mobilidados/blob/main/docs/appraisal.md)) |
 | `ledger` | `findings.md` / `findings.json`: cada afirmação com a sua base, fontes, método e reservas |
 
 ## O que (ainda) não faz
@@ -156,6 +157,20 @@ horário vem do arquivo da Mobility Database, onde o ficheiro exato continua dis
 CASO PASTA` copia para uma pasta os dados que a licença deixa redistribuir, para os guardar (por exemplo no
 Zenodo); `mobilidados fetch CASO --from-dir PASTA` volta a pô-los no sítio, só se forem exatamente os ficheiros
 registados.
+
+### Conferir um documento escrito com os resultados
+
+Uma proposta ou um relatório escrito à mão a partir das tabelas desatualiza-se quando o modelo muda, e uma frase
+pode sobreviver à condição que descrevia. `mobilidados check-doc CASO documento.md --lang pt [--other document.md]`
+lê o documento exportado em markdown, sem IA, e:
+
+* confere as afirmações-chave fixadas no `doc_check.toml` do caso, cada uma presa à célula das tabelas de resultados
+  (ou a uma conta com células) que cita, à precisão impressa: uma afirmação com número errado, que deixou de
+  estar no texto ou cuja célula deixou de existir nos resultados faz o comando falhar, e o relatório diz porquê;
+* lista os números que nenhuma tabela citada, entrada ou valor configurado explica;
+* com `--other`, lista os números que só uma das versões (português e inglês) imprime.
+
+Os gráficos têm os seus próprios números: confira-os com as tabelas da mesma forma antes de publicar.
 
 ## Ferramentas com IA (opcionais)
 

@@ -129,11 +129,24 @@ buffer_m = 12
 [envelope]
 bus = "carris_man_city_gold"
 car = "car_typical"
+# Passing in practice, not on paper: CIHT, Buses in Urban Developments (2018), B.2.2: an unobstructed 6.2 m lets two
+# buses pass without slowing at 20 mph or less (6.5 m above), and the carriageway must be kept clear of parked
+# vehicles. Two 2.50 m bodies leave 1.2 m for movement, mirrors and safety; the same room is applied to every pair.
+practical_clearance_m = 1.2
+practical_clearance_source = "CIHT (2018), Buses in Urban Developments, B.2.2: 6.2 m unobstructed for two buses at 20 mph or less, less two 2.50 m bodies. Portuguese law sets the duty, not the number: Código da Estrada, art. 18.º, n.º 2, 'distância lateral suficiente para evitar acidentes' from vehicles in the same or the opposite direction (fine €60–300, n.º 4); its only figure is 1.5 m to a cyclist (n.º 3)"
 scenarios = [
   ["carris_man_city_gold"],
   ["carris_man_city_gold", "car_typical"],
   ["carris_man_city_gold", "carris_man_city_gold"],
   ["car_typical", "car_typical"],
+  ["carris_man_city_gold", "suv_large"],
+  ["carris_man_city_gold", "van_sprinter"],
+  ["carris_man_city_gold", "van_transit"],
+  ["carris_man_city_gold", "truck_eu_max"],
+  ["van_transit", "car_typical"],
+  ["van_transit", "van_transit"],
+  ["suv_large", "suv_large"],
+  ["truck_eu_max", "car_typical"],
 ]
 
 [occurrences]
@@ -151,7 +164,7 @@ min_pattern_m = 30
 identify_source = "area_network_identify"
 
 [standards]
-compare = ["cml_manual_two_way_profile", "rast06_bus_bus"]
+compare = ["cml_manual_two_way_profile", "ciht_bus_routes_20mph", "rtscie_fire_access_over_9m", "rast06_bus_bus"]
 
 # A case gives the envelopes of the four ArcGIS sources (around its street, and around its area).
 [sources.cartography]

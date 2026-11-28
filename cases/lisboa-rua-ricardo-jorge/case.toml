@@ -59,3 +59,679 @@ envelope = [-9.1560, 38.7440, -9.1270, 38.7660]
 [[known_gaps]]
 pt = "Não há observação de campo de dois autocarros a cruzar-se nesta rua: os encontros são estimativas do horário."
 en = "No field observation of two buses meeting on this street: encounters are timetable estimates."
+
+# Feasibility and cost-benefit appraisal of giving one parking strip back to the carriageway (docs/appraisal.md).
+# Every value has a range, a grade and its source; the measured inputs (the peak excess, the share of it each option
+# can remove, the buses at peak, the working days, the metres of parking) come from the run's own tables.
+[appraisal]
+price_year = 2025
+horizon_years = 10
+discount_rate = 0.05             # EAV 2021-2027, p. 20: 5 % for cohesion countries (Reg. 2015/207, annex III)
+discount_rates_tested = [0.03, 0.07]
+horizons_tested = [20]
+seed = 20261118
+# the off-peak delay and the peak delay come from the same encounters in the same narrow sections: they move together;
+# where the streets nearby have no room at night, the car parks are likely to be fuller too
+correlations = [{ a = "excess_s", b = "offpeak_s", rho = 0.5 }, { a = "room_nearby", b = "spare_capacity", rho = 0.5 }]
+# the central off-peak excess: the peak excess scaled by how often buses meet off-peak relative to the peak, at the
+# junction where they demonstrably meet (delay_copresence.csv); the range stays as below
+offpeak_from_copresence = true
+# the off-peak excess comes from working days; on Saturdays and Sundays fewer buses run, so they meet less often
+offpeak_scales_with_service = true
+
+references = [
+  "Comissão Europeia (2021), Economic Appraisal Vademecum 2021-2027: General Principles and Sector Applications, <https://jaspers.eib.org/LibraryNP/EC%20Reports/Economic%20Appraisal%20Vademecum%202021-2027%20-%20General%20Principles%20and%20Sector%20Applications.pdf>",
+  "Eurostat, Labour cost levels by NACE Rev. 2 activity (lc_lci_lev), Portugal, 2025, <https://ec.europa.eu/eurostat/databrowser/view/lc_lci_lev/default/table>",
+  "Carris, Relatório e Contas 2024, <https://carris.pt/media/ikvdezmc/relat%C3%B3rio-e-contas-carris-2024.pdf>",
+  "EMEL, Plano de Atividades e Orçamento 2026-2029, <https://www.emel.pt/fotos/financeiro/emel_pao_2026-2029_signed_signed_133048145369a6e017b0094.pdf>",
+  "Diário de Notícias, «Ninguém paga mais de 46,30 euros mensais nos parques da EMEL», <https://www.dn.pt/sociedade/ninguem-paga-mais-de-46-30-euros-mensais-nos-parques-da-emel-saiba-porque>",
+  "Observador (20/03/2025), «Câmara de Lisboa disponibiliza 3 500 lugares de estacionamento noturno em parceria com EMEL e Telpark», <https://observador.pt/2025/03/20/camara-de-lisboa-disponibiliza-3-500-lugares-de-estacionamento-noturno-em-parceria-com-emel-e-telpark/>",
+  "Imovirtual, garagens para arrendar em Alvalade (consultado em novembro de 2026), <https://www.imovirtual.com/pt/resultados/arrendar/garagem/lisboa/lisboa/alvalade>",
+  "Junta de Freguesia de Alvalade, Plano de Atividades e Orçamento 2022: manutenção e gestão do espaço público, <https://www.jf-alvalade.pt/wp-content/uploads/manutencaogestaodoespacopublicoequipamentos-pao2022-jfa-web.pdf>",
+  "Decreto Regulamentar n.º 22-A/98, Regulamento de Sinalização do Trânsito, <https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/22-a-1998-302974>",
+  "Lei n.º 75/2013, de 12 de setembro, Regime Jurídico das Autarquias Locais (Diário da República, 1.ª série, n.º 176/2013)",
+  "Carris, Relatório e Contas 2025, <https://www.carris.pt/media/huxjvfft/relat%C3%B3rio-e-contas-carris-2025_vers%C3%A3o-site.pdf>",
+  "Comissão Europeia, DG MOVE (2019), Handbook on the external costs of transport, versão 2019 – 1.1, CE Delft, <https://op.europa.eu/en/publication-detail/-/publication/9781f65f-8448-11ea-bf12-01aa75ed71a1>",
+  "Eurostat, HICP – índice anual (prc_hicp_aind), Portugal, 2016 e 2025, <https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_aind/default/table>",
+  "RAND Europe e SYSTRA para o Department for Transport (2018), Bus fare and journey time elasticities and diversion factors for all modes, <https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/719278/bus-fare-journey-time-elasticities.pdf>",
+  "Department for Transport (2025), Value for Money Framework, maio de 2025, caixa 5.1, <https://assets.publishing.service.gov.uk/media/682ccabf1be3f53ed5f4534e/value-for-money-framework.pdf>",
+  "Rádio Renascença (15/06/2026), «Banco de Portugal prevê défice de 0,2% este ano e de 0,5% em 2027» (projeções do Boletim Económico de junho de 2026), <https://rr.pt/noticia/economia/2026/06/15/banco-de-portugal-preve-defice-de-02-este-ano-e-de-05-em-2027/474408/>",
+  "Ingvardson, J. B., Nielsen, O. A., Raveau, S. e Nielsen, B. F. (2018), Passenger arrival and waiting time distributions dependent on train service frequency and station characteristics: a smart card data analysis, Transportation Research Part C 90, 292–306, <https://orbit.dtu.dk/en/publications/passenger-arrival-and-waiting-time-distributions-dependent-on-tra/>",
+  "Transport for London, Bus operator league tables (alta frequência: 5 ou mais autocarros por hora, tempo de espera em excesso; baixa frequência: pontualidade), <https://tfl.gov.uk/corporate/publications-and-reports/bus-operator-league-tables>",
+  "Paulley, N. et al. (2006), The demand for public transport: the effects of fares, quality of service, income and car ownership, Transport Policy 13(4), 295–306, <https://doi.org/10.1016/j.tranpol.2005.12.004>",
+  "ISEG – CEsGE para a ANSR (2021), O Impacto Económico e Social da Sinistralidade Rodoviária em Portugal (dados de 2019), secção 5.4 e quadro 5.1, <https://ansr.pt/sites/default/files/noticias-docs/O%20Impacto%20Economico%20e%20Social%20da%20Sinistralidade%20-%20PT.pdf>",
+  "Código da Estrada, art. 18.º (Distância entre veículos), n.os 2 a 4, versão consolidada, <https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1994-34485875>",
+  "Portaria n.º 135/2020, de 2 de junho, que altera e republica o Regulamento Técnico de Segurança contra Incêndio em Edifícios (Portaria n.º 1532/2008), art. 4.º, n.º 7, e art. 5.º, n.º 1, <https://diariodarepublica.pt/dr/detalhe/portaria/135-2020-134991810>",
+]
+
+[appraisal.parameters.vot]
+low = 3.88
+central = 6.00
+high = 7.76
+grade = "I"
+unit = "€/h"
+label = "Valor do tempo de um passageiro"
+source = "Eurostat lc_lci_lev, Portugal 2025: 19,40 €/h de custo da mão de obra; EAV 2021-2027, p. 55: deslocações pendulares a 25–40 % e outras a 20–35 % desse valor; na ponta da tarde admite-se uma maioria de regressos a casa (P)"
+
+[appraisal.parameters.time_weight]
+low = 1.0
+central = 1.5
+high = 2.5
+grade = "P"
+label = "Peso do tempo de atraso face ao tempo a bordo"
+source = "EAV 2021-2027, quadro 7: tempo em congestionamento 1,5; atraso no transporte público 2,5–4, este para atrasos imprevistos; o atraso medido repete-se todos os dias úteis, por isso o valor central é o do congestionamento"
+
+[appraisal.parameters.load_peak]
+low = 13.1
+central = 20.0
+high = 30.0
+grade = "P"
+unit = "passageiros"
+label = "Passageiros a bordo, na ponta da tarde"
+source = "Carris, Relatório e Contas 2024, p. 14 e 26–27: taxa de ocupação dos autocarros 19,58 % × 2 270 milhões de lugares·km ÷ 33,969 milhões de veículos·km = 13,1 passageiros em média no dia; a Carris não publica a ocupação por carreira nem por hora, e na ponta admite-se mais"
+
+[appraisal.parameters.bus_cost_h]
+low = 0.0
+central = 34.6
+high = 55.5
+grade = "I"
+unit = "€/h"
+label = "Custo de uma hora de autocarro parado"
+source = "Carris, Relatório e Contas 2024: gastos com o pessoal 94,07 M€ ÷ 2,718 milhões de veículos·hora = 34,6 €/h; todos os gastos operacionais (150,93 M€) dariam 55,5 €/h; 0 se o atraso não alterar horários nem turnos"
+
+[appraisal.parameters.occupancy]
+low = 0.85
+central = 0.95
+high = 1.0
+grade = "P"
+label = "Ocupação dos lugares retirados"
+source = "A ocupação das ruas vizinhas não foi encontrada (NE); a Junta de Freguesia (Plano de Atividades 2022) pede um parque subterrâneo junto à Av. da Igreja para as necessidades dos moradores, e a EMEL (Plano 2026-2029) aponta a pressão dos dísticos de residente"
+
+[appraisal.parameters.car_value]
+low = 264.0
+central = 555.6
+high = 2100.0
+grade = "I"
+unit = "€/ano"
+label = "Preço anual de estacionar noutro sítio, para quem perde o lugar"
+source = "Mínimo: avença noturna da EMEL e da Telpark, 22 €/mês (Observador, 20/03/2025). Central: avença R24 da EMEL para residentes, 46,30 €/mês (DN, citando a EMEL). Máximo: lugar de garagem arrendado em Alvalade, cerca de 175 €/mês (anúncios Imovirtual, 150–200 €/mês). O tempo a pé até ao parque conta à parte (carpark_walk)"
+
+[appraisal.parameters.share_E]
+low = 0.40
+central = 0.55
+high = 0.75
+grade = "I"
+label = "Opção E: parte do valor do lugar perdida das 7h às 20h nos dias úteis"
+source = "Avenças da EMEL e Telpark: noturna (18h–10h e fins de semana) 22 €/mês contra 46,30 €/mês por 24 h, donde (46,30 − 22) ÷ 46,30 = 0,52 do valor está no dia útil"
+
+[appraisal.parameters.share_G]
+low = 0.25
+central = 0.45
+high = 0.70
+grade = "P"
+label = "Opções G e H: parte do valor do lugar perdida das 16h às 20h nos dias úteis"
+source = "Quem deixa o carro durante o dia tem de o tirar antes das 16h, e quem chega entre as 16h e as 20h não pode estacionar desse lado: são as horas de chegada a casa; sem dados de uso dos lugares, é um pressuposto, e o valor de inversão diz quanto pode valer"
+
+[appraisal.parameters.compliance_permanent]
+low = 0.80
+central = 0.90
+high = 1.0
+grade = "P"
+label = "Cumprimento de uma proibição permanente"
+source = "Pressuposto; a Carris registou 1 365 interrupções por estacionamento indevido em 2024 (Relatório e Contas 2024, p. 26)"
+
+[appraisal.parameters.compliance_hours]
+low = 0.60
+central = 0.80
+high = 0.95
+grade = "P"
+label = "Cumprimento de uma proibição por horas"
+source = "Pressuposto; uma proibição por horas pede fiscalização às horas certas"
+
+[appraisal.parameters.sign_cost]
+low = 150.0
+central = 300.0
+high = 600.0
+grade = "P"
+unit = "€"
+label = "Sinal vertical colocado (C15, com painel adicional se houver horário)"
+source = "Pressuposto: não se encontrou um preço unitário público em Portugal; a obra pesa pouco no resultado (appraisal_tornado.csv)"
+
+[appraisal.parameters.marking_cost_m]
+low = 2.0
+central = 5.0
+high = 15.0
+grade = "P"
+unit = "€/m"
+label = "Marcação no pavimento, por metro"
+source = "Pressuposto, como o anterior; metade é repintada a cada 5 anos"
+
+[appraisal.parameters.enforcement_year]
+low = 0.0
+central = 1000.0
+high = 5000.0
+grade = "P"
+unit = "€/ano"
+label = "Fiscalização a mais de uma proibição por horas"
+source = "Pressuposto; 0 se couber nas rondas da EMEL e da Polícia Municipal"
+
+[appraisal.parameters.income_growth]
+low = 0.0
+central = 0.010
+high = 0.018
+grade = "P"
+unit = "por ano"
+label = "Crescimento real do rendimento por pessoa"
+source = "EAV 2021-2027, p. 59: os valores unitários crescem com o PIB por pessoa (elasticidade 1 para o valor do tempo calculado do custo da mão de obra do Eurostat, 0,8 para as externalidades); aqui também o custo da Carris e o valor de um lugar, para que os dois lados cresçam por igual. Banco de Portugal (junho de 2026): PIB real +1,8 % em 2026, +1,6 % em 2027, +1,8 % em 2028; o crescimento da população não foi verificado (NE), por isso se admite 1 % por pessoa, entre 0 e o crescimento do PIB"
+
+[appraisal.parameters.stall_m]
+low = 5.0
+central = 5.5
+high = 6.0
+grade = "P"
+unit = "m"
+label = "Comprimento de um lugar"
+source = "Como no registo de factos (profiles.parking_space_m)"
+
+# --- the extended layer: mechanisms the measurement does not cover yet (docs/appraisal.md, "Two layers") ----------
+
+[appraisal.parameters.offpeak_s]
+low = 0.0
+central = 3.0
+high = 8.0
+grade = "I"
+unit = "s"
+label = "Excesso por passagem fora da ponta (todos os dias)"
+source = "Inferido, não medido: o método compara a ponta com o resto do dia, que é a sua base, e não pode medir o resto do dia. O valor central (que substitui o 3,0 acima) é o excesso medido na ponta multiplicado pela razão entre o excesso de encontros fora da ponta e na ponta, no cruzamento onde os autocarros comprovadamente se encontram (delay_copresence.csv): admite o mesmo tempo perdido por encontro. Mínimo 0: fora da ponta, o tempo no troço é igual ao dos troços de controlo à mesma escala (delay_by_hour.csv), e o excesso de encontros fora da ponta não é significativo (p ≈ 0,10). Os registos de passagem pedidos à Carris medem-no"
+
+[appraisal.parameters.load_offpeak]
+low = 8.0
+central = 12.0
+high = 13.8
+grade = "I"
+unit = "passageiros"
+label = "Passageiros a bordo, fora da ponta"
+source = "Carris, Relatório e Contas 2025, p. 16: 488,5 milhões de passageiros·km ÷ 35,4 milhões de veículos·km = 13,8 passageiros em média, todo o dia e toda a rede; fora da ponta, menos (P)"
+
+[appraisal.parameters.unexpected_share]
+low = 0.0
+central = 0.3
+high = 0.7
+grade = "P"
+label = "Parte do atraso que o passageiro não pode prever (um autocarro retido por outro)"
+source = "Sem dados da distribuição dos tempos de passagem; a cauda dessa distribuição (passagens de minutos em vez de segundos) nos registos pedidos à Carris mede-a"
+
+[appraisal.parameters.lateness_weight]
+low = 2.5
+central = 3.0
+high = 4.0
+grade = "D"
+label = "Peso do atraso imprevisto face ao tempo a bordo"
+source = "EAV 2021-2027, quadro 7: atraso no transporte público, 2,5 a 4 vezes o tempo a bordo"
+
+[appraisal.parameters.transfer_share]
+low = 0.10
+central = 0.25
+high = 0.40
+grade = "P"
+label = "Parte dos passageiros que muda para o comboio ou o metro mais adiante"
+source = "Horário GTFS da Carris: a 744 liga a rua à Estação de Entrecampos (cerca de 12 min; CP, Fertagus, metro) e à Gare do Oriente (cerca de 14 min); a 46B ao Campo Grande e a Entrecampos (metro). Um atraso faz perder o comboio marcado: para quem muda, o atraso pesa como atraso imprevisto. A parte dos que mudam não é publicada"
+
+[appraisal.parameters.other_vehicle_share]
+low = 0.0
+central = 0.5
+high = 1.0
+grade = "P"
+label = "Parte do atraso nos cruzamentos sem autocarros em sentido contrário que se deve a ligeiros, furgões e pesados"
+source = "O Código da Estrada exige «distância lateral suficiente» entre veículos que se cruzam (art. 18.º, n.º 2). Com as margens dos guias de desenho de ruas (CIHT 2018, B.2.2: 6,2 m para dois autocarros), um autocarro também não se cruza com um ligeiro, um furgão ou um pesado em 4,90 m (passing_practice.csv); no cruzamento da R. Constantino Fernandes perdem-se 3,9 s sem mais autocarros em sentido contrário do que o acaso dá. Admite-se que metade se deve a esses encontros, que a supressão também resolve; a outra metade, ao trânsito do cruzamento. Uma contagem classificada com vídeo fixa-o"
+
+[appraisal.safety_references.slight_injury]
+low = 76160.0
+central = 76160.0
+high = 76160.0
+grade = "D"
+unit = "€ por acidente"
+label = "Acidente só com feridos leves (custo médio para a sociedade)"
+source = "ISEG para a ANSR (2021), O Impacto Económico e Social da Sinistralidade Rodoviária em Portugal, secção 5.4: 63 276 € por acidente do qual resultam apenas feridos leves, a preços de 2019 (35 344 € humanos, 17 189 € produção, 1 454 € médicos, 6 735 € danos na propriedade, 1 896 € administrativos, 657 € outros) × 1,204 (IHPC de Portugal, Eurostat, 2019 → 2025: 124,83 ÷ 103,71)"
+
+[appraisal.safety_references.with_victims]
+low = 175990.0
+central = 175990.0
+high = 175990.0
+grade = "D"
+unit = "€ por acidente"
+label = "Acidente com vítimas, média nacional (custo para a sociedade)"
+source = "ISEG para a ANSR (2021), secção 5.4: 146 219 € por acidente com vítimas, a preços de 2019, × 1,204 (IHPC de Portugal, 2019 → 2025)"
+
+[appraisal.parameters.cruise_km_day]
+low = 0.0
+central = 0.5
+high = 1.3
+grade = "P"
+unit = "km por dia"
+label = "Quilómetros a mais por dia, à procura de lugar, de quem encontra lugar perto"
+source = "Pressuposto: dos 4 minutos por dia de procura e caminhada de quem encontra lugar a menos de 150 m (walk_cost), cerca de 2 a circular a 15 km/h (0,5 km); máximo: os 4 minutos a circular a 20 km/h (1,3 km). Valorizados aos custos externos por passageiro·km (external_cost_pkm) × pessoas por carro: congestionamento, poluição, clima, ruído e acidentes"
+
+[appraisal.parameters.downstream_boarders]
+low = 0.5
+central = 1.0
+high = 1.5
+grade = "I"
+unit = "×"
+label = "Quem embarca depois da rua e ainda apanha o atraso, face à estimativa pela conservação do fluxo"
+source = "Quem embarca nos km que o autocarro ainda percorre depois da rua (horário GTFS, downstream_km.csv) = passageiros a bordo × esses km ÷ a viagem média (3,7 km, Carris 2025). O intervalo, de metade a uma vez e meia, cobre também o atraso que o autocarro recupera nos km seguintes (mínimo) ou que cresce com os autocarros em grupo (máximo); as entradas por paragem e os registos de passagem pedidos à Carris fixam-no"
+
+[appraisal.parameters.downstream_timed]
+low = 0.55
+central = 0.74
+high = 0.92
+grade = "I"
+unit = "parte"
+label = "Parte de quem embarca depois da rua que acerta a chegada à paragem pelo horário"
+source = "Ingvardson, Nielsen, Raveau e Nielsen (2018), Transportation Research Part C 90, 292–306, dados de bilhética de Copenhaga: os passageiros dividem-se entre os que chegam ao acaso e os que acertam a chegada pelo horário, mais estes quanto maior o intervalo; 55% a 10 min, 74% a 20 min, 90% a 30 min, 92% a 60 min, citados por outro estudo (o texto integral não pôde ser lido daqui). A 744 passa a cada cerca de 17 min, a 46B a cada cerca de 40. A TfL avalia as carreiras com até 4 autocarros por hora pela pontualidade, e as mais frequentes pelo tempo de espera em excesso"
+
+[appraisal.parameters.wait_weight]
+low = 1.5
+central = 1.75
+high = 2.0
+grade = "D"
+unit = "×"
+label = "Peso do tempo de espera face ao tempo a bordo"
+source = "EAV, quadro 7: tempo de espera e a pé, 1,5 a 2 vezes o tempo a bordo"
+
+[appraisal.parameters.cars_behind]
+low = 0.0
+central = 0.5
+high = 2.0
+grade = "P"
+label = "Carros retidos atrás de um autocarro parado ou preso"
+source = "Sem contagem de tráfego na rua (NE); uma contagem num dia útil fixa-o"
+
+[appraisal.parameters.car_occupancy]
+low = 1.2
+central = 1.4
+high = 1.7
+grade = "I"
+unit = "pessoas"
+label = "Pessoas por carro"
+source = "Handbook on the external costs of transport (2019), quadro 94: 1,7 pessoas por carro na UE28; nas deslocações urbanas e pendulares é menos (P)"
+
+[appraisal.parameters.elasticity_ivt]
+low = 0.40
+central = 0.60
+high = 0.65
+grade = "D"
+label = "Elasticidade da procura do autocarro ao tempo a bordo (valor absoluto)"
+source = "RAND Europe e SYSTRA para o DfT (2018), secção 6.6: −0,60 a longo prazo (Wardman 2012: −0,55 lazer, −0,65 pendular); Paulley et al. (2006): cerca de −0,4"
+
+[appraisal.parameters.journey_min]
+low = 10.0
+central = 16.0
+high = 25.0
+grade = "I"
+unit = "min"
+label = "Tempo a bordo de uma viagem de autocarro, em média"
+source = "Carris, Relatório e Contas 2025, p. 16: 488,5 milhões de passageiros·km ÷ 131,8 milhões de passageiros = 3,7 km por viagem; a cerca de 14 km/h (P), cerca de 16 min"
+
+[appraisal.parameters.diversion_car]
+low = 0.24
+central = 0.25
+high = 0.30
+grade = "D"
+label = "Parte dos novos passageiros que deixa o carro"
+source = "RAND Europe e SYSTRA para o DfT (2018), quadro 26: numa melhoria do autocarro, 0,25 dos novos passageiros vinham do carro (áreas metropolitanas), 0,30 onde não há metro ligeiro, 0,24 na média nacional"
+
+[appraisal.parameters.trip_km]
+low = 2.5
+central = 3.7
+high = 5.0
+grade = "I"
+unit = "km"
+label = "Comprimento da viagem de carro substituída"
+source = "Igual à viagem média de autocarro: 3,7 km (Carris, Relatório e Contas 2025)"
+
+[appraisal.parameters.external_cost_pkm]
+low = 0.038
+central = 0.198
+high = 0.478
+grade = "I"
+unit = "€/pkm"
+label = "Custos externos evitados por passageiro·km que deixa o carro"
+source = "Handbook on the external costs of transport (2019), quadros 125 e 115, preços de 2016 × 1,240 (IHPC de Portugal, Eurostat, 2016 → 2025): acidentes 1,41, poluição 0,14–0,86, clima 0,88–1,00, ruído 0,5–1,1 e a montante 0,14–0,26 cêntimos por passageiro·km (tráfego metropolitano denso, de dia); congestionamento em Portugal, outras vias urbanas, 41,1 (perto da capacidade) a 57,7 (acima) cêntimos por veículo·km ÷ 1,7 pessoas por carro. Mínimo: sem congestionamento; central: metade das viagens perto da capacidade; máximo: todas acima"
+
+[appraisal.parameters.damage_year]
+low = 0.0
+central = 500.0
+high = 3000.0
+grade = "P"
+unit = "€/ano"
+label = "Danos em autocarros e carros estacionados por toques nos estreitamentos"
+source = "Em toda a rua, nos troços estreitos e nos cruzamentos entre eles; sem dados (NE): o registo de ocorrências pedido à Carris fixa-o; central: um espelho de autocarro por ano (P)"
+
+[appraisal.parameters.room_nearby]
+low = 0.0
+central = 0.3
+high = 1.0
+grade = "P"
+label = "Parte dos carros deslocados que encontra lugar a menos de 150 m"
+source = "Há cerca de 780 lugares cartografados a menos de 150 m (appraisal_feasibility.csv): bastam 21 livres (2,7 %) à noite. A ocupação noturna não é conhecida (NE), e a Junta e a EMEL apontam pressão; uma contagem noturna fixa-o"
+
+[appraisal.parameters.carpark_walk]
+low = 65.0
+central = 195.0
+high = 390.0
+grade = "P"
+unit = "€/ano"
+label = "Custo anual, para quem passa a estacionar num parque, do tempo a pé até casa"
+source = "Mais 2, 6 ou 12 minutos por dia, 365 dias, ao valor do tempo de lazer (5,34 €/h, como walk_cost); a distância ao parque mais próximo com avença não é conhecida (NE)"
+
+[appraisal.parameters.spare_capacity]
+low = 0.0
+central = 0.5
+high = 1.0
+grade = "P"
+unit = ""
+label = "Parte do preço do parque que é uma transferência: o parque tem lugares vagos"
+source = "A ocupação dos parques perto não é conhecida (NE). Em 2025 a Câmara abriu 3 500 lugares noturnos em parques da EMEL e da Telpark (Observador, 20/03/2025), sinal de capacidade livre à noite. Com lugares vagos, a avença é uma transferência para o operador do parque e fica fora das contas da sociedade (EAV 2021-2027; DfT TAG A1.3: as tarifas de estacionamento são transferências entre utilizadores e operadores), e só o tempo a pé é custo; num parque cheio, o preço mede o custo de oportunidade do lugar. A EMEL pode dar a ocupação"
+
+[appraisal.parameters.walk_cost]
+low = 65.0
+central = 130.0
+high = 260.0
+grade = "P"
+unit = "€/ano"
+label = "Custo anual, para quem estaciona perto, de procurar e andar mais"
+source = "Mais 2, 4 ou 8 minutos por dia (pressuposto: o tempo a pé não foi medido), 365 dias, ao valor do tempo de lazer (5,34 €/h, como no mínimo do custo de estacionar noutro sítio)"
+
+[appraisal.parameters.calming_cost]
+low = 0.0
+central = 5000.0
+high = 20000.0
+grade = "P"
+unit = "€"
+label = "Acalmia de tráfego, se a velocidade subir na faixa mais larga"
+source = "Pressuposto: uma faixa mais larga convida a ir mais depressa; passadeiras sobrelevadas ou outras medidas, se a medição antes e depois o mostrar. Não se encontrou um preço unitário público"
+
+[[appraisal.options]]
+id = "B"
+label = "um lado, sempre, nos três troços com estacionamento dos dois lados"
+blocks = ["B1", "B2", "B3"]
+compliance = "compliance_permanent"
+signs = 4
+
+[[appraisal.options]]
+id = "C"
+label = "um lado, sempre, só no troço B2, o mais longo"
+blocks = ["B2"]
+compliance = "compliance_permanent"
+signs = 2
+
+[[appraisal.options]]
+id = "E"
+label = "um lado, das 7h às 20h nos dias úteis, nos três troços"
+blocks = ["B1", "B2", "B3"]
+days = "working"
+hours = [7, 20]
+parking_share = "share_E"
+compliance = "compliance_hours"
+signs = 6
+
+[[appraisal.options]]
+id = "G"
+label = "um lado, das 16h às 20h nos dias úteis, nos três troços"
+blocks = ["B1", "B2", "B3"]
+days = "working"
+hours = [16, 20]
+parking_share = "share_G"
+compliance = "compliance_hours"
+signs = 6
+
+[[appraisal.options]]
+id = "H"
+label = "um lado, das 16h às 20h nos dias úteis, só no troço B2"
+blocks = ["B2"]
+days = "working"
+hours = [16, 20]
+parking_share = "share_G"
+compliance = "compliance_hours"
+signs = 3
+
+[[appraisal.alternatives]]
+id = "R"
+label = "um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar"
+parking_m = 20.0
+blocks = ["B2"]
+signs = 2
+works = 100.0
+
+# --- taking buses off the street instead of parking (appraisal.reroutes; docs/appraisal.md, "Reroutes") ------------
+[[appraisal.reroutes]]
+id = "R744NE"
+label = "a 744 para nordeste por outras ruas: a rua fica só com autocarros para sudoeste, sem encontros"
+moves = ["744 0"]
+
+[[appraisal.reroutes]]
+id = "R744SW"
+label = "a 744 para sudoeste por outras ruas: na rua, a 744 para nordeste só se cruza com a 46B"
+moves = ["744 1"]
+
+[[appraisal.reroutes]]
+id = "R744"
+label = "a 744 nos dois sentidos por outras ruas: na rua fica só a 46B"
+moves = ["744 0", "744 1"]
+
+[[appraisal.reroutes]]
+id = "R46B"
+label = "a 46B por outras ruas: a 744 para nordeste deixa de se cruzar com ela"
+moves = ["46B 0"]
+
+[[appraisal.reroutes]]
+id = "RSW"
+label = "a 744 para sudoeste e a 46B por outras ruas: a rua fica só com autocarros para nordeste, sem encontros"
+moves = ["744 1", "46B 0"]
+
+[appraisal.reroute_parameters.detour_speed_kmh]
+low = 12.7
+central = 18.0
+high = 25.0
+grade = "P"
+unit = "km/h"
+label = "Velocidade de um autocarro no desvio"
+source = "Pressuposto: o desvio acrescenta percurso, não paragens. Mínimo: a velocidade programada na própria rua, com paragens (encounters_summary.csv, 12,7 km/h); máximo: 25 km/h. Mais depressa favorece o desvio"
+
+[appraisal.reroute_parameters.walk_extra_min]
+low = 2.0
+central = 3.0
+high = 5.0
+grade = "P"
+unit = "min"
+label = "Caminho a mais para quem usava uma paragem que deixa de ser servida"
+source = "Pressuposto: cerca de 250 m (2 a 5 minutos a pé) até à paragem mais próxima no novo percurso; a localização dessa paragem depende do desenho do desvio"
+
+[appraisal.reroute_parameters.access_weight]
+low = 1.5
+central = 1.75
+high = 2.0
+grade = "D"
+label = "Peso do tempo a pé face ao tempo a bordo"
+source = "EAV 2021-2027, quadro 7: tempo a pé, 1,5 a 2 vezes o tempo a bordo"
+
+[[appraisal.criteria]]
+id = "reliability"
+dimension = "passengers"
+label = "Fiabilidade da viagem de autocarro (o stress de não saber quando se chega)"
+indicator = "Dispersão do tempo de passagem; impasses por semana"
+effects = { B = "++", C = "+", E = "+", G = "+", H = "+" }
+grade = "I"
+note = "Sem o estacionamento de um lado, dois autocarros cruzam-se sem esperar (6,91 m livres; precisam de 5,80 m com espelhos): acabam os impasses e o tempo perdido no cruzamento com a R. Cor. Marques Leitão. B em toda a rua e a toda a hora; C só no troço mais longo; E, G e H só nas horas em que vigoram."
+source = "without_parking.csv, width_budget.csv, delay_copresence.csv"
+
+[[appraisal.criteria]]
+id = "rail"
+dimension = "network"
+label = "Acesso ao comboio e ao metro"
+indicator = "Ligações perdidas em Entrecampos, no Oriente e no Campo Grande"
+effects = { B = "+", C = "+", E = "+", G = "+", H = "+" }
+grade = "I"
+note = "A 744 liga a rua à Estação de Entrecampos (cerca de 12 min) e à Gare do Oriente (cerca de 14 min); a 46B ao Campo Grande e a Entrecampos. Um comboio perdido custa o intervalo até ao seguinte; a camada alargada conta o atraso de quem muda como atraso imprevisto, mas não a confiança de poder contar com a ligação."
+source = "Horário GTFS da Carris (outubro de 2026)"
+
+[[appraisal.criteria]]
+id = "residents"
+dimension = "residents"
+label = "Qualidade de vida de quem estaciona na rua"
+indicator = "Minutos a mais por dia a procurar lugar e a andar; lugares de cargas e de pessoas com mobilidade reduzida"
+effects = { B = "--", C = "-", E = "-", G = "-", H = "-" }
+grade = "I"
+note = "Cerca de 21 lugares em B, E e G; 10 em C e H; nas opções por horas, só nessas horas. O custo em dinheiro está nas contas; aqui fica o resto: a incerteza de encontrar lugar, as cargas e descargas, quem tem mobilidade reduzida."
+source = "appraisal_results.csv; cartografia municipal"
+
+[[appraisal.criteria]]
+id = "street"
+dimension = "environment"
+label = "Ruído e ar na rua"
+indicator = "Paragens, recuos e arranques de autocarros com o motor ligado; carros a circular à procura de lugar"
+effects = { B = "+", C = "+", E = "+", G = "+", H = "+" }
+grade = "P"
+note = "Menos paragens, recuos e arranques de autocarros numa rua estreita, com prédios dos dois lados; do outro lado, mais carros às voltas à procura de lugar se não houver lugares livres perto. A camada alargada conta os custos externos das viagens tiradas ao carro; o ruído na própria rua não tem medição."
+source = "Handbook on the external costs of transport (2019), quadro 37"
+
+[[appraisal.criteria]]
+id = "safety"
+dimension = "safety"
+label = "Segurança"
+indicator = "Toques e manobras de recuo; velocidade; visibilidade nos cruzamentos"
+effects = { "*" = "?" }
+grade = "P"
+note = "Acabam os toques entre autocarros e carros estacionados e as manobras de recuo, e vê-se melhor quem atravessa; mas uma faixa mais larga convida a ir mais depressa (a camada alargada inclui medidas de acalmia). O efeito líquido só se sabe medindo a velocidade e os incidentes antes e depois."
+source = "Registo de ocorrências pedido à Carris"
+
+[[appraisal.criteria]]
+id = "emergency"
+dimension = "safety"
+label = "Acesso de veículos de socorro"
+indicator = "Veículos de socorro retidos na rua"
+effects = { B = "+", C = "+", E = "+", G = "+", H = "+" }
+grade = "NE"
+note = "Uma ambulância ou um pronto-socorro também não cruza um autocarro em 4,90 m. A paragem seguinte chama-se Bombeiros Alvalade, mas não se verificou se os veículos do Regimento de Sapadores Bombeiros ou do INEM usam a rua."
+source = ""
+
+[[appraisal.criteria]]
+id = "design"
+dimension = "policy"
+label = "Referência municipal de desenho de rua"
+indicator = "Largura livre face ao perfil do manual (6,80 m entre faixas de estacionamento)"
+effects = { B = "++", C = "+", E = "+", G = "+", H = "+" }
+grade = "D"
+note = "Com estacionamento só de um lado, a largura livre passa a 6,91 m, acima dos 6,80 m do manual: em toda a rua em B, só no troço mais longo em C, e só nas horas em que vigoram em E, G e H."
+source = "Lisboa: o Desenho da Rua – Manual de espaço público, p. 152; standards_comparison.csv"
+
+[[appraisal.criteria]]
+id = "equity"
+dimension = "equity"
+label = "Quem ganha e quem perde"
+indicator = "Viagens de passageiros por ano face a lugares retirados"
+effects = { "*" = "?" }
+grade = "I"
+note = "Os ganhos repartem-se por cerca de meio milhão de viagens de passageiros por ano, muitas de quem não tem carro; a perda concentra-se em cerca de 21 lugares. Quanto pesa cada grupo é uma escolha da Câmara: o quadro de quem ganha e quem perde dá os números."
+source = "appraisal_distribution.csv"
+
+[[appraisal.criteria]]
+id = "reversible"
+dimension = "policy"
+label = "Reversibilidade"
+indicator = "Custo e tempo de desfazer"
+effects = { "*" = "+" }
+grade = "I"
+note = "Sinais e tinta: qualquer opção se desfaz em dias e por pouco dinheiro."
+source = ""
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "Numa faixa de rodagem estreitada por obras ou obstáculos ocasionais, salvo se houver circulação alternada, a largura deixada à circulação não pode ser inferior a 5,8 m onde circulem automóveis pesados. A regra é para obras e obstáculos, não para estacionamento; mas mostra a largura que o próprio Regulamento considera necessária para pesados nos dois sentidos, e a largura livre medida, 4,90 m, fica abaixo dela."
+source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 22-A/98), art. 87.º, n.º 4"
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "Compete à Câmara Municipal deliberar sobre o estacionamento de veículos nas vias públicas."
+source = "Lei n.º 75/2013, anexo I, art. 33.º, n.º 1, alínea rr)"
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "Uma proibição de estacionar sinaliza-se com o sinal C15; uma proibição por horas e dias, com um painel adicional do modelo n.º 7d (dias da semana e horas do dia)."
+source = "Regulamento de Sinalização do Trânsito (Decreto Regulamentar n.º 22-A/98), sinais de proibição e painéis adicionais"
+
+[[appraisal.notes]]
+dimension = "operational"
+grade = "D"
+text = "A Carris registou 1 284 interrupções por estacionamento indevido em 2025 (1 365 em 2024), com 824 horas de impacto, em 229 arruamentos; a velocidade média de exploração desceu, e a Carris diz trabalhar com a Câmara em medidas na rede viária para cumprir horários."
+source = "Carris, Relatório e Contas 2025, p. 29–30; Relatório e Contas 2024, p. 26–27"
+
+[[appraisal.notes]]
+dimension = "social"
+grade = "D"
+text = "O plano da EMEL para 2026-2029 prevê 11 parques novos (3 115 lugares), nenhum em Alvalade; a Junta de Freguesia pede um parque subterrâneo junto à Av. da Igreja para os moradores."
+source = "EMEL, Plano de Atividades e Orçamento 2026-2029, quadro 3-1; Junta de Freguesia de Alvalade, Plano de Atividades 2022"
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "NE"
+text = "A ocupação do estacionamento nas ruas vizinhas não foi encontrada: não se sabe se os carros deslocados têm lugar perto."
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "NE"
+text = "O atraso medido vem de um arquivo de terceiros que, em 2026, guardou uma cópia do feed a cada 8 a 45 minutos, em vez de 3 a 4 em 2025: o valor de 2026 não informa. Os registos de passagem pedidos à Carris (Lei n.º 26/2016) e os dados da PGIL pedidos à Câmara mostrariam o atraso atual."
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "NE"
+text = "O tempo fora da ponta, os carros retidos, a fiabilidade, as ligações ao comboio, os novos passageiros e os danos só entram na camada alargada, com valores pressupostos até serem medidos; a segurança, o acesso de emergência e a qualidade de vida ficam nos critérios sem preço."
+
+[[appraisal.notes]]
+dimension = "options"
+grade = "P"
+text = "Sentido único para o trânsito geral, mantendo os autocarros nos dois sentidos: exige uma via BUS em contrassentido que não cabe em 4,90 m com estacionamento dos dois lados, e mudaria o trânsito das ruas vizinhas; fica fora deste estudo, que não tem modelo de tráfego."
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "O Código da Estrada obriga quem conduz a manter «distância lateral suficiente para evitar acidentes» dos veículos que transitam na mesma faixa, no mesmo sentido ou em sentido oposto (coima de 60 € a 300 €), e fixa 1,5 m para ultrapassar uma bicicleta. Com 4,90 m livres, um autocarro e um ligeiro que se cruzam ficam com 0,60 m entre eles e os carros estacionados, dos dois lados somados."
+source = "Código da Estrada, art. 18.º, n.os 2 a 4; width_budget.csv, passing_practice.csv"
+
+[[appraisal.notes]]
+dimension = "legal"
+grade = "D"
+text = "O regulamento de segurança contra incêndio em edifícios pede 6 m de largura útil nas vias de acesso a edifícios com mais de 9 m de altura e admite outras características, fundamentadas, em zonas edificadas cuja rede viária não possa ser corrigida. Aplica-se no licenciamento dos edifícios; para esta rua é uma referência, não uma regra que ela viole. Hoje há 4,90 m livres; com um lado livre, 6,91 m."
+source = "Portaria n.º 1532/2008, republicada pela Portaria n.º 135/2020, art. 4.º, n.º 7, e art. 5.º, n.º 1, al. a)"
+
+[[appraisal.notes]]
+dimension = "operational"
+grade = "D"
+text = "A cartografia municipal mostra um quartel de bombeiros a cerca de 36 m da rua (a paragem no extremo sudoeste chama-se Bombeiros Alvalade). Um veículo de bombeiros (até 2,55 m) e um autocarro precisam de 6,25 m para se cruzarem com a margem dos guias de desenho; hoje há 4,90 m. Se os veículos de socorro usam a rua, o Regimento de Sapadores Bombeiros o dirá."
+source = "Cartografia municipal 1:1000, camada QuartelDeBombeiros; passing_practice.csv"
+
+[[appraisal.notes]]
+dimension = "social"
+grade = "D"
+text = "Há escolas perto: uma escola básica e secundária a cerca de 90 m, uma creche a cerca de 100 m e escolas primárias a partir de cerca de 130 m. As saídas das escolas podem explicar parte do atraso concentrado entre as 17h e as 18h; e, numa rua mais larga junto a escolas, a velocidade dos automóveis tem de ser medida antes e durante o ensaio."
+source = "Cartografia municipal 1:1000, camadas EscolaPrimaria, EscolaPreparatoriaEOuSecundaria, Creche e JardimDeInfancia; delay_by_hour.csv"
+
+[[appraisal.notes]]
+dimension = "evidence"
+grade = "M"
+text = "Na plataforma Na Minha Rua, a Rua Ricardo Jorge tem a maior densidade de queixas de estacionamento abusivo das 25 ruas da zona (2,9 por 100 m, de maio de 2017 a maio de 2026), mas são apenas 6: um sinal, não uma prova."
+source = "occurrences_by_street.csv (Na Minha Rua, CML)"
+
+[[appraisal.notes]]
+dimension = "options"
+grade = "P"
+text = "Desviar uma das carreiras: medido na rede de ruas em appraisal_detours.csv e appraisal_reroutes.csv. Acaba com os encontros entre autocarros, mas não com os encontros com ligeiros e furgões, e tira paragens a quem as usa. A 744 faria um percurso mais longo. A 46B entra na rua para servir duas paragens: sem ela faria um caminho mais curto, e o valor do seu desvio vem sobretudo desse atalho, não dos encontros que acaba; a rede de ruas usada não conhece os sentidos proibidos nem as viragens que um autocarro pode fazer, por isso o atalho tem de ser verificado no local. Os valores das tabelas vêm antes do custo para quem perde as paragens. A decisão é de rede, da Carris, com as entradas e saídas por paragem."
+
+[[appraisal.notes]]
+dimension = "options"
+grade = "P"
+text = "Mais fiscalização do estacionamento: os carros estão em lugares marcados, por isso fiscalizar não alarga a faixa livre."

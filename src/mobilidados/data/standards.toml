@@ -125,3 +125,56 @@ quote = "für die Begegnungsfälle zweier Linienbusse bzw. zweier Lkw eine Fahrb
 label = "Faixa de rodagem para o cruzamento de dois autocarros de carreira ou dois pesados (introdução da RASt 06 na Baviera)"
 scope = "Travessias de localidades em estradas federais e estaduais sob responsabilidade da Baviera; não é lei portuguesa"
 derivation = "Em geral, 6,50 m; faixa mais estreita só em ruas com tráfego muito reduzido"
+
+[documents.rtscie_portaria_135_2020]
+title = "Portaria n.º 135/2020, de 2 de junho: alteração ao Regulamento Técnico de Segurança contra Incêndio em Edifícios (RT-SCIE, Portaria n.º 1532/2008), republicado em anexo"
+publisher = "Diário da República, 1.ª série, n.º 107 (Administração Interna)"
+year = 2020
+url = "https://www.aiccopn.pt/wp-content/uploads/2021/11/0000200214.pdf"
+document_sha256 = "b5921c4bd09028a60e506e34682c7e710a517b4667bbf0afa70ea5988dc881b6"
+nature = "Portuguese regulation (fire safety in buildings); copy of the Diário da República publication, official text at https://diariodarepublica.pt/dr/detalhe/portaria/135-2020-134991810"
+url_checked = "2026-11-22: downloaded file matches document_sha256"
+
+[documents.ciht_buses_2018]
+title = "Buses in Urban Developments"
+publisher = "Chartered Institution of Highways & Transportation (CIHT)"
+year = 2018
+url = "https://www.milton-keynes.gov.uk/sites/default/files/2022-04/CD13D_Buses%20in%20Urban%20Developments%20CIHT%202018.pdf"
+document_sha256 = "8c091cb438fb34c9cede3e05de150ae8c7e49d129ba52fbe32952b11f5845f6d"
+nature = "UK professional design guidance (not a regulation)"
+url_checked = "2026-11-22: downloaded file matches document_sha256"
+
+[[references]]
+id = "rtscie_fire_access_over_9m"
+document = "rtscie_portaria_135_2020"
+page = 69
+pdf_page = 68
+kind = "conditional_value"
+value_m = 6.0
+label = "Fire-service access road to a building more than 9 m tall: usable width"
+derivation = "RT-SCIE art. 5(1)(a): 6 m of usable width (10 m in a dead end); art. 4(7) allows other characteristics, if justified, in built-up areas whose street network cannot be corrected"
+scope = "Access roads to buildings taller than 9 m, under the fire-safety regime for buildings (applied when buildings are licensed); a reference for an existing street, not a rule it breaks"
+quote = "a) 6 m, ou 10 m se for em impasse, de largura útil;"
+
+[references.translations.pt]
+label = "Via de acesso de bombeiros a edifício com mais de 9 m de altura: largura útil"
+scope = "Vias de acesso a edifícios com mais de 9 m de altura, no regime de segurança contra incêndio em edifícios (aplicado no licenciamento); referência para uma rua existente, não uma regra que ela viole"
+derivation = "RT-SCIE, art. 5.º, n.º 1, al. a): 6 m de largura útil (10 m em impasse); o art. 4.º, n.º 7, admite outras características, fundamentadas, em zonas edificadas cuja rede viária não possa ser corrigida"
+
+[[references]]
+id = "ciht_bus_routes_20mph"
+document = "ciht_buses_2018"
+page = 25
+pdf_page = 25
+kind = "conditional_value"
+value_m = 6.2
+also_m = 6.5
+label = "Unobstructed carriageway on a bus route so that buses need not slow to pass one another or other large vehicles"
+derivation = "6.2 m where a 20 mph (about 30 km/h) or lower limit applies; 6.5 m otherwise; kept clear of parked vehicles"
+scope = "Streets with bus services in both directions (UK guidance; not Portuguese law)"
+quote = "Where a 20 mph (or lower) speed limit is applied, an unobstructed width of 6.2 metres is generally sufficient."
+
+[references.translations.pt]
+label = "Faixa de rodagem desimpedida numa rua com autocarros, para que não abrandem ao cruzar-se entre si ou com outros veículos grandes"
+scope = "Ruas com autocarros nos dois sentidos (guia britânico; não é lei portuguesa)"
+derivation = "6,2 m com limite de 30 km/h (20 mph) ou menos; 6,5 m nos restantes casos; livre de veículos estacionados"

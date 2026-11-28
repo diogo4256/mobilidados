@@ -1,0 +1,766 @@
+"""The appraisal's arithmetic on numbers that can be checked by hand: working days, the days of each timetable, the
+passages an option covers, attribution, the yearly flows and their present values in both layers, switching values,
+the PERT draws, the value of information, and the configuration's checks."""
+
+import dataclasses
+import datetime as dt
+import itertools
+import math
+
+import numpy as np
+import pandas as pd
+import pytest
+from pydantic import ValidationError
+from shapely.geometry import LineString
+
+from mobilidados import appraisal, delay, reroute
+from mobilidados.config import Appraisal, Criterion, Delay, Option, Parameter
+
+LISBON_2026 = [dt.date(2026, m, d) for m, d in [(1, 1), (2, 17), (4, 3), (4, 5), (4, 25), (5, 1), (6, 4), (6, 10), (6, 13), (8, 15),
+                                                (10, 5), (11, 1), (12, 1), (12, 8), (12, 25)]]  # fmt: skip
+
+
+def parameter(central, low=None, high=None, grade="P"):
+    return {
+        "low": central if low is None else low,
+        "central": central,
+        "high": central if high is None else high,
+        "grade": grade,
+        "label": "x",
+        "source": "y",
+    }
+
+
+BASE = {
+    "vot": parameter(6.0, 4.0, 8.0),
+    "time_weight": parameter(1.0),
+    "load_peak": parameter(10.0, 5.0, 20.0),
+    "downstream": parameter(1.0),
+    "bus_cost_h": parameter(40.0),
+    "occupancy": parameter(1.0),
+    "car_value": parameter(100.0, 50.0, 400.0),
+    "sign_cost": parameter(100.0),
+    "marking_cost_m": parameter(2.0),
+    "enforcement_year": parameter(0.0),
+    "stall_m": parameter(5.5),
+    "comply": parameter(1.0),
+}
+
+
+def config(**kw):
+    options = kw.pop("options", [{"id": "A", "label": "one side", "blocks": ["B2"], "compliance": "comply", "signs": 2}])
+    return Appraisal.model_validate({"price_year": 2025, "parameters": BASE | kw.pop("parameters", {}), "options": options} | kw)
+
+
+def measured(**kw):
+    base = appraisal.Measured(
+        excess_s=(5.0, 10.0, 15.0), peak_passages_per_day=36.0, working_days=100, attribution={"A": (0.5, 1.0, 1.0)}, metres={"A": 55.0},
+        passages={"A": (3600.0, 0.0)}, passages_year=3600.0,
+    )  # fmt: skip
+    return dataclasses.replace(base, **kw)
+
+
+def test_working_days_leave_out_weekends_and_the_holidays_on_weekdays():
+    # 2026 has 261 weekdays; 10 of Lisbon's holidays fall on one (5 April, 25 April, 13 June, 15 August and 1 November do not)
+    assert appraisal.working_days(2026, LISBON_2026) == 251
+
+
+def test_the_yearly_flows_and_present_values_are_the_hand_computed_ones():
+    cfg, m = config(), measured()
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    # 10 s × 36 passages × 100 days = 10 bus-hours; a bus-hour is worth 10 passengers × 6 €/h + 40 € = 100 €
+    assert e["bus_hours"] == pytest.approx(10.0)
+    assert e["benefit_year"] == pytest.approx(1000.0)
+    # 55 m ÷ 5,5 m = 10 places at 100 € a year
+    assert e["places"] == pytest.approx(10.0)
+    assert e["parking_year"] == pytest.approx(1000.0)
+    # works: 2 signs × 100 € + 55 m × 2 €; half the marking repainted in years 5 and 10, discounted at 5 %
+    works = 2 * 100 + 55 * 2
+    repaint = 0.5 * 110 * (1.05**-5 + 1.05**-10)
+    assert e["works"] == pytest.approx(works)
+    assert e["npv"] == pytest.approx(-(works + repaint))
+    annuity = sum(1.05**-t for t in range(1, 11))
+    assert e["pv_benefit"] == pytest.approx(1000 * annuity)
+
+
+def test_a_restriction_by_hours_pays_only_the_share_of_the_parking_and_its_enforcement():
+    params = {"share": parameter(0.25), "enforcement_year": parameter(300.0)}
+    option = {
+        "id": "A",
+        "label": "x",
+        "blocks": ["B2"],
+        "days": "working",
+        "hours": [16, 20],
+        "parking_share": "share",
+        "compliance": "comply",
+        "signs": 2,
+    }
+    cfg, m = config(parameters=params, options=[option]), measured()
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert e["parking_year"] == pytest.approx(250.0)
+    assert e["enforcement_year"] == pytest.approx(300.0)
+
+
+def test_the_switching_value_brings_the_present_value_to_zero():
+    cfg, m = config(), measured()
+    c = appraisal.layer(appraisal.central(cfg, m), "core")
+    o = cfg.options[0]
+    sv = appraisal.switching_value(
+        lambda x: appraisal.evaluate(o, c | {"car_value": x}, m, cfg)["npv"], *appraisal.search_domain("car_value", 50.0, 400.0, cfg)
+    )
+    assert sv is not None
+    assert appraisal.evaluate(o, c | {"car_value": sv}, m, cfg)["npv"] == pytest.approx(0.0, abs=1e-6)
+    assert sv < 100  # the works must also be paid for, so a place must be worth a little less than the benefit per place
+    assert appraisal.switching_value(lambda x: 1.0 + x, 0.0, 1.0) is None  # never zero there
+
+
+def test_the_search_for_a_switching_value_keeps_shares_in_zero_to_one_and_lengths_above_zero():
+    cfg = config()
+    assert appraisal.search_domain("occupancy", 0.25, 0.7, cfg) == (0.0, 1.0)
+    assert appraisal.search_domain("comply", 0.9, 0.9, cfg) == (0.0, 1.0)  # an option's compliance
+    # what an input means decides, not its range: a cost per km of 0.2 to 0.9 may break even above 1
+    assert appraisal.search_domain("external_cost_pkm", 0.2, 0.9, cfg)[1] > 1
+    assert -1 < appraisal.search_domain("income_growth", 0.0, 0.02, cfg)[0] < 0  # a rate may fall, never below −100%
+    lo, hi = appraisal.search_domain("stall_m", 5.0, 6.0, cfg)
+    assert 0 < lo < 5
+    assert hi > 6
+    assert appraisal.search_domain("car_value", 0.0, 5000.0, cfg)[0] == 0.0
+
+
+def test_pert_draws_stay_in_range_have_the_pert_mean_and_repeat_with_the_seed():
+    a = appraisal.pert(np.random.default_rng(1), 325.0, 555.6, 2100.0, 200_000)
+    assert a.min() >= 325
+    assert a.max() <= 2100
+    assert a.mean() == pytest.approx((325 + 4 * 555.6 + 2100) / 6, rel=0.01)
+    np.testing.assert_array_equal(a, appraisal.pert(np.random.default_rng(1), 325.0, 555.6, 2100.0, 200_000))
+    assert (appraisal.pert(np.random.default_rng(1), 2.0, 2.0, 2.0, 5) == 2.0).all()
+
+
+def parts_and_copresence(p_gap_before=1e-6, p_gap_after=0.5):
+    parts = pd.DataFrame(
+        {
+            "part": ["B1 45–76 m", "76–95 m", "B2 95–149 m", "149–166 m", "B3 166–190 m"],
+            "block": ["B1", "", "B2", "", "B3"],
+            "narrow": [True, False, True, False, True],
+            "excess_s": [2.0, 4.0, 4.0, 4.0, -1.0],
+            # at each junction, the buses heading each way: half the passages each, held mostly on the way into B2
+            "excess_ascending_s": [2.0, 6.0, 4.0, 2.0, -1.0],
+            "excess_descending_s": [2.0, 2.0, 4.0, 6.0, -1.0],
+            "peak_share_ascending": [0.5] * 5,
+        }
+    )
+    cop = pd.DataFrame({"part": parts.part, "period": "peak", "p_value": [0.5, p_gap_before, 0.5, p_gap_after, 0.5]})
+    return parts, cop
+
+
+def test_attribution_counts_the_widened_sections_and_the_junctions_where_buses_give_way():
+    parts, cop = parts_and_copresence()
+    # total 13 s: B1+B2+B3 = 5 s; the junction before B2 (4 s) shows buses losing time to oncoming buses, the one after (4 s) does not
+    lo, ce, hi = appraisal.attribution(parts, cop, ["B1", "B2", "B3"], 0.01)
+    assert (lo, ce, hi) == pytest.approx((5 / 13, 9 / 13, 1.0))
+    # only B2 widened: its own 4 s, plus, at the junction before it, the buses heading into it (half the passages, 6 s
+    # each: 3 s); at most also those heading into it from the junction after it (3 s), never those heading into B1 or B3
+    assert appraisal.attribution(parts, cop, ["B2"], 0.01) == pytest.approx((4 / 13, 7 / 13, 10 / 13))
+    # only B1 widened: the junction after it counts for the buses heading back into B1 (half × 2 s)
+    assert appraisal.attribution(parts, cop, ["B1"], 0.01) == pytest.approx((2 / 13, 3 / 13, 3 / 13))
+    # no junction shows buses losing time to oncoming buses: the central value is the narrow sections alone
+    parts, cop = parts_and_copresence(p_gap_before=0.2)
+    assert appraisal.attribution(parts, cop, ["B1", "B2", "B3"], 0.01)[1] == pytest.approx(5 / 13)
+
+
+def test_the_stretch_is_cut_into_narrow_sections_and_what_lies_between():
+    cuts = delay.parts([(41.0, 76.0, "B1"), (95.5, 149.0, "B2"), (166.5, 194.0, "B3")], 45.0, 190.0)
+    assert [(c.name, c.narrow, c.block) for c in cuts] == [("B1 45–76 m", True, "B1"), ("76–95.5 m", False, ""), ("B2 95.5–149 m", True, "B2"),
+                                                           ("149–166.5 m", False, ""), ("B3 166.5–190 m", True, "B3")]  # fmt: skip
+    assert delay.parts([(0.0, 3.0, "B1")], 0.0, 100.0) == [
+        delay.Part("0–100 m", 0.0, 100.0, False, "")
+    ]  # a sliver is left to its neighbour
+
+
+def test_the_parts_cover_the_stretch_without_a_hole():
+    # a junction of 2 m between two sections is joined to the section before it, not dropped
+    cuts = delay.parts([(45.0, 80.0, "B1"), (82.0, 150.0, "B2")], 45.0, 150.0)
+    assert [(c.start, c.end, c.block) for c in cuts] == [(45.0, 82.0, "B1"), (82.0, 150.0, "B2")]
+    for pieces, s_from, s_to in ((cuts, 45.0, 150.0), (delay.parts([(10.0, 12.0, "B1"), (30.0, 60.0, "B2")], 0.0, 100.0), 0.0, 100.0)):
+        assert (pieces[0].start, pieces[-1].end) == (s_from, s_to)
+        assert all(a.end == b.start for a, b in itertools.pairwise(pieces))
+
+
+def test_a_part_keeps_the_controls_and_reach_of_the_whole_stretch():
+    line = LineString([(0, 0), (2000, 0)])
+    cfg = Delay.model_validate({"source": "x", "s_from": 0, "s_to": 600})
+    controls, reach = delay.windows(line, 700.0, 1300.0, cfg)
+    r = delay.Route("r", 0, "1", "sh", line, (700.0, 1300.0), controls, reach)
+    axis = LineString([(700, 0), (1300, 0)])
+    (p,) = delay.part_routes([r], axis, 400.0, 450.0)
+    assert p.stretch == (1100.0, 1150.0)
+    assert (p.controls, p.reach) == (r.controls, r.reach)  # never a control over the stretch itself
+
+
+def test_the_binomial_tail_is_exact():
+    assert delay.binomial_tail(0, 10, 0.3) == 1.0
+    assert delay.binomial_tail(3, 5, 0.5) == pytest.approx(sum(math.comb(5, k) for k in (3, 4, 5)) / 32)
+    assert delay.binomial_tail(34, 135, 0.109) < 1e-5
+
+
+def test_a_missing_parameter_or_a_repeated_option_is_refused():
+    with pytest.raises(ValidationError, match="parameters missing"):
+        Appraisal.model_validate({"price_year": 2025, "parameters": {k: v for k, v in BASE.items() if k != "vot"},
+                                  "options": [{"id": "A", "label": "x", "blocks": ["B2"], "compliance": "comply", "signs": 0}]})  # fmt: skip
+    with pytest.raises(ValidationError, match="option ids repeat"):
+        config(options=[{"id": "A", "label": "x", "blocks": ["B2"], "compliance": "comply", "signs": 0}] * 2)
+    with pytest.raises(ValidationError, match="low <= central <= high"):
+        config(parameters={"vot": parameter(6.0, 7.0, 8.0)})
+    with pytest.raises(ValidationError, match="hours"):
+        Option(id="A", label="x", blocks=["B2"], compliance="comply", signs=0, hours=(20, 16))
+
+
+def test_the_days_of_each_timetable_add_up_to_the_year():
+    days = appraisal.day_counts(2026, LISBON_2026)
+    # 52 Saturdays, three of them holidays (25 April, 13 June, 15 August), which run the Sunday timetable with the 52
+    # Sundays and the 10 holidays on weekdays
+    assert days == {"working": 251, "saturday": 49, "sunday": 65}
+    assert sum(days.values()) == 365
+
+
+def test_an_option_covers_only_the_passages_of_its_days_and_hours():
+    hourly = pd.DataFrame(
+        [{"day_kind": k, "hour": h, "passages": n} for k, n in (("working", 6), ("saturday", 4), ("sunday", 2)) for h in range(7, 21)]
+    )
+    days = {"working": 10, "saturday": 2, "sunday": 3}
+    always = Option(id="A", label="x", blocks=["B2"], compliance="comply", signs=0)
+    late = Option(id="B", label="x", blocks=["B2"], compliance="comply", signs=0, days="working", hours=(16, 20))
+    # the peak is 17h and 18h on working days: 2 hours × 6 × 10 days
+    assert appraisal.passages(hourly, days, always, [17, 18]) == (120.0, (14 * 6 - 12) * 10 + 14 * 4 * 2 + 14 * 2 * 3)
+    assert appraisal.passages(hourly, days, late, [17, 18]) == (120.0, 2 * 6 * 10)  # 16h and 19h
+    assert sum(appraisal.passages(hourly, days, None, [17, 18])) == 14 * (6 * 10 + 4 * 2 + 2 * 3)
+
+
+EXTENDED = {
+    "offpeak_s": parameter(5.0),
+    "load_offpeak": parameter(8.0),
+    "unexpected_share": parameter(0.5),
+    "transfer_share": parameter(0.0),
+    "lateness_weight": parameter(3.0),
+    "cars_behind": parameter(1.0),
+    "car_occupancy": parameter(1.5),
+    "elasticity_ivt": parameter(0.6),
+    "journey_min": parameter(10.0),
+    "diversion_car": parameter(0.25),
+    "trip_km": parameter(4.0),
+    "external_cost_pkm": parameter(0.2),
+    "damage_year": parameter(400.0),
+    "room_nearby": parameter(0.5),
+    "walk_cost": parameter(20.0),
+    "calming_cost": parameter(1000.0),
+}
+
+
+def test_the_core_is_the_extended_layer_with_its_mechanisms_switched_off():
+    cfg = config(parameters=EXTENDED)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    plain = appraisal.evaluate(config().options[0], appraisal.layer(appraisal.central(config(), m), "extended"), m, config())
+    assert core["npv"] == pytest.approx(plain["npv"])  # a case without the mechanisms: both layers are the core
+
+
+def test_the_extended_layer_adds_each_mechanism_as_computed_by_hand():
+    cfg = config(parameters=EXTENDED)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+    peak_bh, other_bh = 10 * 3600 / 3600, 5 * 7200 / 3600  # 10 bus-hours at peak, 10 off-peak (attribution 1, compliance 1)
+    assert e["bus_hours"] == pytest.approx(peak_bh + other_bh)
+    on_board = peak_bh * 10 + other_bh * 8  # 180 passenger-hours
+    weight = 1.0 + (3.0 - 1.0) * 0.5  # half the delay is unexpected: weighted 3 instead of 1
+    assert e["time_value"] == pytest.approx(on_board * 6.0 * weight)
+    assert e["traffic_value"] == pytest.approx(20 * 1.0 * 1.5 * 6.0 * 1.0)
+    riders = 3600 * 10 + 7200 * 8
+    saved = 3600 * on_board / riders
+    new = 0.6 * saved / 600 * riders
+    assert e["new_riders"] == pytest.approx(new)
+    assert e["new_rider_value"] == pytest.approx(0.5 * new * saved / 3600 * 6.0)
+    assert e["external_value"] == pytest.approx(new * 0.25 * 4.0 * 0.2)
+    assert e["damage_value"] == pytest.approx(400.0)  # in force at every passage, on the whole stretch
+    # half the displaced cars find a place nearby (20 € a year), the other half pay 100 €
+    assert e["parking_year"] == pytest.approx(10.0 * (0.5 * 20 + 0.5 * 100))
+    assert e["works"] == pytest.approx(2 * 100 + 55 * 2 + 1000)
+
+
+def test_buses_held_by_oncoming_cars_move_the_attribution_toward_its_high_bound():
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    m = dataclasses.replace(m, attribution={"A": (0.2, 0.5, 0.9)})
+    base = {"offpeak_s": parameter(5.0), "load_offpeak": parameter(10.0)}
+
+    def bus_hours(share: float | None) -> float:
+        extra = {} if share is None else {"other_vehicle_share": parameter(share)}
+        cfg = config(parameters=base | extra)
+        return float(appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)["bus_hours"])
+
+    none, half, full = bus_hours(None), bus_hours(0.5), bus_hours(1.0)
+    assert half == pytest.approx(none * (0.5 + 0.5 * 0.4) / 0.5)  # half of the 0.4 left out of the attribution
+    assert full == pytest.approx(none * 0.9 / 0.5)  # never beyond the high bound
+    assert bus_hours(0.0) == pytest.approx(none)
+    cfg = config(parameters=base | {"other_vehicle_share": parameter(1.0)})
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)["bus_hours"]
+    assert core == pytest.approx(10 * 0.5)  # the core keeps the measured attribution
+
+
+def test_what_a_displaced_driver_pays_a_car_park_with_room_to_spare_is_a_transfer():
+    cfg = config(parameters=EXTENDED | {"carpark_walk": parameter(30.0), "spare_capacity": parameter(0.25)})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+    # 10 places: half find a place nearby (20 €), half pay 100 € for a car park and walk 30 € from it
+    private = 10.0 * (0.5 * 20 + 0.5 * (100 + 30))
+    revenue = 10.0 * 0.5 * 0.25 * 100  # a quarter of what they pay goes to spare room: a transfer, not a cost
+    assert e["parking_private_year"] == pytest.approx(private)
+    assert e["carpark_revenue_year"] == pytest.approx(revenue)
+    assert e["parking_year"] == pytest.approx(private - revenue)
+    # the distribution shows both sides; the economic case only their difference
+    dist = appraisal.distribution(cfg, m, appraisal.central(cfg, m)).set_index("group")
+    assert dist.loc["parkers", "value"] == pytest.approx(-private)
+    assert dist.loc["car_parks", "value"] == pytest.approx(revenue)
+    # the core counts the price paid in full, with no walk and no transfer
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert core["parking_year"] == pytest.approx(10.0 * 100)
+
+
+def test_a_draw_through_the_simulation_is_the_same_as_evaluating_it_alone():
+    cfg = config(parameters=EXTENDED | {"vot": parameter(6.0, 4.0, 8.0), "room_nearby": parameter(0.5, 0.0, 1.0)}, draws=1000)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    d = appraisal.draws(cfg, m)
+    sims = appraisal.simulate(cfg, m, d, "extended")
+    i = 17
+    one = appraisal.evaluate(cfg.options[0], appraisal.layer({k: float(v[i]) for k, v in d.items()}, "extended"), m, cfg)
+    assert sims.A[i] == pytest.approx(one["npv"])
+
+
+def test_the_value_of_information_goes_to_the_input_that_can_change_the_decision():
+    rng = np.random.default_rng(3)
+    decisive, idle = rng.uniform(-1, 1, 4000), rng.uniform(-1, 1, 4000)
+    sims = pd.DataFrame({"A": 1000 * decisive})  # worth doing exactly when ``decisive`` > 0
+    voi = appraisal.value_of_information(sims, {"decisive": decisive, "idle": idle}).set_index("input").evppi
+    assert voi["(all)"] == pytest.approx(np.maximum(1000 * decisive, 0).mean() - max(0, 1000 * decisive.mean()))
+    assert voi["decisive"] == pytest.approx(voi["(all)"], rel=0.05)
+    assert voi["idle"] < 0.1 * voi["(all)"]
+
+
+def test_a_criterion_must_say_how_every_option_moves_it():
+    crit = {"id": "x", "dimension": "safety", "label": "x", "indicator": "x", "grade": "P", "note": "x"}
+    with pytest.raises(ValidationError, match="do not say how every option"):
+        config(criteria=[crit | {"effects": {}}])
+    with pytest.raises(ValidationError, match="options that do not exist"):
+        config(criteria=[crit | {"effects": {"Z": "+", "*": "?"}}])
+    table = appraisal.criteria_table(config(criteria=[crit | {"effects": {"*": "?", "A": "+"}}]))
+    assert table.loc[0, "A"] == "+"
+    assert Criterion(**crit, effects={"*": "0"}).effects == {"*": "0"}
+
+
+def test_unit_values_grow_with_income_on_both_sides_of_the_account():
+    cfg = config(parameters={"income_growth": parameter(0.02)})
+    m = measured()
+    o = cfg.options[0]
+    flat = appraisal.evaluate(o, appraisal.layer(appraisal.central(config(), m), "core"), m, config())
+    grown = appraisal.evaluate(o, appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    factor = sum(1.02**t / 1.05**t for t in range(1, 11)) / sum(1.05**-t for t in range(1, 11))
+    # time (elasticity 1), the operator's cost (1) and the value of a place (1) grow alike; the works do not
+    assert grown["pv_benefit"] == pytest.approx(flat["pv_benefit"] * factor)
+    assert grown["pv_parking"] == pytest.approx(flat["pv_parking"] * factor)
+    assert grown["pv_public"] == pytest.approx(flat["pv_public"])
+
+
+def test_the_dft_ratio_counts_the_parking_as_a_disbenefit_and_the_budget_as_the_cost():
+    cfg, m = config(), measured()
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert e["bcr_budget"] == pytest.approx((e["pv_benefit"] - e["pv_parking"]) / e["pv_public"])
+    assert e["npv"] == pytest.approx(e["pv_benefit"] - e["pv_parking"] - e["pv_public"])  # the same NPV either way
+    assert [appraisal.vfm_category(x, 1.0) for x in (4.0, 3.9, 1.5, 1.2, 0.5)] == ["very_high", "high", "medium", "low", "poor"]
+    assert appraisal.vfm_category(-0.3, -10.0) == "very_poor"
+
+
+def test_the_bridge_goes_from_the_core_to_the_extended_layer():
+    cfg = config(parameters=EXTENDED)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    c = appraisal.central(cfg, m)
+    b = appraisal.bridge(cfg, m, c)
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(c, "core"), m, cfg)["npv"]
+    extended = appraisal.evaluate(cfg.options[0], appraisal.layer(c, "extended"), m, cfg)["npv"]
+    assert b.npv.iloc[0] == pytest.approx(core)
+    assert b.npv.iloc[-1] == pytest.approx(extended)
+    assert b.change.sum() == pytest.approx(extended)  # the core's NPV plus every step
+    assert b.step.tolist() == ["core", *[k for k in appraisal.MECHANISMS if k in cfg.parameters]]
+
+
+def test_drivers_cruising_for_a_space_nearby_cost_the_external_cost_of_their_kilometres():
+    base = EXTENDED | {"external_cost_pkm": parameter(0.2), "car_occupancy": parameter(1.5)}
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+
+    def ev(extra):
+        cfg = config(parameters=base | extra)
+        return appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+
+    without, with_cruise = ev({}), ev({"cruise_km_day": parameter(1.0)})
+    # 10 places, half the drivers find a space nearby (EXTENDED): 5 drivers × 1 km × 365 days × 0.2 €/pkm × 1.5 people
+    assert without["external_value"] - with_cruise["external_value"] == pytest.approx(5 * 1.0 * 365 * 0.2 * 1.5)
+    assert without["benefit_year"] - with_cruise["benefit_year"] == pytest.approx(5 * 365 * 0.3)
+    cfg = config(parameters=base | {"cruise_km_day": parameter(1.0)})
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert core["external_value"] == pytest.approx(0.0)  # a mechanism of the extended layer only
+
+
+def test_a_derived_off_peak_delay_moves_with_the_peak_delay_in_switching_values_and_the_tornado():
+    cfg = config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 60.0)}).model_copy(update={"offpeak_from_copresence": True})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0, offpeak_ratio=0.2)
+    c = appraisal.central(cfg, m)
+    q = appraisal.layer(c, "extended")
+    assert q["offpeak_s"] == pytest.approx(2.0)  # 10 s at peak × 0.2
+    half = appraisal.moved(cfg, m, q, "excess_s", 5.0)
+    assert half == {"excess_s": 5.0, "offpeak_s": pytest.approx(1.0)}  # half the peak excess, half the off-peak
+    assert appraisal.moved(cfg, m, q, "vot", 3.0) == {"vot": 3.0}
+    tor = appraisal.appraise(cfg, m)["appraisal_tornado"].set_index("input")
+    lo = tor.loc["excess_s", "low"]
+    expect = appraisal.evaluate(cfg.options[0], q | {"excess_s": lo, "offpeak_s": 2.0 * lo / 10.0}, m, cfg)["npv"]
+    assert tor.loc["excess_s", "npv_at_low"] == pytest.approx(expect)
+
+
+def test_passengers_boarding_after_the_street_lose_unforeseen_lateness_or_uneven_gaps_as_computed_by_hand():
+    extra = {"downstream_boarders": parameter(1.0), "downstream_timed": parameter(0.75), "wait_weight": parameter(2.0),
+             "unexpected_share": parameter(0.4), "lateness_weight": parameter(3.0), "trip_km": parameter(4.0), "offpeak_s": parameter(0.0)}  # fmt: skip
+    cfg = config(parameters=EXTENDED | extra)
+    m = measured(passages={"A": (3600.0, 0.0)}, passages_year=3600.0, km_after=6.0, inv_headway=(1 / 900, 1 / 1200), meet_share=0.2)
+    q = appraisal.layer(appraisal.central(cfg, m), "extended")
+    hours, value, bunching = appraisal.downstream(q, m, 0.5, 3600.0, 0.0, 1.0, 1.0)
+    boarders = 3600 * 10 * 6.0 / 4.0  # passages × 10 on board × 6 km after the street ÷ 4 km a trip
+    late_s = 10.0 * 0.5 * 0.4  # the excess × the share removed × the share no one could foresee
+    variance = (1 - 0.2) / 0.2 * 10.0**2 * (2 * 0.5 - 0.5**2)  # delays in a fifth of passages: (1 − q)/q × excess², removed
+    h_timed, h_random = boarders * 0.75 * late_s / 3600, boarders * 0.25 * variance / 900 / 3600
+    assert hours == pytest.approx(h_timed + h_random)
+    assert value == pytest.approx((h_timed * 3.0 + h_random * 2.0) * 6.0)
+    assert bunching == pytest.approx(h_random * 2.0 * 6.0)  # the uneven gaps' part, reported apart
+    # it enters the option's benefits in the extended layer only
+    e = appraisal.evaluate(cfg.options[0], q, m, cfg)
+    assert e["downstream_value"] == pytest.approx(appraisal.downstream(q, m, 1.0, 3600.0, 0.0, 1.0, 1.0)[1])
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert core["downstream_value"] == pytest.approx(0.0)
+
+
+def test_gaps_between_buses_and_the_share_of_passages_that_meet_come_from_the_timetable_and_the_co_presence():
+    passings = pd.DataFrame({"route_short_name": ["744"] * 6 + ["46B"], "direction_id": ["0"] * 6 + ["0"],
+                             "t": [17 * 3600 + i * 900 for i in range(4)] + [10 * 3600, 11 * 3600] + [17 * 3600 + 100]})  # fmt: skip
+    peak, other = appraisal.headways(passings, [17])
+    # at 17:00, 744 runs 4 an hour (gap 900 s) and 46B 1 (3600 s): passages weigh 1/gap as 4·(4/3600) + 1·(1/3600) over 5
+    assert peak == pytest.approx((4 * 4 + 1 * 1) / 3600 / 5)
+    assert other == pytest.approx(1 / 3600)
+    cop = pd.DataFrame({"part": ["gap", "gap", "B2"], "period": ["peak", "off_peak", "peak"], "positions": [100, 100, 100],
+                        "with_oncoming_bus": [30, 10, 12], "chance": [0.1, 0.06, 0.1], "p_value": [0.0001, 0.2, 0.3],
+                        "p_value_by_day": [0.0001, 0.2, 0.3]})  # fmt: skip
+    parts = pd.DataFrame({"part": ["gap", "B2"], "narrow": [False, True]})
+    assert appraisal.meet_share(cop, parts, 0.01) == pytest.approx(0.2)  # 30% with a bus at the junction, 10% by chance
+
+
+def test_crash_equivalents_are_the_crashes_over_the_period_worth_the_npv():
+    cfg = config(parameters={"income_growth": parameter(0.0)})
+    cfg = cfg.model_copy(update={"safety_references": {"slight": Parameter(**parameter(50000.0) | {"label": "crash", "source": "x"})}})
+    m = measured()
+    c = appraisal.central(cfg, m)
+    t = appraisal.safety_equivalents(cfg, m, c).set_index(["layer", "crash"]).loc[("core", "slight")]
+    npv = appraisal.evaluate(cfg.options[0], appraisal.layer(c, "core"), m, cfg)["npv"]
+    annuity = sum(1.05**-t for t in range(1, 11))
+    # n crashes spread evenly over 10 years: n / 10 a year, each worth 50,000, discounted
+    assert t.crashes_over_period * 50000.0 * annuity / 10 == pytest.approx(abs(npv))
+    assert t.years_per_crash == pytest.approx(10 / t.crashes_over_period)
+    assert appraisal.safety_equivalents(config(), m, c).empty
+
+
+def test_the_cautious_and_favourable_scenarios_are_the_worst_and_best_corners():
+    # positive at the centre, so faster income growth looks favourable there; at the cautious ends the NPV is
+    # negative, and the same growth makes it worse: each end must be read at the combination, not only at the centre
+    ranged = {"offpeak_s": (5.0, 0.0, 8.0), "room_nearby": (0.5, 0.0, 1.0), "income_growth": (0.01, 0.0, 0.08)}
+    cfg = config(parameters=EXTENDED | {k: parameter(*v) for k, v in ranged.items()} | {"car_value": parameter(300.0)})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    c = appraisal.central(cfg, m)
+    s = appraisal.scenarios(cfg, m, c).set_index(["scenario", "years"]).npv
+    q = appraisal.layer(c, "extended")
+    # every typed-in input with a range moves, the core's too (the value of time and the load here): none is measured
+    moving = ranged | {k: (BASE[k]["central"], BASE[k]["low"], BASE[k]["high"]) for k in ("vot", "load_peak")}
+    corners = [appraisal.evaluate(cfg.options[0], q | dict(zip(moving, ends, strict=True)), m, cfg)["npv"]
+               for ends in itertools.product(*[(lo, hi) for _, lo, hi in moving.values()])]  # fmt: skip
+    assert s["central", 10] > 0 > s["cautious", 10]
+    assert s["cautious", 10] == pytest.approx(min(corners))
+    assert s["favourable", 10] == pytest.approx(max(corners))
+
+
+def test_the_scenarios_bracket_the_central_value_and_longer_periods_are_shown():
+    cfg = config(
+        parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0), "room_nearby": parameter(0.5, 0.0, 1.0)}, horizons_tested=[20]
+    )
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    s = appraisal.scenarios(cfg, m, appraisal.central(cfg, m)).set_index(["scenario", "years"]).npv
+    assert s["cautious", 10] < s["central", 10] < s["favourable", 10]
+    # 20 years: ten more years of the same yearly flows, less the repainting, so the NPV moves the way the yearly flow points
+    assert ("central", 20) in s.index
+    assert ("core", 20) in s.index
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "extended"), m, cfg)
+    yearly = e["benefit_year"] - e["parking_year"]
+    assert (s["central", 20] > s["central", 10]) == (yearly > 0)
+
+
+def test_correlated_inputs_move_together_and_keep_their_distributions():
+    cfg = config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0)}, draws=4000,
+                 correlations=[{"a": "excess_s", "b": "offpeak_s", "rho": 0.6}])  # fmt: skip
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    d = appraisal.draws(cfg, m)
+    ranks = pd.DataFrame({"a": d["excess_s"], "b": d["offpeak_s"]}).rank()
+    assert 0.5 < ranks.corr().iloc[0, 1] < 0.7
+    independent = appraisal.draws(config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0)}, draws=4000), m)
+    assert np.sort(d["offpeak_s"]).mean() == pytest.approx(np.sort(independent["offpeak_s"]).mean(), rel=0.05)
+    with pytest.raises(ValidationError, match="correlations name inputs"):
+        config(correlations=[{"a": "excess_s", "b": "nothing", "rho": 0.5}])
+
+
+def test_a_junction_counts_only_if_buses_meet_there_when_whole_days_are_resampled():
+    parts, cop = parts_and_copresence()
+    # positions of one standoff are not independent: the day-resampled p-value decides where the table has it
+    cop["p_value_by_day"] = [0.5, 0.2, 0.5, 0.5, 0.5]
+    assert appraisal.attribution(parts, cop, ["B2"], 0.01)[1] == pytest.approx(4 / 13)
+    cop["p_value_by_day"] = [0.5, 0.0005, 0.5, 0.5, 0.5]
+    assert appraisal.attribution(parts, cop, ["B2"], 0.01)[1] == pytest.approx(7 / 13)  # B2 alone: the buses heading into it
+
+
+def copresence_by_period(off_with=17, p_peak=0.0005):
+    rows = []
+    for period, k, n, chance, p in (("peak", 34, 132, 0.109, p_peak), ("off_peak", off_with, 191, 0.063, 0.1)):
+        rows += [
+            {
+                "part": "76–95 m",
+                "period": period,
+                "positions": n,
+                "with_oncoming_bus": k,
+                "chance": chance,
+                "p_value": p,
+                "p_value_by_day": p,
+            }
+        ]
+    return pd.DataFrame(rows)
+
+
+def test_the_off_peak_ratio_is_how_much_more_often_buses_meet_off_peak_than_at_peak_where_they_meet():
+    parts, _ = parts_and_copresence()
+    ratio = appraisal.offpeak_ratio(copresence_by_period(), parts, 0.01)
+    assert ratio == pytest.approx((17 / 191 - 0.063) / (34 / 132 - 0.109))
+    # off-peak no more often than chance: no off-peak meetings to scale by; no junction where buses meet: no ratio
+    assert appraisal.offpeak_ratio(copresence_by_period(off_with=5), parts, 0.01) == 0.0
+    assert appraisal.offpeak_ratio(copresence_by_period(p_peak=0.2), parts, 0.01) is None
+
+
+def test_the_central_off_peak_excess_is_the_peak_excess_scaled_by_the_ratio_and_kept_in_its_range():
+    cfg = config(parameters=EXTENDED | {"offpeak_s": parameter(5.0, 0.0, 8.0)}, offpeak_from_copresence=True)
+    assert appraisal.ranges(cfg, measured(offpeak_ratio=0.2))["offpeak_s"] == (0.0, 2.0, 8.0)  # 10 s at peak × 0.2
+    assert appraisal.ranges(cfg, measured(offpeak_ratio=1.0))["offpeak_s"] == (0.0, 8.0, 8.0)  # cut to the range
+    assert appraisal.ranges(cfg, measured(offpeak_ratio=None))["offpeak_s"] == (0.0, 5.0, 8.0)  # nothing to scale by
+    assert appraisal.ranges(config(parameters=EXTENDED), measured(offpeak_ratio=0.2))["offpeak_s"] == (5.0, 5.0, 5.0)  # not asked for
+
+
+def test_the_off_peak_break_even_rises_when_the_parking_assumptions_are_least_favourable_together():
+    extra = {"room_nearby": parameter(0.5, 0.0, 1.0), "carpark_walk": parameter(30.0), "spare_capacity": parameter(0.5, 0.0, 1.0),
+             "offpeak_s": parameter(5.0, 0.0, 60.0), "car_value": parameter(1000.0, 50.0, 4000.0)}  # fmt: skip
+    cfg = config(parameters=EXTENDED | extra)
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
+    t = appraisal.offpeak_thresholds(cfg, m, appraisal.central(cfg, m)).set_index("condition").switching_value
+    assert t["no_room_and_car_parks_full"] >= max(t["no_room_nearby"], t["car_parks_full"]) > t["central"]
+    assert t["no_other_mechanism"] > t["central"]
+    # each is where the option's NPV crosses zero, with that condition's inputs
+    q = appraisal.layer(appraisal.central(cfg, m), "extended") | {"room_nearby": 0.0, "spare_capacity": 0.0}
+    npv = appraisal.evaluate(cfg.options[0], q | {"offpeak_s": t["no_room_and_car_parks_full"]}, m, cfg)["npv"]
+    assert npv == pytest.approx(0.0, abs=1.0)
+    # and the bus time saved per passage there is what a before-and-after evaluation would have to find
+    saved = appraisal.offpeak_thresholds(cfg, m, appraisal.central(cfg, m)).set_index("condition").saved_s_per_passage
+    bh = appraisal.evaluate(cfg.options[0], q | {"offpeak_s": t["no_room_and_car_parks_full"]}, m, cfg)["bus_hours"]
+    assert saved["no_room_and_car_parks_full"] == pytest.approx(bh * 3600 / 10800.0)
+    assert saved["no_room_and_car_parks_full"] > saved["central"]
+
+
+def test_an_option_worth_it_with_no_off_peak_delay_reports_the_peak_saving_it_needs():
+    cfg = config(parameters={"offpeak_s": parameter(5.0, 0.0, 60.0), "load_offpeak": parameter(10.0)})
+    m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0, excess_s=(5.0, 30.0, 40.0))
+    c = appraisal.central(cfg, m)
+    t = appraisal.offpeak_thresholds(cfg, m, c).set_index("condition").loc["central"]
+    assert t.switching_value == 0.0  # it needs no off-peak delay: 30 s at the peak alone pay the places
+    q = appraisal.layer(c, "extended") | {"offpeak_s": 0.0, "excess_s": t.peak_excess_s}
+    e = appraisal.evaluate(cfg.options[0], q, m, cfg)
+    assert e["npv"] == pytest.approx(0.0, abs=1.0)
+    assert t.saved_s_per_passage == pytest.approx(e["bus_hours"] * 3600 / 10800.0)
+    assert 0 < t.peak_excess_s < 30.0
+
+
+# --- reroutes: taking a line off the street (mobilidados.reroute) -------------------------------------------------------
+
+# A 3 x 2 grid of 100 m blocks: the street runs along the middle row; a bus street runs parallel to the north and a
+# lane to the south. Going round costs two 100 m legs, by either side.
+AXES = [
+    ("Main Street", LineString([(0, 100), (100, 100), (200, 100), (300, 100)])),
+    ("North Avenue", LineString([(0, 200), (100, 200), (200, 200), (300, 200)])),
+    ("South Lane", LineString([(0, 0), (100, 0), (200, 0), (300, 0)])),
+    ("West Cross", LineString([(0, 0), (0, 100), (0, 200)])),
+    ("East Cross", LineString([(300, 0), (300, 100), (300, 200)])),
+    ("Link North", LineString([(100, 100), (100, 200)])),
+    ("Link South", LineString([(200, 100), (200, 0)])),
+]
+
+
+def test_the_shortest_path_avoids_the_street_when_asked():
+    net = reroute.Network(AXES)
+    found = net.shortest((0, 100), (300, 100))
+    assert found is not None
+    length, streets, line = found
+    assert length == pytest.approx(300)
+    assert streets == ["Main Street"]
+    found = net.shortest((0, 100), (300, 100), avoid="Main")
+    assert found is not None
+    length, streets, line = found
+    assert length == pytest.approx(500)
+    assert "Main Street" not in streets
+    assert line.length == pytest.approx(500)
+
+
+def test_the_detour_prefers_streets_with_buses_and_lists_the_stops_left_behind():
+    net = reroute.Network(AXES)
+    shape = LineString([(-100, 100), (400, 100)])  # the line runs along the whole street
+    axis = LineString([(50, 100), (250, 100)])  # the narrow street is its middle 200 m
+    d = reroute.detour(net, shape, axis, "Main", lead_ins=(50.0,), bus_streets={"North Avenue", "West Cross", "East Cross"})
+    assert d is not None
+    assert d.detour_m == pytest.approx(200)
+    assert set(d.via) <= {"North Avenue", "West Cross", "East Cross", "Link North"} or set(d.via) <= {
+        "South Lane",
+        "West Cross",
+        "East Cross",
+        "Link South",
+    }
+    stops = [("on the street", 150, 100), ("before it", -60, 100), ("on the avenue", 150, 200)]
+    gone = reroute.skipped(stops, shape, d.from_m, d.to_m, d.path, near_m=20)
+    assert "on the street" in gone
+    assert "before it" not in gone
+    assert reroute.detour(net, LineString([(0, 300), (300, 300)]), axis, "Main") is None  # a line that never uses the street
+
+
+def test_weekend_passages_count_at_the_share_of_buses_that_run_then():
+    hourly = pd.DataFrame(
+        [{"day_kind": k, "hour": 10, "passages": n} for k, n in (("working", 10), ("saturday", 5), ("sunday", 5))]
+        + [{"day_kind": "working", "hour": 17, "passages": 10}]
+    )
+    days = {"working": 250, "saturday": 50, "sunday": 65}
+    # off-peak: 2500 working passages at full weight, 575 weekend ones at 5/20 of a working day's buses
+    scale = appraisal.offpeak_scale(hourly, days, None, [17])
+    assert scale == pytest.approx((2500 + 575 * 0.25) / (2500 + 575))
+    assert appraisal.offpeak_scale(hourly.assign(passages=0), days, None, [17]) == 1.0
+
+
+def test_moving_one_whole_direction_removes_every_meeting_and_adds_its_detour():
+    cfg = config(parameters=EXTENDED, reroutes=[{"id": "X", "label": "x", "moves": ["1 0"]}],
+                 reroute_parameters={"detour_speed_kmh": parameter(18.0), "walk_extra_min": parameter(3.0), "access_weight": parameter(2.0)})  # fmt: skip
+    m = measured(passages_all=(3600.0, 7200.0), days={"working": 250, "saturday": 0, "sunday": 0})
+    route_days = pd.DataFrame([{"day_kind": "working", "key": "1 0", "heading": 1, "passages": 40},
+                               {"day_kind": "working", "key": "1 1", "heading": -1, "passages": 40}])  # fmt: skip
+    detours = pd.DataFrame([{"key": "1 0", "detour_m": 90.0}])
+    t = appraisal.reroutes(cfg, m, appraisal.central(cfg, m), 0.5, route_days, detours).set_index("layer")
+    assert t.loc["core", "meetings_removed"] == pytest.approx(1.0)
+    assert t.loc["core", "delay_bus_hours_saved"] == pytest.approx(10 * 0.5 * 3600 / 3600)  # peak only in the core
+    assert t.loc["extended", "delay_bus_hours_saved"] == pytest.approx((10 * 3600 + 5 * 7200) * 0.5 / 3600)
+    assert t.loc["core", "detour_bus_hours"] == pytest.approx(40 * 250 * 90 / 5 / 3600)  # 18 km/h = 5 m/s
+    # moving half of one direction removes half the meetings
+    half = pd.DataFrame([{"day_kind": "working", "key": "1 0", "heading": 1, "passages": 20},
+                         {"day_kind": "working", "key": "2 0", "heading": 1, "passages": 20},
+                         {"day_kind": "working", "key": "1 1", "heading": -1, "passages": 40}])  # fmt: skip
+    t2 = appraisal.reroutes(cfg, m, appraisal.central(cfg, m), 0.5, half, detours).set_index("layer")
+    assert t2.loc["core", "meetings_removed"] == pytest.approx(0.5)
+    # a gain before the walk to the lost stop turns into the boardings a day that would cancel it
+    row = t.loc["extended"]
+    if row.npv_before_stop_access > 0:
+        assert row.breakeven_boardings_per_day > 0
+
+
+def test_a_switching_value_above_the_high_bound_of_the_attribution_is_found():
+    # the search tries shares beyond the measured high bound: the net present value must keep moving there
+    cfg, m = config(parameters={"car_value": parameter(50.0, 25.0, 100.0)}), measured(attribution={"A": (0.1, 0.2, 0.3)})
+    c = appraisal.layer(appraisal.central(cfg, m), "core")
+    o = cfg.options[0]
+
+    def npv_at(x: float) -> float:
+        return float(appraisal.evaluate(o, c | {"attribution_A": x}, m, cfg)["npv"])
+
+    assert npv_at(0.9) > npv_at(0.5)
+    sv = appraisal.switching_value(npv_at, *appraisal.search_domain("attribution_A", 0.1, 0.3, cfg))
+    assert sv is not None
+    assert sv > 0.3
+    assert npv_at(sv) == pytest.approx(0.0, abs=1e-6)
+
+
+def test_an_option_that_costs_nothing_has_a_value_and_no_division_error():
+    cfg = config(options=[{"id": "A", "label": "x", "blocks": ["B2"], "compliance": "comply", "signs": 0}])
+    m = measured(metres={"A": 0.0})
+    e = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert e["pv_cost"] == 0.0
+    assert e["npv"] > 0
+    assert math.isinf(e["bcr"])
+
+
+def test_each_tested_discount_rate_has_its_own_column():
+    assert appraisal.rate_column(0.03) == "npv_at_3pct"
+    assert appraisal.rate_column(0.035) == "npv_at_3p5pct"
+    assert appraisal.rate_column(0.07) == "npv_at_7pct"
+    assert len({appraisal.rate_column(r) for r in (0.015, 0.02, 0.03, 0.035)}) == 4
+
+
+def test_no_off_peak_positions_where_buses_meet_gives_no_ratio_rather_than_nan():
+    parts, _ = parts_and_copresence()
+    cp = copresence_by_period()
+    cp.loc[cp.period == "off_peak", ["positions", "with_oncoming_bus"]] = 0
+    assert appraisal.offpeak_ratio(cp.astype({"positions": "int64", "with_oncoming_bus": "int64"}), parts, 0.01) is None
+
+
+def test_a_mechanism_without_an_input_it_reads_is_refused():
+    with pytest.raises(ValidationError, match=r"journey_min \(needed by elasticity_ivt\)"):
+        config(parameters={k: v for k, v in EXTENDED.items() if k != "journey_min"})
+    with pytest.raises(ValidationError, match=r"walk_cost \(needed by room_nearby\)"):
+        config(parameters={k: v for k, v in EXTENDED.items() if k != "walk_cost"})
+    config(parameters={k: v for k, v in EXTENDED.items() if k not in ("elasticity_ivt", "journey_min")})  # without the mechanism, fine
+
+
+def test_the_options_shares_are_drawn_together_and_cannot_be_correlated_by_hand():
+    two = [{"id": "A", "label": "x", "blocks": ["B2"], "compliance": "comply", "signs": 2},
+           {"id": "B", "label": "y", "blocks": ["B1", "B2"], "compliance": "comply", "signs": 2}]  # fmt: skip
+    cfg = config(options=two, draws=2000)
+    m = measured(attribution={"A": (0.2, 0.4, 0.6), "B": (0.3, 0.7, 0.9)}, metres={"A": 55.0, "B": 110.0},
+                 passages={"A": (3600.0, 0.0), "B": (3600.0, 0.0)})  # fmt: skip
+    d = appraisal.draws(cfg, m)
+    rank_a, rank_b = (np.argsort(np.argsort(d[k])) for k in ("attribution_A", "attribution_B"))
+    np.testing.assert_array_equal(rank_a, rank_b)  # the same rank in every draw: one uncertainty, not two
+    with pytest.raises(ValidationError, match="drawn together already"):
+        config(options=two, correlations=[{"a": "attribution_A", "b": "vot", "rho": 0.5}])
+
+
+def test_the_measured_excess_is_drawn_with_its_interval_as_the_5th_and_95th_percentiles():
+    cfg, m = config(draws=200_000), measured(excess_s=(6.0, 14.0, 24.0))
+    x = appraisal.draws(cfg, m)["excess_s"]
+    assert np.quantile(x, 0.05) == pytest.approx(6.0, abs=0.1)
+    assert np.quantile(x, 0.95) == pytest.approx(24.0, abs=0.1)
+    assert np.median(x) == pytest.approx(14.0, abs=0.1)
+    assert x.min() >= 0.0
+
+
+def test_a_line_that_turns_into_the_street_for_its_stops_runs_shorter_without_it():
+    # the line runs along North Avenue but turns down into Main Street and back up to serve it: today it runs
+    # 300 m between the lead-in points through the street, and 100 m without it, along the avenue
+    net = reroute.Network([*AXES, ("Link North 2", LineString([(200, 100), (200, 200)]))])
+    shape = LineString([(0, 200), (100, 200), (100, 100), (200, 100), (200, 200), (300, 200)])
+    axis = LineString([(100, 100), (200, 100)])
+    d = reroute.detour(net, shape, axis, "Main", lead_ins=(50.0,))
+    assert d is not None
+    assert d.with_street_m == pytest.approx(300)  # through the street, as the bus runs today, not the shortest way
+    assert d.without_street_m == pytest.approx(100)
+    assert d.detour_m == pytest.approx(-200)
+    assert d.shorter_without
+
+
+def test_passengers_boarding_after_the_street_need_the_inputs_their_value_reads():
+    with pytest.raises(ValidationError, match=r"downstream_timed \(needed by downstream_boarders\)"):
+        config(parameters=EXTENDED | {"downstream_boarders": parameter(1.0), "wait_weight": parameter(1.75)})

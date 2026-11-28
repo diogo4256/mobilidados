@@ -55,6 +55,24 @@ def width_budget(free: dict[str, float], vehicles: dict[str, Vehicle], scenarios
     return pd.DataFrame(rows)
 
 
+def practical_passing(free_now: float, free_one_side: float, vehicles: dict[str, Vehicle], scenarios: list[list[str]],
+                      clearance_m: float) -> pd.DataFrame:  # fmt: skip
+    """Whether two vehicles pass in practice, not just on paper: their body widths plus ``clearance_m``, the room
+    design guidance leaves for movement, mirrors and safety (``Envelope.practical_clearance_m``), against the free
+    width today (``free_now``) and with one side's parking removed (``free_one_side``). A one-vehicle scenario is
+    left out: the question is meeting."""
+    rows = []
+    for sc in scenarios:
+        a, b, name = _pair(vehicles, sc)
+        if b is None:
+            continue
+        need = a.width_body_m + b.width_body_m + clearance_m
+        rows.append({"scenario": name, "bodies_m": round(a.width_body_m + b.width_body_m, 2), "clearance_m": clearance_m,
+                     "needed_m": round(need, 2), "free_now_m": round(free_now, 2), "margin_now_m": round(free_now - need, 2),
+                     "free_one_side_m": round(free_one_side, 2), "margin_one_side_m": round(free_one_side - need, 2)})  # fmt: skip
+    return pd.DataFrame(rows).sort_values("needed_m", ascending=False).reset_index(drop=True) if rows else pd.DataFrame(rows)
+
+
 def without_parking(profiles: pd.DataFrame, two_strips_m: float, space_m: list[float]) -> pd.DataFrame:
     """Free width at the two-strip stations if the strip on side L, on side R or on both became carriageway, and
     the parking that removes.

@@ -1,0 +1,567 @@
+# What the decision paper (pt) and the economic appraisal (en) say, pinned to the model outputs they quote.
+# `mobilidados check-doc cases/lisboa-rua-ricardo-jorge <exported.md> --lang pt|en [--other <other language>.md]`
+# fails when a pinned statement prints a number the model no longer gives, or when it cannot be found any more.
+# Each value is compared at one scale: the unit printed next to it (%, k, mil, €) gives it, else `scale` (0.001 for a
+# table in thousands of euros; one for every value, or a list), else the value as it is.
+# A pattern's groups capture printed numbers; `value` gives one expression per group: arithmetic on cells
+# {table.csv:column[key=value,...]}. Thousands of euros and percentages are matched at their scale.
+
+ignore_values = [46.30, 19.40, 5.34, 365, 1365, 1284, 145, 2016, 11307]
+ignore_patterns = ["art\\.", "n\\.º", "n\\.os", "Lei n", "Portaria", "Decreto", "\\b(19|20)\\d\\d\\b", "paragens? \\d", "stops? \\d",
+  "\\b744\\b", "46B", "secção \\d", "section \\d", "chapter \\d", "anexo", "Figura \\d", "Figure \\d", "quadro \\d", "table \\d",
+  "B\\.2\\.2", "7\\.1\\.2", "p\\. 152"]
+
+# ---------------------------------------------------------------- headline accounts (summary and section 4 / chapter 5)
+
+[[claims]]
+id = "npv_row"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_results.csv:npv[layer=core,option=C]}", "{appraisal_results.csv:npv[layer=extended,option=C]}",
+         "{appraisal_results.csv:npv[layer=core,option=B]}", "{appraisal_results.csv:npv[layer=extended,option=B]}"]
+pt = '^\| \*\*VAL\*\* \| \*\*([−\d,]+)\*\* \| \*\*([−\d,]+)\*\* \| \*\*([−\d,]+)\*\* \| \*\*([−\d,]+)\*\* \|'
+en = '^\| \*\*NPV\*\* \| \*\*([−\d.]+)\*\* \| \*\*([−\d.]+)\*\* \| \*\*([−\d.]+)\*\* \| \*\*([−\d.]+)\*\* \|'
+
+[[claims]]
+id = "benefits_row"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_results.csv:pv_benefit[layer=core,option=C]}", "{appraisal_results.csv:pv_benefit[layer=extended,option=C]}",
+         "{appraisal_results.csv:pv_benefit[layer=core,option=B]}", "{appraisal_results.csv:pv_benefit[layer=extended,option=B]}"]
+pt = '^\| Benefícios: passageiros, Carris, condutores, sociedade \| ([\d,]+) \| ([\d,]+) \| ([\d,]+) \| ([\d,]+) \|'
+en = '^\|(?: \*\*)? ?Benefits to users, operator and others(?:\*\*)? \|(?: \*\*)? ?([\d.]+)(?:\*\*)? \|(?: \*\*)? ?([\d.]+)(?:\*\*)? \|(?: \*\*)? ?([\d.]+)(?:\*\*)? \|(?: \*\*)? ?([\d.]+)'
+
+[[claims]]
+id = "parking_net_row"
+scale = 0.001  # a table in thousands of euros
+value = ["-{appraisal_results.csv:pv_parking[layer=core,option=C]}", "-{appraisal_results.csv:pv_parking[layer=extended,option=C]}",
+         "-{appraisal_results.csv:pv_parking[layer=core,option=B]}", "-{appraisal_results.csv:pv_parking[layer=extended,option=B]}"]
+pt = '^\| Perda de quem fica sem lugar[^|]*\| ([−\d,]+) \| ([−\d,]+) \| ([−\d,]+) \| ([−\d,]+) \|'
+en = '^\| Parking disbenefit, net of passes[^|]*\| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|'
+
+[[claims]]
+id = "public_cost_row"
+scale = 0.001  # a table in thousands of euros
+value = ["-{appraisal_results.csv:pv_public[layer=core,option=C]}", "-{appraisal_results.csv:pv_public[layer=extended,option=C]}",
+         "-{appraisal_results.csv:pv_public[layer=core,option=B]}", "-{appraisal_results.csv:pv_public[layer=extended,option=B]}"]
+pt = '^\| Custo para a Câmara \(obra e acalmia de tráfego\) \| ([−\d,]+) \| ([−\d,]+) \| ([−\d,]+) \| ([−\d,]+) \|'
+en = '^\| Cost to the public budget \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|'
+
+[[claims]]
+id = "bcr_row"
+value = ["{appraisal_results.csv:bcr[layer=core,option=C]}", "{appraisal_results.csv:bcr[layer=extended,option=C]}",
+         "{appraisal_results.csv:bcr[layer=core,option=B]}", "{appraisal_results.csv:bcr[layer=extended,option=B]}"]
+pt = '^\| Rácio benefício/custo[^|]*\| (\d,\d\d) \| (\d,\d\d) \| (\d,\d\d) \| (\d,\d\d) \|'
+en = '^\| BCR \(all benefits ÷ all costs, EAV\) \| (\d\.\d\d) \| (\d\.\d\d) \| (\d\.\d\d) \| (\d\.\d\d) \|'
+
+[[claims]]
+id = "probability_row"
+value = ["{appraisal_montecarlo.csv:probability_positive[layer=core,option=C]}", "{appraisal_montecarlo.csv:probability_positive[layer=extended,option=C]}",
+         "{appraisal_montecarlo.csv:probability_positive[layer=core,option=B]}", "{appraisal_montecarlo.csv:probability_positive[layer=extended,option=B]}"]
+pt = '^\| Probabilidade de VAL positivo \| (\d+)% \| (\d+)% \| (\d+)% \| (\d+)% \|'
+en = '^\| P\(NPV > 0\), 20,000 draws \| (\d+)% \| (\d+)% \| (\d+)% \| (\d+)% \|'
+
+[[claims]]
+id = "npv_core_text"
+value = "{appraisal_results.csv:npv[layer=core,option=C]}"
+pt = 'só com os efeitos medidos: (−[\d ]+) €'
+
+[[claims]]
+id = "npv_extended_text"
+value = "{appraisal_results.csv:npv[layer=extended,option=C]}"
+pt = 'é positivo: (\+[\d ]+) €'
+en = 'the proposal pays: (\+€[\d,]+)'
+
+[[claims]]
+id = "npv_without_offpeak"
+value = "{appraisal_tornado.csv:npv_at_low[option=C,input=offpeak_s]}"
+note = "the NPV with no off-peak delay at all, the others central"
+pt = '(?:fica em |continua a compensar \()(\+[\d ]+) €'
+en = '(?:no off-peak delay at all, |still positive \(|not needed: )(\+€[\d,]+)'
+
+[[claims]]
+id = "other_vehicle_contribution"
+value = "{appraisal_results.csv:npv[layer=extended,option=C]} - {appraisal_tornado.csv:npv_at_low[option=C,input=other_vehicle_share]}"
+pt = '(?:Desse valor, |\(\+)([\d ]+) €(?: vêm de contar|\), por pressuposto;)'
+en = '(?:€([\d,]+) of it comes from crediting|of which €([\d.]+)k rests|credited to them: €([\d,]+) of the NPV|cars and vans at the junction €([\d,]+))'
+
+[[claims]]
+id = "other_vehicle_range"
+value = ["{appraisal_tornado.csv:npv_at_low[option=C,input=other_vehicle_share]}", "{appraisal_tornado.csv:npv_at_high[option=C,input=other_vehicle_share]}"]
+pt = 'entre ([\d ]+) € e ([\d ]+) €\)'
+en = '(?:none to all: |\()€([\d,]+) to €([\d,]+)'
+
+[[claims]]
+id = "probability_positive_text"
+value = "{appraisal_montecarlo.csv:probability_positive[layer=extended,option=C]}"
+pt = '(?:é positivo em |os )(\d+)%(?: dos casos| mudam)'
+en = '(?:nine draws out of ten \(|move the )(\d+)%'
+
+[[claims]]
+id = "probability_best_text"
+value = "{appraisal_montecarlo.csv:probability_best[layer=extended,option=C]}"
+en = 'seven out of ten \((\d+)%\)'
+
+[[claims]]
+id = "both_parking_unfavourable"
+value = "{appraisal_offpeak_thresholds.csv:npv_at_central[option=C,condition=no_room_and_car_parks_full]}"
+pt = '(?:continua positivo: |desce para )(\+[\d ]+) €'
+en = '(?:stays positive \(|full car parks, NPV )(\+€[\d,]+)'
+
+# ---------------------------------------------------------------- trial criterion and break-evens
+
+[[claims]]
+id = "criterion"
+value = ["{appraisal_offpeak_thresholds.csv:saved_s_per_passage[option=C,condition=central]}",
+         "{appraisal_offpeak_thresholds.csv:saved_s_per_passage[option=C,condition=no_room_and_car_parks_full]}"]
+pt = '(?:pouparem, em média, pelo menos |Pelo menos )(\d,\d) s[^;]*; ou (\d,\d) s'
+en = 'at least (\d\.\d) s[^;]*?(?:; |, or )(\d\.\d) s if'
+
+[[claims]]
+id = "peak_needed_without_offpeak"
+value = ["{appraisal_offpeak_thresholds.csv:peak_excess_s[option=C,condition=central]}", "{appraisal_measured.csv:central[input=excess_s]}"]
+pt = 'pelo menos (\d+,\d) s \(medido: (\d+,\d) s\)'
+en = 'at least (\d+\.\d) s \(measured: (\d+\.\d) s\)'
+
+[[claims]]
+id = "threshold_no_room"
+note = "no off-peak delay needed: the peak excess it needs instead"
+value = ["{appraisal_offpeak_thresholds.csv:peak_excess_s[option=C,condition=no_room_nearby]}", "{appraisal_offpeak_thresholds.csv:npv_at_central[option=C,condition=no_room_nearby]}"]
+pt = '^\| Ninguém encontra lugar perto \| nenhum, se o atraso na ponta for de pelo menos (\d+,\d) s \| (\+[\d ]+) € \|'
+en = '^\| No displaced driver finds a space nearby \| none, if the peak excess is at least (\d+\.\d) s \| [\d.]+ s \| (\+€[\d,]+) \|'
+
+[[claims]]
+id = "threshold_parks_full"
+note = "no off-peak delay needed: the peak excess it needs instead"
+value = ["{appraisal_offpeak_thresholds.csv:peak_excess_s[option=C,condition=car_parks_full]}", "{appraisal_offpeak_thresholds.csv:npv_at_central[option=C,condition=car_parks_full]}"]
+pt = '^\| Os parques estão cheios \| nenhum, se o atraso na ponta for de pelo menos (\d+,\d) s \| (\+[\d ]+) € \|'
+en = '^\| Car parks full \(no transfer\) \| none, if the peak excess is at least (\d+\.\d) s \| [\d.]+ s \| (\+€[\d,]+) \|'
+
+[[claims]]
+id = "threshold_both"
+value = ["{appraisal_offpeak_thresholds.csv:switching_value[option=C,condition=no_room_and_car_parks_full]}", "{appraisal_offpeak_thresholds.csv:npv_at_central[option=C,condition=no_room_and_car_parks_full]}"]
+pt = '^\| \*\*As duas coisas ao mesmo tempo\*\* \| \*\*(\d,\d) s\*\* \| \*\*(\+[\d ]+) €\*\* \|'
+en = '^\| \*\*Both\*\* \| \*\*(\d\.\d) s\*\* \| \*\*[\d.]+ s\*\* \| \*\*(\+€[\d,]+)\*\* \|'
+
+[[claims]]
+id = "threshold_no_other"
+value = ["{appraisal_offpeak_thresholds.csv:switching_value[option=C,condition=no_other_mechanism]}", "{appraisal_offpeak_thresholds.csv:npv_at_central[option=C,condition=no_other_mechanism]}"]
+pt = '^\| Nenhum outro efeito por medir se confirma \| (\d,\d) s \| (−[\d ]+) € \|'
+en = '^\| No other unmeasured impact holds \| (\d\.\d) s \| [\d.]+ s \| (−€[\d,]+) \|'
+
+[[claims]]
+id = "threshold_saved_en"
+value = ["{appraisal_offpeak_thresholds.csv:saved_s_per_passage[option=C,condition=no_room_nearby]}", "{appraisal_offpeak_thresholds.csv:saved_s_per_passage[option=C,condition=car_parks_full]}", "{appraisal_offpeak_thresholds.csv:saved_s_per_passage[option=C,condition=no_other_mechanism]}"]
+en = '^\| No displaced driver finds a space nearby \| [^|]+ \| (\d\.\d) s \|[\s\S]*?^\| Car parks full \(no transfer\) \| [^|]+ \| (\d\.\d) s \|[\s\S]*?^\| No other unmeasured impact holds \| [\d.]+ s \| (\d\.\d) s \|'
+
+[[claims]]
+id = "three_sections_need"
+value = "{appraisal_offpeak_thresholds.csv:saved_s_per_passage[option=B,condition=central]}"
+pt = 'os três troços precisam de cerca de (\d,\d) s'
+en = 'all three sections need about (\d\.\d) s'
+
+[[claims]]
+id = "three_sections_offpeak"
+value = ["{appraisal_offpeak_thresholds.csv:switching_value[option=B,condition=central]}", "{appraisal_offpeak_thresholds.csv:saved_s_per_passage[option=B,condition=central]}", "{appraisal_offpeak_thresholds.csv:switching_value[option=B,condition=no_room_and_car_parks_full]}"]
+en = 'All three sections need (\d\.\d) s off-peak \((\d\.\d) s saved per passage\)[^.]*?, and (\d\.\d) s with both'
+
+# ---------------------------------------------------------------- switching values
+
+[[claims]]
+id = "switch_car_value"
+value = "{appraisal_switching.csv:switching_value[layer=extended,option=C,input=car_value]}"
+pt = 'até cerca de ([\d ]+) € por ano'
+en = '(?:Only above about |^\| Price of parking elsewhere \(€556/yr\) \| )€([\d,]+)'
+
+[[claims]]
+id = "switch_peak_excess"
+value = "{appraisal_switching.csv:switching_value[layer=extended,option=C,input=excess_s]}"
+pt = 'Tempo perdido na hora de ponta:\*\* pelo menos (\d+,\d) s'
+en = '^\| Measured peak excess per passage \(14\.5 s\)[^|]*\| (\d+\.\d) s'
+
+[[claims]]
+id = "switch_share_removed"
+value = ["{appraisal_switching.csv:switching_value[layer=extended,option=C,input=attribution_C]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_C]} - {appraisal_measured.csv:central[input=attribution_C]})",
+         "{appraisal_measured.csv:central[input=attribution_C]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_C]} - {appraisal_measured.csv:central[input=attribution_C]})"]
+pt = 'pelo menos (\d+)% \(valor central: (\d+)%'
+
+[[claims]]
+id = "shares_removed_with_other_vehicles"
+value = ["{appraisal_measured.csv:central[input=attribution_C]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_C]} - {appraisal_measured.csv:central[input=attribution_C]})",
+         "{appraisal_measured.csv:central[input=attribution_B]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_B]} - {appraisal_measured.csv:central[input=attribution_B]})"]
+pt = 'recuperam (\d+)% e (\d+)%'
+en = 'they remove (\d+)% and (\d+)%'
+
+# ---------------------------------------------------------------- scenarios, Monte Carlo, value of information
+
+[[claims]]
+id = "scenarios_proposal"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_scenarios.csv:npv[option=C,scenario=core,years=10]}", "{appraisal_scenarios.csv:npv[option=C,scenario=core,years=20]}",
+         "{appraisal_scenarios.csv:npv[option=C,scenario=cautious,years=10]}", "{appraisal_scenarios.csv:npv[option=C,scenario=central,years=10]}",
+         "{appraisal_scenarios.csv:npv[option=C,scenario=central,years=20]}", "{appraisal_scenarios.csv:npv[option=C,scenario=favourable,years=10]}"]
+pt = '^\| Análise restrita \(só efeitos medidos\) \| ([−\d,]+) \| ([−\d,]+) \|\n^\| Prudente[^|]*\| ([−\d,]+) \|[^\n]*\n^\| Central \| ([\d,]+) \| ([\d,]+) \|\n^\| Favorável[^|]*\| ([\d,]+) \|'
+
+[[claims]]
+id = "scenarios_proposal_en"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_scenarios.csv:npv[option=C,scenario=core,years=10]}", "{appraisal_scenarios.csv:npv[option=C,scenario=cautious,years=10]}",
+         "{appraisal_scenarios.csv:npv[option=C,scenario=central,years=10]}", "{appraisal_scenarios.csv:npv[option=C,scenario=favourable,years=10]}",
+         "{appraisal_scenarios.csv:npv[option=C,scenario=core,years=20]}", "{appraisal_scenarios.csv:npv[option=C,scenario=central,years=20]}"]
+en = '^\| Longest section \(proposal\) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|'
+
+[[claims]]
+id = "scenarios_three_en"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_scenarios.csv:npv[option=B,scenario=core,years=10]}", "{appraisal_scenarios.csv:npv[option=B,scenario=cautious,years=10]}",
+         "{appraisal_scenarios.csv:npv[option=B,scenario=central,years=10]}", "{appraisal_scenarios.csv:npv[option=B,scenario=favourable,years=10]}",
+         "{appraisal_scenarios.csv:npv[option=B,scenario=core,years=20]}", "{appraisal_scenarios.csv:npv[option=B,scenario=central,years=20]}"]
+en = '^\| All three sections \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|'
+
+[[claims]]
+id = "montecarlo_proposal_extended"
+scale = [0.001, 0.001, 0.001, 1, 1]  # the amounts in thousands of euros
+value = ["{appraisal_montecarlo.csv:p10[layer=extended,option=C]}", "{appraisal_montecarlo.csv:p50[layer=extended,option=C]}", "{appraisal_montecarlo.csv:p90[layer=extended,option=C]}",
+         "{appraisal_montecarlo.csv:probability_positive[layer=extended,option=C]}", "{appraisal_montecarlo.csv:probability_best[layer=extended,option=C]}"]
+pt = '^\| Troço mais longo, análise alargada \| ([−\d,]+) mil € \| ([−\d,]+) mil € \| ([−\d,]+) mil € \| (\d+)% \| (\d+)% \|'
+en = '^\| Longest section, all impacts \| [−\d.]+ \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| (\d+)% \| (\d+)% \|'
+
+[[claims]]
+id = "montecarlo_proposal_core"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_montecarlo.csv:p10[layer=core,option=C]}", "{appraisal_montecarlo.csv:p50[layer=core,option=C]}", "{appraisal_montecarlo.csv:p90[layer=core,option=C]}"]
+pt = '^\| Troço mais longo, análise restrita \| ([−\d,]+) mil € \| ([−\d,]+) mil € \| ([−\d,]+) mil € \|'
+en = '^\| Longest section, established \| [−\d.]+ \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|'
+
+[[claims]]
+id = "montecarlo_three_extended"
+scale = [0.001, 0.001, 0.001, 1, 1]  # the amounts in thousands of euros
+value = ["{appraisal_montecarlo.csv:p10[layer=extended,option=B]}", "{appraisal_montecarlo.csv:p50[layer=extended,option=B]}", "{appraisal_montecarlo.csv:p90[layer=extended,option=B]}",
+         "{appraisal_montecarlo.csv:probability_positive[layer=extended,option=B]}", "{appraisal_montecarlo.csv:probability_best[layer=extended,option=B]}"]
+pt = '^\| Três troços, análise alargada \| ([−\d,]+) mil € \| ([−\d,]+) mil € \| ([−\d,]+) mil € \| (\d+)% \| (\d+)% \|'
+en = '^\| All three sections, all impacts \| [−\d.]+ \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| (\d+)% \| (\d+)% \|'
+
+[[claims]]
+id = "value_of_information"
+value = "{appraisal_voi.csv:evppi[input=(all)]}"
+pt = '(?:valeria, no máximo, cerca de |informação que (?:o ensaio )?dá \(cerca de |decidir \(cerca de )([\d ]+) €'
+en = 'about €([\d,]+)(?:, chapter 7| in present value)'
+
+[[claims]]
+id = "discount_rates"
+value = ["{appraisal_results.csv:npv_at_3pct[layer=extended,option=C]}", "{appraisal_results.csv:npv_at_7pct[layer=extended,option=C]}"]
+en = 'proposal.s NPV with all impacts is €([\d.]+)k and €([\d.]+)k'
+
+# ---------------------------------------------------------------- the trial's cost, the operator, value of time
+
+[[claims]]
+id = "failed_trial_cost"
+value = ["{appraisal_results.csv:works[layer=core,option=C]} + 0.5 * ({appraisal_results.csv:parking_year[layer=core,option=C]} - {appraisal_results.csv:benefit_year[layer=core,option=C]})",
+         "{appraisal_results.csv:works[layer=core,option=C]}",
+         "0.5 * ({appraisal_results.csv:parking_year[layer=core,option=C]} - {appraisal_results.csv:benefit_year[layer=core,option=C]})"]
+pt = 'cerca de ([\d ]+) € \(([\d ]+) € de obra e ([\d ]+) € de perda'
+en = 'about €([\d,]+) \(€([\d,]+) of works and €([\d,]+) of net loss'
+
+[[claims]]
+id = "operator_share"
+value = ["{appraisal_results.csv:pv_operator[layer=extended,option=C]}", "{appraisal_results.csv:npv[layer=extended,option=C]} - {appraisal_results.csv:pv_operator[layer=extended,option=C]}"]
+pt = 'poupança da Carris \(([\d ]+) €\)[^+]*\+([\d ]+) €'
+en = 'operator saving \(€([\d,]+)\)[^+]*\+€([\d,]+)'
+
+[[claims]]
+id = "without_operator"
+value = "{appraisal_results.csv:npv[layer=extended,option=C]} - {appraisal_results.csv:pv_operator[layer=extended,option=C]}"
+pt = '(?:sem ele|Sem ela), a proposta mantém \+([\d ]+) €'
+en = '(?:NPV is|Without it the NPV is) \+€([\d,]+)'
+
+[[claims]]
+id = "value_of_time_doubled"
+value = "{appraisal_results.csv:pv_time[layer=extended,option=C]} + {appraisal_results.csv:pv_traffic[layer=extended,option=C]} + {appraisal_results.csv:pv_new_riders[layer=extended,option=C]} + {appraisal_results.csv:pv_downstream[layer=extended,option=C]}"
+pt = 'acrescentaria cerca de ([\d ]+) €'
+en = 'would add about €([\d,]+)'
+
+# ---------------------------------------------------------------- distribution and per-head figures
+
+[[claims]]
+id = "per_driver"
+value = "{appraisal_results.csv:parking_private_year[layer=extended,option=C]} / ({appraisal_results.csv:places[layer=extended,option=C]} * {appraisal_inputs.csv:central[input=occupancy]} * {appraisal_inputs.csv:central[input=compliance_permanent]})"
+pt = '(?:cerca de|perdem, em média,) (\d+) € por ano'
+en = '(?:bears about|lose about) €(\d+) a year'
+
+[[claims]]
+id = "distribution_proposal"
+value = ["{appraisal_distribution.csv:value[option=C,group=passengers]} + {appraisal_distribution.csv:value[option=C,group=new_passengers]}",
+         "{appraisal_distribution.csv:value[option=C,group=downstream_passengers]}",
+         "{appraisal_distribution.csv:value[option=C,group=operator]}",
+         "{appraisal_distribution.csv:value[option=C,group=vehicle_owners]}",
+         "{appraisal_distribution.csv:value[option=C,group=drivers_behind]}",
+         "{appraisal_distribution.csv:value[option=C,group=society]}",
+         "{appraisal_distribution.csv:value[option=C,group=cruising]}",
+         "{appraisal_distribution.csv:value[option=C,group=parkers]}",
+         "{appraisal_distribution.csv:value[option=C,group=car_parks]}",
+         "{appraisal_distribution.csv:value[option=C,group=public_bodies]}"]
+pt = 'viagens \| (\+[\d ]+) € \|\n^\|[^|]*\| quem embarca depois da rua[^|]*\| (\+[\d ]+) € \|\n^\|[^|]*\| Carris \| (\+[\d ]+) € \|\n^\|[^|]*\|[^|]*\| (\+[\d ]+) € \|\n^\|[^|]*\| condutores \| (\+[\d ]+) € \|\n^\|[^|]*\| toda a população \| (\+[\d ]+) € \|\n^\|[^|]*\| toda a população \| (−[\d ]+) € \|\n^\|[^|]*\|[^|]*\| (−[\d ]+) € \|\n^\|[^|]*\|[^|]*\| (\+[\d ]+) € \|\n^\|[^|]*\| Câmara \| (−[\d ]+) € \|'
+
+[[claims]]
+id = "distribution_en"
+value = ["{appraisal_distribution.csv:value[option=C,group=passengers]} + {appraisal_distribution.csv:value[option=C,group=new_passengers]}",
+         "{appraisal_distribution.csv:value[option=B,group=passengers]} + {appraisal_distribution.csv:value[option=B,group=new_passengers]}",
+         "{appraisal_distribution.csv:value[option=C,group=downstream_passengers]}", "{appraisal_distribution.csv:value[option=B,group=downstream_passengers]}",
+         "{appraisal_distribution.csv:value[option=C,group=operator]}", "{appraisal_distribution.csv:value[option=B,group=operator]}",
+         "{appraisal_distribution.csv:value[option=C,group=drivers_behind]}", "{appraisal_distribution.csv:value[option=B,group=drivers_behind]}",
+         "{appraisal_distribution.csv:value[option=C,group=society]}", "{appraisal_distribution.csv:value[option=B,group=society]}",
+         "{appraisal_distribution.csv:value[option=C,group=cruising]}", "{appraisal_distribution.csv:value[option=B,group=cruising]}",
+         "{appraisal_distribution.csv:value[option=C,group=vehicle_owners]}", "{appraisal_distribution.csv:value[option=B,group=vehicle_owners]}",
+         "{appraisal_distribution.csv:value[option=C,group=parkers]}", "{appraisal_distribution.csv:value[option=B,group=parkers]}",
+         "{appraisal_distribution.csv:value[option=C,group=car_parks]}", "{appraisal_distribution.csv:value[option=B,group=car_parks]}",
+         "{appraisal_distribution.csv:value[option=C,group=public_bodies]}", "{appraisal_distribution.csv:value[option=B,group=public_bodies]}"]
+en = '^\| Bus passengers: time and reliability \| (\+€[\d,]+) \| (\+€[\d,]+) \|\n^\| Passengers boarding after the street[^|]*\| (\+€[\d,]+) \| (\+€[\d,]+) \|\n^\| Operator \(Carris\): bus-hours \| (\+€[\d,]+) \| (\+€[\d,]+) \|\n^\| Occupants[^|]*\| (\+€[\d,]+) \| (\+€[\d,]+) \|\n^\| Everyone: external costs of the car trips diverted \| (\+€[\d,]+) \| (\+€[\d,]+) \|\n^\| Everyone: external costs of cruising for a space \| (−€[\d,]+) \| (−€[\d,]+) \|\n^\| Owners[^|]*\| (\+€[\d,]+) \| (\+€[\d,]+) \|\n^\| Those who park[^|]*\| (−€[\d,]+) \| (−€[\d,]+) \|\n^\| Car parks with[^|]*\| (\+€[\d,]+) \| (\+€[\d,]+) \|\n^\| Municipality[^|]*\| (−€[\d,]+) \| (−€[\d,]+) \|'
+
+[[claims]]
+id = "yearly_gain"
+value = "{appraisal_results.csv:benefit_year[layer=extended,option=C]}"
+en = 'The proposal gives about €([\d,]+) a year'
+
+[[claims]]
+id = "cruising"
+value = "{appraisal_bridge.csv:change[option=C,step=cruise_km_day]}"
+pt = '[Cc]ontam-se as voltas à procura de lugar \((−[\d ]+) €\)'
+en = '[Cc]ruising for a space now counted \((−€[\d,]+)\)'
+
+# ---------------------------------------------------------------- safety
+
+[[claims]]
+id = "crash_years_extended"
+value = "{appraisal_safety.csv:years_per_crash[option=C,layer=extended,crash=slight_injury]}"
+pt = '(?:Evitar um|um) a cada (\d+) anos(?: vale)'
+en = '(?:Avoiding one|one) every (\d+) years (?:is worth)'
+
+[[claims]]
+id = "crash_years_core"
+value = "{appraisal_safety.csv:years_per_crash[option=C,layer=core,crash=slight_injury]}"
+pt = 'evitar um a cada (\d+) anos anula'
+en = 'avoiding one every (\d+) years cancels'
+
+# ---------------------------------------------------------------- reroutes
+
+[[claims]]
+id = "reroute_744ne"
+value = ["{appraisal_reroutes.csv:npv_before_stop_access[reroute=R744NE,layer=core]}", "{appraisal_reroutes.csv:npv_before_stop_access[reroute=R744NE,layer=extended]}"]
+pt = '\| (−[\d ]+) €; (\+[\d ]+) € \| [^|]*proposta'
+en = '\| (−€[\d,]+); (\+€[\d,]+) \| [^|]*proposal'
+
+[[claims]]
+id = "reroute_46b"
+value = ["{appraisal_reroutes.csv:npv_before_stop_access[reroute=R46B,layer=core]}", "{appraisal_reroutes.csv:npv_before_stop_access[reroute=R46B,layer=extended]}",
+         "{appraisal_reroutes.csv:breakeven_boardings_per_day[reroute=R46B,layer=core]}", "{appraisal_reroutes.csv:breakeven_boardings_per_day[reroute=R46B,layer=extended]}"]
+pt = '\| (\+[\d ]+) €; (\+[\d ]+) € \| [^|]*menos de (\d+) a (\d+) pessoas'
+en = '\| (\+€[\d,]+); (\+€[\d,]+) \| [^|]*fewer than (\d+) to (\d+) people'
+
+[[claims]]
+id = "reroute_744ne_beats_core"
+note = "boardings a day at the stops left behind below which the 744 north-eastbound reroute beats the proposal on measured impacts only"
+value = "({appraisal_reroutes.csv:npv_before_stop_access[reroute=R744NE,layer=core]} - {appraisal_results.csv:npv[layer=core,option=C]}) / ({appraisal_reroutes.csv:npv_before_stop_access[reroute=R744NE,layer=extended]} / {appraisal_reroutes.csv:breakeven_boardings_per_day[reroute=R744NE,layer=extended]})"
+pt = '(?:menos de cerca de (\d+) pessoas por dia no desvio da 744|supera-a se menos de cerca de (\d+) pessoas por dia usarem|quase não forem usadas \(menos de cerca de (\d+) pessoas)'
+en = '(?:fewer than about (\d+) people a day for the north-eastbound 744|beats it if fewer than about (\d+) people a day use|barely used \(fewer than about (\d+) people)'
+
+[[claims]]
+id = "reroute_46b_beats_core"
+note = "the same for the 46B reroute, on measured impacts only"
+value = "({appraisal_reroutes.csv:npv_before_stop_access[reroute=R46B,layer=core]} - {appraisal_results.csv:npv[layer=core,option=C]}) / ({appraisal_reroutes.csv:npv_before_stop_access[reroute=R46B,layer=core]} / {appraisal_reroutes.csv:breakeven_boardings_per_day[reroute=R46B,layer=core]})"
+pt = '(?:menos de cerca de (\d+) no da 46B|supera mesmo a proposta se forem menos de cerca de (\d+))'
+en = '(?:fewer than about (\d+) for the 46B|beats even the proposal if fewer than about (\d+))'
+
+[[claims]]
+id = "reroute_744ne_beats_bus_only"
+note = "on all impacts, counting bus-on-bus meetings only for the proposal too"
+value = "({appraisal_reroutes.csv:npv_before_stop_access[reroute=R744NE,layer=extended]} - {appraisal_tornado.csv:npv_at_low[option=C,input=other_vehicle_share]}) / ({appraisal_reroutes.csv:npv_before_stop_access[reroute=R744NE,layer=extended]} / {appraisal_reroutes.csv:breakeven_boardings_per_day[reroute=R744NE,layer=extended]})"
+pt = 'só os encontros entre autocarros: supera-a com menos de cerca de (\d+) pessoas por dia'
+en = 'bus-on-bus meetings only: it beats it with fewer than about (\d+) people a day'
+
+[[claims]]
+id = "works_trial"
+value = "{appraisal_results.csv:works[layer=core,option=C]}"
+pt = '(?:O ensaio custa cerca de |^\| \*\*Custo para a Câmara\*\* \| )([\d ]+) €'
+en = '(?:54 m of paint cost |^\| \*\*Cost to the public budget\*\* \| )€([\d,]+)'
+
+[[claims]]
+id = "cruising_year"
+value = "{appraisal_distribution.csv:value[option=C,group=cruising]}"
+pt = 'Custos externos das voltas à procura de lugar \| toda a população \| (−[\d ]+) €'
+
+# ---------------------------------------------------------------- the appraisal's detailed tables (en)
+
+[[claims]]
+id = "amcb_lines"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_results.csv:pv_time[layer=core,option=C]}", "{appraisal_results.csv:pv_time[layer=extended,option=C]}", "{appraisal_results.csv:pv_time[layer=core,option=B]}", "{appraisal_results.csv:pv_time[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_downstream[layer=extended,option=C]}", "{appraisal_results.csv:pv_downstream[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_operator[layer=core,option=C]}", "{appraisal_results.csv:pv_operator[layer=extended,option=C]}", "{appraisal_results.csv:pv_operator[layer=core,option=B]}", "{appraisal_results.csv:pv_operator[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_traffic[layer=extended,option=C]}", "{appraisal_results.csv:pv_traffic[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_new_riders[layer=extended,option=C]}", "{appraisal_results.csv:pv_new_riders[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_external[layer=extended,option=C]}", "{appraisal_results.csv:pv_external[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_damage[layer=extended,option=C]}", "{appraisal_results.csv:pv_damage[layer=extended,option=B]}"]
+en = '^\| Bus passengers: time and reliability \| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \|\n^\| Passengers boarding after the street[^|]*\| — \| ([\d.]+) \| — \| ([\d.]+) \|\n^\| Operator: bus-hours \| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \|\n^\| Occupants[^|]*\| — \| ([\d.]+) \| — \| ([\d.]+) \|\n^\| New passengers[^|]*\| — \| ([\d.]+) \| — \| ([\d.]+) \|\n^\| Marginal external[^|]*\| — \| ([−\d.]+) \| — \| ([−\d.]+) \|\n^\| Damage avoided[^|]*\| — \| ([\d.]+) \| — \| ([\d.]+) \|'
+
+[[claims]]
+id = "amcb_parking_and_budget"
+scale = 0.001  # a table in thousands of euros
+value = ["-{appraisal_results.csv:pv_parking_private[layer=core,option=C]}", "-{appraisal_results.csv:pv_parking_private[layer=extended,option=C]}", "-{appraisal_results.csv:pv_parking_private[layer=core,option=B]}", "-{appraisal_results.csv:pv_parking_private[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_carpark_revenue[layer=extended,option=C]}", "{appraisal_results.csv:pv_carpark_revenue[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_benefit[layer=core,option=C]} - {appraisal_results.csv:pv_parking[layer=core,option=C]}", "{appraisal_results.csv:pv_benefit[layer=extended,option=C]} - {appraisal_results.csv:pv_parking[layer=extended,option=C]}",
+         "{appraisal_results.csv:pv_benefit[layer=core,option=B]} - {appraisal_results.csv:pv_parking[layer=core,option=B]}", "{appraisal_results.csv:pv_benefit[layer=extended,option=B]} - {appraisal_results.csv:pv_parking[layer=extended,option=B]}",
+         "{appraisal_results.csv:pv_public[layer=core,option=C]}", "{appraisal_results.csv:pv_public[layer=extended,option=C]} - {appraisal_results.csv:calming[layer=extended,option=C]}",
+         "{appraisal_results.csv:pv_public[layer=core,option=B]}", "{appraisal_results.csv:pv_public[layer=extended,option=B]} - {appraisal_results.csv:calming[layer=extended,option=B]}",
+         "{appraisal_results.csv:calming[layer=extended,option=C]}", "{appraisal_results.csv:calming[layer=extended,option=B]}"]
+en = '^\| Parking disbenefit to those who lose a place[^|]*\| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|\n^\| Passes paid[^|]*\| — \| ([\d.]+) \| — \| ([\d.]+) \|\n^[^\n]*\n^\| PVB, net[^|]*\| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|\n^\| Works[^|]*\| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \|\n^\| Traffic calming[^|]*\| — \| ([\d.]+) \| — \| ([\d.]+) \|'
+
+[[claims]]
+id = "amcb_discount_rates"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_results.csv:npv_at_3pct[layer=core,option=C]}", "{appraisal_results.csv:npv_at_7pct[layer=core,option=C]}", "{appraisal_results.csv:npv_at_3pct[layer=extended,option=C]}", "{appraisal_results.csv:npv_at_7pct[layer=extended,option=C]}",
+         "{appraisal_results.csv:npv_at_3pct[layer=core,option=B]}", "{appraisal_results.csv:npv_at_7pct[layer=core,option=B]}", "{appraisal_results.csv:npv_at_3pct[layer=extended,option=B]}", "{appraisal_results.csv:npv_at_7pct[layer=extended,option=B]}"]
+en = '^\| NPV at 3% / 7% \| ([−\d.]+) / ([−\d.]+) \| ([−\d.]+) / ([−\d.]+) \| ([−\d.]+) / ([−\d.]+) \| ([−\d.]+) / ([−\d.]+) \|'
+
+[[claims]]
+id = "quantities"
+value = ["{appraisal_results.csv:bus_hours[layer=core,option=C]}", "{appraisal_results.csv:bus_hours[layer=extended,option=C]}", "{appraisal_results.csv:bus_hours[layer=core,option=B]}", "{appraisal_results.csv:bus_hours[layer=extended,option=B]}",
+         "{appraisal_results.csv:passenger_hours[layer=core,option=C]}", "{appraisal_results.csv:passenger_hours[layer=extended,option=C]}", "{appraisal_results.csv:passenger_hours[layer=core,option=B]}", "{appraisal_results.csv:passenger_hours[layer=extended,option=B]}",
+         "{appraisal_results.csv:downstream_hours[layer=extended,option=C]}", "{appraisal_results.csv:downstream_hours[layer=extended,option=B]}",
+         "{appraisal_results.csv:saved_s_per_passenger[layer=extended,option=C]}", "{appraisal_results.csv:saved_s_per_passenger[layer=extended,option=B]}",
+         "{appraisal_results.csv:new_riders[layer=extended,option=C]}", "{appraisal_results.csv:new_riders[layer=extended,option=B]}"]
+en = '^\| Bus-hours saved, per year \| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \| ([\d.]+) \|[^\n]*\n^\| Passenger-hours saved, per year \| ([\d,]+) \| ([\d,]+) \| ([\d,]+) \| ([\d,]+) \|[^\n]*\n^\| Waiting hours saved at later stops[^|]*\| — \| ([\d,]+) \| — \| ([\d,]+) \|[^\n]*\n^\| Seconds saved per passenger trip \| — \| ([\d.]+) \| — \| ([\d.]+) \|[^\n]*\n^\| New bus trips[^|]*\| — \| ([\d,]+) \| — \| ([\d,]+) \|'
+
+[[claims]]
+id = "quantities_passages"
+value = ["{appraisal_measured.csv:central[input=passages_peak_C]}", "{appraisal_measured.csv:central[input=passages_other_C]}", "{appraisal_results.csv:riders[layer=extended,option=C]}"]
+en = '^\| Bus passages at the weekday evening peak, per year \| ([\d,]+) \|[^\n]*\n^\| Bus passages at other times, per year \| not counted \| ([\d,]+) \|[^\n]*\n^\| Passenger trips through the street, per year \| — \| ([\d,]+) \|'
+
+[[claims]]
+id = "switching_three_sections"
+value = ["{appraisal_switching.csv:switching_value[layer=extended,option=B,input=offpeak_s]}", "{appraisal_switching.csv:switching_value[layer=extended,option=B,input=car_value]}",
+         "{appraisal_switching.csv:switching_value[layer=extended,option=B,input=excess_s]}",
+         "{appraisal_switching.csv:switching_value[layer=extended,option=C,input=attribution_C]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_C]} - {appraisal_measured.csv:central[input=attribution_C]})",
+         "{appraisal_switching.csv:switching_value[layer=extended,option=B,input=attribution_B]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_B]} - {appraisal_measured.csv:central[input=attribution_B]})",
+         "{appraisal_switching.csv:switching_value[layer=extended,option=B,input=unexpected_share]}"]
+en = 'on a working day \(2\.5 s\) \|[^|]*\| (\d\.\d) s \|\n^\| Price of parking[^|]*\| €[\d,]+ \| €([\d,]+) \|\n^\| Share of displaced[^|]*\| never binds \| never binds \|\n^\| Share of the car-park pass[^|]*\| never binds \| never binds \|\n^\| Measured peak excess[^|]*\| [\d.]+ s \| ([\d.]+) s \|\n^\| Share of the excess the option removes[^|]*\| (0\.\d\d) \| (0\.\d\d) \|\n^\| Share of the other junction[^|]*\| never binds \| never binds \|\n^\| Unexpected share[^|]*\| never binds \| (\d+)% \|'
+
+[[claims]]
+id = "montecarlo_other_options_en"
+scale = [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 1, 1, 0.001, 0.001, 0.001, 0.001, 1, 1]  # the amounts in thousands of euros
+value = ["{appraisal_montecarlo.csv:mean[layer=core,option=C]}", "{appraisal_montecarlo.csv:mean[layer=extended,option=C]}",
+         "{appraisal_montecarlo.csv:mean[layer=core,option=B]}", "{appraisal_montecarlo.csv:p10[layer=core,option=B]}", "{appraisal_montecarlo.csv:p50[layer=core,option=B]}", "{appraisal_montecarlo.csv:p90[layer=core,option=B]}",
+         "{appraisal_montecarlo.csv:mean[layer=extended,option=B]}",
+         "{appraisal_montecarlo.csv:mean[layer=extended,option=E]}", "{appraisal_montecarlo.csv:p10[layer=extended,option=E]}", "{appraisal_montecarlo.csv:p50[layer=extended,option=E]}", "{appraisal_montecarlo.csv:p90[layer=extended,option=E]}", "{appraisal_montecarlo.csv:probability_positive[layer=extended,option=E]}", "{appraisal_montecarlo.csv:probability_best[layer=extended,option=E]}",
+         "{appraisal_montecarlo.csv:mean[layer=extended,option=H]}", "{appraisal_montecarlo.csv:p10[layer=extended,option=H]}", "{appraisal_montecarlo.csv:p50[layer=extended,option=H]}", "{appraisal_montecarlo.csv:p90[layer=extended,option=H]}", "{appraisal_montecarlo.csv:probability_positive[layer=extended,option=H]}", "{appraisal_montecarlo.csv:probability_best[layer=extended,option=H]}"]
+en = '^\| Longest section, established \| ([−\d.]+) \|[^\n]*\n^\| Longest section, all impacts \| ([−\d.]+) \|[^\n]*\n^\| All three sections, established \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|[^\n]*\n^\| All three sections, all impacts \| ([−\d.]+) \|[^\n]*\n^\| All three, 07:00–20:00, all impacts \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| (\d+)% \| (\d+)% \|\n^\| Longest, 16:00–20:00, all impacts \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| (\d+)% \| (\d+)% \|'
+
+[[claims]]
+id = "scenarios_time_of_day_en"
+scale = 0.001  # a table in thousands of euros
+value = ["{appraisal_scenarios.csv:npv[option=E,scenario=core,years=10]}", "{appraisal_scenarios.csv:npv[option=E,scenario=cautious,years=10]}", "{appraisal_scenarios.csv:npv[option=E,scenario=central,years=10]}", "{appraisal_scenarios.csv:npv[option=E,scenario=favourable,years=10]}", "{appraisal_scenarios.csv:npv[option=E,scenario=core,years=20]}", "{appraisal_scenarios.csv:npv[option=E,scenario=central,years=20]}",
+         "{appraisal_scenarios.csv:npv[option=G,scenario=core,years=10]}", "{appraisal_scenarios.csv:npv[option=G,scenario=cautious,years=10]}", "{appraisal_scenarios.csv:npv[option=G,scenario=central,years=10]}", "{appraisal_scenarios.csv:npv[option=G,scenario=favourable,years=10]}", "{appraisal_scenarios.csv:npv[option=G,scenario=core,years=20]}", "{appraisal_scenarios.csv:npv[option=G,scenario=central,years=20]}",
+         "{appraisal_scenarios.csv:npv[option=H,scenario=core,years=10]}", "{appraisal_scenarios.csv:npv[option=H,scenario=cautious,years=10]}", "{appraisal_scenarios.csv:npv[option=H,scenario=central,years=10]}", "{appraisal_scenarios.csv:npv[option=H,scenario=favourable,years=10]}", "{appraisal_scenarios.csv:npv[option=H,scenario=core,years=20]}", "{appraisal_scenarios.csv:npv[option=H,scenario=central,years=20]}"]
+en = '^\| All three, 07:00–20:00 \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|\n^\| All three, 16:00–20:00 \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|\n^\| Longest, 16:00–20:00 \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \| ([−\d.]+) \|'
+
+[[claims]]
+id = "parking_steps"
+value = "{appraisal_bridge.csv:change[option=C,step=room_nearby]} + {appraisal_bridge.csv:change[option=C,step=carpark_walk]} + {appraisal_bridge.csv:change[option=C,step=spare_capacity]}"
+en = 'three parking steps together add about (\+€[\d,]+)'
+
+[[claims]]
+id = "car_park_user_cost"
+value = "{appraisal_inputs.csv:central[input=car_value]} + {appraisal_inputs.csv:central[input=carpark_walk]}"
+en = 'on average: €(\d+) \(the €556 pass'
+
+[[claims]]
+id = "seconds_per_trip"
+value = "{appraisal_results.csv:saved_s_per_passenger[layer=extended,option=C]}"
+en = '(?:A |saves about )(\d\.\d) s(?:econds)?(?: saving| per trip)'
+
+# ---------------------------------------------------------------- passengers who board after the street (v2.0)
+
+[[claims]]
+id = "downstream_contribution"
+note = "the NPV the passengers boarding after the street add, at central values"
+value = "{appraisal_bridge.csv:change[option=C,step=downstream_boarders]}"
+pt = '(?:e ([\d ]+) € de quem embarca depois|\(\+([\d ]+) €\), por pressuposto e inferência)'
+en = '(?:and €([\d,]+) from the passengers who board|worth €([\d,]+) of the NPV)'
+
+[[claims]]
+id = "npv_without_downstream"
+value = "{appraisal_results.csv:npv[layer=extended,option=C]} - {appraisal_bridge.csv:change[option=C,step=downstream_boarders]}"
+pt = 'sem eles, (\+[\d ]+) €'
+en = 'without them, (\+€[\d,]+)'
+
+[[claims]]
+id = "bcr_without_downstream"
+value = "({appraisal_results.csv:pv_benefit[layer=extended,option=C]} - {appraisal_results.csv:pv_downstream[layer=extended,option=C]}) / ({appraisal_results.csv:pv_parking[layer=extended,option=C]} + {appraisal_results.csv:pv_public[layer=extended,option=C]})"
+en = 'medium \((\d\.\d\d)\)'
+
+[[claims]]
+id = "eav_ratio_text"
+value = "{appraisal_results.csv:bcr[layer=extended,option=C]}"
+en = '(?:on the EAV ratio \(|The EAV ratio is |adjusted ratio \()(\d\.\d\d)'
+
+[[claims]]
+id = "dft_ratio_text"
+value = "{appraisal_results.csv:bcr_budget[layer=extended,option=C]}"
+en = 'The DfT ratio is (\d+\.\d)'
+
+[[claims]]
+id = "downstream_bunching"
+note = "the part of the downstream passengers' value that comes from uneven gaps (bunching), for those who arrive at random"
+value = "{appraisal_results.csv:pv_downstream_bunching[layer=extended,option=C]}"
+pt = 'intervalos irregulares[^.]*?cerca de ([\d ]+) €'
+en = 'uneven gaps[^.]*?about €([\d,]+)'
+
+[[claims]]
+id = "downstream_geometry"
+value = ["{appraisal_measured.csv:central[input=km_after_street]}", "{appraisal_measured.csv:central[input=headway_peak_min]}", "{appraisal_measured.csv:central[input=headway_other_min]}", "{appraisal_measured.csv:central[input=meet_share_peak]}"]
+pt = 'mais (\d,\d) km[\s\S]*?intervalos de cerca de (\d+) minutos na ponta \((\d+) fora dela\)[\s\S]*?em cerca de (\d+)% das passagens'
+en = 'another (\d\.\d) km[\s\S]*?gaps of about (\d+) minutes at peak \((\d+) off-peak\)[\s\S]*?in about (\d+)% of peak passages'
+
+[[claims]]
+id = "npv_at_low_peak_excess"
+value = "{appraisal_tornado.csv:npv_at_low[option=C,input=excess_s]}"
+pt = 'no extremo inferior[^.]*?\(5,6 s\)[^.]*?(\+[\d ]+) €'
+en = 'at the low end of (?:its|the measured) interval[^.]*?\(5\.6 s\)[^.]*?(\+€[\d,]+)'
+
+[[claims]]
+id = "probability_core_highest"
+note = "the established tier's highest chance of a positive NPV across the options (the longest section at 16:00-20:00)"
+value = "{appraisal_montecarlo.csv:probability_positive[layer=core,option=H]}"
+en = 'no option has more than an? (\d+)% chance'
+
+[[claims]]
+id = "value_of_information_share"
+value = "{appraisal_voi.csv:evppi[input=attribution_C]}"
+pt = 'que a proposta recupera tem algum valor próprio \(cerca de ([\d ]+) €\)'
+en = '^\| Share of the excess the proposal removes \| €([\d,]+) \|'
+
+[[claims]]
+id = "reroutes_set_aside"
+value = ["{appraisal_reroutes.csv:npv_before_stop_access[reroute=R744SW,layer=core]}", "{appraisal_reroutes.csv:npv_before_stop_access[reroute=R744SW,layer=extended]}",
+         "{appraisal_reroutes.csv:npv_before_stop_access[reroute=R744,layer=core]}", "{appraisal_reroutes.csv:npv_before_stop_access[reroute=R744,layer=extended]}",
+         "{appraisal_reroutes.csv:npv_before_stop_access[reroute=RSW,layer=core]}", "{appraisal_reroutes.csv:npv_before_stop_access[reroute=RSW,layer=extended]}"]
+pt = 'R. Reinaldo Ferreira \| (−[\d ]+) €; (−[\d ]+) € \|[^\n]*\n^\| 744 nos dois sentidos[^|]*\|[^|]*\|[^|]*\| (−[\d ]+) €; (−[\d ]+) € \|[^\n]*\n^\| 744 para sudoeste e 46B[^|]*\|[^|]*\|[^|]*\| (−[\d ]+) €; (−[\d ]+) € \|'
+en = 'R. Reinaldo Ferreira stop \| (−€[\d,]+); (−€[\d,]+) \|[^\n]*\n^\| 744 both ways[^|]*\|[^|]*\|[^|]*\| (−€[\d,]+); (−€[\d,]+) \|[^\n]*\n^\| 744 south-westbound and 46B[^|]*\|[^|]*\|[^|]*\| (−€[\d,]+); (−€[\d,]+) \|'
+
+[[claims]]
+id = "simulation_p90"
+note = "the favourable scenario is a corner of the ranges; the simulation's P90 is the plausible upper end"
+value = "{appraisal_montecarlo.csv:p90[layer=extended,option=C]}"
+pt = 'percentil 90 da simulação é de ([\d ]+) €'
+en = 'simulation.s P90 is €([\d,]+)'
+
+[[claims]]
+id = "switch_share_removed_en"
+note = "the share of the excess removed at which the proposal breaks even; the same whether half the other junction is credited to cars and vans or not, since only the total share counts"
+value = ["{appraisal_switching.csv:switching_value[layer=extended,option=C,input=attribution_C]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_C]} - {appraisal_measured.csv:central[input=attribution_C]})",
+         "{appraisal_switching.csv:switching_value[layer=extended,option=C,input=attribution_C]} + {appraisal_inputs.csv:central[input=other_vehicle_share]} * ({appraisal_measured.csv:high[input=attribution_C]} - {appraisal_measured.csv:central[input=attribution_C]})"]
+en = 'It breaks even at (\d+)%, of which[\s\S]*?it still needs only (\d+)%'
+
+[[claims]]
+id = "smaller_buses"
+note = "two 2.35 m buses: bodies plus the two inner mirrors (each bus's mirrors add what the fleet sheet's width with mirrors adds to its body)"
+value = "2 * 2.35 + {width_budget.csv:vehicles_width_m[scenario=carris_man_city_gold,free_width_ref=median,mirrors=True]} - {width_budget.csv:vehicles_width_m[scenario=carris_man_city_gold,free_width_ref=median,mirrors=False]}"
+pt = 'cerca de (\d,\d\d) m com os espelhos interiores'
+en = 'about (\d\.\d\d) m with the inner mirrors'
