@@ -57,6 +57,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Passengers boarding after the street** (extended layer: `downstream_boarders`, `downstream_timed`, `wait_weight`;
+  measured: the km each route runs after the street, from the timetable's distances, `downstream_km.csv`; the gaps
+  between buses; the share of passages at peak that meet an oncoming bus). Those who time their arrival wait for the
+  late bus (the unforeseen share of the delay, as lateness); those who arrive at random wait longer because the gaps
+  are uneven (bunching: the variance of the delay ÷ the gap). It replaces the unsourced `downstream` multiplier (1.0 at
+  its central value, so not counted). Reroutes get the same. In Rua Ricardo Jorge the 744 runs 6.2–6.4 km after the
+  street and the 46B 3.6 km: option C gains about €22,900 in the extended layer (bunching itself about €1,500 of it);
+  the core is unchanged.
 - **`mobilidados check-doc`** (`mobilidados.doccheck`, a case's `doc_check.toml`): checks a document exported as
   markdown against the case's results, without AI. Its key statements are pinned to the result cells they quote (or
   arithmetic on them) and compared at the precision printed; a wrong or vanished statement fails the command. It also

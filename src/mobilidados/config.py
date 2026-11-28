@@ -496,7 +496,7 @@ class Criterion(Model):
     source: str = ""
 
 
-REQUIRED_PARAMETERS = ("vot", "time_weight", "load_peak", "downstream", "bus_cost_h", "occupancy", "car_value",
+REQUIRED_PARAMETERS = ("vot", "time_weight", "load_peak", "bus_cost_h", "occupancy", "car_value",
                        "sign_cost", "marking_cost_m", "enforcement_year", "stall_m")  # fmt: skip
 
 

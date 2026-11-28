@@ -225,6 +225,7 @@ def stage_transit(r: Run) -> None:
     stop_times = r.feed.stop_times(set(on_routes.trip_id))  # the largest table: read it once
     passings = gtfs.reference_passings(r.feed, on_routes, stop_times, t.reference_stops, t.service_date)
     r.save("passings", passings)
+    r.save("downstream_km", gtfs.downstream_km(stop_times, passings))
     tph = gtfs.trips_per_hour(passings)
     tph.columns = pd.Index([r.cfg.street.heading_label(h) for h in tph.columns])
     r.save("trips_per_hour", tph.rename_axis("hour").reset_index())
@@ -356,7 +357,7 @@ def stage_appraisal(r: Run) -> None:
     block_metres: dict[str, float] = {}
     for x, z, block in r.narrow_extents():
         block_metres[block] = block_metres.get(block, 0.0) + (z - x)
-    tables = {k: r.table(k) for k in ("delay_summary", "delay_by_part", "delay_copresence", "passings")}
+    tables = {k: r.table(k) for k in ("delay_summary", "delay_by_part", "delay_copresence", "passings", "downstream_km")}
     holidays = sorted(set(dl.exclude_dates) | set(r.cfg.city.holidays))
     tables["appraisal_passages"] = a_passages(r, holidays)
     r.save("appraisal_passages", tables["appraisal_passages"])
@@ -372,6 +373,12 @@ def stage_appraisal(r: Run) -> None:
         + [{"input": f"passages_{part}_{k}", "low": v[i], "central": v[i], "high": v[i]}
            for k, v in m.passages.items() for i, part in enumerate(("peak", "other"))]
         + [{"input": "passages_year", "low": m.passages_year, "central": m.passages_year, "high": m.passages_year}]
+        + [{"input": k, "low": v, "central": v, "high": v} for k, v in (
+            ("km_after_street", m.km_after),
+            ("headway_peak_min", 1 / m.inv_headway[0] / 60 if m.inv_headway[0] else float("nan")),
+            ("headway_other_min", 1 / m.inv_headway[1] / 60 if m.inv_headway[1] else float("nan")),
+            ("meet_share_peak", m.meet_share if m.meet_share is not None else float("nan")),
+            ("offpeak_ratio", m.offpeak_ratio if m.offpeak_ratio is not None else float("nan")))]
     ))  # fmt: skip
     # the parking mapped around the street, as places at the central length of a place (occupancy is not known)
     roles = r.cfg.cartography.roles()

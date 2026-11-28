@@ -40,6 +40,7 @@ TABLES = {
     "overhang_sensitivity",
     "parking_strip_lengths",
     "passings",
+    "downstream_km",
     "profiles",
     "routes_on_street",
     "scheduled_runtimes",

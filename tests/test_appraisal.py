@@ -387,6 +387,40 @@ def test_a_derived_off_peak_delay_moves_with_the_peak_delay_in_switching_values_
     assert tor.loc["excess_s", "npv_at_low"] == pytest.approx(expect)
 
 
+def test_passengers_boarding_after_the_street_lose_unforeseen_lateness_or_uneven_gaps_as_computed_by_hand():
+    extra = {"downstream_boarders": parameter(1.0), "downstream_timed": parameter(0.75), "wait_weight": parameter(2.0),
+             "unexpected_share": parameter(0.4), "lateness_weight": parameter(3.0), "trip_km": parameter(4.0), "offpeak_s": parameter(0.0)}  # fmt: skip
+    cfg = config(parameters=EXTENDED | extra)
+    m = measured(passages={"A": (3600.0, 0.0)}, passages_year=3600.0, km_after=6.0, inv_headway=(1 / 900, 1 / 1200), meet_share=0.2)
+    q = appraisal.layer(appraisal.central(cfg, m), "extended")
+    hours, value = appraisal.downstream(q, m, 0.5, 3600.0, 0.0, 1.0, 1.0)
+    boarders = 3600 * 10 * 6.0 / 4.0  # passages × 10 on board × 6 km after the street ÷ 4 km a trip
+    late_s = 10.0 * 0.5 * 0.4  # the excess × the share removed × the share no one could foresee
+    variance = (1 - 0.2) / 0.2 * 10.0**2 * (2 * 0.5 - 0.5**2)  # delays in a fifth of passages: (1 − q)/q × excess², removed
+    h_timed, h_random = boarders * 0.75 * late_s / 3600, boarders * 0.25 * variance / 900 / 3600
+    assert hours == pytest.approx(h_timed + h_random)
+    assert value == pytest.approx((h_timed * 3.0 + h_random * 2.0) * 6.0)
+    # it enters the option's benefits in the extended layer only
+    e = appraisal.evaluate(cfg.options[0], q, m, cfg)
+    assert e["downstream_value"] == pytest.approx(appraisal.downstream(q, m, 1.0, 3600.0, 0.0, 1.0, 1.0)[1])
+    core = appraisal.evaluate(cfg.options[0], appraisal.layer(appraisal.central(cfg, m), "core"), m, cfg)
+    assert core["downstream_value"] == pytest.approx(0.0)
+
+
+def test_gaps_between_buses_and_the_share_of_passages_that_meet_come_from_the_timetable_and_the_co_presence():
+    passings = pd.DataFrame({"route_short_name": ["744"] * 6 + ["46B"], "direction_id": ["0"] * 6 + ["0"],
+                             "t": [17 * 3600 + i * 900 for i in range(4)] + [10 * 3600, 11 * 3600] + [17 * 3600 + 100]})  # fmt: skip
+    peak, other = appraisal.headways(passings, [17])
+    # at 17:00, 744 runs 4 an hour (gap 900 s) and 46B 1 (3600 s): passages weigh 1/gap as 4·(4/3600) + 1·(1/3600) over 5
+    assert peak == pytest.approx((4 * 4 + 1 * 1) / 3600 / 5)
+    assert other == pytest.approx(1 / 3600)
+    cop = pd.DataFrame({"part": ["gap", "gap", "B2"], "period": ["peak", "off_peak", "peak"], "positions": [100, 100, 100],
+                        "with_oncoming_bus": [30, 10, 12], "chance": [0.1, 0.06, 0.1], "p_value": [0.0001, 0.2, 0.3],
+                        "p_value_by_day": [0.0001, 0.2, 0.3]})  # fmt: skip
+    parts = pd.DataFrame({"part": ["gap", "B2"], "narrow": [False, True]})
+    assert appraisal.meet_share(cop, parts, 0.01) == pytest.approx(0.2)  # 30% with a bus at the junction, 10% by chance
+
+
 def test_crash_equivalents_are_the_crashes_over_the_period_worth_the_npv():
     cfg = config(parameters={"income_growth": parameter(0.0)})
     cfg = cfg.model_copy(update={"safety_references": {"slight": Parameter(**parameter(50000.0) | {"label": "crash", "source": "x"})}})
