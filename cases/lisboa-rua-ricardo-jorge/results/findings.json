@@ -323,18 +323,18 @@
     {
       "id": "appraisal_B",
       "grade": "I",
-      "statement": "Opção B (um lado, sempre, nos três troços com estacionamento dos dois lados): em 10 anos, a 5%, o valor atual líquido é de −63 900 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 600 € por ano), com valores unitários (4 inferidos e 12 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (10 100 € por ano) e a obra (1 800 €): benefício/custo 0,24, entre −159 800 € e −36 800 € em 80% das simulações, probabilidade de ser positivo de 0%. Juntando os mecanismos ainda não medidos, com valores não medidos (3 documentados, 6 inferidos e 11 pressupostos), é de 4 500 € (benefício/custo 1,07; probabilidade de ser positivo de 55%).",
+      "statement": "Opção B (um lado, sempre, nos três troços com estacionamento dos dois lados): em 10 anos, a 5%, o valor atual líquido é de −63 900 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 600 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (10 100 € por ano) e a obra (1 800 €): benefício/custo 0,24, entre −161 600 € e −38 300 € em 80% das simulações, probabilidade de ser positivo de 0%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 31 400 € (benefício/custo 1,51; probabilidade de ser positivo de 71%).",
       "values": {
         "npv": -63936.48,
         "bcr": 0.2449,
         "npv_p10_p90": [
-          -159773.95,
-          -36787.6
+          -161570.43,
+          -38272.14
         ],
-        "probability_positive": 0.0021,
-        "npv_extended": 4496.94,
-        "bcr_extended": 1.0724,
-        "probability_positive_extended": 0.5518
+        "probability_positive": 0.0016,
+        "npv_extended": 31446.96,
+        "bcr_extended": 1.5063,
+        "probability_positive_extended": 0.7124
       },
       "sources": [
         "delay",
@@ -348,18 +348,18 @@
     {
       "id": "appraisal_C",
       "grade": "I",
-      "statement": "Opção C (um lado, sempre, só no troço B2, o mais longo): em 10 anos, a 5%, o valor atual líquido é de −30 900 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (990 € por ano), com valores unitários (4 inferidos e 12 pressupostos), contra o valor dos cerca de 10 lugares retirados e a fiscalização (4 700 € por ano) e a obra (870 €): benefício/custo 0,21, entre −73 400 € e −16 900 € em 80% das simulações, probabilidade de ser positivo de 0%. Juntando os mecanismos ainda não medidos, com valores não medidos (3 documentados, 6 inferidos e 11 pressupostos), é de 2 900 € (benefício/custo 1,09; probabilidade de ser positivo de 63%).",
+      "statement": "Opção C (um lado, sempre, só no troço B2, o mais longo): em 10 anos, a 5%, o valor atual líquido é de −30 900 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (990 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 10 lugares retirados e a fiscalização (4 700 € por ano) e a obra (870 €): benefício/custo 0,21, entre −74 200 € e −17 600 € em 80% das simulações, probabilidade de ser positivo de 0%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 17 000 € (benefício/custo 1,54; probabilidade de ser positivo de 78%).",
       "values": {
         "npv": -30941.42,
         "bcr": 0.2059,
         "npv_p10_p90": [
-          -73375.26,
-          -16854.5
+          -74225.03,
+          -17582.64
         ],
-        "probability_positive": 0.0023,
-        "npv_extended": 2923.04,
-        "bcr_extended": 1.0934,
-        "probability_positive_extended": 0.6323
+        "probability_positive": 0.0014,
+        "npv_extended": 17015.57,
+        "bcr_extended": 1.5437,
+        "probability_positive_extended": 0.7753
       },
       "sources": [
         "delay",
@@ -373,18 +373,18 @@
     {
       "id": "appraisal_E",
       "grade": "I",
-      "statement": "Opção E (um lado, das 7h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −32 400 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 300 € por ano), com valores unitários (4 inferidos e 12 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (6 000 € por ano) e a obra (2 400 €): benefício/custo 0,36, entre −86 500 € e −18 100 € em 80% das simulações, probabilidade de ser positivo de 1%. Juntando os mecanismos ainda não medidos, com valores não medidos (3 documentados, 6 inferidos e 11 pressupostos), é de 9 100 € (benefício/custo 1,22; probabilidade de ser positivo de 57%).",
+      "statement": "Opção E (um lado, das 7h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −32 400 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 300 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (6 000 € por ano) e a obra (2 400 €): benefício/custo 0,36, entre −87 800 € e −20 200 € em 80% das simulações, probabilidade de ser positivo de 1%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 30 100 € (benefício/custo 1,71; probabilidade de ser positivo de 74%).",
       "values": {
         "npv": -32407.87,
         "bcr": 0.3626,
         "npv_p10_p90": [
-          -86460.12,
-          -18121.2
+          -87818.03,
+          -20245.42
         ],
-        "probability_positive": 0.0115,
-        "npv_extended": 9148.08,
-        "bcr_extended": 1.2159,
-        "probability_positive_extended": 0.5741
+        "probability_positive": 0.0089,
+        "npv_extended": 30134.72,
+        "bcr_extended": 1.7112,
+        "probability_positive_extended": 0.7398
       },
       "sources": [
         "delay",
@@ -398,18 +398,18 @@
     {
       "id": "appraisal_G",
       "grade": "I",
-      "statement": "Opção G (um lado, das 16h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −25 100 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 300 € por ano), com valores unitários (4 inferidos e 12 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (5 100 € por ano) e a obra (2 400 €): benefício/custo 0,42, entre −73 000 € e −11 700 € em 80% das simulações, probabilidade de ser positivo de 3%. Juntando os mecanismos ainda não medidos, com valores não medidos (3 documentados, 6 inferidos e 11 pressupostos), é de −2 500 € (benefício/custo 0,93; probabilidade de ser positivo de 35%).",
+      "statement": "Opção G (um lado, das 16h às 20h nos dias úteis, nos três troços): em 10 anos, a 5%, o valor atual líquido é de −25 100 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (2 300 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 21 lugares retirados e a fiscalização (5 100 € por ano) e a obra (2 400 €): benefício/custo 0,42, entre −73 200 € e −13 600 € em 80% das simulações, probabilidade de ser positivo de 2%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 12 500 € (benefício/custo 1,33; probabilidade de ser positivo de 55%).",
       "values": {
         "npv": -25076.65,
         "bcr": 0.4237,
         "npv_p10_p90": [
-          -73027.92,
-          -11675.16
+          -73150.41,
+          -13640.22
         ],
-        "probability_positive": 0.0264,
-        "npv_extended": -2455.45,
-        "bcr_extended": 0.9345,
-        "probability_positive_extended": 0.3487
+        "probability_positive": 0.0204,
+        "npv_extended": 12466.02,
+        "bcr_extended": 1.3325,
+        "probability_positive_extended": 0.5451
       },
       "sources": [
         "delay",
@@ -423,18 +423,18 @@
     {
       "id": "appraisal_H",
       "grade": "I",
-      "statement": "Opção H (um lado, das 16h às 20h nos dias úteis, só no troço B2): em 10 anos, a 5%, o valor atual líquido é de −17 100 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (880 € por ano), com valores unitários (4 inferidos e 12 pressupostos), contra o valor dos cerca de 10 lugares retirados e a fiscalização (2 900 € por ano) e a obra (1 200 €): benefício/custo 0,29, entre −41 400 € e −9 600 € em 80% das simulações, probabilidade de ser positivo de 1%. Juntando os mecanismos ainda não medidos, com valores não medidos (3 documentados, 6 inferidos e 11 pressupostos), é de −6 200 € (benefício/custo 0,74; probabilidade de ser positivo de 25%).",
+      "statement": "Opção H (um lado, das 16h às 20h nos dias úteis, só no troço B2): em 10 anos, a 5%, o valor atual líquido é de −17 100 € no núcleo, que conta só o tempo medido dos autocarros na ponta da tarde (880 € por ano), com valores unitários (4 inferidos e 11 pressupostos), contra o valor dos cerca de 10 lugares retirados e a fiscalização (2 900 € por ano) e a obra (1 200 €): benefício/custo 0,29, entre −41 800 € e −10 200 € em 80% das simulações, probabilidade de ser positivo de 1%. Juntando os mecanismos ainda não medidos, com valores não medidos (4 documentados, 8 inferidos e 11 pressupostos), é de 1 600 € (benefício/custo 1,07; probabilidade de ser positivo de 45%).",
       "values": {
         "npv": -17112.01,
         "bcr": 0.2941,
         "npv_p10_p90": [
-          -41408.7,
-          -9569.77
+          -41781.86,
+          -10213.11
         ],
-        "probability_positive": 0.0104,
-        "npv_extended": -6200.38,
-        "bcr_extended": 0.7435,
-        "probability_positive_extended": 0.2529
+        "probability_positive": 0.008,
+        "npv_extended": 1606.34,
+        "bcr_extended": 1.0664,
+        "probability_positive_extended": 0.4478
       },
       "sources": [
         "delay",

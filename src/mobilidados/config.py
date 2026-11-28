@@ -497,7 +497,7 @@ class Criterion(Model):
     source: str = ""
 
 
-REQUIRED_PARAMETERS = ("vot", "time_weight", "load_peak", "downstream", "bus_cost_h", "occupancy", "car_value",
+REQUIRED_PARAMETERS = ("vot", "time_weight", "load_peak", "bus_cost_h", "occupancy", "car_value",
                        "sign_cost", "marking_cost_m", "enforcement_year", "stall_m")  # fmt: skip
 #: The inputs each extended mechanism reads besides its own (``appraisal.evaluate``): a case that configures the
 #: mechanism must give them, since no default can stand in for them (a trip of 1 minute, no one in a held car).
@@ -509,6 +509,8 @@ MECHANISM_NEEDS = {
     "elasticity_ivt": ("journey_min", "diversion_car", "trip_km", "external_cost_pkm"),
     "room_nearby": ("walk_cost",),
     "cruise_km_day": ("external_cost_pkm", "car_occupancy"),
+    # those who time their arrival lose the unforeseen share of the delay, as lateness; the others wait, weighted
+    "downstream_boarders": ("downstream_timed", "wait_weight", "trip_km", "unexpected_share", "lateness_weight"),
 }
 
 

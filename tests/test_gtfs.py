@@ -68,3 +68,14 @@ def test_a_shape_with_too_little_length_near_the_street_is_left_out(tmp_path):
     feed = gtfs.Feed(tmp_path / "f.zip")
     assert sorted(gtfs.shapes_along(feed, axis, CRS, min_inside_m=150).shape_id) == ["down", "up"]
     assert gtfs.shapes_along(feed, axis, CRS, min_inside_m=250).empty
+
+
+def test_the_km_a_trip_runs_after_the_street_start_at_the_stop_after_its_reference_stop():
+    import pandas as pd
+
+    stop_times = pd.DataFrame({"trip_id": ["a"] * 4, "stop_id": ["s1", "ref", "s3", "s4"], "stop_sequence": [1, 2, 3, 4],
+                               "shape_dist_traveled": ["0", "400", "700", "2700"]})  # fmt: skip
+    passings = pd.DataFrame({"route_short_name": ["744"], "direction_id": ["0"], "trip_id": ["a"], "ref_stop": ["ref"]})
+    out = gtfs.downstream_km(stop_times, passings)
+    assert out.km_after.tolist() == pytest.approx([2.0])  # from s3 (700 m) to the last stop (2 700 m)
+    assert gtfs.downstream_km(stop_times.drop(columns="shape_dist_traveled"), passings).empty  # no distances, no rows

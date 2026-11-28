@@ -452,14 +452,23 @@
         "source": "RAND Europe e SYSTRA para o DfT (2018), quadro 26: numa melhoria do autocarro, 0,25 dos novos passageiros vinham do carro (áreas metropolitanas), 0,30 onde não há metro ligeiro, 0,24 na média nacional",
         "unit": ""
       },
-      "downstream": {
+      "downstream_boarders": {
         "central": 1.0,
-        "grade": "P",
+        "grade": "I",
         "high": 1.5,
-        "label": "Multiplicador para quem espera nas paragens seguintes",
-        "low": 1.0,
-        "source": "Quem espera mais adiante também perde o atraso; não se conta no valor central",
-        "unit": ""
+        "label": "Quem embarca depois da rua e ainda apanha o atraso, face à estimativa pela conservação do fluxo",
+        "low": 0.5,
+        "source": "Quem embarca nos km que o autocarro ainda percorre depois da rua (horário GTFS, downstream_km.csv) = passageiros a bordo × esses km ÷ a viagem média (3,7 km, Carris 2025). O intervalo, de metade a uma vez e meia, cobre também o atraso que o autocarro recupera nos km seguintes (mínimo) ou que cresce com os autocarros em grupo (máximo); as entradas por paragem e os registos de passagem pedidos à Carris fixam-no",
+        "unit": "×"
+      },
+      "downstream_timed": {
+        "central": 0.74,
+        "grade": "I",
+        "high": 0.92,
+        "label": "Parte de quem embarca depois da rua que acerta a chegada à paragem pelo horário",
+        "low": 0.55,
+        "source": "Ingvardson, Nielsen, Raveau e Nielsen (2018), Transportation Research Part C 90, 292–306, dados de bilhética de Copenhaga: os passageiros dividem-se entre os que chegam ao acaso e os que acertam a chegada pelo horário, mais estes quanto maior o intervalo; 55% a 10 min, 74% a 20 min, 90% a 30 min, 92% a 60 min, citados por outro estudo (o texto integral não pôde ser lido daqui). A 744 passa a cada cerca de 17 min, a 46B a cada cerca de 40. A TfL avalia as carreiras com até 4 autocarros por hora pela pontualidade, e as mais frequentes pelo tempo de espera em excesso",
+        "unit": "parte"
       },
       "elasticity_ivt": {
         "central": 0.6,
@@ -668,6 +677,15 @@
         "source": "Eurostat lc_lci_lev, Portugal 2025: 19,40 €/h de custo da mão de obra; EAV 2021-2027, p. 55: deslocações pendulares a 25–40 % e outras a 20–35 % desse valor; na ponta da tarde admite-se uma maioria de regressos a casa (P)",
         "unit": "€/h"
       },
+      "wait_weight": {
+        "central": 1.75,
+        "grade": "D",
+        "high": 2.0,
+        "label": "Peso do tempo de espera face ao tempo a bordo",
+        "low": 1.5,
+        "source": "EAV, quadro 7: tempo de espera e a pé, 1,5 a 2 vezes o tempo a bordo",
+        "unit": "×"
+      },
       "walk_cost": {
         "central": 130.0,
         "grade": "P",
@@ -696,6 +714,8 @@
       "RAND Europe e SYSTRA para o Department for Transport (2018), Bus fare and journey time elasticities and diversion factors for all modes, <https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/719278/bus-fare-journey-time-elasticities.pdf>",
       "Department for Transport (2025), Value for Money Framework, maio de 2025, caixa 5.1, <https://assets.publishing.service.gov.uk/media/682ccabf1be3f53ed5f4534e/value-for-money-framework.pdf>",
       "Rádio Renascença (15/06/2026), «Banco de Portugal prevê défice de 0,2% este ano e de 0,5% em 2027» (projeções do Boletim Económico de junho de 2026), <https://rr.pt/noticia/economia/2026/06/15/banco-de-portugal-preve-defice-de-02-este-ano-e-de-05-em-2027/474408/>",
+      "Ingvardson, J. B., Nielsen, O. A., Raveau, S. e Nielsen, B. F. (2018), Passenger arrival and waiting time distributions dependent on train service frequency and station characteristics: a smart card data analysis, Transportation Research Part C 90, 292–306, <https://orbit.dtu.dk/en/publications/passenger-arrival-and-waiting-time-distributions-dependent-on-tra/>",
+      "Transport for London, Bus operator league tables (alta frequência: 5 ou mais autocarros por hora, tempo de espera em excesso; baixa frequência: pontualidade), <https://tfl.gov.uk/corporate/publications-and-reports/bus-operator-league-tables>",
       "Paulley, N. et al. (2006), The demand for public transport: the effects of fares, quality of service, income and car ownership, Transport Policy 13(4), 295–306, <https://doi.org/10.1016/j.tranpol.2005.12.004>",
       "ISEG – CEsGE para a ANSR (2021), O Impacto Económico e Social da Sinistralidade Rodoviária em Portugal (dados de 2019), secção 5.4 e quadro 5.1, <https://ansr.pt/sites/default/files/noticias-docs/O%20Impacto%20Economico%20e%20Social%20da%20Sinistralidade%20-%20PT.pdf>",
       "Código da Estrada, art. 18.º (Distância entre veículos), n.os 2 a 4, versão consolidada, <https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1994-34485875>",

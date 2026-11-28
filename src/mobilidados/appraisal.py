@@ -72,6 +72,7 @@ MECHANISMS = {
     "transfer_share": 0.0,
     "cars_behind": 0.0,
     "other_vehicle_share": 0.0,
+    "downstream_boarders": 0.0,
     "elasticity_ivt": 0.0,
     "damage_year": 0.0,
     "room_nearby": 0.0,
@@ -83,6 +84,8 @@ MECHANISMS = {
 #: Inputs that only matter through a mechanism; a case that leaves the mechanism out need not give them.
 COMPANIONS = {
     "load_offpeak": "load_peak",
+    "downstream_timed": 0.0,
+    "wait_weight": 1.0,
     "lateness_weight": "time_weight",
     "car_occupancy": 0.0,
     "journey_min": 1.0,
@@ -97,7 +100,7 @@ LAYERS = ("core", "extended")
 #: Inputs the model reads as a share of a whole (besides each option's parking share and compliance, and the
 #: attribution): their switching value is looked for in [0, 1]. ``RATES`` are yearly rates, which may be negative.
 SHARES = frozenset({"occupancy", "unexpected_share", "transfer_share", "other_vehicle_share", "diversion_car", "room_nearby",
-                    "spare_capacity"})  # fmt: skip
+                    "spare_capacity", "downstream_timed"})  # fmt: skip
 RATES = frozenset({"income_growth"})
 #: Inputs measured with a 90% interval (low, high) around an estimate, not a range: drawn by ``interval_draws``.
 MEASURED_INTERVALS = ("excess_s",)
@@ -130,6 +133,12 @@ class Measured:
     alternative_attribution: dict[str, tuple[float, float, float]] = dataclasses.field(
         default_factory=dict
     )  # alternative id -> its sections' share
+    km_after: float = 0.0  # km the buses run after the street, passage-weighted (``downstream_km``): where others board
+    inv_headway: tuple[float, float] = (
+        0.0,
+        0.0,
+    )  # 1 / the gap to the next bus of the same route, passage-weighted: (at peak, other), per s
+    meet_share: float | None = None  # passages at peak that meet an oncoming bus beyond chance, where they demonstrably meet
 
 
 def working_days(year: int, holidays: list[dt.date]) -> int:
@@ -234,6 +243,34 @@ def p_value(row: pd.Series) -> float:
     return float(row["p_value_by_day"]) if "p_value_by_day" in row.index and pd.notna(row["p_value_by_day"]) else float(row["p_value"])
 
 
+def meet_share(copresence: pd.DataFrame, by_part: pd.DataFrame, significance: float) -> float | None:
+    """The share of passages at peak that meet an oncoming bus beyond chance: at the gaps between narrow sections where
+    the peak co-presence is significant, the positions with an oncoming bus less those chance explains, pooled. The
+    delay comes in those meetings, so the excess per passage is concentrated in this share of them. None where no gap
+    qualifies or the excess is not positive."""
+    gaps = set(by_part.part[~by_part.narrow.astype(bool)])
+    c = copresence[(copresence.part.isin(gaps)) & (copresence.period == "peak")].set_index("part")
+    met = [q for q in c.index if p_value(c.loc[q]) < significance]
+    n = float(sum(c.positions[q] for q in met))
+    if not met or n <= 0:
+        return None
+    e = float(sum(c.with_oncoming_bus[q] - c.chance[q] * c.positions[q] for q in met)) / n
+    return e if e > 0 else None
+
+
+def headways(passings: pd.DataFrame, peak_hours: list[int]) -> tuple[float, float]:
+    """1 / the scheduled gap to the next bus of the same route and direction, averaged over passages (a passenger who
+    arrives at random waits, beyond half the gap, the gaps' variance ÷ twice the gap): (at peak, other hours), per s."""
+    if passings.empty:
+        return (0.0, 0.0)
+    n = passings.assign(hour=passings.t // 3600).groupby(["route_short_name", "direction_id", "hour"]).size().rename("n").reset_index()
+    out = []
+    for at_peak in (True, False):
+        k = n[n.hour.isin(peak_hours) == at_peak]
+        out.append(float((k.n**2).sum() / (3600 * k.n.sum())) if k.n.sum() else 0.0)
+    return (out[0], out[1])
+
+
 def offpeak_ratio(copresence: pd.DataFrame, by_part: pd.DataFrame, significance: float) -> float | None:
     """How often oncoming buses meet off-peak relative to the peak, where they demonstrably meet: at the gaps between
     narrow sections where the peak co-presence is significant, the off-peak excess over chance ÷ the peak excess
@@ -289,6 +326,9 @@ def measured(tables: dict[str, pd.DataFrame], cfg: Appraisal, block_metres: dict
             alt.id: attribution(tables["delay_by_part"], tables["delay_copresence"], alt.blocks or narrow_blocks, cfg.significance)
             for alt in cfg.alternatives
         },
+        km_after=float(tables["downstream_km"].km_after.mean()) if len(tables.get("downstream_km", [])) else 0.0,
+        inv_headway=headways(passings, peak_hours),
+        meet_share=meet_share(tables["delay_copresence"], tables["delay_by_part"], cfg.significance),
     )
 
 
@@ -351,6 +391,41 @@ def rate_column(r: float) -> str:
     return f"npv_at_{rate_pct(r):g}pct".replace(".", "p")
 
 
+def downstream(p: dict[str, Any], m: Measured, share: Any, peak_y: float, other_y: float, scale: float, comply: Any) -> tuple[Any, Any]:
+    """(extended) The passengers who board after the street, on ``m.km_after`` km of route: ``downstream_boarders`` ×
+    the passengers on board × those km ÷ the average trip (``trip_km``) a passage. They are not on the bus in the
+    street, so they lose none of its time on board; they lose at the stop. Returns (passenger-hours a year, value).
+
+    * Those who time their arrival to the timetable (``downstream_timed``; most, at gaps of a quarter of an hour or
+      more) wait for a late bus: the share of the delay they could not foresee (``unexpected_share``), weighted as
+      lateness. The delay they can foresee they plan around.
+    * Those who arrive at random wait half the gap plus the gaps' variance ÷ twice the gap. A delay that hits some
+      passages and not others makes the gaps uneven (buses bunch): two consecutive buses delayed independently add
+      twice the delay's variance to the gaps' variance, so each such passenger waits the variance ÷ the gap longer,
+      weighted as waiting (``wait_weight``). The delay comes in meetings, a share ``m.meet_share`` of passages at peak,
+      so its variance is (1 − q) ÷ q × the excess²; removing a share s of it removes that × (2s − s²)."""
+    zero = 0.0 * share
+    on = p.get("downstream_boarders", 0.0)
+    if not m.km_after or (np.isscalar(on) and on == 0):  # switched off (the core) or not measured
+        return zero, zero
+    per_rider = p["downstream_boarders"] * m.km_after / p["trip_km"]
+    timed = p["downstream_timed"]
+    hours, value = zero, zero
+    q_peak = m.meet_share
+    q_off = m.meet_share * m.offpeak_ratio if m.meet_share and m.offpeak_ratio else None
+    for passages, load, excess, q, inv_h, k in ((peak_y, p["load_peak"], p["excess_s"], q_peak, m.inv_headway[0], 1.0),
+                                                (other_y, p["load_offpeak"], p["offpeak_s"], q_off, m.inv_headway[1], scale)):  # fmt: skip
+        boarders = passages * load * per_rider * comply
+        late_s = excess * k * share * p["unexpected_share"]  # the delay a timed passenger could not plan for
+        variance = (1 - q) / q * (excess * k) ** 2 * (2 * share - share**2) if q else zero  # removed from the delays
+        extra_wait_s = variance * inv_h
+        h_timed = boarders * timed * late_s / 3600
+        h_random = boarders * (1 - timed) * extra_wait_s / 3600
+        hours = hours + h_timed + h_random
+        value = value + (h_timed * p["lateness_weight"] + h_random * p["wait_weight"]) * p["vot"]
+    return hours, value
+
+
 def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: float | None = None) -> dict[str, Any]:
     """One option's yearly flows, present values, net present value and benefit-cost ratio for inputs ``p`` (pass them
     through ``layer``). Every input may be a number or an array of draws: the arithmetic is the same."""
@@ -375,7 +450,7 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     other_bh = p["offpeak_s"] * share_removed * other_y * m.offpeak_scale.get(o.id, 1.0) / 3600 * comply
     bus_hours = peak_bh + other_bh
     on_board_h = peak_bh * p["load_peak"] + other_bh * p["load_offpeak"]
-    passenger_hours = on_board_h * p["downstream"]
+    passenger_hours = on_board_h * p.get("downstream", 1.0)
     late = 1 - (1 - p["unexpected_share"]) * (1 - p["transfer_share"])  # the share of their time weighted as lateness
     weight = p["time_weight"] + (p["lateness_weight"] - p["time_weight"]) * late
     time_value = passenger_hours * p["vot"] * weight
@@ -389,7 +464,8 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     external_value = new_riders * p["diversion_car"] * p["trip_km"] * p["external_cost_pkm"]
     in_force = (peak_y + other_y) / m.passages_year if m.passages_year else 0.0
     damage_value = p["damage_year"] * share_removed * in_force * comply
-    benefit = time_value + operator_value + traffic_value + new_rider_value + external_value + damage_value
+    downstream_h, downstream_value = downstream(p, m, share_removed, peak_y, other_y, m.offpeak_scale.get(o.id, 1.0), comply)
+    benefit = time_value + operator_value + traffic_value + new_rider_value + external_value + damage_value + downstream_value
     places = m.metres[o.id] / p["stall_m"]
     share = p[o.parking_share] if o.parking_share else 1.0
     # those who find no place nearby pay for one elsewhere and walk from it; where that car park has room to spare,
@@ -409,9 +485,11 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     works = o.signs * p["sign_cost"] + marking + p["calming_cost"]
     repaints = range(cfg.repaint_every_years, cfg.horizon_years + 1, cfg.repaint_every_years)
     repaint_pv = sum(0.5 * marking * (1 + r) ** -t for t in repaints)  # half the marking, every few years
-    pv_time, pv_traffic, pv_new = (x * growing("time") for x in (time_value, traffic_value, new_rider_value))
+    pv_time, pv_traffic, pv_new, pv_downstream = (
+        x * growing("time") for x in (time_value, traffic_value, new_rider_value, downstream_value)
+    )
     pv_operator, pv_external, pv_damage = operator_value * growing("operator"), external_value * growing("external"), damage_value * annuity
-    pv_benefit = pv_time + pv_operator + pv_traffic + pv_new + pv_external + pv_damage
+    pv_benefit = pv_time + pv_operator + pv_traffic + pv_new + pv_external + pv_damage + pv_downstream
     pv_parking = parking * growing("parking")
     pv_works, pv_enforcement = works + repaint_pv, enforcement * annuity
     pv_public = pv_works + pv_enforcement
@@ -424,6 +502,8 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "new_riders": new_riders,
         "car_hours": car_hours,
         "time_value": time_value,
+        "downstream_hours": downstream_h,
+        "downstream_value": downstream_value,
         "operator_value": operator_value,
         "traffic_value": traffic_value,
         "new_rider_value": new_rider_value,
@@ -440,6 +520,7 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "pv_benefit": pv_benefit,
         "pv_cost": pv_cost,
         "pv_time": pv_time,
+        "pv_downstream": pv_downstream,
         "pv_operator": pv_operator,
         "pv_traffic": pv_traffic,
         "pv_new_riders": pv_new,
@@ -502,7 +583,7 @@ def is_share(key: str, cfg: Appraisal) -> bool:
 def option_inputs(o: Option, cfg: Appraisal, name: str = "extended") -> list[str]:
     """The inputs an option's value depends on in a layer: the parking share and compliance it names, the shared ones
     and, in the extended layer, the configured mechanisms and their companions."""
-    shared = ["excess_s", f"attribution_{o.id}", "load_peak", "downstream", "vot", "time_weight", "bus_cost_h", "stall_m", "occupancy",
+    shared = ["excess_s", f"attribution_{o.id}", "load_peak", *(["downstream"] if "downstream" in cfg.parameters else []), "vot", "time_weight", "bus_cost_h", "stall_m", "occupancy",
               "car_value", "sign_cost", "marking_cost_m"]  # fmt: skip
     timed = o.days != "all" or o.hours != (0, 24)
     own = ([o.parking_share] if o.parking_share else []) + [o.compliance] + (["enforcement_year"] if timed else [])
@@ -601,6 +682,7 @@ def distribution(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFra
         rows += [
             {"option": o.id, "group": "passengers", "people": e["riders"], "quantity": e["passenger_hours"], "unit": "h", "value": e["time_value"]},
             {"option": o.id, "group": "operator", "people": None, "quantity": e["bus_hours"], "unit": "bus-h", "value": e["operator_value"]},
+            {"option": o.id, "group": "downstream_passengers", "people": None, "quantity": e["downstream_hours"], "unit": "h", "value": e["downstream_value"]},
             {"option": o.id, "group": "drivers_behind", "people": None, "quantity": e["car_hours"], "unit": "h", "value": e["traffic_value"]},
             {"option": o.id, "group": "new_passengers", "people": e["new_riders"], "quantity": None, "unit": "", "value": e["new_rider_value"]},
             {"option": o.id, "group": "society", "people": None, "quantity": None, "unit": "", "value": e["external_value"] + e["cruising_year"]},
@@ -811,7 +893,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
             for k, v in s.items()
         ]  # fmt: skip
     core = layer(c, "core")
-    value_bus_hour = core["load_peak"] * core["downstream"] * core["vot"] * core["time_weight"] + core["bus_cost_h"]
+    value_bus_hour = core["load_peak"] * core.get("downstream", 1.0) * core["vot"] * core["time_weight"] + core["bus_cost_h"]
     annuity = float(np.sum((1 + cfg.discount_rate) ** -np.arange(1, cfg.horizon_years + 1, dtype=float)))
     alternatives = []
     peak_year = m.peak_passages_per_day * m.working_days  # 0 where no bus is scheduled at peak: no time to save per passage
@@ -916,14 +998,17 @@ def reroutes(cfg: Appraisal, m: Measured, c: dict[str, float], attribution_all: 
             other_bh = p["offpeak_s"] * attribution_all * removed * other_all * m.offpeak_scale_all / 3600
             late = 1 - (1 - p["unexpected_share"]) * (1 - p["transfer_share"])
             weight = p["time_weight"] + (p["lateness_weight"] - p["time_weight"]) * late
-            on_board = (peak_bh * p["load_peak"] + other_bh * p["load_offpeak"]) * p["downstream"]
+            on_board = (peak_bh * p["load_peak"] + other_bh * p["load_offpeak"]) * p.get("downstream", 1.0)
+            _, after = downstream(p, m, attribution_all * removed, peak_all, other_all, m.offpeak_scale_all, 1.0)
             saved_time = (
-                on_board * p["vot"] * weight + (peak_bh + other_bh) * p["cars_behind"] * p["car_occupancy"] * p["vot"] * p["time_weight"]
+                on_board * p["vot"] * weight
+                + (peak_bh + other_bh) * p["cars_behind"] * p["car_occupancy"] * p["vot"] * p["time_weight"]
+                + after
             )
             saved_operator = (peak_bh + other_bh) * p["bus_cost_h"]
             saved_damage = p["damage_year"] * attribution_all * removed
             load = (peak_all * p["load_peak"] + other_all * p["load_offpeak"]) / (peak_all + other_all) if peak_all + other_all else 0.0
-            detour_time = detour_bh * load * p["downstream"] * p["vot"]  # ordinary time on board: weight 1
+            detour_time = detour_bh * load * p.get("downstream", 1.0) * p["vot"]  # ordinary time on board: weight 1
             detour_operator = detour_bh * p["bus_cost_h"]
             g = p["income_growth"]
             time_pv, op_pv = present_value(cfg, g, GROWTH["time"]), present_value(cfg, g, GROWTH["operator"])

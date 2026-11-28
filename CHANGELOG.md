@@ -46,6 +46,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
   they need to pay for themselves, against the most the measured delay in their sections could give (`blocks`).
 - **Crash equivalents** (`appraisal_safety.csv`, `[appraisal.safety_references]`): how many crashes of a given cost,
   over the appraisal period, are worth each option's NPV.
+- **Passengers boarding after the street** (extended layer: `downstream_boarders`, `downstream_timed`, `wait_weight`;
+  measured: the km each route runs after the street, from the timetable's distances, `downstream_km.csv`; the gaps
+  between buses; the share of passages at peak that meet an oncoming bus). Those who time their arrival wait for the
+  late bus (the unforeseen share of the delay, as lateness); those who arrive at random wait longer because the gaps
+  are uneven (bunching: the variance of the delay ÷ the gap). It replaces the unsourced `downstream` multiplier (1.0 at
+  its central value, so not counted). Reroutes get the same. In Rua Ricardo Jorge the 744 runs 6.2–6.4 km after the
+  street and the 46B 3.6 km.
 - **`mobilidados check-doc`** (`mobilidados.doccheck`, a case's `doc_check.toml`): checks a document exported as
   markdown against the case's results, without AI. Its key statements are pinned to the result cells they quote (or
   arithmetic on them) and compared at the precision and scale printed (a percentage to the unit; thousands by `k`,
@@ -62,11 +69,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
   resampling whole days), and the excess there is that of the buses heading south-west, into B1. In the core, no option
   pays for the places it removes, even with room in the car parks: the one that loses least, one side from 16h to 20h
   on working days in section B2 only, has an NPV of about −€17,100 (−€7,300 with room in the car parks). In the
-  extended layer the options cannot be told apart: B2 alone, always, has the highest expected NPV (about €8,600;
-  €2,900 at central values), the three sections on working days from 7h to 20h the highest central NPV (about €9,100,
-  benefit/cost 1.22), and the three sections always is most often the best choice (37% of the simulations; doing
-  nothing, 33%). Those results rest on assumed values: room in the car parks, the share of the delay due to oncoming
-  cars and vans, room nearby, and an off-peak delay derived from meetings that cannot be told from chance. A passing
+  extended layer, one side in all three sections, always (about 21 places), has the highest expected NPV (about
+  €33,100; €31,400 at central values, benefit/cost 1.51), is positive in 71% of the simulations and is the best choice
+  in 52% (doing nothing, 20%). That result rests on values not measured: room in the car parks (about €28,900 of it,
+  assumed), the passengers who board after the street (about €27,000, inferred) and room nearby (about €19,000,
+  assumed), and on an off-peak delay derived from meetings that cannot be told from chance. A passing
   place in B2 would need to save 7.5 s per peak passage, more than the 4 s the measured delay holds there. Carris's
   passage records, a night count of free places and a count of the traffic in the street would settle the rest.
 

@@ -9,13 +9,13 @@ G,core,slight_injury,Acidente só com feridos leves (custo médio para a socieda
 G,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-25076.650305898616,0.17532993087774326,57.03532733936314
 H,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-17112.010685215842,0.27647039721973055,36.17023775624084
 H,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-17112.010685215842,0.1196430788809289,83.58193464706966
-B,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,4496.9438774098235,0.07265492541659473,137.6369178367631
-B,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,4496.9438774098235,0.031441554177668356,318.0504355316694
-C,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,2923.039849280809,0.047226126905002754,211.74719705715864
-C,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,2923.039849280809,0.020437194301295585,489.3039549644085
-E,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,9148.081207186631,0.1478010791177424,67.65850465837076
-E,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,9148.081207186631,0.06396119203140667,156.34480350350148
-G,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-2455.446632121937,0.03967145172023008,252.07043267591325
-G,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-2455.446632121937,0.017167894556581183,582.4826082803831
-H,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-6200.376526347409,0.10017645457831473,99.82385623542228
-H,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-6200.376526347409,0.04335154713724899,230.67227493266765
+B,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,31446.963996706356,0.5080732350778279,19.682201914194863
+B,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,31446.963996706356,0.21986963795401654,45.481495731081324
+C,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,17015.572645215652,0.27491229491858016,36.375237429674314
+C,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,17015.572645215652,0.11896880721063165,84.05564647122351
+E,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,30134.7220721927,0.486871983349291,20.539280020197452
+E,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,30134.7220721927,0.21069475681505767,47.46202587650407
+G,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,12466.018231120288,0.20140736676163176,49.65061686067884
+G,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,12466.018231120288,0.08715941276530413,114.73230122519523
+H,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,1606.3364225098012,0.025952792863990895,385.3149852659922
+H,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,1606.3364225098012,0.01123111940747512,890.3831966512864
