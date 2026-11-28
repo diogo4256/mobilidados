@@ -1,7 +1,8 @@
 """Fetch a case's sources into ``data/raw/`` and record them in ``sources.lock.json``.
 
-The source kinds are the models in :mod:`mobilidados.config`: ``arcgis_query``, ``http_file``, ``http_files`` and
-``arcgis_identify`` (point queries made during the analysis, cached in one JSON file and locked as it is saved).
+The source kinds are the models in :mod:`mobilidados.config`: ``arcgis_query``, ``http_file``, ``http_files``,
+``http_series`` (one answer per route and day from an API), ``git_archive`` and ``arcgis_identify`` (point queries made
+during the analysis, cached in one JSON file and locked as it is saved).
 """
 
 from __future__ import annotations
@@ -10,13 +11,14 @@ import json
 import logging
 import shutil
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
 from . import arcgis, archive
-from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, GitArchive, HttpFile, HttpFiles, MobilidadosError
-from .provenance import DOWNLOAD_TIMEOUT_S, Lock, http_get, now_utc, sha256_bytes, sha256_file, write_atomic
+from .config import AnySource, ArcgisIdentify, ArcgisQuery, Case, GitArchive, HttpFile, HttpFiles, HttpSeries, MobilidadosError
+from .provenance import DOWNLOAD_TIMEOUT_S, REQUEST_TIMEOUT_S, Lock, http_get, now_utc, sha256_bytes, sha256_file, write_atomic
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ def raw_path(case: Case, source_id: str) -> Path:
     src = case.source(source_id)
     if isinstance(src, HttpFile):
         return case.raw_dir / f"{source_id}{src.suffix or Path(urlparse(src.url).path).suffix or '.bin'}"
-    if isinstance(src, HttpFiles | GitArchive):
+    if isinstance(src, HttpFiles | GitArchive | HttpSeries):
         return case.raw_dir / source_id
     return case.raw_dir / f"{source_id}.json"
 
@@ -86,7 +88,7 @@ def _copy(src: AnySource, origin: Path, new: Path) -> None:
     """Copy a source from a folder: for a multi-file source, only the files it names."""
     if not origin.exists():
         raise MobilidadosError(f"{origin} is not in the folder; fetch the source without --from-dir")
-    if isinstance(src, HttpFiles | GitArchive):
+    if isinstance(src, HttpFiles | GitArchive | HttpSeries):
         new.mkdir()
         for name in _names(src):
             if not (origin / name).is_file():
@@ -162,14 +164,18 @@ def check_live(case: Case) -> list[tuple[str, str, str]]:
     return out
 
 
-def _names(src: HttpFiles | GitArchive) -> list[str]:
+def _names(src: HttpFiles | GitArchive | HttpSeries) -> list[str]:
     """The files of a multi-file source."""
-    return [f.name for f in src.files] if isinstance(src, HttpFiles) else list(archive.FILES)
+    if isinstance(src, HttpFiles):
+        return [f.name for f in src.files]
+    if isinstance(src, HttpSeries):
+        return list(src.requests())
+    return list(archive.FILES)
 
 
 def _cached(src: AnySource, dest: Path) -> bool:
     """A multi-file source is cached only when every file is there: a download that failed halfway is not."""
-    if isinstance(src, HttpFiles | GitArchive):
+    if isinstance(src, HttpFiles | GitArchive | HttpSeries):
         return all((dest / name).exists() for name in _names(src))
     return dest.exists()
 
@@ -201,6 +207,15 @@ def _download(src: AnySource, dest: Path) -> dict[str, Any]:
         for f in src.files:
             write_atomic(dest / f.name, http_get(f.url, timeout=DOWNLOAD_TIMEOUT_S).content)
         meta |= {"urls": {f.name: f.url for f in src.files}}
+    elif isinstance(src, HttpSeries):
+        dest.mkdir(parents=True, exist_ok=True)
+        todo = src.requests()
+        log.info("  %d requests to %s, %g s apart", len(todo), urlparse(src.url).hostname, src.min_interval_s)
+        for i, (name, url) in enumerate(todo.items()):
+            if i:
+                time.sleep(src.min_interval_s)
+            write_atomic(dest / name, http_get(url, timeout=REQUEST_TIMEOUT_S).content)
+        meta |= {"url": src.url, "routes": list(src.routes), "period": [d.isoformat() for d in src.period]}
     elif isinstance(src, GitArchive):
         meta |= archive.download(src, dest)
     return meta

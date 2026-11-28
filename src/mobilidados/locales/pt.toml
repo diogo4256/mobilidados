@@ -54,6 +54,20 @@ delay_year = "em {year}, {pct}% ({lo}% a {hi}%; {days} dias)"
 delay_unconfirmed = { one = " O intervalo de {years} inclui 0: os dados desse ano não confirmam o excesso.", other = " Os intervalos de {years} incluem 0: os dados desses anos não confirmam o excesso." }
 delay_seconds = "Nas {hp} horas de ponta e {ho} horas fora da ponta em que o arquivo tem posições a intervalos de {gap} min no máximo (das de ponta, {by_year}), um autocarro levou em média {off} s a percorrer o troço fora da ponta e {peak} s na ponta, quando o abrandamento dos troços vizinhos faria esperar {exp} s: mais {exc} s por passagem (intervalo de confiança de 90%: {lo} a {hi} s)."
 delay_hours_year = "{n} em {year}"
+fleet = "Nos registos diários do moverlisboa.com de {first} a {last}: {routes}."
+fleet_route = "carreira {route}, {vd} veículos-dia em {days} dias: {models}"
+fleet_model = "{pct}% {model} (números de frota {numbers})"
+fleet_envelope = ", a série do veículo {number}, cuja ficha dá a largura de autocarro usada aqui"
+fleet_other = { one = " Não foi registado nenhum veículo dessa série na carreira {routes}: os cenários de largura, feitos com o {label}, não descrevem os seus veículos.", other = " Não foi registado nenhum veículo dessa série nas carreiras {routes}: os cenários de largura, feitos com o {label}, não descrevem os veículos delas." }
+fleet_none = "Os registos diários do moverlisboa.com não listam nenhum veículo nas carreiras da rua no período pedido."
+fleet_gap = "{route}, {k} de {n}"
+segments = "As velocidades por segmento que o moverlisboa.com publica para {first} a {last} (todos os dias da semana), às {peak} e às {off}, passadas pela mesma comparação no mesmo troço e nos troços vizinhos"
+segments_list = " dão: {list}."
+segments_none = " não permitem comparar: nenhuma carreira e sentido tem registos suficientes."
+segments_direction = "{route} {pct}% (o arquivo: {apct}%, intervalo de 90% de {lo}% a {hi}%; {where})"
+segments_inside = "dentro dele"
+segments_outside = "fora dele"
+segments_left = { one = " A carreira e sentido {routes} não foi comparada: os segmentos com registos nas duas horas cobrem menos de {cov}% do troço ou dos troços vizinhos, ou têm menos de {k} amostras.", other = " As carreiras e sentidos {routes} não foram comparados: os segmentos com registos nas duas horas cobrem menos de {cov}% do troço ou dos troços vizinhos, ou têm menos de {k} amostras." }
 encounters_one_way = "Em {day}, o horário só tem autocarros num sentido ({heading}), por isso não prevê encontros entre autocarros em sentidos opostos nesta rua."
 runtimes = "Tempo previsto da paragem {a} à seguinte ({b}, a {d} m em linha reta): mediana de {m_all} s em todas as viagens do horário (pelo menos {k_all} km/h) e de {m_day} s em {day} (pelo menos {k_day} km/h)."
 reports_attributed = { one = "Foi atribuída à rua {n} ocorrência da categoria «{flt}»", other = "Foram atribuídas à rua {n} ocorrências da categoria «{flt}»" }
@@ -82,6 +96,8 @@ parking_removed = "Comprimento dos troços com estacionamento dos dois lados (o 
 encounters = "Sobreposição dos intervalos em que cada autocarro está na rua, a velocidade constante e com as horas do horário; é o horário, não uma observação."
 delay = "Ocupação (lei de Little): posições GPS no troço e em dois troços de controlo de {cm} m, a {gap} m antes e depois dele ao longo de cada carreira; o rácio entre a ponta e fora da ponta não depende do número de autocarros nem da frequência dos registos. Intervalos de confiança por reamostragem de dias inteiros ({reps} réplicas)."
 delay_seconds = "Segundos por passagem: posições no troço a dividir pelas passagens por segundo, contadas como viagens vistas a menos de {reach} m do troço, só nas horas em que os registos nunca distam mais de {gap} min."
+fleet = "Cada veículo contado uma vez por carreira e por dia, tal como os registos o listam; a série de um modelo é o intervalo de números de frota que o seu nome indica."
+segments = "Cada segmento publicado colocado ao longo do traçado da carreira no GTFS pelas suas pontas; conta para o troço ou para os troços vizinhos quando o seu ponto médio aí fica e tem registos nas duas horas; tempo por metro a partir dos metros e segundos publicados; o mesmo rácio que acima. Sem intervalo de confiança: o site publica somas, não as passagens por trás delas."
 occurrences = "Cada ocorrência georreferenciada dos dados abertos é atribuída ao eixo de rua mais próximo."
 area_pattern = "Perfis a cada {step} m em todos os eixos de rua por onde passam autocarros, medidos com parâmetros próprios desta pesquisa (comprimento do perfil e tolerâncias), e não com os da rua do caso; o sentido de trânsito é lido na rede viária num só ponto por rua."
 
@@ -107,6 +123,12 @@ delay_by_hour = "O excesso em segundos depende muito da hora de ponta escolhida:
 delay_hour = "só às {h}h, {s} s"
 delay_passages = "As passagens contadas são {pct}% das do horário de {day} nas mesmas horas; se faltarem passagens, os segundos estão sobrestimados na mesma proporção (o rácio não depende delas)."
 delay_days = "Dias úteis: de segunda a sexta, sem os feriados do perfil da cidade ({n} nesse período)."
+fleet_source = "Registos do moverlisboa.com, um projeto pessoal que os calcula a partir da API pública da Carris e diz que os valores são estimativas; a carreira de cada veículo é a associação feita pelo site e o modelo é o nome que o site lhe dá, não a afetação nem a ficha técnica da Carris. Não é indicada licença para os dados, que são usados mas não redistribuídos."
+fleet_gaps = "Dias sem registos: {list}."
+segments_source = "Velocidades publicadas pelo moverlisboa.com, que as calcula a partir da API pública da Carris com um coletor próprio e um método que não documenta, e diz que os valores são estimativas: outro coletor que não o do arquivo, e não o registo da própria Carris. Não é indicada licença para os dados, que são usados mas não redistribuídos."
+segments_span_list = "Os segmentos publicados não acabam onde acaba o troço (s = {a}–{b} m): os contados vão {list} ao longo da rua, pelo que podem incluir tempo numa paragem vizinha."
+segments_span = "na {route} de s = {a} a {b} m"
+segments_days = "Contam todos os dias do período, fins de semana e feriados incluídos, tal como publicados; a medida acima conta só dias úteis."
 occurrences = "Uma ocorrência não é uma infração provada e as contagens são pequenas. A ordenação divide as ocorrências contadas dentro da janela de atribuição (um retângulo que vai {w} m além da rua) pelo comprimento total de cada rua, incluindo a parte fora da janela: isso favorece as ruas que cabem inteiras na janela, como a deste caso."
 area_pattern = "Os limiares ({thr} m de largura livre, {minm} m de extensão) são parâmetros escolhidos para esta análise, não valores de um documento técnico."
 

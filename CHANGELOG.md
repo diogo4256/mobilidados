@@ -5,6 +5,24 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **The vehicles on the street's routes** (the `fleet` stage, `[fleet]` in a case). A new source kind,
+  `http_series`, asks a web API for every route and day of a period and keeps each answer as one file; for Lisbon
+  the template `moverlisboa_fleet_daily` reads moverlisboa.com's daily records of the Carris vehicles on each
+  route. `fleet_models.csv` gives the vehicle-days per model and whether the model's series holds the vehicle whose
+  sheet gives the width in the scenarios (`fleet_number` in the vehicle catalogue); a finding (grade I) says so, and
+  names the routes whose vehicles the scenarios do not describe.
+- **The `delay` comparison made again on published segment speeds** (the `segments` stage, `[segment_check]`):
+  speeds per 60 m segment published by a third party (Lisbon: moverlisboa.com, template `moverlisboa_segments`),
+  placed along the GTFS shapes, give the ratio for the same stretch and controls from another collector and another
+  method. A finding (grade I) gives it per route and direction, beside the archive's estimate and interval.
+- Rua Ricardo Jorge: from 2026-02-15 to 2026-11-27, 2229 of the 2231 vehicle-days recorded on route 744 were of the
+  MAN GNC series 2601–2820, which holds vehicle 2643, whose sheet gives the bus width used; route 46B ran only
+  minibuses (Mercedes Sprinter and MAN), which the width scenarios do not describe. moverlisboa.com's segment speeds
+  for 2025-12-07 to 2026-01-06 give +32% (744 SO→NE) and +39% (744 NE→SO), inside the archive's 90% intervals
+  for those directions; 46B has too few records there to compare.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added

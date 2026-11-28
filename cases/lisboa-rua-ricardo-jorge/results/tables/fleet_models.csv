@@ -1,0 +1,5 @@
+route,route_id,model,vehicle_days,vehicles,number_min,number_max,envelope_series,share
+46B,239_0,Mini Mercedes Sprinter (201-240),103,9,202,234,False,0.5074
+46B,239_0,Mini MAN (251-283),100,16,251,280,False,0.4926
+744,200_0,Standard MAN GNC (2601-2820),2229,102,2601,2756,True,0.9991
+744,200_0,Standard Volvo (1701-1780),2,2,1743,1761,False,0.0009

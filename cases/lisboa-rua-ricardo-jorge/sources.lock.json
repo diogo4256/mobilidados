@@ -113,6 +113,2310 @@
     "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
     "where": "1=1"
   },
+  "fleet_daily": {
+    "files": {
+      "fleet_daily/200_0_2026-02-15.json": {
+        "bytes": 1201,
+        "sha256": "bd00b57f1b875e0017b0a116ee714df421c560d84169a4fc3d5e179e96801101"
+      },
+      "fleet_daily/200_0_2026-02-16.json": {
+        "bytes": 2707,
+        "sha256": "35d4603ca4d25501c91147375f3578d68f391adc4f86a0cbb311f6ae489e978d"
+      },
+      "fleet_daily/200_0_2026-02-17.json": {
+        "bytes": 1502,
+        "sha256": "c65e724f719cce468491ae1fea1e79b882e6c6a7d14e393a8efa48c34ab9426f"
+      },
+      "fleet_daily/200_0_2026-02-18.json": {
+        "bytes": 2702,
+        "sha256": "5c3576c5f8c56c402c3be11f6030235aa4b64d23c2673a52427fb1dcdf117372"
+      },
+      "fleet_daily/200_0_2026-02-19.json": {
+        "bytes": 2710,
+        "sha256": "2de6eca77fc8557feadec901858c45ae67d4cf4e75d3b58460a6587d02071d0b"
+      },
+      "fleet_daily/200_0_2026-02-20.json": {
+        "bytes": 3004,
+        "sha256": "bc1cf94859f91143e8c0db79742809c6df7362dc86c1b8fe27c406c533c68af8"
+      },
+      "fleet_daily/200_0_2026-02-21.json": {
+        "bytes": 1502,
+        "sha256": "d097bf5815fa0a8060c829530e20dc11512fc19c99b6b46f1d88afa23992b6c2"
+      },
+      "fleet_daily/200_0_2026-02-22.json": {
+        "bytes": 1204,
+        "sha256": "2dfdac76fd8da1f655bd1fb70a15da5cbe46c0d321087822936de38bbdea3127"
+      },
+      "fleet_daily/200_0_2026-02-23.json": {
+        "bytes": 2713,
+        "sha256": "f512bb107ed034a6619d9fec18c2edf86b64ad6f79c610d90b32d9eb695bb62d"
+      },
+      "fleet_daily/200_0_2026-02-24.json": {
+        "bytes": 3305,
+        "sha256": "7e8992ecb4a0ad6b1e39b8b165d81e2d7d9c01c3a331ece489871764869d8394"
+      },
+      "fleet_daily/200_0_2026-02-25.json": {
+        "bytes": 2704,
+        "sha256": "b9338016523823bd208cfa9a2ab09527de324ecc5d4e38a70e9eea42b7f00ac5"
+      },
+      "fleet_daily/200_0_2026-02-26.json": {
+        "bytes": 2708,
+        "sha256": "b8b948c5e1b77a53d4a97db4670c72967d5f1c600fbe7400e77acf3b55badcf1"
+      },
+      "fleet_daily/200_0_2026-02-27.json": {
+        "bytes": 3307,
+        "sha256": "9efb95ed8516bbeb19868c7898af2f4bde3fa9dbc0a1383e17ae96109f2bf030"
+      },
+      "fleet_daily/200_0_2026-02-28.json": {
+        "bytes": 1499,
+        "sha256": "a4a91ad5aade7445d6b6f7897f6e740c8148c70dfc9dbc60e015bc701a6f38e3"
+      },
+      "fleet_daily/200_0_2026-03-01.json": {
+        "bytes": 1202,
+        "sha256": "d865da6fb67004f0d4a75ba86b91ee6842323a7b57010053bbb28749184eb928"
+      },
+      "fleet_daily/200_0_2026-03-02.json": {
+        "bytes": 3002,
+        "sha256": "7814ba549ed9c9bf84bf5765024524cf33df44122f75f9f7861b1ceab45e9331"
+      },
+      "fleet_daily/200_0_2026-03-03.json": {
+        "bytes": 3314,
+        "sha256": "65e752b99f84ea04fda9211a960e94cf3463a2fa0f8d1d5b31c95c19e3df6520"
+      },
+      "fleet_daily/200_0_2026-03-04.json": {
+        "bytes": 3304,
+        "sha256": "9a7f4032a7ef9815562ed116c9cd733316c30b5b9badcf3e97461e32200d0dfb"
+      },
+      "fleet_daily/200_0_2026-03-05.json": {
+        "bytes": 3010,
+        "sha256": "7ddad96874adf7b3ede04e7792a7b865a60ede80a843d3314a8600ba82d2111c"
+      },
+      "fleet_daily/200_0_2026-03-06.json": {
+        "bytes": 3002,
+        "sha256": "6fecae0edab339f2c86f37bebb761f362dfeb20102c62259f69a4689d4652951"
+      },
+      "fleet_daily/200_0_2026-03-07.json": {
+        "bytes": 1505,
+        "sha256": "8340ce5835d5d7d4b7f0c59bdab079be39e82882257909171568f21b32ac8580"
+      },
+      "fleet_daily/200_0_2026-03-08.json": {
+        "bytes": 1204,
+        "sha256": "0d8cd8f63c6426937e9066fc5c0509b641ce9c06e0dafd17929cdf5079ddf1ff"
+      },
+      "fleet_daily/200_0_2026-03-09.json": {
+        "bytes": 3005,
+        "sha256": "da44110d264f0a1f4f2740fbee9630d5b4d6c6c846a03ec3afc22f92e503fcf4"
+      },
+      "fleet_daily/200_0_2026-03-10.json": {
+        "bytes": 3306,
+        "sha256": "5338f0127506d1a914c9cf9d577164b16678f613a2ce58341bf66ea4b3f874dc"
+      },
+      "fleet_daily/200_0_2026-03-11.json": {
+        "bytes": 3310,
+        "sha256": "dafcb7f78f98632b597b619665db453233d040d442aaeb49c1e4c44f7520ad63"
+      },
+      "fleet_daily/200_0_2026-03-12.json": {
+        "bytes": 2712,
+        "sha256": "3c8acd624cbc35a24840ce0a037627ac6242afce9b143c045f3b828dd81fc51a"
+      },
+      "fleet_daily/200_0_2026-03-13.json": {
+        "bytes": 3013,
+        "sha256": "f617013ff743b43a7790b22dea0969ca390431a33cf6dcc5b0a26a0531216053"
+      },
+      "fleet_daily/200_0_2026-03-14.json": {
+        "bytes": 1502,
+        "sha256": "a54f9b461cb15524c654cc2e4dfab6b644629e11f0fbb5dd90e047ee130cfb41"
+      },
+      "fleet_daily/200_0_2026-03-15.json": {
+        "bytes": 1200,
+        "sha256": "4d1cac2dc3ed72c8da66e12d4e5955fac88d30e4536f5acee31dd8b7d0a777d0"
+      },
+      "fleet_daily/200_0_2026-03-16.json": {
+        "bytes": 2708,
+        "sha256": "b4aa5110e4716bbea94b5714f269f140aa528ec6bd00d27da7f9bf9376a53760"
+      },
+      "fleet_daily/200_0_2026-03-17.json": {
+        "bytes": 2709,
+        "sha256": "2e5060ac51a7c40b78aa540ccf47a99c9ff561ffd0d47e52b65e7d19df066fbd"
+      },
+      "fleet_daily/200_0_2026-03-18.json": {
+        "bytes": 3308,
+        "sha256": "e408cdd5b3ea011ab05733e4951ea4fd0da637e2d470c9f4f8d78ba7b580d3c0"
+      },
+      "fleet_daily/200_0_2026-03-19.json": {
+        "bytes": 2402,
+        "sha256": "bff8641912a9d1d466ecc856d91fddad8a47d816341e979b681a7f661726b57f"
+      },
+      "fleet_daily/200_0_2026-03-20.json": {
+        "bytes": 3303,
+        "sha256": "0c395f0794011f3ee4c63780e63fa86c9b4412b16d04e3249e4efb166a267900"
+      },
+      "fleet_daily/200_0_2026-03-21.json": {
+        "bytes": 1505,
+        "sha256": "8466388ff044829a561b13ed4c1186841a766df0d7eb25dbaa5fedff4a0aea24"
+      },
+      "fleet_daily/200_0_2026-03-22.json": {
+        "bytes": 1204,
+        "sha256": "73a666cb7f253b6f3f7bafa06d0cca24705481e2392fca6ef014718725537e9a"
+      },
+      "fleet_daily/200_0_2026-03-23.json": {
+        "bytes": 2701,
+        "sha256": "ecd78f1dc5bd2e6c5dd73094042caae98ba4951a8750df103b9044aa16589f33"
+      },
+      "fleet_daily/200_0_2026-03-24.json": {
+        "bytes": 3311,
+        "sha256": "82bfa52af90d55dc16908bfcda771a481dd35d71d8732be1d7af10d0bd4a74a0"
+      },
+      "fleet_daily/200_0_2026-03-25.json": {
+        "bytes": 3309,
+        "sha256": "c42844404d6ec2f76ff941ea6257a4eea6e097b7c1462ac5a004fc26bc444677"
+      },
+      "fleet_daily/200_0_2026-03-26.json": {
+        "bytes": 3003,
+        "sha256": "547a6c19db0c9fefcc4606d907b6cb5b0a93bf4166f5fad15803aaf3b48d63b4"
+      },
+      "fleet_daily/200_0_2026-03-27.json": {
+        "bytes": 3311,
+        "sha256": "d63c0e3909a426fdd1c0a83bdc189ac31279cbfd20ff3d5c297de4269ba88818"
+      },
+      "fleet_daily/200_0_2026-03-28.json": {
+        "bytes": 1501,
+        "sha256": "411fa5e7c2600e35ca6b4f32c13b8f48202087b41f5935863a60cf2c4e2ef82c"
+      },
+      "fleet_daily/200_0_2026-03-29.json": {
+        "bytes": 1201,
+        "sha256": "195f0855684187009e3ed4d93cdb882f6827f9bf19e3c9fb98fe6fa096abb699"
+      },
+      "fleet_daily/200_0_2026-03-30.json": {
+        "bytes": 2408,
+        "sha256": "dfa3a4d238025f8222df8f8df76b6f29ff724b28ad85dcd69231841b58e2596f"
+      },
+      "fleet_daily/200_0_2026-03-31.json": {
+        "bytes": 2709,
+        "sha256": "94bd85c7fd988fec6b74b2f0d44a3925b9a4084f1747757da95d71a04d2bb769"
+      },
+      "fleet_daily/200_0_2026-04-01.json": {
+        "bytes": 2107,
+        "sha256": "cd4bf4b389b51083bf3afd24fc422fc79f6a65a704dfc58ea6b5c09f905f4554"
+      },
+      "fleet_daily/200_0_2026-04-02.json": {
+        "bytes": 2408,
+        "sha256": "1d71e3c1e937ed7a0e1f59a6b09780e4bfcbce5cc1a05fbdf08f13f824723917"
+      },
+      "fleet_daily/200_0_2026-04-03.json": {
+        "bytes": 1502,
+        "sha256": "ad64c881bc9d95269a75ff11dd7561f0af5aaee318bc77bfe0d1033cddc56937"
+      },
+      "fleet_daily/200_0_2026-04-04.json": {
+        "bytes": 1198,
+        "sha256": "fa8ad37d0bb833a684a1765c08520ddab918d3d808dc90ac5fc05c1d529050f7"
+      },
+      "fleet_daily/200_0_2026-04-05.json": {
+        "bytes": 1201,
+        "sha256": "94d71c012b119001013aa8ff8530743c3d32b6d901a7e7d3331ec30aa421179f"
+      },
+      "fleet_daily/200_0_2026-04-06.json": {
+        "bytes": 2402,
+        "sha256": "df5b3482fd8dfd93f5a5f1dda1145d5208df6441a7da12c006de6e18ffde5870"
+      },
+      "fleet_daily/200_0_2026-04-07.json": {
+        "bytes": 2408,
+        "sha256": "6bd1f7f31031f2f936986684f7fadcc74d6a96da79bb9ecdd30d98e0e2b0a11b"
+      },
+      "fleet_daily/200_0_2026-04-08.json": {
+        "bytes": 2107,
+        "sha256": "2ff2708519d1a49b1da25bbbfb486a88209480a2dea7696dd66e1293386cab0e"
+      },
+      "fleet_daily/200_0_2026-04-09.json": {
+        "bytes": 2396,
+        "sha256": "024cd25dea62e62db8cd404fac5104d53311aa2f04d6bbbe2fc8322bea4599a5"
+      },
+      "fleet_daily/200_0_2026-04-10.json": {
+        "bytes": 2086,
+        "sha256": "edc2c2ca5d937bc536c2c7f0e02ffcb5c20b77e3601af1aa1a02eadfd06e5bdd"
+      },
+      "fleet_daily/200_0_2026-04-11.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/200_0_2026-04-12.json": {
+        "bytes": 1502,
+        "sha256": "ef39705d7651ca8cbab071f317ae2adb58dcee00c69795b653cd68a254c31649"
+      },
+      "fleet_daily/200_0_2026-04-13.json": {
+        "bytes": 3020,
+        "sha256": "7c7f8ec4247b521f03569a816a9b3247fad0a67b51999b49af9b3940b6d1037b"
+      },
+      "fleet_daily/200_0_2026-04-14.json": {
+        "bytes": 2717,
+        "sha256": "baa9b632f576f2cce3d3aee7943585a7c47a5f6c16082ae3ea00207dbade11a3"
+      },
+      "fleet_daily/200_0_2026-04-15.json": {
+        "bytes": 2716,
+        "sha256": "ff85c11a6bf671daa50585b33ef19b7bbc9adb9ee03563d15d651e981d687c2e"
+      },
+      "fleet_daily/200_0_2026-04-16.json": {
+        "bytes": 3315,
+        "sha256": "0fdd28443a313972e6b972e4178b63470c5d918e401887b7d065b04d8273751c"
+      },
+      "fleet_daily/200_0_2026-04-17.json": {
+        "bytes": 2412,
+        "sha256": "a1b1adae3b916c2084780fb14f55250624b61d212041e9b369e622c270296781"
+      },
+      "fleet_daily/200_0_2026-04-18.json": {
+        "bytes": 598,
+        "sha256": "ab89bab426ba815da758098ffa48529055bb6dd1809e573439f76fb5a500d91c"
+      },
+      "fleet_daily/200_0_2026-04-19.json": {
+        "bytes": 1496,
+        "sha256": "fad672e4ba5b1e519dbf2774c84320bc23816109217c43d64e64d1cf54098719"
+      },
+      "fleet_daily/200_0_2026-04-20.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/200_0_2026-04-21.json": {
+        "bytes": 3018,
+        "sha256": "f39af23dcfd9641ba5d8a31f2618840623711f5bfd1fb95d9637fd648526329d"
+      },
+      "fleet_daily/200_0_2026-04-22.json": {
+        "bytes": 2416,
+        "sha256": "678431cc954167255709473510e088ca145cbaaf91dcaf120e09bf7f1ef90c76"
+      },
+      "fleet_daily/200_0_2026-04-23.json": {
+        "bytes": 3320,
+        "sha256": "899241926834f2fc1a1d9da31ed6541fd7feb8f506431dfb6be34d83e6cb080d"
+      },
+      "fleet_daily/200_0_2026-04-24.json": {
+        "bytes": 2417,
+        "sha256": "7b5479294a8849027e3cdbaeb573de9e83a423717c3749f4da37e4267904d3a4"
+      },
+      "fleet_daily/200_0_2026-04-25.json": {
+        "bytes": 1506,
+        "sha256": "1cf4fb41dff037feab138d98c77f2b0c20b644f240a4fe2687fa8c5927dbb4b4"
+      },
+      "fleet_daily/200_0_2026-04-26.json": {
+        "bytes": 1207,
+        "sha256": "fe555225f83af8b22252da0200644da520ef1762a71813c359f142529ef56bfa"
+      },
+      "fleet_daily/200_0_2026-04-27.json": {
+        "bytes": 3013,
+        "sha256": "20a35ba94f7b9de901758d756495bc7c57f74faa8e4c793e682c42b4d259a216"
+      },
+      "fleet_daily/200_0_2026-04-28.json": {
+        "bytes": 3018,
+        "sha256": "5209c0e3aaf2e4f4ace728a9d10d419a3f03224a72166b86807449c0118cf211"
+      },
+      "fleet_daily/200_0_2026-04-29.json": {
+        "bytes": 2419,
+        "sha256": "a7edb92fc31b610dcfe2582682ff915e43e34a0ac296619a23e059539f90ef65"
+      },
+      "fleet_daily/200_0_2026-04-30.json": {
+        "bytes": 2716,
+        "sha256": "522695c470e8960ee2edcc45af6bd7dfdb6c8ace9a53787de1dcc35ca14db08c"
+      },
+      "fleet_daily/200_0_2026-05-01.json": {
+        "bytes": 1208,
+        "sha256": "70dea5f39522c68431a3ba580ec86b9bc3d996ef611036616e1a817b3e7a6203"
+      },
+      "fleet_daily/200_0_2026-05-02.json": {
+        "bytes": 1509,
+        "sha256": "1b7053a960fd73d577018e265a14ecb069d9c9e333f87fa25bb5c4dfe52406a0"
+      },
+      "fleet_daily/200_0_2026-05-03.json": {
+        "bytes": 1206,
+        "sha256": "6a4c6ce2e6f252bdaea12c8e31ee82f4b6d6caa38860264cdcbdef57bc5ae02a"
+      },
+      "fleet_daily/200_0_2026-05-04.json": {
+        "bytes": 3012,
+        "sha256": "c8c7151ae7ba08bb8f4efd96366cd188109763a3dcb1db3f12e9f6489778233a"
+      },
+      "fleet_daily/200_0_2026-05-05.json": {
+        "bytes": 3020,
+        "sha256": "5598047d4ed6b7ab3fc86838a07766f73735db361c94cdadd3e8f127043640f6"
+      },
+      "fleet_daily/200_0_2026-05-06.json": {
+        "bytes": 3014,
+        "sha256": "fb66f147ec830ebf23bd8224b0be4769b9923acf67d97ab44c3f460f99913a1b"
+      },
+      "fleet_daily/200_0_2026-05-07.json": {
+        "bytes": 3021,
+        "sha256": "f8da19ff14d486d66f595eb2a6fa29fab8e8df203bd009a43b0e1b51b8f8af5d"
+      },
+      "fleet_daily/200_0_2026-05-08.json": {
+        "bytes": 3317,
+        "sha256": "c38baec599c5370b6e3e8bdb3ebc5694fd298953e68d089706d4c1136f5f7dfe"
+      },
+      "fleet_daily/200_0_2026-05-09.json": {
+        "bytes": 1508,
+        "sha256": "a94910cbd13c2673f27fd2498aebd9642e708c88009b2230aa8b4a5c81029ef8"
+      },
+      "fleet_daily/200_0_2026-05-10.json": {
+        "bytes": 1207,
+        "sha256": "a9023caf650228cedb82a6f2a55ef7ea0892f52261cf0e8dd0e7cf40178122a7"
+      },
+      "fleet_daily/200_0_2026-05-11.json": {
+        "bytes": 2717,
+        "sha256": "d17c8d25903ab8b553e537301a25377e63e30daf0e42280935729de81ecefc4e"
+      },
+      "fleet_daily/200_0_2026-05-12.json": {
+        "bytes": 3020,
+        "sha256": "e54e5d0760b37660cfb9165bd75167ca532f5190048c898f209df71d8f258f65"
+      },
+      "fleet_daily/200_0_2026-05-13.json": {
+        "bytes": 3018,
+        "sha256": "b94f69183abf60eda6ea0fc343e2aade4960fc53d67ff89cc44cb8a3a5a7b7e4"
+      },
+      "fleet_daily/200_0_2026-05-14.json": {
+        "bytes": 2717,
+        "sha256": "7b5053fbd7e9e901c2629e5147b4aee23724b5f59654fe495706e82c7e5b775d"
+      },
+      "fleet_daily/200_0_2026-05-15.json": {
+        "bytes": 3015,
+        "sha256": "83955687aa8516d42a91c4a5ed1a0e0619279341f4339d2a42c8218043f60580"
+      },
+      "fleet_daily/200_0_2026-05-16.json": {
+        "bytes": 1511,
+        "sha256": "fc7679f2c5566ea331c607880d8ceef1d268bdda37a20d596ec4f154d5ba4cb4"
+      },
+      "fleet_daily/200_0_2026-05-17.json": {
+        "bytes": 1208,
+        "sha256": "97d451f038644adaf5fe9ea7c56016b0b4447abdacc6b44b3e0bbaa10d36f8db"
+      },
+      "fleet_daily/200_0_2026-05-18.json": {
+        "bytes": 3008,
+        "sha256": "23f67fa3e19332225423d5b71ad2021b1e957f1a241837aec008965e7754755a"
+      },
+      "fleet_daily/200_0_2026-05-19.json": {
+        "bytes": 3315,
+        "sha256": "3219198f16d51423cea199402d013b99aebb30fb974896192dfaa2b400685ad6"
+      },
+      "fleet_daily/200_0_2026-05-20.json": {
+        "bytes": 3318,
+        "sha256": "9a406c36acd72b1d2f32e9b59242ced139c3625665f836d177357ab40cba90bd"
+      },
+      "fleet_daily/200_0_2026-05-21.json": {
+        "bytes": 3322,
+        "sha256": "a0135269074671ccbf66fb1ad025d790f35b1e1e987094f9d5a771dc5d869a86"
+      },
+      "fleet_daily/200_0_2026-05-22.json": {
+        "bytes": 2723,
+        "sha256": "9ca7ecfa1b2348cdf26e8c0888ac2f7838f0978564d4e9d1cfb9a58a9816a47f"
+      },
+      "fleet_daily/200_0_2026-05-23.json": {
+        "bytes": 1508,
+        "sha256": "2192e949e4ca1419ba415c35a1473d48a420193d25b6a796145835a2cd03b8c7"
+      },
+      "fleet_daily/200_0_2026-05-24.json": {
+        "bytes": 1206,
+        "sha256": "6f83034a0ee70450f8e673a6e50245ac5ef5134e976ae37101173471a1940f3a"
+      },
+      "fleet_daily/200_0_2026-05-25.json": {
+        "bytes": 3014,
+        "sha256": "5dc83f40e4be1bdc7abde18b2ef1b4c8a670ad3739e532bb8f7112f5a47041ea"
+      },
+      "fleet_daily/200_0_2026-05-26.json": {
+        "bytes": 2716,
+        "sha256": "d11cc231989f7d038051a1877a1fc7da63468988afea621b24ac49250857336a"
+      },
+      "fleet_daily/200_0_2026-05-27.json": {
+        "bytes": 3013,
+        "sha256": "b214552a786ad2b85df607617d43eb1c273ec147a49a3fbb4ec51ceae2424608"
+      },
+      "fleet_daily/200_0_2026-05-28.json": {
+        "bytes": 3319,
+        "sha256": "fb81695b99a3a524fa4e1efe4308290507f65a7770db3ce7c053ce47f85a6f70"
+      },
+      "fleet_daily/200_0_2026-05-29.json": {
+        "bytes": 3316,
+        "sha256": "77179a3fcd4999ff59ac46e738aa4feb6a4d7b61319592c09456fbecd6d89253"
+      },
+      "fleet_daily/200_0_2026-05-30.json": {
+        "bytes": 1803,
+        "sha256": "c2f325206945fccbc5d0bf3b23763c90574290e9ccf988e3c5450f1093c785d7"
+      },
+      "fleet_daily/200_0_2026-05-31.json": {
+        "bytes": 1504,
+        "sha256": "7011c94992175d9bf9bc06b007d7d7f1543db7f77c3229594ee92caaf75184a6"
+      },
+      "fleet_daily/200_0_2026-06-01.json": {
+        "bytes": 2713,
+        "sha256": "83518b34c8439c52433b1dc53b40777df63baee66bd31d36f3c195a1ce4d6d64"
+      },
+      "fleet_daily/200_0_2026-06-02.json": {
+        "bytes": 3014,
+        "sha256": "d78000e429150d4ae742a9dbf9ed7f03de001255a77ebf04b91b72b21e1e2ad8"
+      },
+      "fleet_daily/200_0_2026-06-03.json": {
+        "bytes": 899,
+        "sha256": "b0a9e23599f1ccab9d9034be8c990ba87b320da828cc3e24755c73d84648b903"
+      },
+      "fleet_daily/200_0_2026-06-04.json": {
+        "bytes": 1207,
+        "sha256": "cc50d7461e0f6c0edd0a65f78e625ff1f73c61830770619d0cde6ac7d69ead99"
+      },
+      "fleet_daily/200_0_2026-06-05.json": {
+        "bytes": 2716,
+        "sha256": "9a5022e87287b2e8315338e12d743b8d6063a7fec035d48cceee764a89a979b2"
+      },
+      "fleet_daily/200_0_2026-06-06.json": {
+        "bytes": 1505,
+        "sha256": "6ecef9446603567dc7fd8a840cd17788fae9acb7fd1b7f2920a761b0f7fc7ba4"
+      },
+      "fleet_daily/200_0_2026-06-07.json": {
+        "bytes": 300,
+        "sha256": "0fc7c41147f032219c65bf56f4c1e96d16ad886630014309d52c627164114c30"
+      },
+      "fleet_daily/200_0_2026-06-08.json": {
+        "bytes": 2406,
+        "sha256": "7c6568fa6703e150ba4b6c00705d4371756d27ea272f218c8ff34346601f873a"
+      },
+      "fleet_daily/200_0_2026-06-09.json": {
+        "bytes": 2408,
+        "sha256": "720e96ca09be0eb75e6b4bd7f4e48e26efed4c2edfde412ac0cefc883ae4ef69"
+      },
+      "fleet_daily/200_0_2026-06-10.json": {
+        "bytes": 1200,
+        "sha256": "40061b937ad5498eec0d19f12f59c85a7e00b0e10d00a01fb326f405fdc83ad9"
+      },
+      "fleet_daily/200_0_2026-06-11.json": {
+        "bytes": 2411,
+        "sha256": "403b33a0b8d49d3132a15b73f89086e5abb605326e7b71c5335fe073228f7ffa"
+      },
+      "fleet_daily/200_0_2026-06-12.json": {
+        "bytes": 2100,
+        "sha256": "6c47f444eec9eff2f9c8dee9cbdbfa087906c3375106e368fe8866f02214e4f3"
+      },
+      "fleet_daily/200_0_2026-06-13.json": {
+        "bytes": 1205,
+        "sha256": "fb3daf5ddd3f716229e9e40603ae0bb4bfaa185ec05c58735df7f382b9d6fbc9"
+      },
+      "fleet_daily/200_0_2026-06-14.json": {
+        "bytes": 1504,
+        "sha256": "5a22522ca82bded20d8cba438a751feebee43c43601bacba4218d3d6956ae0a2"
+      },
+      "fleet_daily/200_0_2026-06-15.json": {
+        "bytes": 2414,
+        "sha256": "a7f072d5aeb0f90619e33066e0c9ed857de56ab990d4b422ee76a6ee2a459314"
+      },
+      "fleet_daily/200_0_2026-06-16.json": {
+        "bytes": 1795,
+        "sha256": "c722684acf7813a43a604c9f57fbde0813bfd91d548cb8ebb594c092876cbe2e"
+      },
+      "fleet_daily/200_0_2026-06-17.json": {
+        "bytes": 2400,
+        "sha256": "7a9eab653dd42cfa4c247cd805777d9d68e3927d149983e7f5c5844ddb022c98"
+      },
+      "fleet_daily/200_0_2026-06-18.json": {
+        "bytes": 2404,
+        "sha256": "97f683bd6a0a37b445a2ba12e7ddb88bbbd55bc75eae711e4acff7ab2b38a7d8"
+      },
+      "fleet_daily/200_0_2026-06-19.json": {
+        "bytes": 3005,
+        "sha256": "3774983187cfa44fa3ff8ba2d9227581b44fad4eb8b6fbcabfd3e4234104d946"
+      },
+      "fleet_daily/200_0_2026-06-20.json": {
+        "bytes": 1504,
+        "sha256": "89722895e36404750d2557e894429024a5d0f18b396cf2e42b47880b645ed5c2"
+      },
+      "fleet_daily/200_0_2026-06-21.json": {
+        "bytes": 1496,
+        "sha256": "62a0eecc106357ed1ad6afcf2729de7500f628b3b8cf939297d220d8ff340db4"
+      },
+      "fleet_daily/200_0_2026-06-22.json": {
+        "bytes": 2699,
+        "sha256": "0c6c7b068d11f786e6775d540407fb60a66e757a2b30d7983c3d943a63aaa934"
+      },
+      "fleet_daily/200_0_2026-06-23.json": {
+        "bytes": 2409,
+        "sha256": "a791a082845ade814e8fb7badf3959fe2458a8e27ce4f9f7eeae4eec4b509880"
+      },
+      "fleet_daily/200_0_2026-06-24.json": {
+        "bytes": 2709,
+        "sha256": "971342f3864ca32af3d1d25c97dfa510233a426bcdeb290acdbac279659ecec2"
+      },
+      "fleet_daily/200_0_2026-06-25.json": {
+        "bytes": 2110,
+        "sha256": "b9e1d2ef4043ef56906f1948be427bd2b2d284ee230691953cad27c076a17826"
+      },
+      "fleet_daily/200_0_2026-06-26.json": {
+        "bytes": 2408,
+        "sha256": "cca066e46144d12171b8b162d71fda905674127c356c9b88e70bfc57353e10d8"
+      },
+      "fleet_daily/200_0_2026-06-27.json": {
+        "bytes": 1503,
+        "sha256": "a71d8c51df558d3ee0b8fb4bd29a91757d6b44c809e319c405cd5eabbf3c348e"
+      },
+      "fleet_daily/200_0_2026-06-28.json": {
+        "bytes": 1203,
+        "sha256": "58ed24c8910610f52e08e7376f4cbb1ef45418c88d746cf586f46c2e02cd7b8c"
+      },
+      "fleet_daily/200_0_2026-06-29.json": {
+        "bytes": 2405,
+        "sha256": "d2f3c534adf48c3ce6c88b2d95f162aca67100ab88da22197396b72cb964e700"
+      },
+      "fleet_daily/200_0_2026-06-30.json": {
+        "bytes": 3298,
+        "sha256": "e43b419dae63556c89792c1011fee6ec068dd900b0be28034adca841dd4d7aa1"
+      },
+      "fleet_daily/200_0_2026-07-01.json": {
+        "bytes": 2400,
+        "sha256": "73dce923db24b4fa3a9a49437f50d73ea669c9e226f5a7b52c75740756ba80ba"
+      },
+      "fleet_daily/200_0_2026-07-02.json": {
+        "bytes": 2406,
+        "sha256": "e2ebce66d03f5d0b765fd11e3b7d7cb77adc6f4e74fec35c312960fa2d05eaeb"
+      },
+      "fleet_daily/200_0_2026-07-03.json": {
+        "bytes": 2705,
+        "sha256": "03bcceb2a5cfea39af851ee6c509980bebe34ccb80fcffc045798695437b13c0"
+      },
+      "fleet_daily/200_0_2026-07-04.json": {
+        "bytes": 1501,
+        "sha256": "7959779f7d7699521efd01709135f8422a3c845f681861f485874d51aa71e825"
+      },
+      "fleet_daily/200_0_2026-07-05.json": {
+        "bytes": 598,
+        "sha256": "154fb7b1125c9c2f76420103278a6a8c670444667721b389f9ef68c98b900cab"
+      },
+      "fleet_daily/200_0_2026-07-06.json": {
+        "bytes": 1810,
+        "sha256": "4998b01feacb299ed29c0bef2295561993e88d4d63610513afed92bc70838037"
+      },
+      "fleet_daily/200_0_2026-07-07.json": {
+        "bytes": 3011,
+        "sha256": "5191efe16298c21c4b02f557a3dd100041665775c6c1bd44e57056c7ce4cb936"
+      },
+      "fleet_daily/200_0_2026-07-08.json": {
+        "bytes": 2112,
+        "sha256": "0686124533bb0568b186b4c1ca93e8fbaf5f9f7db3bf8c2709832c92e9a7ee82"
+      },
+      "fleet_daily/200_0_2026-07-09.json": {
+        "bytes": 2409,
+        "sha256": "94c0fe15c0cb5ee0219db325e7f9261f5e7153b73019188d7eeb3ec55f4f457f"
+      },
+      "fleet_daily/200_0_2026-07-10.json": {
+        "bytes": 2411,
+        "sha256": "42a2b3d33fa0c1e979cf46aa3050b9e4ecfc72e087eb1ffcea6cd74c221abea4"
+      },
+      "fleet_daily/200_0_2026-07-11.json": {
+        "bytes": 1509,
+        "sha256": "3bea37b7f46c56a16961a10e161adcf00ecd6ac54acb44614baebca5165b251f"
+      },
+      "fleet_daily/200_0_2026-07-12.json": {
+        "bytes": 1505,
+        "sha256": "ec6f4a3f18ad050abb4f515f8822727ebc2d05c28ae28e813a90bf037c3df323"
+      },
+      "fleet_daily/200_0_2026-07-13.json": {
+        "bytes": 2711,
+        "sha256": "38fafe916e99a4eca669d60caa1c6ba83164350d88bf9f86ae454d8234dca933"
+      },
+      "fleet_daily/200_0_2026-07-14.json": {
+        "bytes": 2712,
+        "sha256": "de3cffe3a72b8f176390eab0f8de513899fda9d7743e6b4cc4dd56df3a1c94bb"
+      },
+      "fleet_daily/200_0_2026-07-15.json": {
+        "bytes": 3012,
+        "sha256": "3a947a5f6f04349bbb1ced297d7939c6a24947de9114a72cb2f70f71c23b52db"
+      },
+      "fleet_daily/200_0_2026-07-16.json": {
+        "bytes": 2709,
+        "sha256": "7b6ff5cb1f22f719dd6fba224dcabef23b18dc0e73986e5db4bd17290522588f"
+      },
+      "fleet_daily/200_0_2026-07-17.json": {
+        "bytes": 2411,
+        "sha256": "90e01a98238aa6e3ff3b66c7f17bb2f9c0b3df803b6eb0da163891c377842ae0"
+      },
+      "fleet_daily/200_0_2026-07-18.json": {
+        "bytes": 1507,
+        "sha256": "2cefc395dfc32927ef787df6bedd2a9a8120365e593548c0e91d6f16dcebc172"
+      },
+      "fleet_daily/200_0_2026-07-19.json": {
+        "bytes": 1506,
+        "sha256": "1c4e7b5931a830d0008333364881232ca9ba06ae4c8001e75b7062c69c9a7653"
+      },
+      "fleet_daily/200_0_2026-07-20.json": {
+        "bytes": 2408,
+        "sha256": "08c1fa73234c12df63c1030fe172b95433c7fd6c07a7a882c28dca418152add4"
+      },
+      "fleet_daily/200_0_2026-07-21.json": {
+        "bytes": 2415,
+        "sha256": "6413180092a6354bf43064ca907004bd14d4ce0d0748eec3931398f5b4e40a9a"
+      },
+      "fleet_daily/200_0_2026-07-22.json": {
+        "bytes": 2412,
+        "sha256": "21e677f589e11f6a967b051d98595a9ca0b7222a02316da5ba6dedd24a773cb5"
+      },
+      "fleet_daily/200_0_2026-07-23.json": {
+        "bytes": 2412,
+        "sha256": "b927b488ca9df175146aa206a34a01ca5ea8b83e71e93b353da13faa62da374b"
+      },
+      "fleet_daily/200_0_2026-07-24.json": {
+        "bytes": 2704,
+        "sha256": "267418327d3de2cbc0a3e7788fd9b9dbd2ea81f1184fc7a8fe5e0ce7b5f15d2c"
+      },
+      "fleet_daily/200_0_2026-07-25.json": {
+        "bytes": 1805,
+        "sha256": "2125df022ffb02dce6bbbdab3576cb2df42b82d5ddee39f0c19ef4a7f2b89db7"
+      },
+      "fleet_daily/200_0_2026-07-26.json": {
+        "bytes": 1504,
+        "sha256": "a6330e3b2431ec1c3392df32babc6e4721f6613b23fc3d5ac2b978d4ada54f55"
+      },
+      "fleet_daily/200_0_2026-07-27.json": {
+        "bytes": 2417,
+        "sha256": "3a7511845075093607d623231cfb9cefd56a8503c57e9a1aa9ffb04b132ba777"
+      },
+      "fleet_daily/200_0_2026-07-28.json": {
+        "bytes": 2413,
+        "sha256": "dc25dc02a15a7123d140ec151d00b06c96d13a64d8b7bd6b73200fd9c29b5830"
+      },
+      "fleet_daily/200_0_2026-07-29.json": {
+        "bytes": 2115,
+        "sha256": "7dc48a760d79663c990efb0222a789c5f76ed7078a8140969dc99edade47c96d"
+      },
+      "fleet_daily/200_0_2026-07-30.json": {
+        "bytes": 2713,
+        "sha256": "d41a9b68b079c50670a23ea639ab455c7c73368f8db6af4813e9faaf1f367525"
+      },
+      "fleet_daily/200_0_2026-07-31.json": {
+        "bytes": 2718,
+        "sha256": "5a4d992d41c0f8ad39ae0b81b2abb86f6dc0390130b7b20793a89a853575a2a6"
+      },
+      "fleet_daily/200_0_2026-08-01.json": {
+        "bytes": 1507,
+        "sha256": "bb57c6ac222ed394e902db94aa1f1add40b998f88d3105518086996542b14e1a"
+      },
+      "fleet_daily/200_0_2026-08-02.json": {
+        "bytes": 1208,
+        "sha256": "49382d72ed724fe0bfa26fb0236059ed0675542e254d95ff9aeed9debfc35aa6"
+      },
+      "fleet_daily/200_0_2026-08-03.json": {
+        "bytes": 2412,
+        "sha256": "656f2978b9f1ff12d879860e013b48c962f8600ad2e9908a7b445fc1af5a28f6"
+      },
+      "fleet_daily/200_0_2026-08-04.json": {
+        "bytes": 2113,
+        "sha256": "cdcc6f9b6eef117b951573e8aa412076d794f01163ffbce228ceadecab6c0b2b"
+      },
+      "fleet_daily/200_0_2026-08-05.json": {
+        "bytes": 2413,
+        "sha256": "cba6618dee06ed565047e007836bf6a0280c048325c37dcd798d41436485503e"
+      },
+      "fleet_daily/200_0_2026-08-06.json": {
+        "bytes": 2114,
+        "sha256": "b8c6be87037abfb6b02cdaed6289526043e763760dfdb937fbadf021e27c87cc"
+      },
+      "fleet_daily/200_0_2026-08-07.json": {
+        "bytes": 2410,
+        "sha256": "4e3ebd0929596adf2d6bf6821b1963fb865a5dfc0f24f911ccb12f55e4628021"
+      },
+      "fleet_daily/200_0_2026-08-08.json": {
+        "bytes": 1503,
+        "sha256": "e90f7db39a181f6e519db3c2f717b3a48dd98877c0dd49ee1aeea2f018a0ee47"
+      },
+      "fleet_daily/200_0_2026-08-09.json": {
+        "bytes": 1205,
+        "sha256": "ee607c03820ee4234630eb64c50f4e911856d2cd9f1529ac810c3d42e9ab8c56"
+      },
+      "fleet_daily/200_0_2026-08-10.json": {
+        "bytes": 3010,
+        "sha256": "587251e6bbfb47d27b67687b152e1387c4cd68becaf62ec7f5ee7d731b16686f"
+      },
+      "fleet_daily/200_0_2026-08-11.json": {
+        "bytes": 2713,
+        "sha256": "55148791d0ba1c6853bc5643693ef72601c18863ceda563a84501dc786056f6d"
+      },
+      "fleet_daily/200_0_2026-08-12.json": {
+        "bytes": 2104,
+        "sha256": "b0bc32e0c035f255811ba5358c19cb8f463d76f6c69f1e2d52b9eaab956e16aa"
+      },
+      "fleet_daily/200_0_2026-08-13.json": {
+        "bytes": 2407,
+        "sha256": "634a01ee0221f2ebb58bf60403cc4efd63e6ec047c99cfbd14c7f52b3142aba8"
+      },
+      "fleet_daily/200_0_2026-08-14.json": {
+        "bytes": 2110,
+        "sha256": "42b7cf5a09a97dcca551362913619ce2e52528be71c00e0066e8f3f2dcd0053c"
+      },
+      "fleet_daily/200_0_2026-08-15.json": {
+        "bytes": 1208,
+        "sha256": "cdc1e5b1e368a1d4eb31fdb50fd332d375d7afef3be4db20e6fab2759fcf328c"
+      },
+      "fleet_daily/200_0_2026-08-16.json": {
+        "bytes": 1207,
+        "sha256": "36b085dbdeb51212407b30cd99bea1f80cb69ad8cc216399711d9703c9d2cc60"
+      },
+      "fleet_daily/200_0_2026-08-17.json": {
+        "bytes": 2112,
+        "sha256": "f7ce9dc7ea45d17b7a2d85b244d100d07235c6639921dc544d6817be548dfa53"
+      },
+      "fleet_daily/200_0_2026-08-18.json": {
+        "bytes": 2112,
+        "sha256": "421a9a6c7836dad65a31a9b41e91b733bd0274bd676cd0b537c380855f059089"
+      },
+      "fleet_daily/200_0_2026-08-19.json": {
+        "bytes": 3008,
+        "sha256": "c8211a2c637da6e96965d22472122d7d740068fff31ad66ca1b911b757efc7b2"
+      },
+      "fleet_daily/200_0_2026-08-20.json": {
+        "bytes": 2415,
+        "sha256": "7b3272762e9d31484387377e020ecd529db304c0c9b822795b5021b8789bbffe"
+      },
+      "fleet_daily/200_0_2026-08-21.json": {
+        "bytes": 2411,
+        "sha256": "6952464954d1b8629ab02786b2a765c8fb42f8ddc2d0e49f751258ab7eff5411"
+      },
+      "fleet_daily/200_0_2026-08-22.json": {
+        "bytes": 1809,
+        "sha256": "0a8e1d0c673eaa45b18c6eb725c001992ca21b37e13a3f7e7e4ced309bad9d2b"
+      },
+      "fleet_daily/200_0_2026-08-23.json": {
+        "bytes": 1208,
+        "sha256": "b2b3c48380c16bf42705d8f41b19041fa02504cf8126c72ea895146a03b33318"
+      },
+      "fleet_daily/200_0_2026-08-24.json": {
+        "bytes": 2116,
+        "sha256": "08fd077e672f39e21339a92cfc422565e539ce3cf2cd66ab77da4890608525b4"
+      },
+      "fleet_daily/200_0_2026-08-25.json": {
+        "bytes": 2410,
+        "sha256": "427da23dfa36fdb59937994bba7651b89cc82ea78a4baba5a7969c09169e25d7"
+      },
+      "fleet_daily/200_0_2026-08-26.json": {
+        "bytes": 2413,
+        "sha256": "d965fec650a30ac4738f6947f0a731bebace3833691f30f46f5760058430db9e"
+      },
+      "fleet_daily/200_0_2026-08-27.json": {
+        "bytes": 2408,
+        "sha256": "592dd8ba7b95df3feb16479aa5d591f35815f91c28416b7212115bf838d29942"
+      },
+      "fleet_daily/200_0_2026-08-28.json": {
+        "bytes": 2113,
+        "sha256": "709e2af35e9ed3a10bb24d0b818f8356722e5ec02595a2c9695a92613b0a8046"
+      },
+      "fleet_daily/200_0_2026-08-29.json": {
+        "bytes": 1804,
+        "sha256": "536e041cbf4272c149847ee783c5e22929d14767fbe7f9d9f6ec27361c0e540d"
+      },
+      "fleet_daily/200_0_2026-08-30.json": {
+        "bytes": 1205,
+        "sha256": "7fc9179dcdcab4a4142296052a64e10d9f4dd155b4b0cbe1941c67a664b3022c"
+      },
+      "fleet_daily/200_0_2026-08-31.json": {
+        "bytes": 2707,
+        "sha256": "a84338dd3820da4be81dd6b166ff061491f753671c5110e02e99dd730cd4b6e2"
+      },
+      "fleet_daily/200_0_2026-09-01.json": {
+        "bytes": 2716,
+        "sha256": "861f443714557173d4ba05500014713317b7f3f0f6eace08df2491c25750b06f"
+      },
+      "fleet_daily/200_0_2026-09-02.json": {
+        "bytes": 3016,
+        "sha256": "4fc927d9a1ca7cc08eb36f67b2b0cdcad312bcaaa85ba21ad6d854541c7d9431"
+      },
+      "fleet_daily/200_0_2026-09-03.json": {
+        "bytes": 1814,
+        "sha256": "23228891165d3728367a636d7d50a11f0fd31d45a42925735b1f33e65712633a"
+      },
+      "fleet_daily/200_0_2026-09-04.json": {
+        "bytes": 2408,
+        "sha256": "778d00e5207add11b942236e33c17aec63ceee384915b6295b6997cb5f26b550"
+      },
+      "fleet_daily/200_0_2026-09-05.json": {
+        "bytes": 1807,
+        "sha256": "91efd74ab25e659b93fd31ab61735d19a8db135e243659ee6c3faf6112d8dee2"
+      },
+      "fleet_daily/200_0_2026-09-06.json": {
+        "bytes": 1207,
+        "sha256": "6b35b9f5d6e07f65dfcccd556c3dc058c4eaa22e000f09c8fa9fa0454bba30f7"
+      },
+      "fleet_daily/200_0_2026-09-07.json": {
+        "bytes": 2713,
+        "sha256": "e61166006e454c227e29ae7bf823803774e48d48db8c0ec7650d1e702db5db5a"
+      },
+      "fleet_daily/200_0_2026-09-08.json": {
+        "bytes": 2719,
+        "sha256": "362eebdc591c44c91fb7a7fb4dded1199082315035c2ab131e8639fee4cfe827"
+      },
+      "fleet_daily/200_0_2026-09-09.json": {
+        "bytes": 2112,
+        "sha256": "a2a5f815621130e43676020473835ceb0cb0f8e7a355f62039f045945c6d710b"
+      },
+      "fleet_daily/200_0_2026-09-10.json": {
+        "bytes": 2713,
+        "sha256": "e384168ba0769f6d164966f646cbea60f8259942130c4102843cb777f9e9dd58"
+      },
+      "fleet_daily/200_0_2026-09-11.json": {
+        "bytes": 2716,
+        "sha256": "82fd1486d45a9621fcbaf6ad9f94b5befcc1417371ca6402f96683fef3d76603"
+      },
+      "fleet_daily/200_0_2026-09-12.json": {
+        "bytes": 1805,
+        "sha256": "8b0b9ce333c92f124fbb7d724de17446cfc6284a3d9a56bd0587709414e74dd7"
+      },
+      "fleet_daily/200_0_2026-09-13.json": {
+        "bytes": 1206,
+        "sha256": "c93587d0d5536d090f2d3b3a6474ccc6954ad28bfd77b3552749b627c49dcc08"
+      },
+      "fleet_daily/200_0_2026-09-14.json": {
+        "bytes": 3614,
+        "sha256": "bd4e76c7ff181085fb228c50e4872db04cf244052e5d5756c3e401fa2408e592"
+      },
+      "fleet_daily/200_0_2026-09-15.json": {
+        "bytes": 3317,
+        "sha256": "379159d6e69bee4d616edec71b633c2fc92bcbb43b65a350d748189758a93631"
+      },
+      "fleet_daily/200_0_2026-09-16.json": {
+        "bytes": 2718,
+        "sha256": "f7c9be269ac5af59e31f7a9910c74ec19d2b958fe45bc62b7713635f6ab6f957"
+      },
+      "fleet_daily/200_0_2026-09-17.json": {
+        "bytes": 3321,
+        "sha256": "feee81794e4e4381fd45d1466065a3fad203d4f146db065181875f51563b3635"
+      },
+      "fleet_daily/200_0_2026-09-18.json": {
+        "bytes": 2722,
+        "sha256": "8697252ec2d82645c38551abf75ed332dc78c309c7071f57d0bceb1e73b52968"
+      },
+      "fleet_daily/200_0_2026-09-19.json": {
+        "bytes": 1808,
+        "sha256": "27476be265fb7b98b6daa4775416a0045807e805d37bceec7ae044a8d9db232e"
+      },
+      "fleet_daily/200_0_2026-09-20.json": {
+        "bytes": 1207,
+        "sha256": "0ec8c8d1761679ba74a2ca06c1414b74d4177b16fa2edbc6ffdc145f3a3c034f"
+      },
+      "fleet_daily/200_0_2026-09-21.json": {
+        "bytes": 3022,
+        "sha256": "9097d26ae594ce9085ef7fb297de2dc1537a10a52f0378bbf6135697a8de45d7"
+      },
+      "fleet_daily/200_0_2026-09-22.json": {
+        "bytes": 3316,
+        "sha256": "6ef8695c016c1a9f4e222caf13968fe50278a18dcdc41e805cadd8e715d136ce"
+      },
+      "fleet_daily/200_0_2026-09-23.json": {
+        "bytes": 3314,
+        "sha256": "0dde5fa9cbcdd4adaaaacb7397c16582a775a0ba4d4323638098d2812a18ee11"
+      },
+      "fleet_daily/200_0_2026-09-24.json": {
+        "bytes": 3016,
+        "sha256": "11ecadbb6ad9beb759a2627e88f55ee37280646910fc9f58cf7faf60f74dc7e4"
+      },
+      "fleet_daily/200_0_2026-09-25.json": {
+        "bytes": 3019,
+        "sha256": "875b972643bb0ff54b5a8ac9ad060662c207baf24d660abf7033f6ccb62cbb5d"
+      },
+      "fleet_daily/200_0_2026-09-26.json": {
+        "bytes": 1508,
+        "sha256": "d010ec85c9b045baebd11ccda6c1b64757061cbe01c61f39f6cc1fe64c7159a4"
+      },
+      "fleet_daily/200_0_2026-09-27.json": {
+        "bytes": 1804,
+        "sha256": "756d56d8dd3406258d06564ef684c646447f5fe45fa7556b265cf00e41b5f8f9"
+      },
+      "fleet_daily/200_0_2026-09-28.json": {
+        "bytes": 3016,
+        "sha256": "0a037e5ba0ba759037ff855bc2d0b2e6a419eef09cdf51d4481f0bd4b3adff59"
+      },
+      "fleet_daily/200_0_2026-09-29.json": {
+        "bytes": 2715,
+        "sha256": "427bb98d88e6a14ba89bda54248a44847a5f84a8bed3b06924c5249e80a10532"
+      },
+      "fleet_daily/200_0_2026-09-30.json": {
+        "bytes": 3022,
+        "sha256": "3dc5677aa5b335dbdc2d99707b99f816ef323fdaa8cdda09c664362205b2de00"
+      },
+      "fleet_daily/200_0_2026-10-01.json": {
+        "bytes": 3013,
+        "sha256": "9e40564f83925f0566c074685cf5b40299a484354a0e9f9598f9318cc3ae7255"
+      },
+      "fleet_daily/200_0_2026-10-02.json": {
+        "bytes": 3014,
+        "sha256": "e99861d9e8c19f7c818e2f5362ef8fcff951738ed315e1977cf39857f400ff1b"
+      },
+      "fleet_daily/200_0_2026-10-03.json": {
+        "bytes": 1509,
+        "sha256": "b73c127757bb89a3f42b99c275c3290c828bae26a447c1f8cc4ee8912a69325c"
+      },
+      "fleet_daily/200_0_2026-10-04.json": {
+        "bytes": 1502,
+        "sha256": "a26bf5c8fded9b3406fa0de6cdedac9bdcd9bdad548f1a37229705f8229aa8bc"
+      },
+      "fleet_daily/200_0_2026-10-05.json": {
+        "bytes": 1506,
+        "sha256": "7e279e55a2b5c5b5d466b9103c3d1494eecd9bbad7a55109d8dd804c8b7b73cd"
+      },
+      "fleet_daily/200_0_2026-10-06.json": {
+        "bytes": 3323,
+        "sha256": "56ba54102ecf37ce3f409c9e958df3e90c120513231d752635625794b6d3ff97"
+      },
+      "fleet_daily/200_0_2026-10-07.json": {
+        "bytes": 3019,
+        "sha256": "1f95b2492461572d72af27f9a2b92c8e6073102421cb01dad397b9dc135aef96"
+      },
+      "fleet_daily/200_0_2026-10-08.json": {
+        "bytes": 3323,
+        "sha256": "03f895c4dd3cee69483345254f72e29dbd71aa0afda5cc0d3c18993f3db58577"
+      },
+      "fleet_daily/200_0_2026-10-09.json": {
+        "bytes": 3022,
+        "sha256": "4279437f0a5ecfcfbcf5c1b00ed38eb676333e0dc852d00f3856d43fece4ad8c"
+      },
+      "fleet_daily/200_0_2026-10-10.json": {
+        "bytes": 1511,
+        "sha256": "98662f523e009308beaefc96b5763c390483af49751e132d2250be63ca59835e"
+      },
+      "fleet_daily/200_0_2026-10-11.json": {
+        "bytes": 1208,
+        "sha256": "a77fc8cae097ede75b96cfacaa81fdeab1eda5d6c79b0f272a8209a434785afb"
+      },
+      "fleet_daily/200_0_2026-10-12.json": {
+        "bytes": 3315,
+        "sha256": "84ad8163b96c79f0260ca77470cf1409570a7b7f795e410a712fa38cd033c2de"
+      },
+      "fleet_daily/200_0_2026-10-13.json": {
+        "bytes": 3317,
+        "sha256": "063c0f9f9ea7849d3c16b7ba6a86e1793c3fa1142a1c93b37c1960b5fc9b4478"
+      },
+      "fleet_daily/200_0_2026-10-14.json": {
+        "bytes": 3020,
+        "sha256": "b271b18cee605f4ea2a7493836317e0f7135ff2b30fa1bb18c47444094931bf0"
+      },
+      "fleet_daily/200_0_2026-10-15.json": {
+        "bytes": 3619,
+        "sha256": "0f00e19832063d3c1d3b9671ed2db6037c7366c710040c01592108d5a244d042"
+      },
+      "fleet_daily/200_0_2026-10-16.json": {
+        "bytes": 3020,
+        "sha256": "a6c5d39230f297f49873ddbf9e20165abe229711102816cdf9cfb4547ec2211d"
+      },
+      "fleet_daily/200_0_2026-10-17.json": {
+        "bytes": 1506,
+        "sha256": "1f0fe7e65e7437c674040702cfa4bf75f540349039d5b1fc539e255f35c63622"
+      },
+      "fleet_daily/200_0_2026-10-18.json": {
+        "bytes": 1208,
+        "sha256": "934133702d574ecc98c9451523fb5218a38ae1197037ec486cf55874ae819c95"
+      },
+      "fleet_daily/200_0_2026-10-19.json": {
+        "bytes": 3017,
+        "sha256": "2a02cdd8e5d9e8a8950174ed08657890f6b25f2a66e7b73abb2cdf20eed5771c"
+      },
+      "fleet_daily/200_0_2026-10-20.json": {
+        "bytes": 2716,
+        "sha256": "84b6ed45ae451443ad1706c107c1e2fc6e7defdc15e40827570fe9eb22200327"
+      },
+      "fleet_daily/200_0_2026-10-21.json": {
+        "bytes": 2722,
+        "sha256": "3c70ab74be2957ef1f6d3a1a8b8865e0a10506f1b00181bb0230b11860d73935"
+      },
+      "fleet_daily/200_0_2026-10-22.json": {
+        "bytes": 3020,
+        "sha256": "02a7b1686792353c11f3ab28f68acc9219d551a64f0ba442b2319920a5e1b327"
+      },
+      "fleet_daily/200_0_2026-10-23.json": {
+        "bytes": 3016,
+        "sha256": "0f6c67d588743a80348483e2d24b8a80f18e8aaa4cf0655147ec56069ac57601"
+      },
+      "fleet_daily/200_0_2026-10-24.json": {
+        "bytes": 1507,
+        "sha256": "d88471a476b03e6d1706bfae76a25451f5d4ea2e37cea8fefa6edffc5609788c"
+      },
+      "fleet_daily/200_0_2026-10-25.json": {
+        "bytes": 1204,
+        "sha256": "7384adad903e74f4173528b8c32180bd6b836b7b26638ba018f741670a924094"
+      },
+      "fleet_daily/200_0_2026-10-26.json": {
+        "bytes": 3323,
+        "sha256": "1e9add757e81375421b5270d8b621c65ad6e4d4d90102c8b62dd3000cf10bfda"
+      },
+      "fleet_daily/200_0_2026-10-27.json": {
+        "bytes": 2713,
+        "sha256": "b3a684c395cee21cb1abb9c0d4f33f8d12d16606165790bae2d4b329c043d8c8"
+      },
+      "fleet_daily/200_0_2026-10-28.json": {
+        "bytes": 3019,
+        "sha256": "766897cffa527ce427b9c5bc033c872e38eda7fe1bb69981516eb4a2c04cf9be"
+      },
+      "fleet_daily/200_0_2026-10-29.json": {
+        "bytes": 3921,
+        "sha256": "935b0dfc313bf40cbb3aa52b93109a08fb5a86ebd36779a08aa6059f8cc3e0fd"
+      },
+      "fleet_daily/200_0_2026-10-30.json": {
+        "bytes": 3016,
+        "sha256": "a5651de94037311087aa676f6628334d567c53469245ae1b3512b1fdf4e105ef"
+      },
+      "fleet_daily/200_0_2026-10-31.json": {
+        "bytes": 1508,
+        "sha256": "fae3c972ea7218138b500d0779aec224af62fd112e063a9eb4251e9fd0cf9f05"
+      },
+      "fleet_daily/200_0_2026-11-01.json": {
+        "bytes": 1204,
+        "sha256": "2bedb25a617758d8fd56a3c235dbf142bed4c091af36f6eaad0b38f37e24d692"
+      },
+      "fleet_daily/200_0_2026-11-02.json": {
+        "bytes": 2717,
+        "sha256": "fcf6cf6db252267e3f4da1fcf19319763b7e1a1186a4b98621c2ed99f03ee7ff"
+      },
+      "fleet_daily/200_0_2026-11-03.json": {
+        "bytes": 3312,
+        "sha256": "93cb870e9bf771b6af12cc525eae3f2376f5588077fe0a842a34f26046d8e22a"
+      },
+      "fleet_daily/200_0_2026-11-04.json": {
+        "bytes": 3323,
+        "sha256": "379391c4bd5db346e52331b12e6156896f6461dd4ef5860d50db3ab82733a672"
+      },
+      "fleet_daily/200_0_2026-11-05.json": {
+        "bytes": 3319,
+        "sha256": "5cbb0559860a67631ff110ab209e8156d4a93805bbc14ec0cf3282b1cc5c5042"
+      },
+      "fleet_daily/200_0_2026-11-06.json": {
+        "bytes": 3319,
+        "sha256": "a6c4ed920ef3a25159f16cbddc42162b9442e56663809ec36e753363aa593c74"
+      },
+      "fleet_daily/200_0_2026-11-07.json": {
+        "bytes": 1507,
+        "sha256": "3737313a874186ffc47fe3328bd28dfd6877b2f051f906f144e9d156f6e36965"
+      },
+      "fleet_daily/200_0_2026-11-08.json": {
+        "bytes": 1207,
+        "sha256": "822c049ca325f0d43a31ab3c49be717ec7a007de83632e80ef5cb8924a731286"
+      },
+      "fleet_daily/200_0_2026-11-09.json": {
+        "bytes": 3321,
+        "sha256": "cae5d6dd2bacac673f93b6577bfa9f84af3885370969d4d6e4616b1b2ec0aeaa"
+      },
+      "fleet_daily/200_0_2026-11-10.json": {
+        "bytes": 3026,
+        "sha256": "659a09cc021b38a5e40f49feffd3de7eebbdd29807dd8de7ba8a4f5b88ca084a"
+      },
+      "fleet_daily/200_0_2026-11-11.json": {
+        "bytes": 3019,
+        "sha256": "ca636836ea382861d331f3a28bbea7f86a25d32890465a34257190acf0709802"
+      },
+      "fleet_daily/200_0_2026-11-12.json": {
+        "bytes": 3316,
+        "sha256": "c12fb2a0b44907f253a3bfc7b682dd6cfc2843ace668d29b5c0bc4964d3b28b9"
+      },
+      "fleet_daily/200_0_2026-11-13.json": {
+        "bytes": 3312,
+        "sha256": "13f856b3ea84d354fd433c0e989af7c563c57671fb09b5acd7a0f388dbf8e875"
+      },
+      "fleet_daily/200_0_2026-11-14.json": {
+        "bytes": 1511,
+        "sha256": "6bffb1b8262fd349481ca480b64729967572baaa40ae6f113886876651101bb6"
+      },
+      "fleet_daily/200_0_2026-11-15.json": {
+        "bytes": 903,
+        "sha256": "9c54f0e9641951ef1067302f925564284e22631e4bfa439f03d374d457f395aa"
+      },
+      "fleet_daily/200_0_2026-11-16.json": {
+        "bytes": 3316,
+        "sha256": "240b09ce233b4380a4e92bc7d19543370b3ecd72d5952af22328a242e88efaa9"
+      },
+      "fleet_daily/200_0_2026-11-17.json": {
+        "bytes": 3321,
+        "sha256": "33097002cbc1689edf0a49b0d271c72f292cc0e10d70ba1eba389b3bc4d36c3c"
+      },
+      "fleet_daily/200_0_2026-11-18.json": {
+        "bytes": 3014,
+        "sha256": "f73a724f72b6a808489444211b7ff9104ab1000f43580560e20ed6323000de67"
+      },
+      "fleet_daily/200_0_2026-11-19.json": {
+        "bytes": 3021,
+        "sha256": "68ca17aaefe793dc95553eb2e3cd786bad1cec5649d6bd2717924da69b9d1e97"
+      },
+      "fleet_daily/200_0_2026-11-20.json": {
+        "bytes": 3018,
+        "sha256": "9f60555030237ec382493e0e77366e64ae6739aecaaadd5c020d6f1c4cc4c886"
+      },
+      "fleet_daily/200_0_2026-11-21.json": {
+        "bytes": 1504,
+        "sha256": "f7a4c4c036c27dd9ef3caf68239dab3b607fa4f8826b24386c910a053a0c72fe"
+      },
+      "fleet_daily/200_0_2026-11-22.json": {
+        "bytes": 1208,
+        "sha256": "18f2c69ccc1b254a71dc947129b80aff4f158aaad80e429c0270bdb68a7444d0"
+      },
+      "fleet_daily/200_0_2026-11-23.json": {
+        "bytes": 2718,
+        "sha256": "b60a328b79ea4b744d8feeaf6588a6194db60011e3ccd331e464c9ee02fb68b7"
+      },
+      "fleet_daily/200_0_2026-11-24.json": {
+        "bytes": 3316,
+        "sha256": "84d33eaeb50c9250c5880ec098201365bff6d621960f2876bc303de25438b905"
+      },
+      "fleet_daily/200_0_2026-11-25.json": {
+        "bytes": 3619,
+        "sha256": "45c34a72c5ef3856c8071f6390df328bd770b4c03e9401c8cefd3c306bf3b104"
+      },
+      "fleet_daily/200_0_2026-11-26.json": {
+        "bytes": 3321,
+        "sha256": "a1d57e824edac4c52fc18ac07492abb656dcbb95d6e4d163f805c9de3e0b9256"
+      },
+      "fleet_daily/200_0_2026-11-27.json": {
+        "bytes": 3315,
+        "sha256": "953279fe849966e95b19097c0d2963b06d8d4c4351a6954b9af010515f9f6fb4"
+      },
+      "fleet_daily/239_0_2026-02-15.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-02-16.json": {
+        "bytes": 299,
+        "sha256": "af25d96d673ef6e7cdb0c3b3581c19850238783098de71f1d4391b5f1b3162c9"
+      },
+      "fleet_daily/239_0_2026-02-17.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-02-18.json": {
+        "bytes": 600,
+        "sha256": "fd3fceae36f9f1e46153e859f6f64c216e14836c55a819b5b2b17cd3a67cfabf"
+      },
+      "fleet_daily/239_0_2026-02-19.json": {
+        "bytes": 300,
+        "sha256": "3a0ee55c550bad9c8943cc99997c36269484cafe9e88e45f6fbd53d8f13c6d0a"
+      },
+      "fleet_daily/239_0_2026-02-20.json": {
+        "bytes": 300,
+        "sha256": "e0c7bf5d12407b8f385dabbcfa7df561d313a9686bdd2f4bde924321adfaddb7"
+      },
+      "fleet_daily/239_0_2026-02-21.json": {
+        "bytes": 301,
+        "sha256": "bbf246ff39061f450d29491302f583a44e989a148190b2b0398b09e41d222d4d"
+      },
+      "fleet_daily/239_0_2026-02-22.json": {
+        "bytes": 300,
+        "sha256": "ab7c5cab04edf06c0bb3424837d43317826a4de6fdf2416c47a5616767b1d5ed"
+      },
+      "fleet_daily/239_0_2026-02-23.json": {
+        "bytes": 300,
+        "sha256": "5f474a9058796d4f464c17d8f48fd57eafc754c2c2f583206c944cec391eb2e9"
+      },
+      "fleet_daily/239_0_2026-02-24.json": {
+        "bytes": 300,
+        "sha256": "b6a6a923a774c024fb5477bbb8b8b527b2a502bb7a29c100691d34222927f828"
+      },
+      "fleet_daily/239_0_2026-02-25.json": {
+        "bytes": 300,
+        "sha256": "c26c7efb0cc538f6329a0100c978bd0deabca3cf9d373045540b3d6466c9986b"
+      },
+      "fleet_daily/239_0_2026-02-26.json": {
+        "bytes": 301,
+        "sha256": "1e27770b6861b3629b4eca72cb1c61a537208e16749688c1a13f4ebf072cae81"
+      },
+      "fleet_daily/239_0_2026-02-27.json": {
+        "bytes": 595,
+        "sha256": "dd5488f4be4ac038b571ed7fbba5787963bd747ccfcf5cdfc25c55b6d499ade5"
+      },
+      "fleet_daily/239_0_2026-02-28.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-01.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-02.json": {
+        "bytes": 300,
+        "sha256": "4bc69968e8c06676e3876fd4b9f01ece8f150d8a345e3b94f68bf53957f05451"
+      },
+      "fleet_daily/239_0_2026-03-03.json": {
+        "bytes": 300,
+        "sha256": "b6eb11265b22b32d04f6bc9b0df574bf565e90b5467c90d8bd8b43b0e3690199"
+      },
+      "fleet_daily/239_0_2026-03-04.json": {
+        "bytes": 300,
+        "sha256": "72d48343cb8378c4498a7429786c8a6d0e605346c2cc6e05c33c51ed9dfb8a0b"
+      },
+      "fleet_daily/239_0_2026-03-05.json": {
+        "bytes": 301,
+        "sha256": "8124f6b04f2ad74a46f5ba5b2226b9e725e45d2b91de68c7316a1b61f6030ac9"
+      },
+      "fleet_daily/239_0_2026-03-06.json": {
+        "bytes": 300,
+        "sha256": "a9193dcb4efae11463a901409cfe14f326398314f0714340b55b03085f36b3e5"
+      },
+      "fleet_daily/239_0_2026-03-07.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-08.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-09.json": {
+        "bytes": 301,
+        "sha256": "fd8c0eb922013ecd3a98810aa6d1f44584e6966e28ad9b4285d7d075b7460963"
+      },
+      "fleet_daily/239_0_2026-03-10.json": {
+        "bytes": 300,
+        "sha256": "6796d5296a256a38c00110fe0f440cfb257ab484ceffd7ed8a4cbe7b7113fe8f"
+      },
+      "fleet_daily/239_0_2026-03-11.json": {
+        "bytes": 300,
+        "sha256": "32184be320fb6d6a8dbb99c0b3024e5e20ea120ddf2ddd7d263e0d3b6e8ac187"
+      },
+      "fleet_daily/239_0_2026-03-12.json": {
+        "bytes": 300,
+        "sha256": "f01b6305dad66bcf904e4c2469550308ff766ad2b4388efc9dcca6c7f4846e69"
+      },
+      "fleet_daily/239_0_2026-03-13.json": {
+        "bytes": 302,
+        "sha256": "0eae3081f84593d08bcdbeec1779ea9b09943aa5b20820b8a9083090d8cc6218"
+      },
+      "fleet_daily/239_0_2026-03-14.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-15.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-16.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-17.json": {
+        "bytes": 300,
+        "sha256": "96e87c4554b12a95791690d3e9d962a3b647999eade43648b919b61f23a60c48"
+      },
+      "fleet_daily/239_0_2026-03-18.json": {
+        "bytes": 300,
+        "sha256": "2cf42c07014d6b154c906dc5e86700bb043480586e5b29b98253b3518303ff17"
+      },
+      "fleet_daily/239_0_2026-03-19.json": {
+        "bytes": 301,
+        "sha256": "bb5fe8a69e370a9e92fbef0628aa2834f752badf1c9ded02767988b5fae7a0f6"
+      },
+      "fleet_daily/239_0_2026-03-20.json": {
+        "bytes": 300,
+        "sha256": "daaba1605eff221b60f44f2f1e68f11611d7860ec1d720399ba579b3320c917c"
+      },
+      "fleet_daily/239_0_2026-03-21.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-22.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-23.json": {
+        "bytes": 300,
+        "sha256": "34b0668ec6e588126af3ebffc468e29c85a49d269418ea4891f6350e70fd901a"
+      },
+      "fleet_daily/239_0_2026-03-24.json": {
+        "bytes": 286,
+        "sha256": "4cb279e18e65a1972990674f4a53bf2c2d36d5805d63cb867c6a81a28fea601d"
+      },
+      "fleet_daily/239_0_2026-03-25.json": {
+        "bytes": 301,
+        "sha256": "4b9278f5fe1135e571e6c35449b97500971f1c3eb8ea2e2d653fb2b21a26e4be"
+      },
+      "fleet_daily/239_0_2026-03-26.json": {
+        "bytes": 301,
+        "sha256": "a426835bbd458f92e888f584327c5196cf6220cfab0ec928fbbc86bec559726d"
+      },
+      "fleet_daily/239_0_2026-03-27.json": {
+        "bytes": 300,
+        "sha256": "844253fc085d188b95624bc28cdce8e0e3d086d860b2d828805df37f04f156ce"
+      },
+      "fleet_daily/239_0_2026-03-28.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-29.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-03-30.json": {
+        "bytes": 300,
+        "sha256": "d92c413fbc7ed47c373c23c19366b7ba211e930927a7c1c5c0127a8768ba43da"
+      },
+      "fleet_daily/239_0_2026-03-31.json": {
+        "bytes": 301,
+        "sha256": "07d9a42d7e0f9c594e6e9b433e814c88fa2d454961f97f3b2d622b7b6961cf2d"
+      },
+      "fleet_daily/239_0_2026-04-01.json": {
+        "bytes": 301,
+        "sha256": "aa0a3c3ec2600a08484b11317bb48ade95bf24baf444cf392e708d5e37f2a9de"
+      },
+      "fleet_daily/239_0_2026-04-02.json": {
+        "bytes": 300,
+        "sha256": "1f37ab265b1cc56342b0d9d35e3e4eb2b6a773d264a5b50ca7d8901bbf691afb"
+      },
+      "fleet_daily/239_0_2026-04-03.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-04.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-05.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-06.json": {
+        "bytes": 300,
+        "sha256": "fe05799337a3b9cc90401944591177026063d7c90756ba04a55e65ad6e24295b"
+      },
+      "fleet_daily/239_0_2026-04-07.json": {
+        "bytes": 301,
+        "sha256": "b177fbf209812406cdb24120565848f9b1b8e3561309a7fde0aef7076d2e6efb"
+      },
+      "fleet_daily/239_0_2026-04-08.json": {
+        "bytes": 300,
+        "sha256": "d848afe3d73a96fb08b8773e4e74a8ff3af2faf0e73695335c2e7421c524a9e1"
+      },
+      "fleet_daily/239_0_2026-04-09.json": {
+        "bytes": 300,
+        "sha256": "57b17a4e893b066a4c8ae68dd90cd44fec2678f55037456def1b4f0ec3497821"
+      },
+      "fleet_daily/239_0_2026-04-10.json": {
+        "bytes": 297,
+        "sha256": "6eff61635bd92a195b3c872be6db14c7f99d5d21f2551957647542405c96dc4f"
+      },
+      "fleet_daily/239_0_2026-04-11.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-12.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-13.json": {
+        "bytes": 301,
+        "sha256": "4a034da01719735ba645caa2caff30dc29c14b9b9e6bfde34b0d20421281feb2"
+      },
+      "fleet_daily/239_0_2026-04-14.json": {
+        "bytes": 301,
+        "sha256": "e49ed63cdbbd9f88d171541cf10be70e4ddf2b871d547b694d20e62a5d10d913"
+      },
+      "fleet_daily/239_0_2026-04-15.json": {
+        "bytes": 284,
+        "sha256": "7d36bde4bfd901da9d69824bdfba9510176b46b264cf73b6c0ab914f8053e0ec"
+      },
+      "fleet_daily/239_0_2026-04-16.json": {
+        "bytes": 302,
+        "sha256": "97bac3b166a361732f0f033d9306a86d139079258d66132604fed8b7c3ffc511"
+      },
+      "fleet_daily/239_0_2026-04-17.json": {
+        "bytes": 301,
+        "sha256": "de8d5dd96eae62df8321859eb9822898dae605f237a4fede093eae420dff4359"
+      },
+      "fleet_daily/239_0_2026-04-18.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-19.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-20.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-21.json": {
+        "bytes": 302,
+        "sha256": "74f7d1b6c7609f5c234d47f11ac86afc89becd4f6482e33e6c36e4be54eedcd8"
+      },
+      "fleet_daily/239_0_2026-04-22.json": {
+        "bytes": 301,
+        "sha256": "2d8f89425df88d5fb4221ba115cfa98de93c8d0c465be19abe606befbc94b9f5"
+      },
+      "fleet_daily/239_0_2026-04-23.json": {
+        "bytes": 301,
+        "sha256": "1416f09a3ca050fe5f0acab245017170dc58e8ad6d2935fca4c6ab5d316f5723"
+      },
+      "fleet_daily/239_0_2026-04-24.json": {
+        "bytes": 301,
+        "sha256": "15c0026860a22f113737cc49a4d74c79b51a176c733d6ab3a9fd5c1487e872c1"
+      },
+      "fleet_daily/239_0_2026-04-25.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-26.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-04-27.json": {
+        "bytes": 300,
+        "sha256": "3840ab01c911868a25db74c67d637f8789548c3863a3f8d5201b8d3d67b45bff"
+      },
+      "fleet_daily/239_0_2026-04-28.json": {
+        "bytes": 302,
+        "sha256": "49417c1a7e6bbf529529bbb8d00290ffd0b3eed21f1dfbddf1045f29714ed4c2"
+      },
+      "fleet_daily/239_0_2026-04-29.json": {
+        "bytes": 302,
+        "sha256": "0e2cb665b0c93fced4af56bec6466872cc7ece8229c1ec6798cf6caee906bc28"
+      },
+      "fleet_daily/239_0_2026-04-30.json": {
+        "bytes": 302,
+        "sha256": "7e19c870e2522d4318ae9dedbe1f4e938868099953ebc483770828753a3ddeee"
+      },
+      "fleet_daily/239_0_2026-05-01.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-02.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-03.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-04.json": {
+        "bytes": 286,
+        "sha256": "328b90fc30744e027d00cea86c4e666bf768284c41b392c11005ca896fc5b1f4"
+      },
+      "fleet_daily/239_0_2026-05-05.json": {
+        "bytes": 301,
+        "sha256": "1f42c5fbddf4d10493154b5c4a68c2ca6520eb79d6b030845d25dcdb8dc755f4"
+      },
+      "fleet_daily/239_0_2026-05-06.json": {
+        "bytes": 302,
+        "sha256": "b305e131d676593bce9b236f2bdf9deeb74291b3a11edd7424bfdd1d4d273a07"
+      },
+      "fleet_daily/239_0_2026-05-07.json": {
+        "bytes": 300,
+        "sha256": "fc68a55a2c65a412ba6b242707031decefc6cb42988973765108be7b714ac29f"
+      },
+      "fleet_daily/239_0_2026-05-08.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-09.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-10.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-11.json": {
+        "bytes": 288,
+        "sha256": "8694d488f2af66e81fd04a23e814a36686878f9e24d876b64b44b71e926d6af9"
+      },
+      "fleet_daily/239_0_2026-05-12.json": {
+        "bytes": 572,
+        "sha256": "ff26a5d2a0b8f0d117d96d961e2be3b9d278494fc3d0b14d131d596117986c7c"
+      },
+      "fleet_daily/239_0_2026-05-13.json": {
+        "bytes": 300,
+        "sha256": "397c7aa98e30b8a118059941db2d0b6c175f863f78f7386d17a983e493d427e6"
+      },
+      "fleet_daily/239_0_2026-05-14.json": {
+        "bytes": 288,
+        "sha256": "72614dbed9df7277aa63b3a2edcb757a8b6e332f2a39d697a5a8d554087cd8b2"
+      },
+      "fleet_daily/239_0_2026-05-15.json": {
+        "bytes": 302,
+        "sha256": "48be8e93a80fca24936b95c2d6f03cf6608b37ad896b973d9f9c2c827096151f"
+      },
+      "fleet_daily/239_0_2026-05-16.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-17.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-18.json": {
+        "bytes": 298,
+        "sha256": "dcc783f869161b66f9e6c14aff1f4d545e36e0d3956b18c1d22741df448b4455"
+      },
+      "fleet_daily/239_0_2026-05-19.json": {
+        "bytes": 301,
+        "sha256": "cc1942d24c209815e1d2ff692805e83d1e2c54bb067817c4f3d19949fc6fad6d"
+      },
+      "fleet_daily/239_0_2026-05-20.json": {
+        "bytes": 302,
+        "sha256": "f5ecf43b2a68fff752bebede8ac1b40d67383ff3d000204dc178c38ba1ea33c0"
+      },
+      "fleet_daily/239_0_2026-05-21.json": {
+        "bytes": 301,
+        "sha256": "b61517b16b3c15372c27b13212562ca3393c6aa379887eb830bc4d81cd562fe6"
+      },
+      "fleet_daily/239_0_2026-05-22.json": {
+        "bytes": 302,
+        "sha256": "4ab65de67ff68347bcc49dd131a89aede79236ed4565e22d15609f06dafa11b6"
+      },
+      "fleet_daily/239_0_2026-05-23.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-24.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-25.json": {
+        "bytes": 302,
+        "sha256": "a195417881bd681223e2165a6f554612a06419e89fe4e62d98dfe26771407239"
+      },
+      "fleet_daily/239_0_2026-05-26.json": {
+        "bytes": 600,
+        "sha256": "5b6cd1f723187046a1062aaa4bb12ed3b9a30c1da478f5c3a1985572418fe5af"
+      },
+      "fleet_daily/239_0_2026-05-27.json": {
+        "bytes": 302,
+        "sha256": "0058c13178bfe143ac59bcaf9ab3e9942d46eaa1652f158c2508f0aa2f6f1e2a"
+      },
+      "fleet_daily/239_0_2026-05-28.json": {
+        "bytes": 301,
+        "sha256": "f06008baa7c93eb3b180209c62825efe4c5bb66025ebf0296633beb8069a45fe"
+      },
+      "fleet_daily/239_0_2026-05-29.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-30.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-05-31.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-01.json": {
+        "bytes": 302,
+        "sha256": "a875c9a584d26b7d622565e9e29e46c2ff54ad0f11481448ed69c0153371e48b"
+      },
+      "fleet_daily/239_0_2026-06-02.json": {
+        "bytes": 302,
+        "sha256": "b0c4e94bf4283a1d36c00ebeff3c22c81074e236450bca6ce250c5afde753179"
+      },
+      "fleet_daily/239_0_2026-06-03.json": {
+        "bytes": 299,
+        "sha256": "c1d65306c1df04ab0ffa5a71703c7161b79c28ff3e5f7876ddaee6a75d1837ee"
+      },
+      "fleet_daily/239_0_2026-06-04.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-05.json": {
+        "bytes": 288,
+        "sha256": "5e3ab058c658f3c70444258263ed5c0bcb5333930d75857438c99c893bd758f5"
+      },
+      "fleet_daily/239_0_2026-06-06.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-07.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-08.json": {
+        "bytes": 301,
+        "sha256": "4c0018ba4a0264fe7953f1e1639b5787a5e7db0b9f0c613fea6d8d7f1dc36b21"
+      },
+      "fleet_daily/239_0_2026-06-09.json": {
+        "bytes": 300,
+        "sha256": "083eed680467992158d608e3df692d01b047c74c3b1a4d65d604fa6020546342"
+      },
+      "fleet_daily/239_0_2026-06-10.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-11.json": {
+        "bytes": 584,
+        "sha256": "5e25b1939d7a2180f25c23466ce90ef166693a4812d96f3538406d71b7696a25"
+      },
+      "fleet_daily/239_0_2026-06-12.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-13.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-14.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-15.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-16.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-17.json": {
+        "bytes": 286,
+        "sha256": "d0642c8ce559521ac28f599da65e241118558de8c7ef01d4ec6ed15d303b9414"
+      },
+      "fleet_daily/239_0_2026-06-18.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-19.json": {
+        "bytes": 288,
+        "sha256": "5cfbe9420d672ae12a01216235fc2ddb92020df2fa2fae2f9048bb2058aad753"
+      },
+      "fleet_daily/239_0_2026-06-20.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-21.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-22.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-23.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-24.json": {
+        "bytes": 594,
+        "sha256": "0127e10823a3ee0a553d85e29ee4deaca857a1151a86203816044ddffb43d5d9"
+      },
+      "fleet_daily/239_0_2026-06-25.json": {
+        "bytes": 300,
+        "sha256": "0b0c02bf7f118b8fca040d5ddf47e28e4b753884505441294bb2351e91b7a1d8"
+      },
+      "fleet_daily/239_0_2026-06-26.json": {
+        "bytes": 286,
+        "sha256": "2b706e46ba8802d24eb6592c3b3bee46fe55bb8b30de498e8acf5f23519e8af1"
+      },
+      "fleet_daily/239_0_2026-06-27.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-28.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-06-29.json": {
+        "bytes": 285,
+        "sha256": "3837d1ca3bd6a58903b4785b42afed8f46dcce189ae5133fc624666be4027ebc"
+      },
+      "fleet_daily/239_0_2026-06-30.json": {
+        "bytes": 286,
+        "sha256": "f3dd327224ddd49d40a4fd9530fa6a40394a4fe79cb81604068b8b753e1e77fb"
+      },
+      "fleet_daily/239_0_2026-07-01.json": {
+        "bytes": 298,
+        "sha256": "adbc020bd2bccbf53c295ebd83f30134e0228407ced319435ca960a0357bc6e2"
+      },
+      "fleet_daily/239_0_2026-07-02.json": {
+        "bytes": 300,
+        "sha256": "990ed62cf303a24a7df9db07e3561bffba4dab9dba1c4fdfc0a1568df8507f57"
+      },
+      "fleet_daily/239_0_2026-07-03.json": {
+        "bytes": 582,
+        "sha256": "244f653c901b261757aa77164333b38e0e25d6c7db7fdd4750bf9b2dde3f2a2e"
+      },
+      "fleet_daily/239_0_2026-07-04.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-05.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-06.json": {
+        "bytes": 300,
+        "sha256": "380cc594f458e4925a182729e83cb372c66b783be584a7a744529d2cb66e2ea5"
+      },
+      "fleet_daily/239_0_2026-07-07.json": {
+        "bytes": 287,
+        "sha256": "1a45d705eff95ee8e0babcbcab24927658f66dd8c1cded570babbe40b819f1b9"
+      },
+      "fleet_daily/239_0_2026-07-08.json": {
+        "bytes": 301,
+        "sha256": "1ee726f7a2006eaafb735b45428492fad0a5950586c8c593cfa0f4e03148a0cd"
+      },
+      "fleet_daily/239_0_2026-07-09.json": {
+        "bytes": 301,
+        "sha256": "21485a30b92b5e95f40edb89e425d5b2fc11a177abe3ef61f813ffdfd8f530b5"
+      },
+      "fleet_daily/239_0_2026-07-10.json": {
+        "bytes": 301,
+        "sha256": "a17178aaea7a50689a52684c444c793a9831d22b7fc072db066b355453bfd240"
+      },
+      "fleet_daily/239_0_2026-07-11.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-12.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-13.json": {
+        "bytes": 286,
+        "sha256": "071c0d0d72927b1006024d23bfc855140bb3dcc052108fa95c0317cc2a8462a2"
+      },
+      "fleet_daily/239_0_2026-07-14.json": {
+        "bytes": 288,
+        "sha256": "3f8b5bc2c9e13b2f4f2aa2fabed775c317a268791cec254b2a4f76988724f853"
+      },
+      "fleet_daily/239_0_2026-07-15.json": {
+        "bytes": 285,
+        "sha256": "d1790830c9efb72bcb664bb84168df83a1d4385174b37999d38375aeeceb2e44"
+      },
+      "fleet_daily/239_0_2026-07-16.json": {
+        "bytes": 288,
+        "sha256": "cdadbd055b59b0898d33857857d4d001ecf12ecf77c8d74dd2ced4c40b0de4e0"
+      },
+      "fleet_daily/239_0_2026-07-17.json": {
+        "bytes": 287,
+        "sha256": "e1f2037e203193a95cf250e6f152e9e06244315c11344e95b5288ca32fbbb2d0"
+      },
+      "fleet_daily/239_0_2026-07-18.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-19.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-20.json": {
+        "bytes": 286,
+        "sha256": "e4a3851cd600a2dbd4cff510d76c007ae464fc1ad652e5992b0d95a3dbc7c4cc"
+      },
+      "fleet_daily/239_0_2026-07-21.json": {
+        "bytes": 287,
+        "sha256": "1dd8d5861ae74ee35cba2f5eb29ab09208d20a7893a03f464f0f77b966d8aeff"
+      },
+      "fleet_daily/239_0_2026-07-22.json": {
+        "bytes": 286,
+        "sha256": "63f1079b9d10d3af0ec93979269e1d5babb97fd059ee1961fd1afaec70a625e4"
+      },
+      "fleet_daily/239_0_2026-07-23.json": {
+        "bytes": 288,
+        "sha256": "a0622d54835b128d1c8fa7f38e9a32f68de1f2f77ce75d0df5f525af084c0ec7"
+      },
+      "fleet_daily/239_0_2026-07-24.json": {
+        "bytes": 288,
+        "sha256": "d258a6b291b96e42c2772f34fbf95f38fc7fe405d2ee8f7ec59a1af682fb968d"
+      },
+      "fleet_daily/239_0_2026-07-25.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-26.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-07-27.json": {
+        "bytes": 287,
+        "sha256": "c081164f883a02691964b0c305c9ae93b313425378fd9b38b5425749d0cab5a8"
+      },
+      "fleet_daily/239_0_2026-07-28.json": {
+        "bytes": 301,
+        "sha256": "9976da5e65979c7dd2754e6a9f584881c32d3f25da9cb26ce8f6b6db2a506332"
+      },
+      "fleet_daily/239_0_2026-07-29.json": {
+        "bytes": 301,
+        "sha256": "a0b4452e5bd55f6e7591671bb7bce5572dd919e4ae64c80bb276f12d44cf3916"
+      },
+      "fleet_daily/239_0_2026-07-30.json": {
+        "bytes": 288,
+        "sha256": "c3366ce36f9b4633bc295b648557cf7b8db67768b269318e3ba8015deb093b51"
+      },
+      "fleet_daily/239_0_2026-07-31.json": {
+        "bytes": 286,
+        "sha256": "e37d37f6601b88853e98b089a092127a2e7762ecfb9ad7cb5dce40e69c099257"
+      },
+      "fleet_daily/239_0_2026-08-01.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-02.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-03.json": {
+        "bytes": 286,
+        "sha256": "996ccaf9c5c49086c4b04c95c25dc34f9afc18cc9ad2f0f373dd80dbceb37271"
+      },
+      "fleet_daily/239_0_2026-08-04.json": {
+        "bytes": 282,
+        "sha256": "aee1d7108df26f2578675e4a8034522953cc72c38a108ea7a823f92ba9276bcf"
+      },
+      "fleet_daily/239_0_2026-08-05.json": {
+        "bytes": 281,
+        "sha256": "3d2c61f6211dc6f2d2c1448b1d49fcf8cbce20161eb2e54fe6beed6daeeae83c"
+      },
+      "fleet_daily/239_0_2026-08-06.json": {
+        "bytes": 287,
+        "sha256": "8d79f27588e643aecc04e7b6b54e8cfe2eb511e7d9d0b87e449e7572f1bf02b1"
+      },
+      "fleet_daily/239_0_2026-08-07.json": {
+        "bytes": 599,
+        "sha256": "d77fff3fae5bb652529421330e4c8b2024eb417603a40f68c58f70b1fd5d1aa9"
+      },
+      "fleet_daily/239_0_2026-08-08.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-09.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-10.json": {
+        "bytes": 288,
+        "sha256": "1dfe88b9d2c34c5255d2a9d213b176f44d4a4f8d9cea6dfc468d2de314527824"
+      },
+      "fleet_daily/239_0_2026-08-11.json": {
+        "bytes": 288,
+        "sha256": "3e0f02325701a2fb1ff485febb87e0b330590eaa814307eaef528e5b92bbc702"
+      },
+      "fleet_daily/239_0_2026-08-12.json": {
+        "bytes": 288,
+        "sha256": "06e930549d00f0da420df8114a8452a5a27b07310de5b8613a38ee65b2d332ea"
+      },
+      "fleet_daily/239_0_2026-08-13.json": {
+        "bytes": 288,
+        "sha256": "bfd444a4527904fd4fe26d88f48b6cb963530c3b3eab02f7602591db00641cc9"
+      },
+      "fleet_daily/239_0_2026-08-14.json": {
+        "bytes": 286,
+        "sha256": "dc353b0d35cae80461d70d6b270941db63c18ddc55c5241c1515b29beaabe36f"
+      },
+      "fleet_daily/239_0_2026-08-15.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-16.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-17.json": {
+        "bytes": 286,
+        "sha256": "5161231149beda96cc159e7808cb59b7a621e0a31603dbe2e410c1197b003a04"
+      },
+      "fleet_daily/239_0_2026-08-18.json": {
+        "bytes": 302,
+        "sha256": "cdcaee1beb48b044723d2ff277b6e8de6c9b6354bbbf5b035f146dd76602a620"
+      },
+      "fleet_daily/239_0_2026-08-19.json": {
+        "bytes": 585,
+        "sha256": "e76c2a04bf367a230c3d38b33aba69cbe30ee9b07147d3cad0c7945668b1ef51"
+      },
+      "fleet_daily/239_0_2026-08-20.json": {
+        "bytes": 287,
+        "sha256": "df669bb46015de7dd5d7875ec3fe3874af8e573e2616c4f746b8008206c3ad1e"
+      },
+      "fleet_daily/239_0_2026-08-21.json": {
+        "bytes": 288,
+        "sha256": "b9840a5ae69215e91f7ca0ce5d4935cde51195a7d9fe205f0ac464bd292b7bce"
+      },
+      "fleet_daily/239_0_2026-08-22.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-23.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-24.json": {
+        "bytes": 288,
+        "sha256": "4f4ae5aa2d91310fe6dc71943f55c8a92f159ed6c482812fc18605f86841ad13"
+      },
+      "fleet_daily/239_0_2026-08-25.json": {
+        "bytes": 288,
+        "sha256": "184529c3908562d505421765a1c908807d38ffc886b1bf936971b42b522f9b59"
+      },
+      "fleet_daily/239_0_2026-08-26.json": {
+        "bytes": 288,
+        "sha256": "b34c1c8ea13b43057162a56a8ea4f210c0fcb3c01a85a6e59b047ff70616a272"
+      },
+      "fleet_daily/239_0_2026-08-27.json": {
+        "bytes": 288,
+        "sha256": "b891e39f8768086b82684ddaee6451889ec48db2530292516efeec96153dd4bf"
+      },
+      "fleet_daily/239_0_2026-08-28.json": {
+        "bytes": 288,
+        "sha256": "52cb46c165248dfd4d55cbdf0624c0fbe79afda3031e041ce62ece0b94cc8534"
+      },
+      "fleet_daily/239_0_2026-08-29.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-30.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-08-31.json": {
+        "bytes": 288,
+        "sha256": "ed073c31822817dbfeab9ec49f2268992fdc81ead54a2b018acdca26e739cd12"
+      },
+      "fleet_daily/239_0_2026-09-01.json": {
+        "bytes": 287,
+        "sha256": "bedd43645312097fea3bec42fbdc451aff912257302dbe8e2f0c210ad2c28329"
+      },
+      "fleet_daily/239_0_2026-09-02.json": {
+        "bytes": 302,
+        "sha256": "5685fdb09314f688a79d4a67b36c747e8d872514dee937dbbd0a57a0ae622fd4"
+      },
+      "fleet_daily/239_0_2026-09-03.json": {
+        "bytes": 287,
+        "sha256": "81bedcd9c97b8155fe72b10d7c4ab2f0e7d0e75bf4fd00bee90b30253666e64a"
+      },
+      "fleet_daily/239_0_2026-09-04.json": {
+        "bytes": 286,
+        "sha256": "22da7aa8104354dc3932c593a2aaa0ab6301feb3cfd64e5e9ee5d1bd07940f79"
+      },
+      "fleet_daily/239_0_2026-09-05.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-06.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-07.json": {
+        "bytes": 286,
+        "sha256": "bf8611f8f95271ce5caa8facbd21aef4919c4d240afe923318212f826977a6bb"
+      },
+      "fleet_daily/239_0_2026-09-08.json": {
+        "bytes": 287,
+        "sha256": "be9adc6e6f583317c770de53b2c2fa8162f4a919438035da05ca634abe121584"
+      },
+      "fleet_daily/239_0_2026-09-09.json": {
+        "bytes": 287,
+        "sha256": "f95980427602c02a9bc3ed1fbc1248824d9be95da93d77caf7ef6657b31cdb0e"
+      },
+      "fleet_daily/239_0_2026-09-10.json": {
+        "bytes": 288,
+        "sha256": "90468c75ab13df4dc3de91e737d3dc8171ed39cbd7f8f5b5071b120bd61c5376"
+      },
+      "fleet_daily/239_0_2026-09-11.json": {
+        "bytes": 287,
+        "sha256": "d703f42dad293cb779a800797c317411c59fa7a6a7c1fce22e638a257949c3b6"
+      },
+      "fleet_daily/239_0_2026-09-12.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-13.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-14.json": {
+        "bytes": 287,
+        "sha256": "ef2dc760bd57cd6bfadc7383aa06dea5a1a439347cea1fdd0711a0f3aef58b54"
+      },
+      "fleet_daily/239_0_2026-09-15.json": {
+        "bytes": 288,
+        "sha256": "9b90ee2bd57cc4c7a5d759923534fd30398ed11d6a4257b0a489c440b4f1d53b"
+      },
+      "fleet_daily/239_0_2026-09-16.json": {
+        "bytes": 597,
+        "sha256": "c5a4defdf68626eb6f8d9a62062980601da9bbf0a544829b785c1dab5dc95577"
+      },
+      "fleet_daily/239_0_2026-09-17.json": {
+        "bytes": 287,
+        "sha256": "d336e31c74e861780dcca0d4b36135ac1f6c49c4b395fccfb8709a26325254b9"
+      },
+      "fleet_daily/239_0_2026-09-18.json": {
+        "bytes": 286,
+        "sha256": "529e055872dce301b2ab9075c6f9f2116c29d6451b3c34747ebfb37a5e2bbcad"
+      },
+      "fleet_daily/239_0_2026-09-19.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-20.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-21.json": {
+        "bytes": 288,
+        "sha256": "cfbef316a8f8fab8cbaf9949bf7ccaabc7efbbebea411e5c1eae33c81954f530"
+      },
+      "fleet_daily/239_0_2026-09-22.json": {
+        "bytes": 288,
+        "sha256": "5c836551a9a900102a7adb8f7834209bcaf50412a5aeacd5e821ba4a22763b2e"
+      },
+      "fleet_daily/239_0_2026-09-23.json": {
+        "bytes": 288,
+        "sha256": "bac9927e545e70c6505326818e33a063c17a3289a0965a99820f95de60af27f3"
+      },
+      "fleet_daily/239_0_2026-09-24.json": {
+        "bytes": 287,
+        "sha256": "6c6561dfa83fc94da536b3ac68dc3df4bc7e1e3df5f4c03411a3eef13bb1f11d"
+      },
+      "fleet_daily/239_0_2026-09-25.json": {
+        "bytes": 288,
+        "sha256": "4faf6ca9d427841481ef6432e518fe65d36184277d5522ebbc41313a56237431"
+      },
+      "fleet_daily/239_0_2026-09-26.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-27.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-09-28.json": {
+        "bytes": 584,
+        "sha256": "2473913c944b2c9a52e5901b065bbdc9c80d267d333cb9228ce50de1c0d75da8"
+      },
+      "fleet_daily/239_0_2026-09-29.json": {
+        "bytes": 286,
+        "sha256": "dec205da201276d7413a04cd02d69acf3d1a2dc87d62252064f1e452a30d9d27"
+      },
+      "fleet_daily/239_0_2026-09-30.json": {
+        "bytes": 288,
+        "sha256": "f373de32ee07d1e235ae6475ab499946c692763d66eaf08754562217ab32da1e"
+      },
+      "fleet_daily/239_0_2026-10-01.json": {
+        "bytes": 286,
+        "sha256": "1b8d98a5f67b960cc5a79f07e1b1f699d1260a67fde6318a0c8b09d24734f635"
+      },
+      "fleet_daily/239_0_2026-10-02.json": {
+        "bytes": 287,
+        "sha256": "20e8be53649ffcaf9f1e2f12d12daf9e9aa324379e5722a06137b5def401426d"
+      },
+      "fleet_daily/239_0_2026-10-03.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-04.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-05.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-06.json": {
+        "bytes": 288,
+        "sha256": "6b937b4bebed503edfbc1ef1863e59ef0c27251509c3eec2a5bb9d3ce70a9012"
+      },
+      "fleet_daily/239_0_2026-10-07.json": {
+        "bytes": 288,
+        "sha256": "b430aa2ddb99ca4e25804e215d006aaca0b72b68feae07aba8e7f828479b8e18"
+      },
+      "fleet_daily/239_0_2026-10-08.json": {
+        "bytes": 288,
+        "sha256": "ca268b5403e6039edf0409869a3e0db812a0007ff6ba051c176c27589f20e17b"
+      },
+      "fleet_daily/239_0_2026-10-09.json": {
+        "bytes": 287,
+        "sha256": "5dbda9306aca507b1900a1803d3efa12114f67c080dffdb86ef71664176ec4ab"
+      },
+      "fleet_daily/239_0_2026-10-10.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-11.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-12.json": {
+        "bytes": 288,
+        "sha256": "5e231e4780b7f9ed0dfb452c2f304a012aeb4a36592c1c25a0353202a1583d06"
+      },
+      "fleet_daily/239_0_2026-10-13.json": {
+        "bytes": 287,
+        "sha256": "5be9270478ae5c244b38d86d50b8d08fd2c77396f7fdb2d4918d7ed99439f203"
+      },
+      "fleet_daily/239_0_2026-10-14.json": {
+        "bytes": 287,
+        "sha256": "feb6c74d2e361d7e1ea16a695087f7f30cbfb67034e4d2e58b83572e728914c6"
+      },
+      "fleet_daily/239_0_2026-10-15.json": {
+        "bytes": 288,
+        "sha256": "861afe3e09ab26d4ef83f7610fd643e34d6d47cf7e558d49cba735326ad7c9d4"
+      },
+      "fleet_daily/239_0_2026-10-16.json": {
+        "bytes": 288,
+        "sha256": "232784ae6dcd805b086012ff3d14b305ecedba04a5e0daaef1e41afb19d7379f"
+      },
+      "fleet_daily/239_0_2026-10-17.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-18.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-19.json": {
+        "bytes": 287,
+        "sha256": "1a2b22d5253221fd150feee1798922bf27605f5196af42ec1a619586d6a7533a"
+      },
+      "fleet_daily/239_0_2026-10-20.json": {
+        "bytes": 288,
+        "sha256": "993290f1f5a69e0f1bd7cdf4aec60d8c1ca3d3773406a95fff4ed858c045f8f7"
+      },
+      "fleet_daily/239_0_2026-10-21.json": {
+        "bytes": 302,
+        "sha256": "dc312e548ef5d92fd4ac81d83b7a1642f3b1f2b1c5d4d2f02912f14c0516f35b"
+      },
+      "fleet_daily/239_0_2026-10-22.json": {
+        "bytes": 302,
+        "sha256": "e884aa11a2799eb0194717864a2c1fd467a1ea49cda7e17d4c32f42a245ae72b"
+      },
+      "fleet_daily/239_0_2026-10-23.json": {
+        "bytes": 287,
+        "sha256": "7d82338d2199bd34832b89c6c7db04868f9919909455ef0f772dec2210100730"
+      },
+      "fleet_daily/239_0_2026-10-24.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-25.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-10-26.json": {
+        "bytes": 287,
+        "sha256": "88582f63d0dfb32bee01563f2d7acb01f5dcdf24f19199c3325461a3b1724523"
+      },
+      "fleet_daily/239_0_2026-10-27.json": {
+        "bytes": 287,
+        "sha256": "3ee7d1f636e18beff61e093af5aaa2df2b0f3336762d26136fe30490da89553f"
+      },
+      "fleet_daily/239_0_2026-10-28.json": {
+        "bytes": 302,
+        "sha256": "a03318873f89a390e6238fcbf0cd602e5276f5060f11ea2d726d752c92a20f7b"
+      },
+      "fleet_daily/239_0_2026-10-29.json": {
+        "bytes": 288,
+        "sha256": "95886b469dffbd8dc691da3c69b55975b3a12bd87810b1e578b30f69c6a33bad"
+      },
+      "fleet_daily/239_0_2026-10-30.json": {
+        "bytes": 288,
+        "sha256": "c405bf21e2394d2b26d6ddab8ae243e7a7d45bb1f681da7eba13668bd9da7f27"
+      },
+      "fleet_daily/239_0_2026-10-31.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-01.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-02.json": {
+        "bytes": 288,
+        "sha256": "6ec5abb839792f01567c6697ef998d0a1982fcba26653059a363b07f222f73d8"
+      },
+      "fleet_daily/239_0_2026-11-03.json": {
+        "bytes": 288,
+        "sha256": "c70dcdc5102f4ec204572d7bb3f1636f40bf54cdc51529f8b2e9209ef30fbabd"
+      },
+      "fleet_daily/239_0_2026-11-04.json": {
+        "bytes": 301,
+        "sha256": "b5ecaab36d276c08ac130e8e1f7367fd1442698bc90d782680daf7a79ee14504"
+      },
+      "fleet_daily/239_0_2026-11-05.json": {
+        "bytes": 300,
+        "sha256": "82fd767b1ac19e92820ed203e1a725b60567c2e989bbb78f6053d928a38a69c2"
+      },
+      "fleet_daily/239_0_2026-11-06.json": {
+        "bytes": 302,
+        "sha256": "19d7fa51ffc9aee2dae898889712be4cafa93b731625bd9e12d3b7da5ce57d91"
+      },
+      "fleet_daily/239_0_2026-11-07.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-08.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-09.json": {
+        "bytes": 288,
+        "sha256": "d7d02fc23a98dac8256d67a6cf1f1030904f01e8739d40cd4dbe0a4027928614"
+      },
+      "fleet_daily/239_0_2026-11-10.json": {
+        "bytes": 287,
+        "sha256": "9fe01c7ce595e26e74fa99ec0c59fb1b9232f9d5190cec4872e56f2782cb2334"
+      },
+      "fleet_daily/239_0_2026-11-11.json": {
+        "bytes": 288,
+        "sha256": "c516da6bf590dedd2a0bd5cec684a8663a6d026619a603d265b6fcfde9664c3c"
+      },
+      "fleet_daily/239_0_2026-11-12.json": {
+        "bytes": 285,
+        "sha256": "03fbc461a7bc0dafc00d5619989993c6314515e3c87454ba80f3803f9cdb504f"
+      },
+      "fleet_daily/239_0_2026-11-13.json": {
+        "bytes": 287,
+        "sha256": "298e938e57ba3a7e6103d37df5fcaa32171e600fc4fe6e530a3fcc2d727cf5b1"
+      },
+      "fleet_daily/239_0_2026-11-14.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-15.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-16.json": {
+        "bytes": 288,
+        "sha256": "c2e604d19e388ece3f02fb023429282f86fe8202d5a557397b945dd5e3089f57"
+      },
+      "fleet_daily/239_0_2026-11-17.json": {
+        "bytes": 288,
+        "sha256": "e1eaceee61db34212f5b68c9e1745beb045b26dbcb9df2b7b38f4f1974c01fda"
+      },
+      "fleet_daily/239_0_2026-11-18.json": {
+        "bytes": 288,
+        "sha256": "b2603509344673b7518445fc9fa321ae884fdbf6ae134e46a7e2408fb954e2bf"
+      },
+      "fleet_daily/239_0_2026-11-19.json": {
+        "bytes": 301,
+        "sha256": "571efd00d83e26213366108af0589aa3ccad5549a8d5ac28bdc29eca7370a124"
+      },
+      "fleet_daily/239_0_2026-11-20.json": {
+        "bytes": 288,
+        "sha256": "61550923c3ea3fc3b239e06fbb650c62dd038ce67fa8a832d324953690090e02"
+      },
+      "fleet_daily/239_0_2026-11-21.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-22.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "fleet_daily/239_0_2026-11-23.json": {
+        "bytes": 287,
+        "sha256": "1705dfbd0d54c2befee2aa1e736e64b3f08ce396d61a6fe110640e3c1f6576c0"
+      },
+      "fleet_daily/239_0_2026-11-24.json": {
+        "bytes": 600,
+        "sha256": "756cdf47bf463ac69a497a0efdcc8e99bb1df7e511241bc17c4cf1ff49170b6c"
+      },
+      "fleet_daily/239_0_2026-11-25.json": {
+        "bytes": 287,
+        "sha256": "90b2736b156fd5d5a1918f19c80b2d2519a379fc241ea47930e6c51d009ee565"
+      },
+      "fleet_daily/239_0_2026-11-26.json": {
+        "bytes": 288,
+        "sha256": "f99f383a6c6cde9499dcc13867d125f5f559fce41cf5ef4c08b855bb251040f7"
+      },
+      "fleet_daily/239_0_2026-11-27.json": {
+        "bytes": 301,
+        "sha256": "c52e4c5de90f8d0d37be4ef55a26831ef1307ac9497d612751c6f823becf1bfe"
+      }
+    },
+    "kind": "http_series",
+    "licence": "not stated for the data (moverlisboa.com, a personal project computed from the Carris public API; not redistributed)",
+    "period": [
+      "2026-02-15",
+      "2026-11-27"
+    ],
+    "retrieved_utc": "2026-11-28T09:05:01+00:00",
+    "routes": [
+      "200_0",
+      "239_0"
+    ],
+    "url": "https://moverlisboa.com/api/carris/historico/daily/vehicles?limit=50000&line_id={route}&day={day}"
+  },
   "na_minha_rua": {
     "files": {
       "na_minha_rua/2017.csv": {
@@ -172,6 +2476,25 @@
     "licence": "not stated (Lisboa Interativa public viewer, guest access)",
     "retrieved_utc": "2026-10-24T15:49:12+00:00",
     "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+  },
+  "segment_speeds": {
+    "files": {
+      "segment_speeds/off_peak.json": {
+        "bytes": 291529,
+        "sha256": "4e956d8f2a2700ea7f07c1570ddadc45b2524ea3b64d8c567e2ae56be0dbb4ec"
+      },
+      "segment_speeds/peak.json": {
+        "bytes": 250523,
+        "sha256": "3ad06da1c290c09082dee1ab4bfbc669433401f4fe097558d4a3a90995750fef"
+      }
+    },
+    "kind": "http_files",
+    "licence": "not stated for the data (moverlisboa.com, a personal project computed from the Carris public API; not redistributed)",
+    "retrieved_utc": "2026-11-28T09:05:00+00:00",
+    "urls": {
+      "off_peak.json": "https://moverlisboa.com/api/carris/transit-stats?window=30d&routes=200,239&limit=0&hour_start=10&hour_end=16",
+      "peak.json": "https://moverlisboa.com/api/carris/transit-stats?window=30d&routes=200,239&limit=0&hour_start=17&hour_end=18"
+    }
   },
   "street_axes": {
     "copyrightText": "",

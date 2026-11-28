@@ -165,6 +165,50 @@ def test_fetch_downloads_every_kind_locks_it_and_skips_what_is_cached(make_case,
     assert len(requests) == n + 1
 
 
+SERIES = """
+[sources.vehicles]
+kind = "http_series"
+url = "https://example.org/v?line_id={route}&day={day}"
+routes = ["200_0", "239_0"]
+period = [2026-03-01, 2026-03-02]
+min_interval_s = 0
+licence = "not stated"
+"""
+
+
+def test_a_series_is_fetched_one_file_per_route_and_day_and_locked(make_case, monkeypatch):
+    asked = []
+
+    class Response:
+        def __init__(self, content):
+            self.content = content
+
+    def http_get(url, timeout):
+        asked.append(url)
+        return Response(f'["{url.split("line_id=")[1]}"]'.encode())  # the same answer each time the same day is asked for
+
+    monkeypatch.setattr(sources, "http_get", http_get)
+    case = Case.load(make_case(SERIES))
+    fetch(case, only=["vehicles"])
+    assert asked == [
+        "https://example.org/v?line_id=200_0&day=2026-03-01",
+        "https://example.org/v?line_id=200_0&day=2026-03-02",
+        "https://example.org/v?line_id=239_0&day=2026-03-01",
+        "https://example.org/v?line_id=239_0&day=2026-03-02",
+    ]
+    folder = raw_path(case, "vehicles")
+    assert (folder / "239_0_2026-03-01.json").read_text(encoding="utf-8") == '["239_0&day=2026-03-01"]'
+    entry = Lock(case.lock_path).entries["vehicles"]
+    assert (entry["kind"], entry["routes"], entry["period"]) == ("http_series", ["200_0", "239_0"], ["2026-03-01", "2026-03-02"])
+    assert len(entry["files"]) == 4
+    fetch(case, only=["vehicles"])
+    assert len(asked) == 4  # cached
+    (folder / "200_0_2026-03-02.json").unlink()
+    fetch(case, only=["vehicles"])  # a file missing: the series is fetched again, and must come out as the lock says
+    assert len(asked) == 8
+    assert all(status == "ok" for *_, status in Lock(case.lock_path).verify(case.raw_dir))
+
+
 def test_a_multi_file_download_that_failed_halfway_is_not_taken_as_cached(make_case, monkeypatch):
     class Response:
         content = b"rows"

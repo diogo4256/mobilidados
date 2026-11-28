@@ -102,6 +102,8 @@ flowchart LR
 | `envelope` | margins for bus × bus, bus × car, car × car, with and without mirrors; overhang sensitivity; free width without the parking on one side or both |
 | `encounters` | buses in opposite directions predicted to meet on the street, and where |
 | `delay` | time buses spend on a stretch between stops, from archived real-time positions: at peak against off-peak, beyond the slowdown of the same routes' neighbouring stretches, by year, route and hour, with 90% intervals and the checks behind them |
+| `fleet` | the vehicles recorded day by day on the street's routes (third-party records), by model, against the bus in the width scenarios |
+| `segments` | the `delay` comparison made again on speeds per segment published by a third party: another collector and another method on the same question |
 | `occurrences` | geolocated citizen reports per 100 m of street, compared with neighbouring streets |
 | `area` | the streets with buses in the surrounding area where parking squeezes their passage in the same way |
 | `standards` | measured width against design references, each with its page and scope |

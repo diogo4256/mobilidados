@@ -60,6 +60,12 @@ with the archive's address and file names (Lisbon: `carris_positions_archive`), 
 period, and a case its routes and envelope (see docs/methodology.md, *Time on a stretch*). List the city's public
 holidays in `[city] holidays`, so the stage does not count them as working days.
 
+`http_series` asks a web API for every route and day of a period (a `url` with `{route}` and `{day}`, ISO dates)
+and keeps each answer as `<route>_<day>.json`, `min_interval_s` apart so as to stay under the service's rate limit.
+The `[fleet]` stage reads daily vehicle records in that form (fields `id_veiculo`, `linha`, `modelo`, as
+moverlisboa.com serves them for Lisbon); `[segment_check]` reads published speeds per segment from an `http_files`
+source with `peak.json` and `off_peak.json` (see docs/methodology.md).
+
 `arcgis_query` and `arcgis_identify` cover ArcGIS servers, and `http_file(s)` covers files. For WFS, OGC API
 Features or OpenStreetMap, add a kind in `src/mobilidados/sources.py` that writes the same structure (a JSON with
 `features` holding `attributes` and ESRI geometry), or convert in the fetcher. Contributions welcome.

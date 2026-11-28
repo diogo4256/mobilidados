@@ -1,5 +1,5 @@
-"""Run a case end to end: measurements, direction, transit, envelope, encounters, occurrences, area scan,
-standards comparison, figures and the findings ledger.
+"""Run a case end to end: measurements, direction, transit, envelope, fleet, encounters, delay, segment check,
+occurrences, area scan, standards comparison, figures and the findings ledger.
 
 Each stage reads the case's cached sources and the tables of earlier stages, and writes its own tables to
 ``results/tables``. Tables are the only thing passed between stages, so a partial run (``--stages``) reads what
@@ -21,9 +21,9 @@ from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import linemerge, unary_union
 
-from . import area_scan, delay, direction, encounters, envelope, figures, geometry, gtfs, ledger, occurrences, standards
+from . import area_scan, delay, direction, encounters, envelope, figures, fleet, geometry, gtfs, ledger, occurrences, segments, standards
 from .arcgis import to_line
-from .config import ArcgisQuery, Case, Config, GitArchive, HttpFiles, MobilidadosError
+from .config import SEGMENT_FILES, ArcgisQuery, Case, Config, GitArchive, HttpFiles, HttpSeries, MobilidadosError
 from .sources import IdentifyCache, check_lock, check_pins, load_json, raw_path
 
 log = logging.getLogger(__name__)
@@ -231,6 +231,23 @@ def stage_envelope(r: Run) -> None:
     r.save("without_parking", envelope.without_parking(r.table("profiles"), r.two_strips_m, r.cfg.profiles.parking_space_m))
 
 
+def stage_fleet(r: Run) -> None:
+    f, t = r.cfg.fleet, r.cfg.transit
+    if f is None or t is None:
+        return
+    src = r.case.source(f.source)
+    assert isinstance(src, HttpSeries)  # checked when the config was loaded
+    routes = r.feed.table("routes", dtype=str)
+    names = dict(zip(routes.route_id, routes.route_short_name, strict=True))
+    unread = sorted(set(routes[routes.route_short_name.isin(t.routes)].route_id) - set(src.routes))
+    if unread:
+        raise MobilidadosError(f"sources.{f.source}.routes does not include {unread}, the GTFS route_id of the routes in transit.routes")
+    records, files = fleet.load(raw_path(r.case, f.source), src)
+    bus = r.cfg.all_vehicles()[r.cfg.envelope.bus] if r.cfg.envelope else None
+    r.save("fleet_models", fleet.models(records, names, bus.fleet_number if bus else None))
+    r.save("fleet_days", fleet.days(files, names))
+
+
 def stage_encounters(r: Run) -> None:
     t = r.cfg.transit
     if t is None:
@@ -273,6 +290,21 @@ def stage_delay(r: Run) -> None:
     placed = delay.place(pos, rts, r.case.crs, cfg.max_offset_m)
     for name, table in delay.analyse(placed, snaps, rts, cfg, r.axis, r.table("passings")).items():
         r.save(name, table)
+
+
+def stage_segments(r: Run) -> None:
+    sc, dl, t = r.cfg.segment_check, r.cfg.delay, r.cfg.transit
+    if sc is None or dl is None or t is None:
+        return
+    src = r.case.source(sc.source)
+    assert isinstance(src, HttpFiles)  # checked when the config was loaded, with its two files
+    segments.check_hours({f.name: f.url for f in src.files}, dl)
+    folder = raw_path(r.case, sc.source)
+    peak, off = (segments.load(folder / name) for name in SEGMENT_FILES)
+    rts = delay.routes(r.feed, t.routes, r.axis, r.case.crs, dl)
+    table, data = segments.compare(peak, off, rts, r.case.crs, r.axis, dl, sc)
+    r.save("delay_segments", table)
+    r.save("delay_segments_data", pd.DataFrame({"item": list(data), "value": list(data.values())}))
 
 
 def stage_occurrences(r: Run) -> None:
@@ -336,8 +368,10 @@ STAGES: dict[str, Callable[[Run], None]] = {
     "direction": stage_direction,
     "transit": stage_transit,
     "envelope": stage_envelope,
+    "fleet": stage_fleet,
     "encounters": stage_encounters,
     "delay": stage_delay,
+    "segments": stage_segments,
     "occurrences": stage_occurrences,
     "area": stage_area,
     "standards": stage_standards,

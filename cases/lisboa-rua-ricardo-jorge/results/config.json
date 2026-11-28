@@ -151,6 +151,9 @@
       ]
     ]
   },
+  "fleet": {
+    "source": "fleet_daily"
+  },
   "known_gaps": [
     {
       "en": "No field observation of two buses meeting on this street: encounters are timetable estimates.",
@@ -200,6 +203,11 @@
       6.0
     ],
     "step_m": 0.5
+  },
+  "segment_check": {
+    "min_coverage": 0.8,
+    "min_samples": 30,
+    "source": "segment_speeds"
   },
   "sources": {
     "area_axes": {
@@ -325,6 +333,27 @@
       "url": "https://gisbase.cm-lisboa.pt/arcgis/rest/services/MapaBase_WGS84/MapServer/53",
       "where": "1=1"
     },
+    "fleet_daily": {
+      "attribution": "Carris (public API), via moverlisboa.com",
+      "dataset_page": null,
+      "description": "Daily records of the Carris vehicles on each route, by moverlisboa.com",
+      "kind": "http_series",
+      "licence": "not stated for the data (moverlisboa.com, a personal project computed from the Carris public API; not redistributed)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "min_interval_s": 0.6,
+      "note": "Not Carris's own record: the site matches each vehicle to a route and labels its model. The site's code (github.com/Abelhato/abelhato.github.io) is under the PolyForm Noncommercial licence; the data's licence is not stated.",
+      "period": [
+        "2026-02-15",
+        "2026-11-27"
+      ],
+      "redistributable": false,
+      "routes": [
+        "200_0",
+        "239_0"
+      ],
+      "url": "https://moverlisboa.com/api/carris/historico/daily/vehicles?limit=50000&line_id={route}&day={day}"
+    },
     "na_minha_rua": {
       "attribution": "© Câmara Municipal de Lisboa",
       "columns": {
@@ -398,6 +427,28 @@
       "sr": 3763,
       "tolerance": 6.0,
       "url": "https://websig.cm-lisboa.pt/MuniSIG/REST/sites/BCK_LisboaInterativa_22Set26/map/mapservices/43/rest/services/x/MapServer/identify"
+    },
+    "segment_speeds": {
+      "attribution": "Carris (public API), via moverlisboa.com",
+      "columns": null,
+      "dataset_page": null,
+      "description": "Speeds per route segment published by moverlisboa.com (/api/carris/transit-stats)",
+      "files": [
+        {
+          "name": "peak.json",
+          "url": "https://moverlisboa.com/api/carris/transit-stats?window=30d&routes=200,239&limit=0&hour_start=17&hour_end=18"
+        },
+        {
+          "name": "off_peak.json",
+          "url": "https://moverlisboa.com/api/carris/transit-stats?window=30d&routes=200,239&limit=0&hour_start=10&hour_end=16"
+        }
+      ],
+      "kind": "http_files",
+      "licence": "not stated for the data (moverlisboa.com, a personal project computed from the Carris public API; not redistributed)",
+      "licence_evidence": "",
+      "licence_url": null,
+      "note": "A computation by a third party with an undocumented method; the case pins the answers by sha256.",
+      "redistributable": false
     },
     "street_axes": {
       "attribution": "© Câmara Municipal de Lisboa",

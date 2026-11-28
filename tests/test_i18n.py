@@ -75,6 +75,8 @@ def args_for(key, count):
         "ledger.meetings": {"n": count},
         "ledger.meetings_narrow": {"n": count},
         "ledger.delay_unconfirmed": {"years": "2026" if count == 1 else "2025 and 2026"},
+        "ledger.fleet_other": {"routes": "46B" if count == 1 else "46B and 47B", "label": "Bus"},
+        "ledger.segments_left": {"routes": "46B 0" if count == 1 else "46B 0 and 47B 1", "cov": "80", "k": 30},
         "ledger.reports_attributed": {"n": count, "flt": "Parking"},
         "ledger.street_rank": {"rank": 1, "total": count, "minlen": "100"},
         "ledger.area_streets": {"n": count},
@@ -88,6 +90,17 @@ def args_for(key, count):
 # (count of 1, count of 3) for each plural message
 WORDING = {
     "en": {
+        "ledger.fleet_other": (
+            " No vehicle of that series was recorded on route 46B: the width scenarios, made with the Bus, do not describe its vehicles.",
+            " No vehicle of that series was recorded on routes 46B and 47B: the width scenarios, made with the Bus, do not describe"
+            " their vehicles.",
+        ),
+        "ledger.segments_left": (
+            " Route and direction 46B 0 was not compared: the segments with records at both hours cover less than 80% of the stretch"
+            " or of its neighbouring stretches, or have fewer than 30 samples.",
+            " Routes and directions 46B 0 and 47B 1 were not compared: the segments with records at both hours cover less than 80%"
+            " of the stretch or of its neighbouring stretches, or have fewer than 30 samples.",
+        ),
         "ledger.delay_unconfirmed": (
             " The interval for 2026 includes 0: that year's data do not confirm the excess.",
             " The intervals for 2025 and 2026 include 0: those years' data do not confirm the excess.",
@@ -129,6 +142,18 @@ WORDING = {
         ),
     },
     "pt": {
+        "ledger.fleet_other": (
+            " Não foi registado nenhum veículo dessa série na carreira 46B: os cenários de largura, feitos com o Bus, não descrevem"
+            " os seus veículos.",
+            " Não foi registado nenhum veículo dessa série nas carreiras 46B and 47B: os cenários de largura, feitos com o Bus, não"
+            " descrevem os veículos delas.",
+        ),
+        "ledger.segments_left": (
+            " A carreira e sentido 46B 0 não foi comparada: os segmentos com registos nas duas horas cobrem menos de 80% do troço"
+            " ou dos troços vizinhos, ou têm menos de 30 amostras.",
+            " As carreiras e sentidos 46B 0 and 47B 1 não foram comparados: os segmentos com registos nas duas horas cobrem menos"
+            " de 80% do troço ou dos troços vizinhos, ou têm menos de 30 amostras.",
+        ),
         "ledger.delay_unconfirmed": (
             " O intervalo de 2026 inclui 0: os dados desse ano não confirmam o excesso.",
             " Os intervalos de 2025 and 2026 incluem 0: os dados desses anos não confirmam o excesso.",

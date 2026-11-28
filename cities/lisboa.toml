@@ -94,6 +94,30 @@ attribution = "Carris (GTFS-RT), via LIVREpt/lisboa_carris_api"
 description = "Carris GTFS-RT vehicle positions archived every few minutes by LIVREpt/lisboa_carris_api, via the relay rt.jdcp.workers.dev"
 note = "Not the operator's own record: a relay and an archive stand between Carris and the files, and their completeness is checked, not assumed (delay_data.csv, delay_passages.csv)."
 
+[source_templates.moverlisboa_fleet_daily]
+# The vehicles moverlisboa.com recorded on one Carris route on one day: fleet number, route (GTFS route_id) and the
+# model the site gives the vehicle. The site is a personal project that computes it from the Carris public API and
+# says its values are estimates. Days back to mid-February 2026; a past day's answer was the same, byte for byte,
+# each time it was asked (checked 2026-11-28).
+kind = "http_series"
+url = "https://moverlisboa.com/api/carris/historico/daily/vehicles?limit=50000&line_id={route}&day={day}"
+min_interval_s = 0.6  # the service answers with x-ratelimit-limit: 120
+licence = "not stated for the data (moverlisboa.com, a personal project computed from the Carris public API; not redistributed)"
+attribution = "Carris (public API), via moverlisboa.com"
+description = "Daily records of the Carris vehicles on each route, by moverlisboa.com"
+note = "Not Carris's own record: the site matches each vehicle to a route and labels its model. The site's code (github.com/Abelhato/abelhato.github.io) is under the PolyForm Noncommercial licence; the data's licence is not stated."
+
+[source_templates.moverlisboa_segments]
+# Speeds per 60 m segment of each Carris route shape, as moverlisboa.com publishes them: metres, seconds and samples
+# per segment over its last-month window, for a range of clock hours. Checked 2026-11-28: the answers come from one
+# computation made on 2026-01-06 at about 15:06 (window 2025-12-08 to 2026-01-06); `service_date` and
+# `exclude_non_working_days` do not change them, `hour_start` and `hour_end` do.
+kind = "http_files"
+licence = "not stated for the data (moverlisboa.com, a personal project computed from the Carris public API; not redistributed)"
+attribution = "Carris (public API), via moverlisboa.com"
+description = "Speeds per route segment published by moverlisboa.com (/api/carris/transit-stats)"
+note = "A computation by a third party with an undocumented method; the case pins the answers by sha256."
+
 [source_templates.cml_na_minha_rua]
 kind = "http_files"
 licence = "CC-BY-4.0"

@@ -105,6 +105,8 @@ flowchart LR
 | `envelope` | folgas para dois autocarros, autocarro e ligeiro, e dois ligeiros, com e sem espelhos; efeito de carros estacionados que ficam fora do lugar; largura livre sem o estacionamento de um lado ou dos dois |
 | `encounters` | autocarros em sentidos opostos que, segundo o horário, se cruzam na rua, e em que ponto |
 | `delay` | tempo dos autocarros num troço entre paragens, a partir de posições em tempo real arquivadas: na ponta face a fora da ponta, para além do abrandamento dos troços vizinhos das mesmas carreiras, por ano, carreira e hora, com intervalos de 90% e as verificações que os sustentam |
+| `fleet` | os veículos registados dia a dia nas carreiras da rua (registos de terceiros), por modelo, face ao autocarro dos cenários de largura |
+| `segments` | a comparação de `delay` refeita sobre velocidades por segmento publicadas por terceiros: outro coletor e outro método sobre a mesma pergunta |
 | `occurrences` | ocorrências Na Minha Rua por cada 100 m de rua, comparadas com as ruas vizinhas |
 | `area` | ruas com autocarros na zona à volta onde o estacionamento aperta a passagem da mesma maneira |
 | `standards` | largura medida comparada com as referências de desenho de rua, cada uma com página e âmbito |

@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from pydantic import BaseModel
 
-from .config import AnySource, Case, GitArchive, Grade, HttpFiles, standards_catalogue
+from .config import AnySource, Case, GitArchive, Grade, HttpFiles, HttpSeries, standards_catalogue
 from .direction import directions
 from .envelope import widths
 from .geometry import MIN_STRIP_M, TWO_STRIPS
@@ -398,6 +398,8 @@ def build(r: Run) -> list[Finding]:
             notes = sentences(caveat("encounters_model"), check)
         else:  # no model is needed to say that buses in one direction do not meet head-on, at any speed
             statement, notes = say("encounters_one_way", day=tr.service_date, heading=one_way[0]), ""
+        if cfg.fleet:
+            F += fleet_findings(r, say, method, caveat, n)
         F.append(
             Finding(
                 id="encounters",
@@ -413,6 +415,8 @@ def build(r: Run) -> list[Finding]:
     dl = cfg.delay
     if dl and tr:
         F += delay_findings(r, say, method, caveat, n)
+        if cfg.segment_check:
+            F += segment_findings(r, say, method, caveat, n)
 
     o = cfg.occurrences
     if o:
@@ -651,6 +655,129 @@ def delay_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[F
     return out
 
 
+def fleet_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:
+    """The vehicles recorded on the street's routes (``fleet`` stage), against the bus the width scenarios use."""
+    cfg, lang = r.cfg, r.case.lang
+    assert cfg.fleet is not None
+    models, days = r.table("fleet_models").astype({"route": str}), r.table("fleet_days").astype({"route": str})
+    bus = cfg.all_vehicles()[cfg.envelope.bus] if cfg.envelope else None
+    and_ = t("report.and", lang)
+    seen = days[days.days_with_records > 0]
+    if seen.empty:
+        return [Finding(id="fleet", grade="NE", statement=say("fleet_none"), sources=[cfg.fleet.source])]
+
+    def model(row: Any) -> str:
+        numbers = f"{row.number_min}–{row.number_max}" if row.number_min != row.number_max else f"{row.number_min}"
+        share = 100 * float(row.share)  # a share that is neither none nor all is never printed as 0% or 100%
+        text = str(say("fleet_model", pct=n(share, 0 if 0.5 <= share < 99.5 or share in (0, 100) else 1), model=row.model, numbers=numbers))
+        if row.envelope_series and bus is not None and bus.fleet_number is not None:
+            text += say("fleet_envelope", number=bus.fleet_number)
+        return text
+
+    per_route = []
+    for d in seen.itertuples():
+        g = models[models.route_id == d.route_id]
+        per_route.append(
+            say(
+                "fleet_route",
+                route=d.route,
+                vd=int(d.vehicle_days),
+                days=int(d.days_with_records),
+                models="; ".join(model(m) for m in g.itertuples()),
+            )
+        )
+    other = (
+        sorted(set(models.route) - set(models[models.envelope_series].route)) if bus is not None and bus.fleet_number is not None else []
+    )
+    gaps = [
+        say("fleet_gap", route=d.route, k=int(d.days_asked - d.days_with_records), n=int(d.days_asked))
+        for d in days.itertuples()
+        if d.days_with_records < d.days_asked
+    ]
+    return [
+        Finding(
+            id="fleet",
+            grade="I",
+            statement=say("fleet", first=seen.first_day.min(), last=seen.last_day.max(), routes="; ".join(per_route))
+            + (say("fleet_other", count=len(other), routes=and_.join(other), label=bus.text("label", lang)) if other and bus else ""),
+            values={
+                str(d.route): {str(m.model): float(m.share) for m in models[models.route_id == d.route_id].itertuples()}
+                for d in seen.itertuples()
+            },
+            sources=[cfg.fleet.source, *([f"vehicle_{cfg.envelope.bus}_body"] if cfg.envelope else [])],
+            method=method("fleet"),
+            caveat=sentences(caveat("fleet_source"), caveat("fleet_gaps", list="; ".join(gaps)) if gaps else ""),
+        )
+    ]
+
+
+def segment_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:
+    """The [delay] comparison made again on a third party's speeds per segment (``segments`` stage)."""
+    cfg, lang = r.cfg, r.case.lang
+    sc, dl, tr = cfg.segment_check, cfg.delay, cfg.transit
+    assert sc is not None
+    assert dl is not None
+    assert tr is not None
+    seg = r.table("delay_segments").astype({"route_direction": str}).set_index("route_direction")
+    data = r.table("delay_segments_data").set_index("item").value
+    summ = r.table("delay_summary").astype({"scope": str}).set_index("scope")
+    routes = r.table("delay_routes").astype({"route_direction": str}).set_index("route_direction")
+    and_ = t("report.and", lang)
+
+    def pct(ratio: float) -> str:
+        return str(n((float(ratio) - 1) * 100, 0, sign=True))
+
+    def hours(hs: list[int]) -> str:
+        return f"{min(hs)}h–{max(hs) + 1}h"
+
+    def label(rd: str) -> str:
+        return f"{rd.split()[0]} {cfg.street.heading_label(int(routes.loc[rd, 'heading']))}"
+
+    compared = seg[seg.compared.astype(bool)]
+    listed = []
+    for rd, row in compared.iterrows():
+        a = summ.loc[rd]
+        inside = bool(a.ratio_ci90_low <= row.ratio <= a.ratio_ci90_high)
+        listed.append(
+            say(
+                "segments_direction",
+                route=label(str(rd)),
+                pct=pct(row.ratio),
+                apct=pct(a.ratio),
+                lo=pct(a.ratio_ci90_low),
+                hi=pct(a.ratio_ci90_high),
+                where=say("segments_inside" if inside else "segments_outside"),
+            )
+        )
+    left = [label(str(rd)) for rd in seg.index if rd not in compared.index]
+    spans = [caveat("segments_span", route=label(str(rd)), a=n(row.s_first, 0), b=n(row.s_last, 0)) for rd, row in compared.iterrows()]
+    statement = say(
+        "segments", first=data["period_first"], last=data["period_last"], peak=hours(dl.peak_hours), off=hours(dl.off_peak_hours)
+    )
+    statement += say("segments_list", list="; ".join(listed)) if listed else say("segments_none")
+    if left:
+        statement += say("segments_left", count=len(left), routes=and_.join(left), cov=n(100 * sc.min_coverage, 0), k=sc.min_samples)
+    return [
+        Finding(
+            id="delay_segments",
+            grade="I",
+            statement=statement,
+            values={
+                str(rd): {"ratio": float(row.ratio), "excess_s": float(row.excess_s), "samples_stretch_peak": int(row.samples_stretch_peak)}
+                for rd, row in compared.iterrows()
+            },
+            sources=[sc.source, tr.source, "delay"],
+            method=method("segments"),
+            caveat=sentences(
+                caveat("segments_source"),
+                caveat("segments_span_list", list="; ".join(spans), a=n(dl.s_from, 0), b=n(dl.s_to, 0)) if spans else "",
+                caveat("segments_days"),
+                caveat("delay_cause"),
+            ),
+        )
+    ]
+
+
 def write(r: Run) -> None:
     findings, case = build(r), r.case
     lock = Lock(case.lock_path)
@@ -698,6 +825,8 @@ def markdown(case: Case, findings: list[Finding], lock: Lock) -> str:
 def _urls(source: AnySource) -> list[str]:
     if isinstance(source, HttpFiles):
         return [f.url for f in source.files]
+    if isinstance(source, HttpSeries):
+        return list(source.requests().values())
     if isinstance(source, GitArchive):  # the archive as it was at the pinned commit
         return [f"{source.url}/tree/{source.commit}" if source.url.startswith("https://github.com/") else f"{source.url}@{source.commit}"]
     return [source.url]

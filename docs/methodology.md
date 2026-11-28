@@ -186,6 +186,46 @@ from a junction at either end and a traffic light can all slow a stretch at peak
 (the finding's caveat) help to tell a queue towards one end from a slowdown in both directions, but do not settle
 it. It is the operation as an archive recorded it, not the operator's own record.
 
+## The vehicles on the routes (`fleet.py`)
+
+The width scenarios use one bus (`[envelope] bus`), whose technical sheet gives its width. `[fleet]` checks which
+vehicles actually ran the street's routes, from a third party's daily records: an `http_series` source asks a web
+API for every route and every day of a period and keeps each answer, unchanged, as `<route>_<day>.json`. For
+Lisbon, moverlisboa.com lists per route and day the Carris vehicles it recorded, with their fleet numbers and the
+model it labels them with (template `moverlisboa_fleet_daily`). Each vehicle is counted once per route and day;
+`fleet_models.csv` gives the vehicle-days per model, the range of fleet numbers seen, and whether the model's series
+(the range of numbers that ends its label, as the site groups the fleet) holds the vehicle in the catalogue whose
+sheet gives the width (`fleet_number`). `fleet_days.csv` lists the days with no record. A route whose vehicles are
+of another series is named in the finding: the scenarios do not describe its vehicles.
+
+These are the vehicles that reported positions on the route, as the site matched them, and the model is the
+site's label, not Carris's assignment or sheet. Graded I. A past day's answer was the same, byte for byte, each time
+it was asked (checked on 2026-11-28), so the lock pins it like any other source.
+
+## The same comparison on published segment speeds (`segments.py`)
+
+`[segment_check]` repeats the comparison of *Time on a stretch* on data collected by someone else: speeds per route
+segment that a third party publishes. For Lisbon, moverlisboa.com publishes, for each Carris route shape cut into
+60 m segments, the metres, seconds and samples its own collector recorded on each segment over its last month, for a
+range of clock hours (`/api/carris/transit-stats`, template `moverlisboa_segments`). An `http_files` source holds two
+answers, `peak.json` and `off_peak.json`, asked for the `[delay]` hours (`hour_start` and `hour_end`; the run checks
+them against `[delay]`).
+
+Each segment is placed along the route's shape in the GTFS feed (same `shape_id`) by its end points, and left out if
+they lie more than `max_offset_m` from it. It belongs to the stretch, or to a control stretch, when its midpoint lies
+there, and counts only if it has records in both periods. The time per metre on a set of segments is
+Σ (seconds / metres × length) / Σ length, and the ratio and seconds are those of `[delay]`. A route and direction is
+compared only if the segments with records in both periods cover `min_coverage` (0.8) of the stretch and of the
+controls, with at least `min_samples` (30) samples in each period. `delay_segments.csv` gives, per route and
+direction, the segments used, how far along the street they reach (`s_first`, `s_last`: 60 m segments do not end
+where the stretch does, and may take in a stop), their coverage and samples, and the estimates.
+
+**What it is and is not.** A second collector and a second method on the same question: where the two agree, the
+result does not hang on one archive. It gives no interval (the site publishes sums, not passages), its method is
+not documented, and its period is the site's own. Checked on 2026-11-28: the answers come from one computation made
+on 2026-01-06 (window 2025-12-08 to 2026-01-06, every day of the week, holidays included); the service's
+`service_date` and `exclude_non_working_days` parameters did not change them. Graded I.
+
 ## Citizen reports (`occurrences.py`)
 
 Geolocated records (Lisbon: *Na Minha Rua*) within `occurrences.window_m` of the street are attributed to the

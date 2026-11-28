@@ -54,6 +54,20 @@ delay_year = "in {year}, {pct}% ({lo}% to {hi}%; {days} days)"
 delay_unconfirmed = { one = " The interval for {years} includes 0: that year's data do not confirm the excess.", other = " The intervals for {years} include 0: those years' data do not confirm the excess." }
 delay_seconds = "In the {hp} peak hours and {ho} off-peak hours in which the archive has positions at most {gap} min apart (of the peak hours, {by_year}), a bus took on average {off} s to run the stretch off-peak and {peak} s at peak, where the slowdown of the neighbouring stretches would predict {exp} s: {exc} s more per passage (90% confidence interval: {lo} to {hi} s)."
 delay_hours_year = "{n} in {year}"
+fleet = "In moverlisboa.com's daily records from {first} to {last}: {routes}."
+fleet_route = "route {route}, {vd} vehicle-days over {days} days: {models}"
+fleet_model = "{pct}% {model} (fleet numbers {numbers})"
+fleet_envelope = ", the series of vehicle {number}, whose sheet gives the bus width used here"
+fleet_other = { one = " No vehicle of that series was recorded on route {routes}: the width scenarios, made with the {label}, do not describe its vehicles.", other = " No vehicle of that series was recorded on routes {routes}: the width scenarios, made with the {label}, do not describe their vehicles." }
+fleet_none = "moverlisboa.com's daily records list no vehicle on the street's routes in the period asked for."
+fleet_gap = "{route}, {k} of {n}"
+segments = "The speeds per segment that moverlisboa.com publishes for {first} to {last} (every day of the week), at {peak} and at {off}, put through the same comparison on the same stretch and neighbouring stretches"
+segments_list = " give: {list}."
+segments_none = " cannot be compared: no route and direction has enough records."
+segments_direction = "{route} {pct}% (the archive: {apct}%, 90% interval {lo}% to {hi}%; {where})"
+segments_inside = "inside it"
+segments_outside = "outside it"
+segments_left = { one = " Route and direction {routes} was not compared: the segments with records at both hours cover less than {cov}% of the stretch or of its neighbouring stretches, or have fewer than {k} samples.", other = " Routes and directions {routes} were not compared: the segments with records at both hours cover less than {cov}% of the stretch or of its neighbouring stretches, or have fewer than {k} samples." }
 encounters_one_way = "On {day} the timetable has buses in one direction only ({heading}), so it implies no meetings between buses in opposite directions on the street."
 runtimes = "Scheduled time from stop {a} to the next stop ({b}, {d} m in a straight line): median {m_all} s over all trips in the feed (at least {k_all} km/h) and {m_day} s on {day} (at least {k_day} km/h)."
 reports_attributed = { one = "{n} report in category '{flt}' was attributed to the street", other = "{n} reports in category '{flt}' were attributed to the street" }
@@ -82,6 +96,8 @@ parking_removed = "Length of the stretches with parking on both sides (as in fre
 encounters = "Presence-interval overlap at constant speed from scheduled times; timetable, not observation."
 delay = "Occupancy (Little's law): GPS positions on the stretch and on two control stretches of {cm} m, {gap} m before and after it along each route; the peak to off-peak ratio depends neither on the number of buses nor on how often positions were recorded. Confidence intervals by resampling whole days ({reps} replicates)."
 delay_seconds = "Seconds per passage: positions on the stretch divided by the passages per second, counted as trips seen within {reach} m of the stretch, only in the hours whose records are never more than {gap} min apart."
+fleet = "Each vehicle counted once per route and day, as the records list it; a model's series is the range of fleet numbers its label gives."
+segments = "Each published segment placed along the route's shape in the GTFS feed by its ends; it counts for the stretch or for the neighbouring stretches when its midpoint lies there and it has records at both hours; time per metre from the published metres and seconds; the same ratio as above. No confidence interval: the site publishes sums, not the passages behind them."
 occurrences = "Nearest-street attribution of geolocated open-data records."
 area_pattern = "Stations every {step} m on every street axis with buses, measured with the scan's own transect half-width and tolerances, not the case street's; traffic direction from the routing network at one station per street."
 
@@ -107,6 +123,12 @@ delay_by_hour = "The excess in seconds depends strongly on the peak hour chosen:
 delay_hour = "{h}h alone, {s} s"
 delay_passages = "The passages counted are {pct}% of the timetable's on {day} at the same hours; if passages are missing, the seconds are overstated in the same proportion (the ratio does not depend on them)."
 delay_days = "Working days: Monday to Friday, without the holidays in the city profile ({n} in that period)."
+fleet_source = "Records from moverlisboa.com, a personal project that computes them from the Carris public API and says its values are estimates; the route of each vehicle is the site's matching and the model is the site's label, not Carris's assignment or technical sheet. No licence is stated for the data, which are used, not redistributed."
+fleet_gaps = "Days without records: {list}."
+segments_source = "Speeds published by moverlisboa.com, which computes them from the Carris public API with its own collector and a method it does not document, and says its values are estimates: a collector other than the archive's, not Carris's own record. No licence is stated for the data, which are used, not redistributed."
+segments_span_list = "The published segments do not end where the stretch does (s = {a}–{b} m): those counted reach {list} along the street, so they may include time at a stop next to it."
+segments_span = "for {route} from s = {a} to {b} m"
+segments_days = "Every day of the period counts, weekends and holidays included, as published; the measure above counts working days only."
 occurrences = "A report is not a proven infraction; counts are small. The ranking divides the reports counted within the attribution window (a rectangle reaching {w} m beyond the street) by each street's full length, including any part outside the window: this favours streets that lie wholly inside the window, such as the case street."
 area_pattern = "The thresholds ({thr} m of free width, over {minm} m) are parameters of this analysis, not values from a design document."
 

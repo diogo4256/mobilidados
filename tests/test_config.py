@@ -7,6 +7,10 @@ from mobilidados.config import ArcgisQuery, Case, MobilidadosError, standards_ca
 FEED = "[sources.feed]\nkind = 'http_file'\nurl = 'https://example.org/gtfs.zip'\nlicence = 'x'\n"
 STOP_20 = "{ route = '20', direction_id = 0, stop_id = 's', s_m = 0, heading = 1 }"
 REPORTS = "[sources.reports]\nkind = 'http_files'\nlicence = 'x'\nfiles = [{ name = 'a.csv', url = 'https://example.org/a.csv' }]\n"
+SERIES = (
+    "[sources.vehicles]\nkind = 'http_series'\nurl = 'https://example.org/v?line_id={route}&day={day}'\n"
+    "routes = ['200_0']\nperiod = [2026-03-01, 2026-03-31]\nlicence = 'not stated'\n"
+)
 
 
 def test_minimal_case_loads_with_defaults(make_case):
@@ -39,6 +43,12 @@ def test_minimal_case_loads_with_defaults(make_case):
         ),
         (REPORTS + "[occurrences]\nsource = 'reports'\nfilters = { a = 'x' }\n", "needs `columns`"),
         ("[area_scan]\n", "[area_scan] needs [transit]"),
+        (SERIES.replace("&day={day}", ""), "url must contain {day}"),
+        (SERIES.replace("2026-03-01, 2026-03-31", "2026-03-31, 2026-03-01"), "the first day comes after the last"),
+        ("[fleet]\nsource = 'cartography'\n", "fleet.source = 'cartography': needs a source of kind 'http_series'"),
+        (SERIES + "[fleet]\nsource = 'vehicles'\n", "[fleet] needs [transit]"),
+        (REPORTS + "[segment_check]\nsource = 'reports'\n", "needs exactly the files ['peak.json', 'off_peak.json']"),
+        (REPORTS + "[segment_check]\nsource = 'reports'\n", "[segment_check] needs [delay]"),
     ],
 )
 def test_invalid_configuration_is_reported(make_case, extra, message):

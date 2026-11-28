@@ -27,6 +27,7 @@ width_mirrors_m = 2.90
 grade_mirrors = "P"
 source_mirrors = "Assumption: no official mirror width published; +0.40 m as in the Mercedes-Benz eCitaro sheet"
 mirrors_clear_cars = true
+fleet_number = 2643
 
 [vehicles.carris_man_city_gold.translations.pt]
 label = "Carris MAN 18.310 / Caetano City Gold (12 m)"

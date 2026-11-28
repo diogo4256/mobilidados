@@ -125,7 +125,43 @@ class GitArchive(Source):
         return self
 
 
-AnySource = ArcgisQuery | HttpFile | HttpFiles | ArcgisIdentify | GitArchive
+class HttpSeries(Source):
+    """One answer per route and day from a web API, e.g. a third party's daily records of an operator's vehicles.
+
+    ``url`` is a template with ``{route}`` and ``{day}`` (ISO date); ``fetch`` asks it for every route of ``routes``
+    and every day of ``period`` and keeps each answer, unchanged, as ``<route>_<day>.json``. ``min_interval_s`` spaces
+    the requests, so a long period does not run into the service's rate limit.
+    """
+
+    kind: Literal["http_series"]
+    url: Url
+    routes: list[Annotated[str, Field(pattern=r"^[\w.-]+$")]] = Field(min_length=1)
+    period: tuple[dt.date, dt.date] = Field(description="First and last day asked for")
+    min_interval_s: float = Field(1.0, ge=0, description="Seconds between two requests")
+
+    @model_validator(mode="after")
+    def _template(self) -> HttpSeries:
+        missing = [p for p in ("{route}", "{day}") if p not in self.url]
+        if missing:
+            raise ValueError(f"url must contain {' and '.join(missing)}")
+        if self.period[0] > self.period[1]:
+            raise ValueError(f"period {self.period[0]} to {self.period[1]}: the first day comes after the last")
+        return self
+
+    def days(self) -> list[dt.date]:
+        first, last = self.period
+        return [first + dt.timedelta(days=i) for i in range((last - first).days + 1)]
+
+    def requests(self) -> dict[str, str]:
+        """File name -> URL, for every route and day."""
+        return {
+            f"{route}_{day.isoformat()}.json": self.url.format(route=route, day=day.isoformat())
+            for route in self.routes
+            for day in self.days()
+        }
+
+
+AnySource = ArcgisQuery | HttpFile | HttpFiles | ArcgisIdentify | GitArchive | HttpSeries
 
 
 # --- catalogues (packaged in mobilidados/data, extendable per case) -------------------------------------
@@ -145,6 +181,7 @@ class Vehicle(Model):
     source_body: str
     source_mirrors: str
     mirrors_clear_cars: bool = False
+    fleet_number: int | None = Field(None, description="The operator's number of the vehicle whose sheet gives the width")
     translations: dict[Lang, VehicleText] = {}
 
     def text(self, key: Literal["label", "source_body", "source_mirrors"], lang: Lang) -> str:
@@ -395,6 +432,26 @@ class Delay(Model):
         return self
 
 
+class Fleet(Model):
+    """The vehicles recorded day by day on the street's routes (``mobilidados.fleet``)."""
+
+    source: str = Field(description="An http_series source of daily vehicle records, one file per route and day")
+
+
+class SegmentCheck(Model):
+    """Speeds per segment of each route published by a third party, put through the [delay] comparison
+    (``mobilidados.segments``)."""
+
+    source: str = Field(description="An http_files source with the files peak.json and off_peak.json")
+    min_samples: int = Field(30, ge=1, description="Fewest samples a stretch or its controls need in each period")
+    min_coverage: float = Field(
+        0.8, gt=0, le=1, description="Least share of the stretch, and of the controls, that segments with records in both periods cover"
+    )
+
+
+SEGMENT_FILES = ("peak.json", "off_peak.json")
+
+
 class Comparison(Model):
     compare: list[str] = []
 
@@ -414,6 +471,8 @@ class Config(Model):
     occurrences: Occurrences | None = None
     area_scan: AreaScan | None = None
     delay: Delay | None = None
+    fleet: Fleet | None = None
+    segment_check: SegmentCheck | None = None
     standards: Comparison = Comparison()
     known_gaps: list[dict[Lang, str]] = []
     vehicles: dict[str, Vehicle] = {}
@@ -466,6 +525,17 @@ class Config(Model):
             need(self.delay.source, "git_archive", "delay.source")
             if self.transit is None:
                 errors.append("[delay] needs [transit] (its routes and their shapes come from the GTFS feed)")
+        if self.fleet:
+            need(self.fleet.source, "http_series", "fleet.source")
+            if self.transit is None:
+                errors.append("[fleet] needs [transit] (the route names come from the GTFS feed)")
+        if self.segment_check:
+            need(self.segment_check.source, "http_files", "segment_check.source")
+            src = self.sources.get(self.segment_check.source)
+            if isinstance(src, HttpFiles) and sorted(f.name for f in src.files) != sorted(SEGMENT_FILES):
+                errors.append(f"segment_check.source {self.segment_check.source!r} needs exactly the files {list(SEGMENT_FILES)}")
+            if self.delay is None:
+                errors.append("[segment_check] needs [delay] (it uses the same stretch, controls and hours)")
         if self.envelope:
             used = {self.envelope.bus, self.envelope.car, *(v for sc in self.envelope.scenarios for v in sc)}
             errors += [f"envelope: unknown vehicle {v!r}" for v in sorted(used - set(self.all_vehicles()))]
