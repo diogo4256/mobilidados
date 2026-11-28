@@ -97,7 +97,13 @@ def numbers(text: str, lang: str) -> list[Printed]:
         for m in rx.finditer(clean):
             sign, intpart, dec, k = m.groups()
             digits = re.sub(rf"[{SPACES},]", "", intpart)
-            unit = "k" if k else unit_around(clean[max(0, m.start() - 3) : m.start()] + m.group(0)[: m.group(0).find(intpart[0])], clean[m.end() : m.end() + 5])
+            unit = (
+                "k"
+                if k
+                else unit_around(
+                    clean[max(0, m.start() - 3) : m.start()] + m.group(0)[: m.group(0).find(intpart[0])], clean[m.end() : m.end() + 5]
+                )
+            )
             d, step = _step(digits, dec, unit)
             v = float(digits + ("." + dec if dec else ""))
             if sign in (MINUS, "-"):

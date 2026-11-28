@@ -4,9 +4,11 @@ The method follows the European Commission's *Economic Appraisal Vademecum 2021-
 analysis of each option against doing nothing, at constant prices, over ``horizon_years``, discounted at the social
 discount rate. Docs: docs/appraisal.md.
 
-**Two layers.** The *core* counts only what the data measure or official documents state; the *extended* layer adds
-the mechanisms the measurement cannot see yet, each with a sourced unit value, a stated range and a grade (``P``
-until it is measured). The core is the extended layer with those mechanisms switched off (``MECHANISMS``), so the two
+**Two layers.** The *core* counts the measured delay at the evening peak against the places removed, the works and
+the enforcement, turned into money with unit values that are documented, inferred or assumed (each input's grade is
+in ``appraisal_inputs``); it counts the price of parking elsewhere in full, as if the car parks nearby were full. The
+*extended* layer adds the mechanisms the measurement cannot see yet, each with a central value, a stated range and a
+grade (``P`` where no source gives it). The core is the extended layer with those mechanisms switched off (``MECHANISMS``), so the two
 differ only by them, and each mechanism can be read off on its own.
 
 **Benefits.** Time the buses no longer lose, valued for the passengers on board and for the operator:
@@ -93,10 +95,10 @@ COMPANIONS = {
 OPTIONAL = {"income_growth": 0.0}
 LAYERS = ("core", "extended")
 #: Inputs the model reads as a share of a whole (besides each option's parking share and compliance, and the
-#: attribution): their switching value is looked for in [0, 1]. ``SIGNED`` inputs may be negative.
+#: attribution): their switching value is looked for in [0, 1]. ``RATES`` are yearly rates, which may be negative.
 SHARES = frozenset({"occupancy", "unexpected_share", "transfer_share", "other_vehicle_share", "diversion_car", "room_nearby",
                     "spare_capacity"})  # fmt: skip
-SIGNED = frozenset({"income_growth"})
+RATES = frozenset({"income_growth"})
 #: Inputs measured with a 90% interval (low, high) around an estimate, not a range: drawn by ``interval_draws``.
 MEASURED_INTERVALS = ("excess_s",)
 Z90 = 1.6448536269514722  # the standard normal's 95th percentile
@@ -125,7 +127,9 @@ class Measured:
     passages_all: tuple[float, float] = (0.0, 0.0)  # every passage of the year: (at peak, other)
     offpeak_scale_all: float = 1.0  # ``offpeak_scale`` for every passage
     days: dict[str, int] = dataclasses.field(default_factory=dict)  # days of each timetable kind in the reference year
-    alternative_attribution: dict[str, tuple[float, float, float]] = dataclasses.field(default_factory=dict)  # alternative id -> its sections' share
+    alternative_attribution: dict[str, tuple[float, float, float]] = dataclasses.field(
+        default_factory=dict
+    )  # alternative id -> its sections' share
 
 
 def working_days(year: int, holidays: list[dt.date]) -> int:
@@ -476,12 +480,15 @@ def switching_value(f: Callable[[float], float], lo: float, hi: float) -> float 
 
 def search_domain(key: str, lo: float, hi: float, cfg: Appraisal) -> tuple[float, float]:
     """Where to look for input ``key``'s switching value: a share (``is_share``) within [0, 1], whatever its range; a
-    signed input (``SIGNED``) symmetrically; any other quantity, which is never negative, from a hundredth of its low
-    value (never 0: a length divides) to 20 times its high value."""
+    yearly rate (``RATES``) within (−99%, +100%) a year, below which a unit value would turn negative; any other
+    quantity, which is never negative, from a hundredth of its low value (never 0: a length divides) to 20 times its
+    high value."""
     if is_share(key, cfg):
         return 0.0, 1.0
+    if key in RATES:
+        return -0.99, 1.0
     span = max(abs(lo), abs(hi), 1.0) * 20
-    if key in SIGNED or lo < 0:
+    if lo < 0:
         return -span, span
     return (lo / 100 if lo > 0 else 0.0), span
 
@@ -540,7 +547,8 @@ def draws(cfg: Appraisal, m: Measured) -> dict[str, np.ndarray]:
     option that widens more removes more in every draw, and no option wins a draw by luck of an independent draw."""
     rng = np.random.default_rng(cfg.seed)
     d = {
-        k: (interval_draws if k in MEASURED_INTERVALS else pert)(rng, lo, c, hi, cfg.draws) for k, (lo, c, hi) in sorted(ranges(cfg, m).items())
+        k: (interval_draws if k in MEASURED_INTERVALS else pert)(rng, lo, c, hi, cfg.draws)
+        for k, (lo, c, hi) in sorted(ranges(cfg, m).items())
     }
     for pair in cfg.correlations:
         z1 = rng.standard_normal(cfg.draws)

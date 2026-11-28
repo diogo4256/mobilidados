@@ -559,7 +559,13 @@ class Appraisal(Model):
     def _references(self) -> Appraisal:
         missing = [k for k in REQUIRED_PARAMETERS if k not in self.parameters]
         missing += [f"{o.id}: {ref}" for o in self.options for ref in (o.parking_share, o.compliance) if ref and ref not in self.parameters]
-        missing += [f"{k} (needed by {m})" for m, needs in MECHANISM_NEEDS.items() if m in self.parameters for k in needs if k not in self.parameters]
+        missing += [
+            f"{k} (needed by {m})"
+            for m, needs in MECHANISM_NEEDS.items()
+            if m in self.parameters
+            for k in needs
+            if k not in self.parameters
+        ]
         if missing:
             raise ValueError(f"appraisal: parameters missing: {sorted(set(missing), key=missing.index)}")
         ids = [o.id for o in self.options]

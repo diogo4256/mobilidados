@@ -131,7 +131,7 @@ def detour(net: Network, shape: LineString, axis: LineString, street: str, lead_
     if not on_street:
         return None
     pe, px = shape.interpolate(d0), shape.interpolate(d1)
-    ne, nx = (min(on_street, key=lambda q, p=p: (q[0] - p.x) ** 2 + (q[1] - p.y) ** 2) for p in (pe, px))
+    ne, nx = (min(on_street, key=lambda q: (q[0] - pt.x) ** 2 + (q[1] - pt.y) ** 2) for pt in (pe, px))
     rows: list[Detour] = []
     for lead in lead_ins:
         a, b = max(d0 - lead, 0.0), min(d1 + lead, shape.length)

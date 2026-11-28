@@ -138,10 +138,12 @@ def test_a_percentage_or_a_small_count_is_compared_to_the_unit():
 def test_a_number_glued_to_a_unit_is_never_read_as_its_whole_part():
     (k,) = doccheck.numbers("of which €25.8k rests", "en")
     assert (k.value, k.unit) == (25.8, "k")
-    assert k.explained_by(25766.5) and not k.explained_by(25.8)
+    assert k.explained_by(25766.5)
+    assert not k.explained_by(25.8)
     assert [p.value for p in doccheck.numbers("54.0m wide", "en")] == []
     (pt,) = doccheck.numbers("25,8 mil €", "pt")
-    assert pt.unit == "k" and pt.explained_by(25766.5)
+    assert pt.unit == "k"
+    assert pt.explained_by(25766.5)
 
 
 def test_a_pinned_value_is_compared_at_the_scale_its_unit_or_its_claim_gives(tmp_path: Path, results: Path):

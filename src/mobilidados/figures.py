@@ -12,6 +12,7 @@ import numpy as np
 from matplotlib.figure import Figure
 
 from . import envelope, i18n
+from .appraisal import rate_pct
 from .config import Case, Lang, Vehicle
 
 if TYPE_CHECKING:
@@ -278,7 +279,7 @@ def delay_by_hour(run: Run, lang: Lang) -> Figure:
 
 def appraisal_npv(run: Run, lang: Lang) -> Figure:
     """Each option's net present value in both layers: the central value and the spread of the simulations (10% to
-    90%), against zero. The core counts only what is measured; the extended layer adds the mechanisms not yet measured.
+    90%), against zero. The core counts only the measured delay among the benefits; the extended layer adds the mechanisms not yet measured.
     A bar wholly left of zero is an option that loses in most of the uncertain worlds simulated."""
     a = run.cfg.appraisal
     assert a is not None
@@ -300,7 +301,15 @@ def appraisal_npv(run: Run, lang: Lang) -> Figure:
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.legend(frameon=False, loc="lower right", fontsize=9, title=t("appraisal_spread", lang), title_fontsize=8)
     ax.set_title(
-        t("appraisal_title", lang, years=a.horizon_years, rate=i18n.num(100 * a.discount_rate, lang, 0)), loc="left", fontsize=10, color=INK
+        t(
+            "appraisal_title",
+            lang,
+            years=a.horizon_years,
+            rate=i18n.num(rate_pct(a.discount_rate), lang, 0 if float(rate_pct(a.discount_rate)).is_integer() else 1),
+        ),
+        loc="left",
+        fontsize=10,
+        color=INK,
     )
     fig.tight_layout()
     return fig

@@ -58,9 +58,13 @@ users' losses are large, so the study never reports it alone.
 Better buses are worth more than the minutes they save at one hour of the day, but not everything they are worth can
 be measured yet. The appraisal keeps the two apart:
 
-* **the core** counts only what the data measure or official documents state;
-* **the extended layer** adds the mechanisms the measurement cannot see yet, each with a unit value from a published
-  source, a range and a grade (`P` until it is measured).
+* **the core** counts the measured delay at the evening peak against the places removed, the works and the
+  enforcement. The delay is measured; the unit values that turn it into money are not: each is documented (D),
+  inferred (I) or assumed (P), and the study counts them by grade wherever it describes the core. The core counts
+  the price of parking elsewhere in full, as if the car parks nearby were full (their occupancy is not known); the
+  scenarios also give the core with room in them (`core_car_parks_with_room`);
+* **the extended layer** adds the mechanisms the measurement cannot see yet, each with a central value and a range,
+  from a published source where there is one and assumed (`P`) where there is not.
 
 The core is the extended layer with those mechanisms switched off (`MECHANISMS` in the code), so the two differ only
 by them. A case that does not configure a mechanism leaves it out of both layers.
@@ -101,8 +105,12 @@ Both the benefits and the parking cost scale with `compliance`: a car that stays
 
 ## Attribution: how much of the excess an option removes
 
-The `delay` stage also measures the excess on each part of the stretch on its own (`delay_by_part.csv`): each section
-with parking on both sides, and each piece between them (usually a junction). And it counts, for buses on each part
+The `delay` stage also measures the excess on each part of the stretch (`delay_by_part.csv`): each section with
+parking on both sides, and each piece between them (usually a junction), every part against the whole stretch's own
+control stretches and passages, so the parts' excesses add up to the stretch's and no part is compared with a
+control that overlaps it. The parts cover the stretch without a hole (a piece shorter than 5 m joins its
+neighbour). Each part also gives the excess of the buses heading each way along the street and the share of the
+peak passages that run each way. And it counts, for buses on each part
 at peak, how often a bus in the other direction is on the street at the same snapshot, against how often one is
 there at any snapshot (`delay_copresence.csv`). Positions of the same bus held in the same standoff are not independent,
 so the exact binomial p-value overstates the evidence; the table also resamples whole working days (`p_value_by_day`,
@@ -116,15 +124,19 @@ For an option widening the sections of some blocks:
 * **central**: plus the excess at the junctions next to them where buses lose time to oncoming buses (p below `significance`);
 * **high**: plus the excess at every junction next to them.
 
-Shares are of the sum of the parts' excesses. In Rua Ricardo Jorge, more than half the excess sits at the two
-junctions between the narrow sections; at the first one, buses have an oncoming bus present 26% of the time against
-11% by chance (binomial p ≈ 1.5 × 10⁻⁶; p < 0.001 resampling whole days, none of 2,000 resamples at or below
-chance), and at the second, no more than chance: the central attribution counts the first junction and not the second.
+A bus held at a junction is held for the section it is about to enter, so a junction counts for an option only for
+the buses heading into a section the option widens: all of the junction's excess where the sections on both sides
+are widened, else the share of the peak passages that head that way times their excess. Shares are of the sum of the
+parts' excesses. In Rua Ricardo Jorge, more than half the excess sits at the two junctions between the narrow
+sections; at the first one (R. Cor. Marques Leitão), buses have an oncoming bus present 26% of the time against 11% by
+chance (p ≈ 0.0005 resampling whole days), and at the second, no more than chance: the central attribution counts the
+first junction and not the second. At that junction, the excess is that of the buses heading south-west, into B1;
+those heading north-east, into B2, lose nothing there. So an option that widens B2 alone does not remove it.
 The same share applies off-peak: where the time is lost along the stretch does not depend on the hour. With `offpeak_scales_with_service`, an off-peak passage on a Saturday or a Sunday counts at that day's buses ÷ a
 working day's (`appraisal.offpeak_scale`): the off-peak excess is inferred from working days, and with fewer buses
 coming the other way there are fewer meetings per passage. The shares are
-of the parts' sum (13.8 s there), and they are applied to the excess measured on the whole stretch between stops
-(14.5 s), so the 0.7 s the parts do not place is spread in the same proportions.
+of the parts' sum (14.6 s there), and they are applied to the excess measured on the whole stretch between stops
+(14.5 s): measured against the same controls, the two differ only by the estimator's ratio of sums.
 
 **The off-peak excess.** The method measures the peak against the rest of the day, so it cannot measure the rest of
 the day. With `offpeak_from_copresence`, the central off-peak excess is the peak excess scaled by how often buses meet
@@ -141,8 +153,10 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
 (`appraisal_inputs.csv`, with its layer; measured ones in `appraisal_measured.csv`).
 
 * **Switching values** (`appraisal_switching.csv`, both layers): the value of each input, the others central, at which
-  the NPV is zero, and whether it lies within the range tested. A share is searched within [0, 1]; a positive
-  quantity never at zero.
+  the NPV is zero, and whether it lies within the range tested. What an input means decides where its switching
+  value is looked for, not the range a case gives it: a share (`appraisal.SHARES`, each option's parking share and
+  compliance, the attribution) within [0, 1], even beyond its measured high bound; a yearly rate between −99% and
+  +100%; any other quantity from near zero to 20 times its high value.
 * **The off-peak break-even under conditions** (`appraisal_offpeak_thresholds.csv`): the off-peak excess at which each
   option's extended NPV is zero, and the bus time saved per passage at that point (what a before-and-after evaluation
   would have to find), with the other inputs central; with no other mechanism; with no displaced driver
@@ -155,8 +169,13 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
   the appraisal period, are worth each option's NPV, and so one every how many years: how large a safety effect
   would decide the case.
 * **Tornado** (`appraisal_tornado.csv`, extended layer): the NPV at each input's low and high value.
-* **Monte Carlo** (`appraisal_montecarlo.csv`, both layers): `draws` draws of every input from a PERT
-  distribution on its low, central and high value (fixed `seed`, so every run gives the same numbers). PERT, the usual
+* **Monte Carlo** (`appraisal_montecarlo.csv`, both layers): `draws` draws of every typed-in input from a PERT
+  distribution on its low, central and high value (fixed `seed`, so every run gives the same numbers). The measured
+  excess is drawn from its 90% interval as the 5th and 95th percentiles of a two-piece normal (cut at 0), not as
+  hard bounds, which would understate the spread of the one measured input. The options' shares of the excess
+  (`attribution_*`) are one uncertainty, read from the same parts of the stretch, so they are drawn with one common
+  rank: an option that widens more removes more in every draw. For the assumed inputs, the ranges are judgements,
+  so the share of positive draws is the spread of the result over those judgements, not an observed frequency. PERT, the usual
   distribution for three-point estimates, keeps most of its weight near the central value: a long range on one side
   (a place worth up to a garage's rent) does not drag the mean far from the value the evidence points to, as a
   triangular distribution would. The same draws serve every option and both layers. The probability that an option
@@ -164,9 +183,11 @@ Every input has a low, central and high value, a grade (docs/evidence-standard.m
 * **Correlated inputs** (`correlations`): two inputs that move together, such as the peak and the off-peak excess (the
   same encounters in the same sections), or room nearby and room in the car parks (the same parking pressure), are paired by Iman-Conover rank reordering: each keeps its own distribution,
   and their ranks follow a correlated normal pair with correlation `rho`.
-* **Scenarios** (`appraisal_scenarios.csv`): the core; the extended layer with every input the measurement does not
-  cover at the end of its range least favourable to the option (*cautious*), central, and most favourable
-  (*favourable*); and the central NPV over each of `horizons_tested` years. The cautious scenario is a bound, the worst
+* **Scenarios** (`appraisal_scenarios.csv`): the core; the core with room in the car parks nearby, where the price
+  of parking there is a transfer (`core_car_parks_with_room`, when the case gives `spare_capacity`); the extended
+  layer with every typed-in input, the core's included (none is measured), at the end of its range least favourable
+  to the option (*cautious*), central, and most favourable (*favourable*); and the central NPV over each of
+  `horizons_tested` years. The cautious scenario is a bound, the worst
   combination of those ends, not a probability.
 * **Value of information** (`appraisal_voi.csv`): what knowing each input before deciding is worth, in present value:
   the expected value of partial perfect information, estimated from the extended layer's draws by grouping them by
@@ -207,7 +228,11 @@ decision-maker's.
 
 * **The detour.** The line's busiest shape is followed from a lead-in before it reaches the street to the same
   distance after it leaves; on the area's street axes (an undirected network: one-way rules and turns are not in the
-  data), the shortest path between those points without the street, less the shortest path with it, is the detour.
+  data), the shortest path between those points without the street, less the path through it as the bus runs today
+  (to the junction where the shape meets the street, along the street, and on from where it leaves), is the detour.
+  It can be negative: a line that turns into the street to serve its stops runs a shorter way without it
+  (`shorter_without_street`), and then the value of the reroute comes mostly from that shortcut, not from the
+  meetings it removes, and the shortcut must be checked on site.
   It depends on the lead-in (200 to 500 m are tried; the range is reported), so the smallest detour among the paths
   that use only streets with buses today is kept, or, if none does, the smallest of all, with its other streets
   listed to be checked on site. Detours within 10 m of each other keep the shorter lead-in.
@@ -232,7 +257,9 @@ sections is a natural test of one: if buses lose the most time there, a passing 
 unlikely to work. For each, the study gives its cost (the
 places it removes, `parking_m`, valued as an option's places, and its works) and the bus-hours a year (and seconds per
 peak passage, and per passage at any hour) it must save to pay for itself (`appraisal_alternatives.csv`), not an NPV
-the data could not support.
+the data could not support; and the most it could save at peak, the measured excess its sections hold at the central
+share (`removable_peak_s`, its `blocks`, or every section if it names none). Only where the saving it needs is below
+that (`can_pay`) does the study say it deserves a geometric study.
 
 ## Feasibility
 
@@ -254,9 +281,11 @@ count), each replacing an assumed input with a measured one.
 
 * It has no traffic model: options that change circulation (one-way streets, rerouting) are screened out in the study
   with the reason, not appraised, and the cars held behind a bus are an input, not a simulation.
-* Its inputs are independent in the simulation; inputs that move together (more passengers when buses are later)
-  would widen the spread.
+* Its inputs are independent in the simulation unless `correlations` pairs them (and the options' shares, always
+  drawn together); inputs that move together and are not paired (more passengers when buses are later) would widen
+  the spread.
 * The extended layer's values are assumptions until measured. They are there so the study shows what each mechanism
-  would be worth and what it would take, not to replace the measurement; the core stays the measured answer.
+  would be worth and what it would take, not to replace the measurement. The core is the answer closest to the
+  measurement, not a measured answer: its unit values are documented, inferred or assumed.
 * It is a study to inform a decision, not the decision: the weights between residents who park and passengers who ride
   are the municipality's to set, and the switching values say where the answer turns.

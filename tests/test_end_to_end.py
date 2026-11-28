@@ -722,6 +722,7 @@ stall_m = {p(5.5, 5.0, 6.0)}
 compliance = {p(0.9, 0.8, 1.0)}
 share = {p(0.45, 0.25, 0.7)}
 offpeak_s = {p(3.0, 0.0, 8.0)}
+load_offpeak = {p(13.0, 8.0, 20.0)}
 room_nearby = {p(0.3, 0.0, 1.0)}
 walk_cost = {p(130.0, 65.0, 260.0)}
 

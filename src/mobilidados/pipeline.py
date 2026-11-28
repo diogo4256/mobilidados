@@ -352,6 +352,8 @@ def stage_standards(r: Run) -> None:
 def stage_appraisal(r: Run) -> None:
     a, dl, t, e = r.cfg.appraisal, r.cfg.delay, r.cfg.transit, r.cfg.envelope
     if a is None or dl is None or t is None or e is None or not r.two_strips:
+        # no appraisal to make: a study written by an earlier run would outlive the results it described
+        (r.case.results_dir / "appraisal.md").unlink(missing_ok=True)
         return
     block_metres: dict[str, float] = {}
     for x, z, block in r.narrow_extents():

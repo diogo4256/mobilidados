@@ -120,7 +120,7 @@ def test_the_search_for_a_switching_value_keeps_shares_in_zero_to_one_and_length
     assert appraisal.search_domain("comply", 0.9, 0.9, cfg) == (0.0, 1.0)  # an option's compliance
     # what an input means decides, not its range: a cost per km of 0.2 to 0.9 may break even above 1
     assert appraisal.search_domain("external_cost_pkm", 0.2, 0.9, cfg)[1] > 1
-    assert appraisal.search_domain("income_growth", 0.0, 0.02, cfg)[0] < 0
+    assert -1 < appraisal.search_domain("income_growth", 0.0, 0.02, cfg)[0] < 0  # a rate may fall, never below −100%
     lo, hi = appraisal.search_domain("stall_m", 5.0, 6.0, cfg)
     assert 0 < lo < 5
     assert hi > 6
@@ -172,16 +172,18 @@ def test_the_stretch_is_cut_into_narrow_sections_and_what_lies_between():
     cuts = delay.parts([(41.0, 76.0, "B1"), (95.5, 149.0, "B2"), (166.5, 194.0, "B3")], 45.0, 190.0)
     assert [(c.name, c.narrow, c.block) for c in cuts] == [("B1 45–76 m", True, "B1"), ("76–95.5 m", False, ""), ("B2 95.5–149 m", True, "B2"),
                                                            ("149–166.5 m", False, ""), ("B3 166.5–190 m", True, "B3")]  # fmt: skip
-    assert delay.parts([(0.0, 3.0, "B1")], 0.0, 100.0) == [delay.Part("0–100 m", 0.0, 100.0, False, "")]  # a sliver is left to its neighbour
+    assert delay.parts([(0.0, 3.0, "B1")], 0.0, 100.0) == [
+        delay.Part("0–100 m", 0.0, 100.0, False, "")
+    ]  # a sliver is left to its neighbour
 
 
 def test_the_parts_cover_the_stretch_without_a_hole():
     # a junction of 2 m between two sections is joined to the section before it, not dropped
     cuts = delay.parts([(45.0, 80.0, "B1"), (82.0, 150.0, "B2")], 45.0, 150.0)
     assert [(c.start, c.end, c.block) for c in cuts] == [(45.0, 82.0, "B1"), (82.0, 150.0, "B2")]
-    for cuts, s_from, s_to in ((cuts, 45.0, 150.0), (delay.parts([(10.0, 12.0, "B1"), (30.0, 60.0, "B2")], 0.0, 100.0), 0.0, 100.0)):
-        assert (cuts[0].start, cuts[-1].end) == (s_from, s_to)
-        assert all(a.end == b.start for a, b in itertools.pairwise(cuts))
+    for pieces, s_from, s_to in ((cuts, 45.0, 150.0), (delay.parts([(10.0, 12.0, "B1"), (30.0, 60.0, "B2")], 0.0, 100.0), 0.0, 100.0)):
+        assert (pieces[0].start, pieces[-1].end) == (s_from, s_to)
+        assert all(a.end == b.start for a, b in itertools.pairwise(pieces))
 
 
 def test_a_part_keeps_the_controls_and_reach_of_the_whole_stretch():
@@ -695,8 +697,8 @@ def test_the_options_shares_are_drawn_together_and_cannot_be_correlated_by_hand(
     m = measured(attribution={"A": (0.2, 0.4, 0.6), "B": (0.3, 0.7, 0.9)}, metres={"A": 55.0, "B": 110.0},
                  passages={"A": (3600.0, 0.0), "B": (3600.0, 0.0)})  # fmt: skip
     d = appraisal.draws(cfg, m)
-    ranks = [np.argsort(np.argsort(d[k])) for k in ("attribution_A", "attribution_B")]
-    np.testing.assert_array_equal(*ranks)  # the same rank in every draw: one uncertainty, not two
+    rank_a, rank_b = (np.argsort(np.argsort(d[k])) for k in ("attribution_A", "attribution_B"))
+    np.testing.assert_array_equal(rank_a, rank_b)  # the same rank in every draw: one uncertainty, not two
     with pytest.raises(ValidationError, match="drawn together already"):
         config(options=two, correlations=[{"a": "attribution_A", "b": "vot", "rho": 0.5}])
 

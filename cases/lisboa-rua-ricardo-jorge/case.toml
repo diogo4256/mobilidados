@@ -708,7 +708,7 @@ source = "occurrences_by_street.csv (Na Minha Rua, CML)"
 [[appraisal.notes]]
 dimension = "options"
 grade = "P"
-text = "Desviar uma das carreiras: medido na rede de ruas em appraisal_reroutes.csv. Acaba com os encontros entre autocarros, mas não com os encontros com ligeiros e furgões; alonga o percurso e tira paragens a quem as usa. A decisão é de rede, da Carris, com as entradas e saídas por paragem."
+text = "Desviar uma das carreiras: medido na rede de ruas em appraisal_detours.csv e appraisal_reroutes.csv. Acaba com os encontros entre autocarros, mas não com os encontros com ligeiros e furgões, e tira paragens a quem as usa. A 744 faria um percurso mais longo. A 46B entra na rua para servir duas paragens: sem ela faria um caminho mais curto, e o valor do seu desvio vem sobretudo desse atalho, não dos encontros que acaba; a rede de ruas usada não conhece os sentidos proibidos nem as viragens que um autocarro pode fazer, por isso o atalho tem de ser verificado no local. Os valores das tabelas vêm antes do custo para quem perde as paragens. A decisão é de rede, da Carris, com as entradas e saídas por paragem."
 
 [[appraisal.notes]]
 dimension = "options"

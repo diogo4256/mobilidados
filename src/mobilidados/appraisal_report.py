@@ -8,6 +8,7 @@ them. Money is rounded to 100 € and shares to whole percents: the inputs do no
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -41,20 +42,50 @@ def grouped(x: float, lang: str, d: int = 0) -> str:
     )
 
 
-def money(x: float, lang: str) -> str:
-    """Euros, rounded to 10 below a thousand and to 100 above (the inputs support no more), grouped: ``−61 100 €`` / ``−€61,100``."""
+def money(x: float, lang: str, sign: bool = False) -> str:
+    """Euros, rounded to 10 below a thousand and to 100 above (the inputs support no more), grouped: ``−61 100 €`` /
+    ``−€61,100``; with ``sign``, a gain shows its ``+``."""
     if not math.isfinite(x):
         return "—"
     step = 10 if abs(x) < 1000 else 100
     v = round(x / step) * step
     digits = grouped(abs(v), lang)
-    sign = "−" if v < 0 else ""
-    return f"{sign}{digits} €" if lang == "pt" else f"{sign}€{digits}"
+    sign_ = "−" if v < 0 else "+" if sign and v > 0 else ""
+    return f"{sign_}{digits} €" if lang == "pt" else f"{sign_}€{digits}"
 
 
 def pvalue(p: float, lang: str) -> str:
     """A p-value after ``p``: ``= 0,04``, or ``< 0,001`` below that (a resampled p-value cannot go lower)."""
     return f"= {num(p, lang, 3)}" if p >= 0.001 else f"< {num(0.001, lang, 3)}"
+
+
+def grade_counts(inputs: pd.DataFrame, layer: str, lang: str) -> str:
+    """How many of a layer's typed-in values carry each grade, in words: "4 inferidos e 11 pressupostos". Read from
+    ``appraisal_inputs``, so the study can never call a layer more measured than its inputs are."""
+    rows = inputs[inputs.layer == layer]
+    parts = [f"{int((rows.grade == g).sum())} {t(f'study.grades_{g}', lang)}" for g in ("M", "D", "I", "P") if (rows.grade == g).any()]
+    if not parts:
+        return "—"
+    return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + t("report.and", lang) + parts[-1]
+
+
+def rests_on(bridge: pd.DataFrame, inputs: pd.DataFrame, option: str, lang: str, k: int = 3) -> str:
+    """The ``k`` mechanisms that add most to ``option``'s NPV from the core to the extended layer (the bridge), each with
+    what it adds and its grade: what the extended result rests on."""
+    steps = bridge[(bridge.option == option) & (bridge.step != "core") & (bridge.change > 0)].nlargest(k, "change")
+    items = []
+    for row in steps.itertuples():
+        label = first_lower(str(inputs.label[row.step])) if row.step in inputs.index else row.step
+        grade = t(f"study.grade_{inputs.grade[row.step]}", lang) if row.step in inputs.index else "?"
+        items.append(t("study.rest", lang, label=label, change=money(row.change, lang, sign=True), grade=grade))
+    if not items:
+        return "—"
+    return items[0] if len(items) == 1 else "; ".join(items[:-1]) + t("report.and", lang) + items[-1]
+
+
+def finite(x: float, fmt: Callable[[float], str]) -> str:
+    """``fmt(x)``, or a dash where ``x`` is not a finite number (no bus at peak: no time to save per passage)."""
+    return fmt(x) if np.isfinite(float(x)) else "—"
 
 
 def first_lower(text: str) -> str:
@@ -171,6 +202,12 @@ def build(r: Run) -> str:
                          chance=n(100 * g.chance, 0), p=pvalue(appraisal.p_value(g), lang), attr=n(100 * attr, 0))  # fmt: skip
     else:
         parts_text = say("problem_parts_none", narrow=n(narrow_s, 1), gaps=n(total - narrow_s, 1), attr=n(100 * attr, 0))
+    if giving and {"excess_ascending_s", "excess_descending_s"} <= set(parts.columns):
+        i = int(parts.index[parts.part == giving[0]][0])
+        if 0 < i < len(parts) - 1:  # a junction between two sections: say which way the delay is
+            g = parts.loc[i]
+            parts_text += " " + say("problem_heading", down_block=parts.block[i - 1], up_block=parts.block[i + 1],
+                                    down=n(g.excess_descending_s, 1), up=n(g.excess_ascending_s, 1))  # fmt: skip
     problem_block = [f"## {say('h_problem')}", "", problem, "", parts_text, ""]
 
     # --- the options ---------------------------------------------------------------------------------------------------
@@ -312,6 +349,8 @@ def build(r: Run) -> str:
     ids = [o.id for o in a.options]
     base_years = a.horizon_years
     cols = [("core", base_years), ("cautious", base_years), ("central", base_years), ("favourable", base_years)]
+    if (scen.scenario == "core_car_parks_with_room").any():
+        cols.insert(1, ("core_car_parks_with_room", base_years))
     cols += [(sc, h) for h in a.horizons_tested for sc in ("core", "central")]
     cba += ["", f"### {say('h_scenarios')}", "", say("scenarios_intro"), "",
             "| " + say("option") + " | " + " | ".join(say(f"sc_{sc}", years=h) for sc, h in cols) + " |", "| --- |" + " ---: |" * len(cols)]  # fmt: skip
@@ -341,13 +380,12 @@ def build(r: Run) -> str:
 
     # --- the alternative, the gaps, the conclusions -------------------------------------------------------------------
     alt_block: list[str] = []
-    removable_s = float(whole.excess_s) * attr
     if len(alts):
         alt_block = [f"## {say('h_alternatives')}", ""]
         for row in alts.itertuples():
             alt_block += [say("alternative", label=row.label[:1].upper() + row.label[1:], places=n(row.places, 0), cost=money(row.pv_cost, lang),
-                              hours=n(row.breakeven_bus_hours_per_year, 1), secs=n(row.breakeven_seconds_per_peak_passage, 1),
-                              secs_all=n(row.breakeven_seconds_per_passage, 1), attr_s=n(removable_s, 0)), ""]  # fmt: skip
+                              hours=n(row.breakeven_bus_hours_per_year, 1), secs=finite(row.breakeven_seconds_per_peak_passage, lambda x: n(x, 1)),
+                              secs_all=finite(row.breakeven_seconds_per_passage, lambda x: n(x, 1)), attr_s=n(row.removable_peak_s, 0)), ""]  # fmt: skip
     gaps_block = (
         [f"## {say('h_gaps')}", "", say("gaps_intro"), ""] + [f"- {nt.text}" for nt in a.notes if nt.dimension == "evidence"] + [""]
     )
@@ -362,8 +400,12 @@ def build(r: Run) -> str:
             npv=money(b.npv, lang),
             bcr=n(b.bcr, 2),
             prob=n(100 * prob, 0),
+            core_grades=grade_counts(inputs.reset_index(), "core", lang),
         )
     ]
+    room = scen[(scen.option == core_best) & (scen.scenario == "core_car_parks_with_room")]
+    if len(room):
+        conclusions.append(say("conclusion_core_parks", best=core_best, npv=money(float(room.npv.iloc[0]), lang)))
     svb = sw[(sw.option == core_best) & (sw.layer == "core")].set_index("input").switching_value
     if prob < 0.5:
         p = a.parameters
@@ -377,16 +419,33 @@ def build(r: Run) -> str:
         if ways:
             conclusions.append(say("conclusion_switch", best=core_best, list=say("switch_join").join(ways)))
     e_best, e_prob = ext.loc[best], float(mce.loc[best, "probability_positive"])
+    e_mean = float(mce.loc[best, "mean"])
     conclusions.append(
         say(
-            "conclusion_ext_some" if e_best.npv > 0 else "conclusion_ext_none",
+            "conclusion_ext_some" if e_mean > 0 else "conclusion_ext_none",
             best=best,
+            mean=money(e_mean, lang),
             npv=money(e_best.npv, lang),
             bcr=n(e_best.bcr, 2),
             prob=n(100 * e_prob, 0),
             list="; ".join(f"{i} {n(float(ext.loc[i, 'bcr']), 2)}" for i in ids),
+            ext_grades=grade_counts(inputs.reset_index(), "extended", lang),
+            rests=rests_on(bridge, inputs, best, lang),
         )
     )
+    # the decision rule is the expected NPV; where the central values or the simulations' favourite name another
+    # option, the ranking does not hold, and the study says so instead of naming one winner
+    central_best, often_best = str(ext.npv.idxmax()), str(mce.probability_best.idxmax())
+    if central_best != best or often_best != best:
+        conclusions.append(say("conclusion_ext_tie", central_best=central_best, central_npv=money(float(ext.loc[central_best, "npv"]), lang),
+                               often_best=often_best, often=n(100 * float(mce.loc[often_best, "probability_best"]), 0),
+                               nothing=n(100 * (1 - float(mce.probability_best.sum())), 0)))  # fmt: skip
+    # the off-peak excess is derived, not measured: say so where the off-peak meetings it scales by are not significant
+    if a.offpeak_from_copresence and "offpeak_s" in inputs.index and giving:
+        off = copres[(copres.period == "off_peak") & (copres.part == giving[0])]
+        if len(off) and appraisal.p_value(off.iloc[0]) >= a.significance:
+            conclusions.append(say("conclusion_offpeak", off=n(float(inputs.loc["offpeak_s", "central"]), 1), giving=part_label(giving[0]),
+                                   p=pvalue(appraisal.p_value(off.iloc[0]), lang)))  # fmt: skip
     if len(worth):
         conclusions.append(say("conclusion_voi", list="; ".join(first_lower(label_of(x)) for x in worth.input.head(3))))
     if len(crit):
@@ -396,8 +455,9 @@ def build(r: Run) -> str:
         if plus or minus:
             conclusions.append(say("conclusion_criteria", best=best, plus="; ".join(plus) or "—", minus="; ".join(minus) or "—"))
     for row in alts.itertuples():
-        conclusions.append(say("conclusion_alt", id=row.alternative, label=row.label, places=n(row.places, 0), secs=n(row.breakeven_seconds_per_peak_passage, 1),
-                               secs_all=n(row.breakeven_seconds_per_passage, 1)))  # fmt: skip
+        conclusions.append(say("conclusion_alt" if row.can_pay else "conclusion_alt_short", id=row.alternative, label=row.label, places=n(row.places, 0),
+                               secs=finite(row.breakeven_seconds_per_peak_passage, lambda x: n(x, 1)),
+                               secs_all=finite(row.breakeven_seconds_per_passage, lambda x: n(x, 1)), removable=n(row.removable_peak_s, 0)))  # fmt: skip
     conclusions.append(say("conclusion_data"))
     lead = [s_ + "." for s_ in problem.split(". ")[:3:2]]  # the width, and the measured time
     summary = [f"## {say('h_summary')}", ""] + [f"- {c.rstrip('.')}." for c in lead + conclusions] + [""]

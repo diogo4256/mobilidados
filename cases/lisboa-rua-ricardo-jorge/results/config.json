@@ -2,6 +2,9 @@
   "appraisal": {
     "alternatives": [
       {
+        "blocks": [
+          "B2"
+        ],
         "id": "R",
         "label": "um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar",
         "parking_m": 20.0,
@@ -255,7 +258,7 @@
         "dimension": "options",
         "grade": "P",
         "source": "",
-        "text": "Desviar uma das carreiras: medido na rede de ruas em appraisal_reroutes.csv. Acaba com os encontros entre autocarros, mas não com os encontros com ligeiros e furgões; alonga o percurso e tira paragens a quem as usa. A decisão é de rede, da Carris, com as entradas e saídas por paragem."
+        "text": "Desviar uma das carreiras: medido na rede de ruas em appraisal_detours.csv e appraisal_reroutes.csv. Acaba com os encontros entre autocarros, mas não com os encontros com ligeiros e furgões, e tira paragens a quem as usa. A 744 faria um percurso mais longo. A 46B entra na rua para servir duas paragens: sem ela faria um caminho mais curto, e o valor do seu desvio vem sobretudo desse atalho, não dos encontros que acaba; a rede de ruas usada não conhece os sentidos proibidos nem as viragens que um autocarro pode fazer, por isso o atalho tem de ser verificado no local. Os valores das tabelas vêm antes do custo para quem perde as paragens. A decisão é de rede, da Carris, com as entradas e saídas por paragem."
       },
       {
         "dimension": "options",
@@ -667,11 +670,11 @@
       },
       "walk_cost": {
         "central": 130.0,
-        "grade": "I",
+        "grade": "P",
         "high": 260.0,
         "label": "Custo anual, para quem estaciona perto, de procurar e andar mais",
         "low": 65.0,
-        "source": "Mais 2, 4 ou 8 minutos por dia, 365 dias, ao valor do tempo de lazer (5,34 €/h, como no mínimo do custo de estacionar noutro sítio)",
+        "source": "Mais 2, 4 ou 8 minutos por dia (pressuposto: o tempo a pé não foi medido), 365 dias, ao valor do tempo de lazer (5,34 €/h, como no mínimo do custo de estacionar noutro sítio)",
         "unit": "€/ano"
       }
     },

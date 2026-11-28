@@ -656,13 +656,21 @@ def delay_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[F
 def appraisal_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> list[Finding]:
     """One finding per option of the appraisal (its net present value, with the spread of the simulations), and one per
     alternative whose effect cannot be estimated (the saving it needs to pay for itself)."""
-    from .appraisal_report import money
+    from .appraisal import rate_pct
+    from .appraisal_report import grade_counts, money
+
+    def ratio(x: float) -> float | None:
+        """A ratio for findings.json: None where it is not a finite number (an option that costs nothing), which
+        strict JSON cannot hold."""
+        return round(float(x), 4) if math.isfinite(float(x)) else None
 
     a, lang = r.cfg.appraisal, r.case.lang
     assert a is not None
     results, sims = r.table("appraisal_results"), r.table("appraisal_montecarlo")
     res, ext = (results[results.layer == x].set_index("option") for x in ("core", "extended"))
     mc, mce = (sims[sims.layer == x].set_index("option") for x in ("core", "extended"))
+    inputs = r.table("appraisal_inputs")
+    rate = rate_pct(a.discount_rate)
     common = {"sources": ["delay", "free_width", "parking_removed", "appraisal_inputs.csv"], "method": method("appraisal", year=a.price_year),
               "caveat": caveat("appraisal")}  # fmt: skip
     out = []
@@ -677,7 +685,7 @@ def appraisal_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> li
                     id=o.id,
                     label=o.label,
                     years=a.horizon_years,
-                    rate=n(100 * a.discount_rate, 0),
+                    rate=n(rate, 0 if float(rate).is_integer() else 1),
                     npv=money(row.npv, lang),
                     bcr=n(row.bcr, 2),
                     p10=money(sim.p10, lang),
@@ -690,14 +698,16 @@ def appraisal_findings(r: Run, say: Any, method: Any, caveat: Any, n: Any) -> li
                     npv_ext=money(row_e.npv, lang),
                     bcr_ext=n(row_e.bcr, 2),
                     prob_ext=n(100 * sim_e.probability_positive, 0),
+                    core_grades=grade_counts(inputs, "core", lang),
+                    ext_grades=grade_counts(inputs, "extended", lang),
                 ),
                 values={
                     "npv": round(float(row.npv), 2),
-                    "bcr": round(float(row.bcr), 4),
+                    "bcr": ratio(row.bcr),
                     "npv_p10_p90": [round(float(sim.p10), 2), round(float(sim.p90), 2)],
                     "probability_positive": round(float(sim.probability_positive), 4),
                     "npv_extended": round(float(row_e.npv), 2),
-                    "bcr_extended": round(float(row_e.bcr), 4),
+                    "bcr_extended": ratio(row_e.bcr),
                     "probability_positive_extended": round(float(sim_e.probability_positive), 4),
                 },
                 **common,

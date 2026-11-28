@@ -1,21 +1,21 @@
 option,layer,crash,label,crash_cost,npv,crashes_over_period,years_per_crash
-B,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-64183.153231600445,1.0369758525271504,9.643426098717354
-B,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-64183.153231600445,0.4487532298907198,22.283962173230922
-C,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-22197.18564968394,0.3586290849520244,27.883962622099517
-C,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-22197.18564968394,0.15519740388627862,64.43406751396132
-E,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-32627.141576817587,0.5271407877088621,18.970264174516814
-E,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-32627.141576817587,0.2281211568379279,43.836354937936115
-G,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-25295.917777959905,0.40869378618097824,24.46819682149948
-G,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-25295.917777959905,0.17686299650857037,56.540939582664045
-H,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-9339.356848008645,0.15089142620607193,66.27281782294928
-H,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-9339.356848008645,0.06529854548471185,153.1427679708619
-B,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,4152.297943252794,0.06708664942206877,149.0609545438173
-B,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,4152.297943252794,0.02903187237902584,344.44902035407574
-C,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,25766.477192684055,0.41629638477079023,24.02134720796561
-C,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,25766.477192684055,0.18015303519599626,55.508362593616965
-E,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,8884.699387879351,0.14354574772835457,69.66420223693399
-E,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,8884.699387879351,0.06211968945389785,160.97955556299914
-G,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-2635.4120205268555,0.0425790645854498,234.85720265017798
-G,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-2635.4120205268555,0.018426169434785252,542.7063956723323
-H,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,5722.638136475376,0.09245786879405338,108.1573708158323
-H,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,5722.638136475376,0.040011314775584436,249.9293026507133
+B,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-63936.477325531494,1.0329904304169164,9.680631790522963
+B,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-63936.477325531494,0.4470285310560393,22.369936827916707
+C,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-30941.421216542032,0.49990542734239024,20.003783621958757
+C,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-30941.421216542032,0.2163350039570228,46.22460451192912
+E,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-32407.874104756298,0.523598190277543,19.098614520992356
+E,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-32407.874104756298,0.2265880912071008,44.13294602874796
+G,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-25076.650305898616,0.40515118874965916,24.682144043217775
+G,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-25076.650305898616,0.17532993087774326,57.03532733936314
+H,core,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-17112.010685215842,0.27647039721973055,36.17023775624084
+H,core,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-17112.010685215842,0.1196430788809289,83.58193464706966
+B,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,4496.9438774098235,0.07265492541659473,137.6369178367631
+B,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,4496.9438774098235,0.031441554177668356,318.0504355316694
+C,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,2923.039849280809,0.047226126905002754,211.74719705715864
+C,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,2923.039849280809,0.020437194301295585,489.3039549644085
+E,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,9148.081207186631,0.1478010791177424,67.65850465837076
+E,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,9148.081207186631,0.06396119203140667,156.34480350350148
+G,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-2455.446632121937,0.03967145172023008,252.07043267591325
+G,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-2455.446632121937,0.017167894556581183,582.4826082803831
+H,extended,slight_injury,Acidente só com feridos leves (custo médio para a sociedade),76160.0,-6200.376526347409,0.10017645457831473,99.82385623542228
+H,extended,with_victims,"Acidente com vítimas, média nacional (custo para a sociedade)",175990.0,-6200.376526347409,0.04335154713724899,230.67227493266765
