@@ -14,7 +14,7 @@ from pydantic import ValidationError
 from shapely.geometry import LineString
 
 from mobilidados import appraisal, delay, reroute
-from mobilidados.config import Appraisal, Criterion, Option, Parameter
+from mobilidados.config import Appraisal, Criterion, Delay, Option, Parameter
 
 LISBON_2026 = [dt.date(2026, m, d) for m, d in [(1, 1), (2, 17), (4, 3), (4, 5), (4, 25), (5, 1), (6, 4), (6, 10), (6, 13), (8, 15),
                                                 (10, 5), (11, 1), (12, 1), (12, 8), (12, 25)]]  # fmt: skip
@@ -106,7 +106,7 @@ def test_the_switching_value_brings_the_present_value_to_zero():
     c = appraisal.layer(appraisal.central(cfg, m), "core")
     o = cfg.options[0]
     sv = appraisal.switching_value(
-        lambda x: appraisal.evaluate(o, c | {"car_value": x}, m, cfg)["npv"], *appraisal.search_domain(50.0, 400.0)
+        lambda x: appraisal.evaluate(o, c | {"car_value": x}, m, cfg)["npv"], *appraisal.search_domain("car_value", 50.0, 400.0, cfg)
     )
     assert sv is not None
     assert appraisal.evaluate(o, c | {"car_value": sv}, m, cfg)["npv"] == pytest.approx(0.0, abs=1e-6)
@@ -115,11 +115,16 @@ def test_the_switching_value_brings_the_present_value_to_zero():
 
 
 def test_the_search_for_a_switching_value_keeps_shares_in_zero_to_one_and_lengths_above_zero():
-    assert appraisal.search_domain(0.25, 0.7) == (0.0, 1.0)
-    lo, hi = appraisal.search_domain(5.0, 6.0)
+    cfg = config()
+    assert appraisal.search_domain("occupancy", 0.25, 0.7, cfg) == (0.0, 1.0)
+    assert appraisal.search_domain("comply", 0.9, 0.9, cfg) == (0.0, 1.0)  # an option's compliance
+    # what an input means decides, not its range: a cost per km of 0.2 to 0.9 may break even above 1
+    assert appraisal.search_domain("external_cost_pkm", 0.2, 0.9, cfg)[1] > 1
+    assert appraisal.search_domain("income_growth", 0.0, 0.02, cfg)[0] < 0
+    lo, hi = appraisal.search_domain("stall_m", 5.0, 6.0, cfg)
     assert 0 < lo < 5
     assert hi > 6
-    assert appraisal.search_domain(0.0, 5000.0)[0] == 0.0
+    assert appraisal.search_domain("car_value", 0.0, 5000.0, cfg)[0] == 0.0
 
 
 def test_pert_draws_stay_in_range_have_the_pert_mean_and_repeat_with_the_seed():
@@ -135,8 +140,13 @@ def parts_and_copresence(p_gap_before=1e-6, p_gap_after=0.5):
     parts = pd.DataFrame(
         {
             "part": ["B1 45–76 m", "76–95 m", "B2 95–149 m", "149–166 m", "B3 166–190 m"],
+            "block": ["B1", "", "B2", "", "B3"],
             "narrow": [True, False, True, False, True],
             "excess_s": [2.0, 4.0, 4.0, 4.0, -1.0],
+            # at each junction, the buses heading each way: half the passages each, held mostly on the way into B2
+            "excess_ascending_s": [2.0, 6.0, 4.0, 2.0, -1.0],
+            "excess_descending_s": [2.0, 2.0, 4.0, 6.0, -1.0],
+            "peak_share_ascending": [0.5] * 5,
         }
     )
     cop = pd.DataFrame({"part": parts.part, "period": "peak", "p_value": [0.5, p_gap_before, 0.5, p_gap_after, 0.5]})
@@ -148,8 +158,11 @@ def test_attribution_counts_the_widened_sections_and_the_junctions_where_buses_g
     # total 13 s: B1+B2+B3 = 5 s; the junction before B2 (4 s) shows buses losing time to oncoming buses, the one after (4 s) does not
     lo, ce, hi = appraisal.attribution(parts, cop, ["B1", "B2", "B3"], 0.01)
     assert (lo, ce, hi) == pytest.approx((5 / 13, 9 / 13, 1.0))
-    # only B2 widened: its own 4 s, plus the junction before it; at most both junctions next to it
-    assert appraisal.attribution(parts, cop, ["B2"], 0.01) == pytest.approx((4 / 13, 8 / 13, 12 / 13))
+    # only B2 widened: its own 4 s, plus, at the junction before it, the buses heading into it (half the passages, 6 s
+    # each: 3 s); at most also those heading into it from the junction after it (3 s), never those heading into B1 or B3
+    assert appraisal.attribution(parts, cop, ["B2"], 0.01) == pytest.approx((4 / 13, 7 / 13, 10 / 13))
+    # only B1 widened: the junction after it counts for the buses heading back into B1 (half × 2 s)
+    assert appraisal.attribution(parts, cop, ["B1"], 0.01) == pytest.approx((2 / 13, 3 / 13, 3 / 13))
     # no junction shows buses losing time to oncoming buses: the central value is the narrow sections alone
     parts, cop = parts_and_copresence(p_gap_before=0.2)
     assert appraisal.attribution(parts, cop, ["B1", "B2", "B3"], 0.01)[1] == pytest.approx(5 / 13)
@@ -157,9 +170,29 @@ def test_attribution_counts_the_widened_sections_and_the_junctions_where_buses_g
 
 def test_the_stretch_is_cut_into_narrow_sections_and_what_lies_between():
     cuts = delay.parts([(41.0, 76.0, "B1"), (95.5, 149.0, "B2"), (166.5, 194.0, "B3")], 45.0, 190.0)
-    assert [(c[0], c[3]) for c in cuts] == [("B1 45–76 m", True), ("76–95.5 m", False), ("B2 95.5–149 m", True), ("149–166.5 m", False),
-                                            ("B3 166.5–190 m", True)]  # fmt: skip
-    assert delay.parts([(0.0, 3.0, "B1")], 0.0, 100.0) == [("0–100 m", 0.0, 100.0, False)]  # a sliver is left to its neighbour
+    assert [(c.name, c.narrow, c.block) for c in cuts] == [("B1 45–76 m", True, "B1"), ("76–95.5 m", False, ""), ("B2 95.5–149 m", True, "B2"),
+                                                           ("149–166.5 m", False, ""), ("B3 166.5–190 m", True, "B3")]  # fmt: skip
+    assert delay.parts([(0.0, 3.0, "B1")], 0.0, 100.0) == [delay.Part("0–100 m", 0.0, 100.0, False, "")]  # a sliver is left to its neighbour
+
+
+def test_the_parts_cover_the_stretch_without_a_hole():
+    # a junction of 2 m between two sections is joined to the section before it, not dropped
+    cuts = delay.parts([(45.0, 80.0, "B1"), (82.0, 150.0, "B2")], 45.0, 150.0)
+    assert [(c.start, c.end, c.block) for c in cuts] == [(45.0, 82.0, "B1"), (82.0, 150.0, "B2")]
+    for cuts, s_from, s_to in ((cuts, 45.0, 150.0), (delay.parts([(10.0, 12.0, "B1"), (30.0, 60.0, "B2")], 0.0, 100.0), 0.0, 100.0)):
+        assert (cuts[0].start, cuts[-1].end) == (s_from, s_to)
+        assert all(a.end == b.start for a, b in itertools.pairwise(cuts))
+
+
+def test_a_part_keeps_the_controls_and_reach_of_the_whole_stretch():
+    line = LineString([(0, 0), (2000, 0)])
+    cfg = Delay.model_validate({"source": "x", "s_from": 0, "s_to": 600})
+    controls, reach = delay.windows(line, 700.0, 1300.0, cfg)
+    r = delay.Route("r", 0, "1", "sh", line, (700.0, 1300.0), controls, reach)
+    axis = LineString([(700, 0), (1300, 0)])
+    (p,) = delay.part_routes([r], axis, 400.0, 450.0)
+    assert p.stretch == (1100.0, 1150.0)
+    assert (p.controls, p.reach) == (r.controls, r.reach)  # never a control over the stretch itself
 
 
 def test_the_binomial_tail_is_exact():
@@ -254,7 +287,7 @@ def test_the_extended_layer_adds_each_mechanism_as_computed_by_hand():
 def test_buses_held_by_oncoming_cars_move_the_attribution_toward_its_high_bound():
     m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0)
     m = dataclasses.replace(m, attribution={"A": (0.2, 0.5, 0.9)})
-    base = {"offpeak_s": parameter(5.0)}
+    base = {"offpeak_s": parameter(5.0), "load_offpeak": parameter(10.0)}
 
     def bus_hours(share: float | None) -> float:
         extra = {} if share is None else {"other_vehicle_share": parameter(share)}
@@ -410,8 +443,10 @@ def test_the_cautious_and_favourable_scenarios_are_the_worst_and_best_corners():
     c = appraisal.central(cfg, m)
     s = appraisal.scenarios(cfg, m, c).set_index(["scenario", "years"]).npv
     q = appraisal.layer(c, "extended")
-    corners = [appraisal.evaluate(cfg.options[0], q | dict(zip(ranged, ends, strict=True)), m, cfg)["npv"]
-               for ends in itertools.product(*[(lo, hi) for _, lo, hi in ranged.values()])]  # fmt: skip
+    # every typed-in input with a range moves, the core's too (the value of time and the load here): none is measured
+    moving = ranged | {k: (BASE[k]["central"], BASE[k]["low"], BASE[k]["high"]) for k in ("vot", "load_peak")}
+    corners = [appraisal.evaluate(cfg.options[0], q | dict(zip(moving, ends, strict=True)), m, cfg)["npv"]
+               for ends in itertools.product(*[(lo, hi) for _, lo, hi in moving.values()])]  # fmt: skip
     assert s["central", 10] > 0 > s["cautious", 10]
     assert s["cautious", 10] == pytest.approx(min(corners))
     assert s["favourable", 10] == pytest.approx(max(corners))
@@ -451,7 +486,7 @@ def test_a_junction_counts_only_if_buses_meet_there_when_whole_days_are_resample
     cop["p_value_by_day"] = [0.5, 0.2, 0.5, 0.5, 0.5]
     assert appraisal.attribution(parts, cop, ["B2"], 0.01)[1] == pytest.approx(4 / 13)
     cop["p_value_by_day"] = [0.5, 0.0005, 0.5, 0.5, 0.5]
-    assert appraisal.attribution(parts, cop, ["B2"], 0.01)[1] == pytest.approx(8 / 13)
+    assert appraisal.attribution(parts, cop, ["B2"], 0.01)[1] == pytest.approx(7 / 13)  # B2 alone: the buses heading into it
 
 
 def copresence_by_period(off_with=17, p_peak=0.0005):
@@ -508,7 +543,7 @@ def test_the_off_peak_break_even_rises_when_the_parking_assumptions_are_least_fa
 
 
 def test_an_option_worth_it_with_no_off_peak_delay_reports_the_peak_saving_it_needs():
-    cfg = config(parameters={"offpeak_s": parameter(5.0, 0.0, 60.0)})
+    cfg = config(parameters={"offpeak_s": parameter(5.0, 0.0, 60.0), "load_offpeak": parameter(10.0)})
     m = measured(passages={"A": (3600.0, 7200.0)}, passages_year=10800.0, excess_s=(5.0, 30.0, 40.0))
     c = appraisal.central(cfg, m)
     t = appraisal.offpeak_thresholds(cfg, m, c).set_index("condition").loc["central"]
@@ -616,7 +651,7 @@ def test_a_switching_value_above_the_high_bound_of_the_attribution_is_found():
         return float(appraisal.evaluate(o, c | {"attribution_A": x}, m, cfg)["npv"])
 
     assert npv_at(0.9) > npv_at(0.5)
-    sv = appraisal.switching_value(npv_at, *appraisal.search_domain(0.1, 0.3))
+    sv = appraisal.switching_value(npv_at, *appraisal.search_domain("attribution_A", 0.1, 0.3, cfg))
     assert sv is not None
     assert sv > 0.3
     assert npv_at(sv) == pytest.approx(0.0, abs=1e-6)
@@ -643,3 +678,47 @@ def test_no_off_peak_positions_where_buses_meet_gives_no_ratio_rather_than_nan()
     cp = copresence_by_period()
     cp.loc[cp.period == "off_peak", ["positions", "with_oncoming_bus"]] = 0
     assert appraisal.offpeak_ratio(cp.astype({"positions": "int64", "with_oncoming_bus": "int64"}), parts, 0.01) is None
+
+
+def test_a_mechanism_without_an_input_it_reads_is_refused():
+    with pytest.raises(ValidationError, match=r"journey_min \(needed by elasticity_ivt\)"):
+        config(parameters={k: v for k, v in EXTENDED.items() if k != "journey_min"})
+    with pytest.raises(ValidationError, match=r"walk_cost \(needed by room_nearby\)"):
+        config(parameters={k: v for k, v in EXTENDED.items() if k != "walk_cost"})
+    config(parameters={k: v for k, v in EXTENDED.items() if k not in ("elasticity_ivt", "journey_min")})  # without the mechanism, fine
+
+
+def test_the_options_shares_are_drawn_together_and_cannot_be_correlated_by_hand():
+    two = [{"id": "A", "label": "x", "blocks": ["B2"], "compliance": "comply", "signs": 2},
+           {"id": "B", "label": "y", "blocks": ["B1", "B2"], "compliance": "comply", "signs": 2}]  # fmt: skip
+    cfg = config(options=two, draws=2000)
+    m = measured(attribution={"A": (0.2, 0.4, 0.6), "B": (0.3, 0.7, 0.9)}, metres={"A": 55.0, "B": 110.0},
+                 passages={"A": (3600.0, 0.0), "B": (3600.0, 0.0)})  # fmt: skip
+    d = appraisal.draws(cfg, m)
+    ranks = [np.argsort(np.argsort(d[k])) for k in ("attribution_A", "attribution_B")]
+    np.testing.assert_array_equal(*ranks)  # the same rank in every draw: one uncertainty, not two
+    with pytest.raises(ValidationError, match="drawn together already"):
+        config(options=two, correlations=[{"a": "attribution_A", "b": "vot", "rho": 0.5}])
+
+
+def test_the_measured_excess_is_drawn_with_its_interval_as_the_5th_and_95th_percentiles():
+    cfg, m = config(draws=200_000), measured(excess_s=(6.0, 14.0, 24.0))
+    x = appraisal.draws(cfg, m)["excess_s"]
+    assert np.quantile(x, 0.05) == pytest.approx(6.0, abs=0.1)
+    assert np.quantile(x, 0.95) == pytest.approx(24.0, abs=0.1)
+    assert np.median(x) == pytest.approx(14.0, abs=0.1)
+    assert x.min() >= 0.0
+
+
+def test_a_line_that_turns_into_the_street_for_its_stops_runs_shorter_without_it():
+    # the line runs along North Avenue but turns down into Main Street and back up to serve it: today it runs
+    # 300 m between the lead-in points through the street, and 100 m without it, along the avenue
+    net = reroute.Network([*AXES, ("Link North 2", LineString([(200, 100), (200, 200)]))])
+    shape = LineString([(0, 200), (100, 200), (100, 100), (200, 100), (200, 200), (300, 200)])
+    axis = LineString([(100, 100), (200, 100)])
+    d = reroute.detour(net, shape, axis, "Main", lead_ins=(50.0,))
+    assert d is not None
+    assert d.with_street_m == pytest.approx(300)  # through the street, as the bus runs today, not the shortest way
+    assert d.without_street_m == pytest.approx(100)
+    assert d.detour_m == pytest.approx(-200)
+    assert d.shorter_without

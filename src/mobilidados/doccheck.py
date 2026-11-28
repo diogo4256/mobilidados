@@ -29,8 +29,10 @@ import pandas as pd
 
 MINUS = "−"
 SPACES = "   "
-_PT = re.compile(rf"(?<![\w.,/])([+{MINUS}-]?)(\d{{1,3}}(?:[{SPACES}]\d{{3}})+|\d+)(?:,(\d+))?(?![\w/])")
-_EN = re.compile(rf"(?<![\w.,/])([+{MINUS}-]?)(?:€)?(\d{{1,3}}(?:,\d{{3}})+|\d+)(?:\.(\d+))?(?![\w/])")
+# the decimals are possessive (``?+``): a number glued to a unit ("54.0m") is not read as its whole part ("54"); a
+# trailing ``k`` (thousands) is read as part of it
+_PT = re.compile(rf"(?<![\w.,/])([+{MINUS}-]?)(\d{{1,3}}(?:[{SPACES}]\d{{3}})+|\d+)(?:,(\d+))?+(k?)(?![\w/])")
+_EN = re.compile(rf"(?<![\w.,/])([+{MINUS}-]?)(?:€)?(\d{{1,3}}(?:,\d{{3}})+|\d+)(?:\.(\d+))?+(k?)(?![\w/])")
 _LINK = re.compile(r"\]\(<[^>]*>\)|<https?://[^>]*>|\]\([^)]*\)|https?://\S+|`[^`]*`")
 SCALES = (1.0, 1e-3, 100.0)
 
@@ -46,9 +48,14 @@ class Printed:
     line: int
     context: str
     signed: bool = False  # printed with + or −: the sign must match too
+    unit: str = ""  # "%", "k" (thousands, also "mil"), "€" or "": what the scale is read from
 
-    def explained_by(self, v: float) -> bool:
-        for s in SCALES:
+    def scales(self) -> tuple[float, ...]:
+        """The scales a model value may be printed at: the one its unit gives, or, with no unit, any of ``SCALES``."""
+        return {"%": (100.0,), "k": (1e-3,), "€": (1.0,)}.get(self.unit, SCALES)
+
+    def explained_by(self, v: float, scales: tuple[float, ...] | None = None) -> bool:
+        for s in self.scales() if scales is None else scales:
             x = v * s
             a, b = (x, self.value) if self.signed else (abs(x), abs(self.value))
             if abs(a - b) <= self.step / 2 + 1e-9 * max(1.0, abs(x)):
@@ -56,11 +63,29 @@ class Printed:
         return False
 
 
-def _step(digits: str, decimals: str | None) -> tuple[int, float]:
+def _step(digits: str, decimals: str | None, unit: str = "") -> tuple[int, float]:
+    """The decimals printed and the rounding they show. A whole number ending in zeros is read as rounded to them
+    only where rounding is the convention: an amount of money (+700 €: to the hundred) or a number of four digits or
+    more (530 000: to the ten thousand); a percentage or a smaller count is printed to the unit (100% is not 62%)."""
     if decimals:
         return len(decimals), 10.0 ** -len(decimals)
     zeros = len(digits) - len(digits.rstrip("0"))
-    return 0, 10.0 ** min(zeros, len(digits) - 1) if len(digits) > zeros else 1.0  # +700: to the hundred; 530 000: ten thousand
+    rounded = unit in ("€", "k") or (unit != "%" and len(digits.lstrip("0")) >= 4)
+    if not rounded or len(digits) <= zeros:
+        return 0, 1.0
+    return 0, 10.0 ** min(zeros, len(digits) - 1)
+
+
+def unit_around(before: str, after: str) -> str:
+    """The unit printed next to a number: ``%`` after it, ``k`` or ``mil`` (thousands) after it, ``€`` before or after."""
+    a = after.lstrip(" \u00a0\u202f")
+    if a.startswith("%"):
+        return "%"
+    if after.startswith("k") or re.match(r"mil\b", a):
+        return "k"
+    if a.startswith("€") or before.rstrip(" \u00a0\u202f+−-").endswith("€"):
+        return "€"
+    return ""
 
 
 def numbers(text: str, lang: str) -> list[Printed]:
@@ -70,14 +95,15 @@ def numbers(text: str, lang: str) -> list[Printed]:
     for i, line in enumerate(text.splitlines(), 1):
         clean = _LINK.sub(lambda m: " " * len(m.group(0)), line)
         for m in rx.finditer(clean):
-            sign, intpart, dec = m.groups()
+            sign, intpart, dec, k = m.groups()
             digits = re.sub(rf"[{SPACES},]", "", intpart)
-            d, step = _step(digits, dec)
+            unit = "k" if k else unit_around(clean[max(0, m.start() - 3) : m.start()] + m.group(0)[: m.group(0).find(intpart[0])], clean[m.end() : m.end() + 5])
+            d, step = _step(digits, dec, unit)
             v = float(digits + ("." + dec if dec else ""))
             if sign in (MINUS, "-"):
                 v = -v
             ctx = line[max(0, m.start() - 60) : m.end() + 40].strip()
-            out.append(Printed(v, d, step, m.group(0).strip(), i, ctx, bool(sign)))
+            out.append(Printed(v, d, step, m.group(0).strip(), i, ctx, bool(sign), unit))
     return out
 
 
@@ -147,16 +173,27 @@ def resolve(expr: str, results: Path) -> float:
 @dataclass
 class Claim:
     """A statement pinned to model outputs: a pattern per language whose groups capture printed numbers, and one
-    expression per group (``value``: one, or a list in group order)."""
+    expression per group (``value``: one, or a list in group order).
+
+    Each value is compared at one scale: the one the unit printed next to the number gives (``%``: ×100; ``k`` or
+    ``mil``: ÷1000; ``€``: as is), else ``scale`` (a table in thousands of euros: 0.001; one for every value, or a
+    list with one per value), else as is."""
 
     id: str
     value: str | list[str]
     patterns: dict[str, str]
     note: str = ""
+    scale: float | list[float | None] | None = None
 
     @property
     def values(self) -> list[str]:
         return [self.value] if isinstance(self.value, str) else list(self.value)
+
+    def scale_of(self, i: int) -> float | None:
+        """The declared scale of value ``i``: one for every value, or one per value (None: as is)."""
+        if isinstance(self.scale, list):
+            return self.scale[i] if i < len(self.scale) else None
+        return self.scale
 
 
 @dataclass
@@ -172,7 +209,10 @@ class Report:
 
 def load_spec(path: Path) -> tuple[list[Claim], list[float], list[str]]:
     spec = tomllib.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-    claims = [Claim(c["id"], c["value"], {k: c[k] for k in ("pt", "en") if k in c}, c.get("note", "")) for c in spec.get("claims", [])]
+    claims = [
+        Claim(c["id"], c["value"], {k: c[k] for k in ("pt", "en") if k in c}, c.get("note", ""), c.get("scale"))
+        for c in spec.get("claims", [])
+    ]
     return claims, [float(x) for x in spec.get("ignore_values", [])], list(spec.get("ignore_patterns", []))
 
 
@@ -201,21 +241,24 @@ def check(text: str, lang: str, results: Path, configs: list[Path], spec: Path) 
             continue
         for m in hits:
             line = text.count("\n", 0, m.start()) + 1
-            groups = (
-                [g for g in m.groups() if g is not None] if len(expected) == 1 else list(m.groups())
-            )  # alternatives: the one that matched
+            spans = [(g, m.span(i)) for i, g in enumerate(m.groups(), 1) if g is not None or len(expected) > 1]
+            groups = [g for g, _ in spans]  # with one value, of alternatives the one that matched
             if len(groups) < len(expected):  # a value with no group to compare it with would be skipped unseen
                 rep.claims.append((c, "bad_pattern", expected[0], None))
                 rep.why[c.id] = f"the pattern captures {len(groups)} number(s) for {len(expected)} value(s)"
                 continue
-            for want, grp in zip(expected, groups, strict=False):
+            for j, (want, (grp, (a, b))) in enumerate(zip(expected, spans, strict=False)):
                 found = numbers(grp or "", lang)
                 if not found:
                     rep.claims.append((c, "unparsed", want, None))
                     continue
                 p = found[0]
-                p = Printed(p.value, p.decimals, p.step, p.raw, line, m.group(0)[:120], p.signed)
-                rep.claims.append((c, "ok" if p.explained_by(want) else "wrong", want, p))
+                unit = p.unit or (unit_around(text[max(0, a - 3) : a], text[b : b + 6]) if a >= 0 else "")
+                step = p.step if p.decimals else _step(str(int(abs(p.value))), None, unit)[1]
+                p = Printed(p.value, p.decimals, step, p.raw, line, m.group(0)[:120], p.signed, unit)
+                declared = c.scale_of(j)
+                scales = p.scales() if unit else ((declared,) if declared is not None else (1.0,))
+                rep.claims.append((c, "ok" if p.explained_by(want, scales) else "wrong", want, p))
     known = catalogue(results, configs, spec_tables(spec))
     ignore = [re.compile(x) for x in ignore_patterns]
     pinned = {(p.line, abs(p.value)) for _, status, _, p in rep.claims if status == "ok" and p is not None}

@@ -124,3 +124,44 @@ pt = 'é positivo: (\\+[\\d ]+) €, rácio [\\d,]+'
     )
     rep = doccheck.check("é positivo: +25 800 €, rácio 9,99", "pt", results, [], s)
     assert [(c.id, status) for c, status, _, _ in rep.failed] == [("two", "bad_pattern")]
+
+
+def test_a_percentage_or_a_small_count_is_compared_to_the_unit():
+    assert not doccheck.numbers("100%", "pt")[0].explained_by(0.62)
+    assert not doccheck.numbers("40%", "en")[0].explained_by(0.44)
+    assert doccheck.numbers("44%", "en")[0].explained_by(0.44)
+    assert not doccheck.numbers("20 viagens", "pt")[0].explained_by(24)
+    assert doccheck.numbers("530 000 viagens", "pt")[0].explained_by(527_300)  # a large count, rounded
+    assert doccheck.numbers("+700 €", "pt")[0].explained_by(707.3)  # money, rounded
+
+
+def test_a_number_glued_to_a_unit_is_never_read_as_its_whole_part():
+    (k,) = doccheck.numbers("of which €25.8k rests", "en")
+    assert (k.value, k.unit) == (25.8, "k")
+    assert k.explained_by(25766.5) and not k.explained_by(25.8)
+    assert [p.value for p in doccheck.numbers("54.0m wide", "en")] == []
+    (pt,) = doccheck.numbers("25,8 mil €", "pt")
+    assert pt.unit == "k" and pt.explained_by(25766.5)
+
+
+def test_a_pinned_value_is_compared_at_the_scale_its_unit_or_its_claim_gives(tmp_path: Path, results: Path):
+    s = spec(
+        tmp_path,
+        """
+[[claims]]
+id = "in_thousands"
+value = ["{appraisal_results.csv:npv[layer=extended,option=C]}", "{appraisal_results.csv:bcr[layer=extended,option=C]}"]
+scale = [0.001, 1]
+en = '^\\| C \\| ([−\\d.]+) \\| ([\\d.]+) \\|'
+
+[[claims]]
+id = "undeclared"
+value = "{appraisal_results.csv:npv[layer=extended,option=C]}"
+en = '^\\| C again \\| ([−\\d.]+) \\|'
+""",
+    )
+    rep = doccheck.check("| C | 25.8 | 1.82 |\n| C again | 25.8 |", "en", results, [], s)
+    # declared in thousands: right; with nothing printed or declared it is read as is, so 25.8 is not €25,766
+    assert [(c.id, status) for c, status, _, _ in rep.claims] == [("in_thousands", "ok"), ("in_thousands", "ok"), ("undeclared", "wrong")]
+    # a share printed as a percentage is compared at ×100 only: 26 € is not 25 766 €, 1.82 is not 182%
+    assert not doccheck.numbers("26 €", "pt")[0].explained_by(25766.5)

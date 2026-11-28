@@ -1,8 +1,10 @@
 """Taking a bus line off the street: the shortest way round it on the street network (``[[appraisal.reroutes]]``).
 
 For each route and direction an alternative moves, the line's own shape is followed from some way before the street
-to some way after it, and the shortest path between those two points on the network of street axes is found twice:
-with the street and without it. The difference is the detour. Two lead-in lengths are tried and the smaller detour
+to some way after it, and two paths between those two points are found on the network of street axes: the one through
+the street, as the bus runs today (to where the shape meets the street, along it, and on from where it leaves it), and
+the shortest one without it. The difference is the detour. It can be negative: a line that turns into the street to
+serve its stops runs a shorter way without it, and what it loses is those stops. Two lead-in lengths are tried and the smaller detour
 kept, which favours the rerouting. The network is the municipality's street axes, undirected: one-way rules and
 whether a bus can make each turn are not in the data, so the path found is a lower bound on the real detour, and the
 streets it uses that carry no bus today are listed to be checked on site.
@@ -43,9 +45,18 @@ class Network:
     def nearest(self, x: float, y: float) -> Node:
         return min(self.nodes, key=lambda n: (n[0] - x) ** 2 + (n[1] - y) ** 2)
 
-    def shortest(self, a: Node, b: Node, avoid: str | None = None) -> tuple[float, list[str], LineString] | None:
+    def junctions(self, street: str) -> list[Node]:
+        """The nodes where another street meets the streets whose name contains ``street``: where a bus enters or
+        leaves it."""
+        return [
+            n
+            for n, edges in self.adj.items()
+            if any(street in name for _, _, name in edges) and any(street not in name for _, _, name in edges)
+        ]
+
+    def shortest(self, a: Node, b: Node, avoid: str | None = None, only: str | None = None) -> tuple[float, list[str], LineString] | None:
         """Length of the shortest path from ``a`` to ``b``, the streets it runs along, in order, and its line; None if
-        there is none. Streets whose name contains ``avoid`` are left out."""
+        there is none. Streets whose name contains ``avoid`` are left out; with ``only``, every other street is."""
         dist, prev, queue = {a: 0.0}, {}, [(0.0, a)]
         while queue:
             d, u = heapq.heappop(queue)
@@ -54,7 +65,7 @@ class Network:
             if d > dist[u]:
                 continue
             for v, w, name in self.adj.get(u, []):
-                if avoid and avoid in name:
+                if (avoid and avoid in name) or (only and only not in name):
                     continue
                 if d + w < dist.get(v, math.inf):
                     dist[v], prev[v] = d + w, (u, name)
@@ -94,12 +105,17 @@ class Detour:
     def detour_m(self) -> float:
         return self.without_street_m - self.with_street_m
 
+    @property
+    def shorter_without(self) -> bool:
+        """The line would run a shorter way without the street: it turns into it for its stops, not to get through."""
+        return self.detour_m < 0
+
 
 def detour(net: Network, shape: LineString, axis: LineString, street: str, lead_ins: Iterable[float] = (200.0, 300.0, 400.0, 500.0),
            near_m: float = 12.0, step_m: float = 2.0, bus_streets: set[str] | None = None) -> Detour | None:  # fmt: skip
     """The detour a bus following ``shape`` would run if it could not use ``street`` (whose axis is ``axis``): for each
     lead-in, the shortest path on the network between the points that far before the shape reaches the street and
-    that far after it leaves, without the street, less the shortest path with it.
+    that far after it leaves, without the street, less the path through it (``through``).
 
     The shortest path depends on the lead-in, and the network does not know which streets a bus can use. So, of the
     lead-ins whose path runs only on ``bus_streets`` (the streets with buses today), the smallest detour is kept; if
@@ -111,15 +127,20 @@ def detour(net: Network, shape: LineString, axis: LineString, street: str, lead_
     if not along:
         return None
     d0, d1 = min(along), max(along)
+    on_street = net.junctions(street)
+    if not on_street:
+        return None
+    pe, px = shape.interpolate(d0), shape.interpolate(d1)
+    ne, nx = (min(on_street, key=lambda q, p=p: (q[0] - p.x) ** 2 + (q[1] - p.y) ** 2) for p in (pe, px))
     rows: list[Detour] = []
     for lead in lead_ins:
         a, b = max(d0 - lead, 0.0), min(d1 + lead, shape.length)
         pa, pb = shape.interpolate(a), shape.interpolate(b)
         na, nb = net.nearest(pa.x, pa.y), net.nearest(pb.x, pb.y)
-        base, alt = net.shortest(na, nb), net.shortest(na, nb, avoid=street)
+        base, alt = through(net, na, ne, nx, nb, street), net.shortest(na, nb, avoid=street)
         if base is None or alt is None:
             continue
-        rows.append(Detour(lead, base[0], alt[0], alt[1], alt[2], a, b))
+        rows.append(Detour(lead, base, alt[0], alt[1], alt[2], a, b))
     if not rows:
         return None
     on_buses = [r for r in rows if bus_streets and set(r.via) <= bus_streets]
@@ -130,6 +151,16 @@ def detour(net: Network, shape: LineString, axis: LineString, street: str, lead_
     assert best is not None
     detours = [r.detour_m for r in rows]
     return dataclasses.replace(best, detour_min_m=min(detours), detour_max_m=max(detours), on_bus_streets=bool(on_buses))
+
+
+def through(net: Network, a: Node, enter: Node, leave: Node, b: Node, street: str) -> float | None:
+    """The length of the path from ``a`` to ``b`` that runs along ``street`` from ``enter`` to ``leave``, as a bus on
+    it does today: the shortest way to the street without it, along it, and on from it without it. None if a leg has
+    no path."""
+    legs = (net.shortest(a, enter, avoid=street), net.shortest(enter, leave, only=street), net.shortest(leave, b, avoid=street))
+    if any(leg is None for leg in legs):
+        return None
+    return sum(leg[0] for leg in legs if leg is not None)
 
 
 def skipped(points: Iterable[tuple[str, float, float]], shape: LineString, start_m: float, end_m: float, path: LineString,

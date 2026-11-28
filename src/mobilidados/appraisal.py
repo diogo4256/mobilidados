@@ -88,9 +88,18 @@ COMPANIONS = {
     "trip_km": 0.0,
     "external_cost_pkm": 0.0,
     "walk_cost": 0.0,
-    "income_growth": 0.0,
 }
+#: Core inputs a case may leave out, and their neutral value: no real growth of unit values.
+OPTIONAL = {"income_growth": 0.0}
 LAYERS = ("core", "extended")
+#: Inputs the model reads as a share of a whole (besides each option's parking share and compliance, and the
+#: attribution): their switching value is looked for in [0, 1]. ``SIGNED`` inputs may be negative.
+SHARES = frozenset({"occupancy", "unexpected_share", "transfer_share", "other_vehicle_share", "diversion_car", "room_nearby",
+                    "spare_capacity"})  # fmt: skip
+SIGNED = frozenset({"income_growth"})
+#: Inputs measured with a 90% interval (low, high) around an estimate, not a range: drawn by ``interval_draws``.
+MEASURED_INTERVALS = ("excess_s",)
+Z90 = 1.6448536269514722  # the standard normal's 95th percentile
 #: Elasticity of each stream's unit value to real income (GDP per capita), for its real growth over the years (EAV
 #: 2021-2027, p. 59: 1 for values of time set from Eurostat labour costs; 0.8 for externalities other than CO2).
 #: The operator's cost (mostly wages) and the value of a place to whoever parks are given 1 too, so that both sides of
@@ -116,6 +125,7 @@ class Measured:
     passages_all: tuple[float, float] = (0.0, 0.0)  # every passage of the year: (at peak, other)
     offpeak_scale_all: float = 1.0  # ``offpeak_scale`` for every passage
     days: dict[str, int] = dataclasses.field(default_factory=dict)  # days of each timetable kind in the reference year
+    alternative_attribution: dict[str, tuple[float, float, float]] = dataclasses.field(default_factory=dict)  # alternative id -> its sections' share
 
 
 def working_days(year: int, holidays: list[dt.date]) -> int:
@@ -178,22 +188,38 @@ def offpeak_scale(hourly: pd.DataFrame, days: dict[str, int], option: Option | N
 def attribution(by_part: pd.DataFrame, copresence: pd.DataFrame, blocks: list[str], significance: float) -> tuple[float, float, float]:
     """The share of the measured excess an option widening the narrow sections of ``blocks`` can remove (see the module).
 
-    Shares are of the sum of the parts' excesses, so they add up across the parts; each bound is cut to [0, 1]."""
+    Low: the excess inside the widened sections. Central: also the junctions next to them where buses demonstrably
+    give way to oncoming ones. High: also the other junctions next to them. A bus held at a junction is held for the
+    section it is about to enter, so a junction counts only for the buses heading into a widened section: all of it
+    when the sections on both sides are widened, else the share of the passages that head that way times their excess
+    (``delay.by_part``). Shares are of the sum of the parts' excesses; each bound is cut to [0, 1]."""
     parts = by_part.reset_index(drop=True)
     total = float(parts.excess_s.sum())
     if total <= 0:
         return (0.0, 0.0, 0.0)
     peak = copresence[copresence.period == "peak"].set_index("part")
+    narrow = parts.narrow.astype(bool)
+    widened = {i for i in parts.index if narrow[i] and parts.block[i] in blocks}
 
-    def block(name: str) -> str:
-        return name.split()[0]
+    def removable(i: int) -> float:
+        """The excess at junction ``i`` of the buses heading into a widened section."""
+        before, after = (i - 1) in widened, (i + 1) in widened
+        if before and after:
+            return float(parts.excess_s[i])
+        up = float(parts.peak_share_ascending[i]) if pd.notna(parts.peak_share_ascending[i]) else 0.0
+        if after:  # those running towards increasing s enter the section after the junction
+            x = parts.excess_ascending_s[i]
+            return up * float(x) if pd.notna(x) else 0.0
+        if before:
+            x = parts.excess_descending_s[i]
+            return (1 - up) * float(x) if pd.notna(x) else 0.0
+        return 0.0
 
-    widened = [i for i, p in parts.iterrows() if p.narrow and block(p.part) in blocks]
-    gaps = [i for i, p in parts.iterrows() if not p.narrow and any(j in widened for j in (i - 1, i + 1))]
+    gaps = [i for i in parts.index if not narrow[i] and ((i - 1) in widened or (i + 1) in widened)]
     giving_way = [i for i in gaps if parts.part[i] in peak.index and p_value(peak.loc[parts.part[i]]) < significance]
-    low = sum(parts.excess_s[i] for i in widened) / total
-    central = low + sum(parts.excess_s[i] for i in giving_way) / total
-    high = low + sum(parts.excess_s[i] for i in gaps) / total
+    low = sum(float(parts.excess_s[i]) for i in widened) / total
+    central = low + sum(removable(i) for i in giving_way) / total
+    high = low + sum(removable(i) for i in gaps) / total
     lo, ce, hi = sorted(min(max(x, 0.0), 1.0) for x in (low, central, high))
     return (lo, ce, hi)
 
@@ -238,6 +264,8 @@ def measured(tables: dict[str, pd.DataFrame], cfg: Appraisal, block_metres: dict
     peak = passings[(passings.t // 3600).isin(peak_hours)]
     days = day_counts(year, holidays)
     hourly = tables["appraisal_passages"]
+    parts = tables["delay_by_part"]
+    narrow_blocks = sorted(set(parts.block[parts.narrow.astype(bool)]))
     return Measured(
         excess_s=(float(whole.excess_ci90_low_s), float(whole.excess_s), float(whole.excess_ci90_high_s)),
         peak_passages_per_day=float(len(peak)),
@@ -253,6 +281,10 @@ def measured(tables: dict[str, pd.DataFrame], cfg: Appraisal, block_metres: dict
         passages_all=passages(hourly, days, None, peak_hours),
         offpeak_scale_all=offpeak_scale(hourly, days, None, peak_hours) if cfg.offpeak_scales_with_service else 1.0,
         days=days,
+        alternative_attribution={
+            alt.id: attribution(tables["delay_by_part"], tables["delay_copresence"], alt.blocks or narrow_blocks, cfg.significance)
+            for alt in cfg.alternatives
+        },
     )
 
 
@@ -280,8 +312,8 @@ def layer(p: dict[str, Any], name: str) -> dict[str, Any]:
     for k, off in MECHANISMS.items():
         if name == "core" or k not in q:
             q[k] = off
-    for k, default in COMPANIONS.items():
-        if k not in q:
+    for k, default in (COMPANIONS | OPTIONAL).items():
+        if k not in q:  # only where the case leaves the mechanism out (``config.MECHANISM_NEEDS``)
             q[k] = q[default] if isinstance(default, str) else default
     return q
 
@@ -442,15 +474,22 @@ def switching_value(f: Callable[[float], float], lo: float, hi: float) -> float 
     return (a + b) / 2
 
 
-def search_domain(lo: float, hi: float) -> tuple[float, float]:
-    """Where to look for an input's switching value: a share (0 ≤ low, high ≤ 1) within [0, 1]; a positive quantity from
-    a hundredth of its low value (never 0: a length divides) to 20 times its high value; anything else symmetrically."""
-    if lo >= 0 and hi <= 1:
+def search_domain(key: str, lo: float, hi: float, cfg: Appraisal) -> tuple[float, float]:
+    """Where to look for input ``key``'s switching value: a share (``is_share``) within [0, 1], whatever its range; a
+    signed input (``SIGNED``) symmetrically; any other quantity, which is never negative, from a hundredth of its low
+    value (never 0: a length divides) to 20 times its high value."""
+    if is_share(key, cfg):
         return 0.0, 1.0
     span = max(abs(lo), abs(hi), 1.0) * 20
-    if lo > 0:
-        return lo / 100, span
-    return (0.0 if lo == 0 else -span), span
+    if key in SIGNED or lo < 0:
+        return -span, span
+    return (lo / 100 if lo > 0 else 0.0), span
+
+
+def is_share(key: str, cfg: Appraisal) -> bool:
+    """Whether the model reads ``key`` as a share of a whole (0 to 1): what it means, not the range a case gives it."""
+    named = {ref for o in cfg.options for ref in (o.parking_share, o.compliance) if ref}
+    return key in SHARES or key in named or key.startswith("attribution_")
 
 
 def option_inputs(o: Option, cfg: Appraisal, name: str = "extended") -> list[str]:
@@ -479,17 +518,40 @@ def pert(rng: np.random.Generator, lo: float, mode: float, hi: float, size: int)
     return lo + (hi - lo) * rng.beta(a, b, size)
 
 
+def interval_draws(rng: np.random.Generator, lo: float, mode: float, hi: float, size: int) -> np.ndarray:
+    """Draws of a measured quantity whose 90% interval is [lo, hi] around its estimate: a two-piece normal with the
+    interval's ends at its 5th and 95th percentiles, cut at 0 (removing parking cannot make the buses slower).
+
+    A 90% interval is not a range the quantity stays inside: drawing it as PERT bounds would leave out the 10% of
+    the resamples outside it and understate the spread of the one input that is measured."""
+    z = rng.standard_normal(size)
+    x = mode + np.where(z < 0, (mode - lo) / Z90, (hi - mode) / Z90) * z
+    return np.maximum(x, 0.0)
+
+
 def draws(cfg: Appraisal, m: Measured) -> dict[str, np.ndarray]:
-    """``cfg.draws`` draws of every input from its PERT distribution (fixed seed). Inputs that ``cfg.correlations``
-    pairs are then reordered so their ranks follow a correlated normal pair (Iman-Conover): each keeps its own
-    distribution, and the two move together."""
+    """``cfg.draws`` draws of every input (fixed seed): the measured excess from its 90% interval
+    (``interval_draws``), every other input from its PERT distribution. Inputs that ``cfg.correlations`` pairs are
+    then reordered so their ranks follow a correlated normal pair (Iman-Conover): each keeps its own distribution, and
+    the two move together.
+
+    The options' shares of the excess (``attribution_<id>``) are one uncertainty, read from the same parts of the
+    stretch: how much of the excess at the junctions widening removes. They are drawn with one common rank, so an
+    option that widens more removes more in every draw, and no option wins a draw by luck of an independent draw."""
     rng = np.random.default_rng(cfg.seed)
-    d = {k: pert(rng, lo, c, hi, cfg.draws) for k, (lo, c, hi) in sorted(ranges(cfg, m).items())}
+    d = {
+        k: (interval_draws if k in MEASURED_INTERVALS else pert)(rng, lo, c, hi, cfg.draws) for k, (lo, c, hi) in sorted(ranges(cfg, m).items())
+    }
     for pair in cfg.correlations:
         z1 = rng.standard_normal(cfg.draws)
         z2 = pair.rho * z1 + np.sqrt(1 - pair.rho**2) * rng.standard_normal(cfg.draws)
         for key, z in ((pair.a, z1), (pair.b, z2)):
             d[key] = np.sort(d[key])[np.argsort(np.argsort(z))]
+    shares = sorted(k for k in d if k.startswith("attribution_"))
+    if shares:
+        rank = np.argsort(np.argsort(rng.standard_normal(cfg.draws)))
+        for k in shares:
+            d[k] = np.sort(d[k])[rank]
     return d
 
 
@@ -584,12 +646,15 @@ def criteria_table(cfg: Appraisal) -> pd.DataFrame:
 def scenarios(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
     """Each option's NPV in named scenarios: the core; the extended layer with every input the measurement does not
     cover at the end of its range that is least favourable to the option (*cautious*), at its central value, and at the
-    most favourable end (*favourable*); and the central extended layer over each of ``cfg.horizons_tested`` years.
+    most favourable end (*favourable*); the central extended layer over each of ``cfg.horizons_tested`` years; and,
+    where the case gives ``spare_capacity``, the core with the car parks nearby having room to spare
+    (*core_car_parks_with_room*: what a displaced driver pays there is a transfer), since the core otherwise counts
+    that price in full, as if they were full.
     Which end is least favourable is read input by input, first with the others central, then again at the
     combination found until none changes, so the cautious scenario is the worst combination of those ends (a local
     one: each input at the end that is worse given the others), not a probability."""
     rg = ranges(cfg, m)
-    unmeasured = [k for k in [*MECHANISMS, *COMPANIONS] if k in cfg.parameters]
+    unmeasured = list(cfg.parameters)  # every typed-in value, core ones included: none of them is measured
     rows = []
     for o in cfg.options:
         central_q = layer(c, "extended")
@@ -620,6 +685,11 @@ def scenarios(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.DataFrame:
             {"option": o.id, "scenario": "central", "years": cfg.horizon_years, "npv": npv(central_q)},
             {"option": o.id, "scenario": "favourable", "years": cfg.horizon_years, "npv": npv(best)},
         ]
+        if "spare_capacity" in cfg.parameters:
+            # the core counts what parking elsewhere costs in full, as if the car parks were full; with room to spare
+            # it is a transfer, and only the walk from them is a cost (the same assumption, at its other end)
+            room = layer(c, "core") | {"spare_capacity": 1.0, "carpark_walk": c.get("carpark_walk", 0.0)}
+            rows.append({"option": o.id, "scenario": "core_car_parks_with_room", "years": cfg.horizon_years, "npv": npv(room)})
         for h in cfg.horizons_tested:
             longer = cfg.model_copy(update={"horizon_years": h})
             rows += [
@@ -666,7 +736,7 @@ def offpeak_thresholds(cfg: Appraisal, m: Measured, c: dict[str, float]) -> pd.D
             def npv_at(x: float, opt: Option = o, b: dict[str, Any] = base) -> float:
                 return float(evaluate(opt, b | {"offpeak_s": x}, m, cfg)["npv"])
 
-            sv = switching_value(npv_at, *search_domain(lo, hi))
+            sv = switching_value(npv_at, *search_domain("offpeak_s", lo, hi, cfg))
             at = base | {"offpeak_s": sv}
             peak = None
             if sv is None and npv_at(0.0) > 0:
@@ -719,7 +789,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
                 def npv_at(x: float, key: str = k, opt: Option = o, base: dict[str, Any] = q) -> float:
                     return float(evaluate(opt, base | moved(cfg, m, base, key, x), m, cfg)["npv"])
 
-                sv = switching_value(npv_at, *search_domain(lo, hi))
+                sv = switching_value(npv_at, *search_domain(k, lo, hi, cfg))
                 switching.append({"layer": name, "option": o.id, "input": k, "central": ce, "switching_value": sv,
                                   "within_range": sv is not None and lo <= sv <= hi})  # fmt: skip
                 if name == "extended":
@@ -747,6 +817,10 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
              "breakeven_seconds_per_peak_passage": hours * 3600 / peak_year if peak_year else np.nan,
              "breakeven_seconds_per_passage": hours * 3600 / m.passages_year if m.passages_year else np.nan}
         )  # fmt: skip
+        # the most it could save at peak: the measured excess its sections hold, at the central share
+        removable = m.excess_s[1] * m.alternative_attribution.get(alt.id, (0.0, 0.0, 0.0))[1]
+        need = alternatives[-1]["breakeven_seconds_per_peak_passage"]
+        alternatives[-1] |= {"removable_peak_s": removable, "can_pay": bool(np.isfinite(need) and need <= removable)}
     tor = pd.DataFrame(tornado, columns=["option", "input", "low", "high", "npv_at_low", "npv_at_high"])
     tor["swing"] = (tor.npv_at_high - tor.npv_at_low).abs()
     inputs = [
@@ -756,7 +830,7 @@ def appraise(cfg: Appraisal, m: Measured) -> dict[str, pd.DataFrame]:
         if k in cfg.parameters
     ]  # fmt: skip
     alt_columns = ["alternative", "label", "parking_m", "places", "pv_cost", "value_per_bus_hour", "breakeven_bus_hours_per_year",
-                   "breakeven_seconds_per_peak_passage", "breakeven_seconds_per_passage"]  # fmt: skip
+                   "breakeven_seconds_per_peak_passage", "breakeven_seconds_per_passage", "removable_peak_s", "can_pay"]  # fmt: skip
     return {
         "appraisal_inputs": pd.DataFrame(inputs),
         "appraisal_results": pd.DataFrame(results),

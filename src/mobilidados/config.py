@@ -458,6 +458,7 @@ class Alternative(Model):
     works: float = Field(0.0, ge=0, description="Other one-off cost (€)")
     yearly: float = Field(0.0, ge=0, description="Recurring cost (€ a year)")
     parking_m: float = Field(0.0, ge=0, description="Metres of parking strip it removes (0: none), valued as an option's places")
+    blocks: list[str] = Field([], description="Blocks whose section it acts in: the excess it could at most remove (none: all of them)")
 
 
 class Reroute(Model):
@@ -498,6 +499,17 @@ class Criterion(Model):
 
 REQUIRED_PARAMETERS = ("vot", "time_weight", "load_peak", "downstream", "bus_cost_h", "occupancy", "car_value",
                        "sign_cost", "marking_cost_m", "enforcement_year", "stall_m")  # fmt: skip
+#: The inputs each extended mechanism reads besides its own (``appraisal.evaluate``): a case that configures the
+#: mechanism must give them, since no default can stand in for them (a trip of 1 minute, no one in a held car).
+MECHANISM_NEEDS = {
+    "offpeak_s": ("load_offpeak",),
+    "unexpected_share": ("lateness_weight",),
+    "transfer_share": ("lateness_weight",),
+    "cars_behind": ("car_occupancy",),
+    "elasticity_ivt": ("journey_min", "diversion_car", "trip_km", "external_cost_pkm"),
+    "room_nearby": ("walk_cost",),
+    "cruise_km_day": ("external_cost_pkm", "car_occupancy"),
+}
 
 
 class Appraisal(Model):
@@ -547,8 +559,9 @@ class Appraisal(Model):
     def _references(self) -> Appraisal:
         missing = [k for k in REQUIRED_PARAMETERS if k not in self.parameters]
         missing += [f"{o.id}: {ref}" for o in self.options for ref in (o.parking_share, o.compliance) if ref and ref not in self.parameters]
+        missing += [f"{k} (needed by {m})" for m, needs in MECHANISM_NEEDS.items() if m in self.parameters for k in needs if k not in self.parameters]
         if missing:
-            raise ValueError(f"appraisal: parameters missing: {missing}")
+            raise ValueError(f"appraisal: parameters missing: {sorted(set(missing), key=missing.index)}")
         ids = [o.id for o in self.options]
         if len(set(ids)) != len(ids):
             raise ValueError(f"appraisal: option ids repeat: {ids}")
@@ -559,8 +572,11 @@ class Appraisal(Model):
             bad = [mv for r in self.reroutes for mv in r.moves if len(mv.split()) != 2]
             if bad:
                 raise ValueError(f"appraisal: reroute moves are 'route direction_id', not {bad}")
-        known = set(self.parameters) | {"excess_s"} | {f"attribution_{i}" for i in ids}
-        loose = sorted({x for c in self.correlations for x in (c.a, c.b)} - known)
+        named = {x for c in self.correlations for x in (c.a, c.b)}
+        shares = sorted(x for x in named if x.startswith("attribution_"))
+        if shares:
+            raise ValueError(f"appraisal: correlations cannot name {shares}: the options' shares are drawn together already")
+        loose = sorted(named - set(self.parameters) - {"excess_s"})
         if loose:
             raise ValueError(f"appraisal: correlations name inputs that do not exist: {loose}")
         stray = sorted({k for c in self.criteria for k in c.effects} - set(ids) - {"*"})

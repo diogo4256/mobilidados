@@ -296,7 +296,7 @@ def stage_delay(r: Run) -> None:
         r.save(name, table)
     # where along the stretch the excess sits, and whether buses there give way to oncoming ones (appraisal's attribution)
     cuts = delay.parts(r.narrow_extents(), cfg.s_from, cfg.s_to)
-    r.save("delay_by_part", delay.by_part(pos, snaps, cuts, cfg, r.feed, t.routes, r.axis, r.case.crs))
+    r.save("delay_by_part", delay.by_part(placed, snaps, cuts, cfg, rts, r.axis))
     fresh = placed[placed.age_s.abs() <= cfg.max_age_s]
     r.save("delay_copresence", delay.copresence(delay.on_axis(fresh, rts, r.axis, r.case.crs), snaps, cuts, cfg))
 
@@ -446,7 +446,7 @@ def a_detours(r: Run, keys: list[str]) -> pd.DataFrame:
     net = reroute.Network(r.axes(source).items())
     shapes = gtfs.shapes_along(r.feed, r.axis, r.case.crs, buffer_m=t.buffer_m)
     trips = gtfs.trips_on_shapes(r.feed, shapes)
-    pts = r.feed.table("shapes")
+    pts = r.feed.table("shapes", dtype={"shape_id": str})
     stops = r.feed.table("stops", dtype={"stop_id": str})
     tr = Transformer.from_crs(4326, r.case.crs, always_xy=True)
     with_buses = set(r.table("area_streets").street) if r.cfg.area_scan else set()
@@ -456,20 +456,20 @@ def a_detours(r: Run, keys: list[str]) -> pd.DataFrame:
         mine = trips[(trips.route_short_name == route) & (trips.direction_id == d) & (trips.heading != 0)]
         if mine.empty:
             raise MobilidadosError(f"appraisal.reroutes: {key} does not run along {r.cfg.street.name}")
-        sid = mine.shape_id.value_counts().index[0]
-        g = pts[pts.shape_id.astype(str) == sid].sort_values("shape_pt_sequence")
+        sid = str(mine.shape_id.value_counts().index[0])
+        g = pts[pts.shape_id == sid].sort_values("shape_pt_sequence")
         x, y = tr.transform(g.shape_pt_lon.to_numpy(), g.shape_pt_lat.to_numpy())
         found = reroute.detour(net, LineString(list(zip(x, y, strict=True))), r.axis, r.cfg.street.name, bus_streets=with_buses)
         if found is None:
             raise MobilidadosError(f"appraisal.reroutes: no way round {r.cfg.street.name} found for {key}")
-        trip = mine.trip_id.iloc[0]
+        trip = mine[mine.shape_id.astype(str) == sid].trip_id.iloc[0]  # the stops of the shape the detour follows
         served = r.feed.stop_times({trip}).merge(stops, on="stop_id")
         sx, sy = tr.transform(served.stop_lon.to_numpy(), served.stop_lat.to_numpy())
         shape = LineString(list(zip(x, y, strict=True)))
         skipped = reroute.skipped(zip(served.stop_id, sx, sy, strict=True), shape, found.from_m, found.to_m, found.path)
         rows.append({"key": key, "shape_id": sid, "lead_in_m": found.lead_in_m, "current_route_m": found.to_m - found.from_m,
                      "with_street_m": found.with_street_m, "without_street_m": found.without_street_m, "detour_m": found.detour_m,
-                     "detour_min_m": found.detour_min_m, "detour_max_m": found.detour_max_m, "on_bus_streets": found.on_bus_streets,
+                     "shorter_without_street": found.shorter_without, "detour_min_m": found.detour_min_m, "detour_max_m": found.detour_max_m, "on_bus_streets": found.on_bus_streets,
                      "via": "; ".join(found.via), "via_without_buses_today": "; ".join(v for v in found.via if with_buses and v not in with_buses),
                      "stops_skipped": " ".join(f"{s} ({n})" for s, n in zip(served.stop_id, served.stop_name, strict=True) if s in skipped)})  # fmt: skip
     return pd.DataFrame(rows)

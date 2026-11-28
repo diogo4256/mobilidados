@@ -45,7 +45,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
-from typing import Any
+from typing import Any, NamedTuple
 
 import numpy as np
 import pandas as pd
@@ -496,22 +496,41 @@ def routes_with(rts: list[Route], cfg: Delay) -> list[Route]:
 
 
 # --- where the excess sits along the stretch ------------------------------------------------------------------------
-def parts(narrow: list[tuple[float, float, str]], s_from: float, s_to: float) -> list[tuple[str, float, float, bool]]:
+class Part(NamedTuple):
+    """A piece of the stretch: a section with parking on both sides (``block`` names it) or what lies between two."""
+
+    name: str
+    start: float
+    end: float
+    narrow: bool
+    block: str = ""
+
+
+def parts(narrow: list[tuple[float, float, str]], s_from: float, s_to: float) -> list[Part]:
     """The stretch cut into the sections with parking on both sides (``narrow``: their extents) and what lies between
-    them: (name, from, to, is_narrow), in order along the street. Pieces shorter than 5 m are left to their neighbour."""
-    cuts: list[tuple[str, float, float, bool]] = []
+    them, in order along the street, covering it from ``s_from`` to ``s_to`` without a hole. A piece shorter than 5 m
+    is joined to the piece before it (the first, to the one after it), so every position falls in exactly one part."""
+    pieces: list[tuple[float, float, bool, str]] = []
     s = s_from
     for a, z, block in sorted(narrow):
-        a, z = max(a, s_from), min(z, s_to)
-        if z - a < 5:
+        a, z = max(a, s_from, s), min(z, s_to)
+        if z <= a:
             continue
-        if a - s >= 5:
-            cuts.append((f"{s:g}–{a:g} m", s, a, False))
-        cuts.append((f"{block} {a:g}–{z:g} m", a, z, True))
+        if a > s:
+            pieces.append((s, a, False, ""))
+        pieces.append((a, z, True, block))
         s = z
-    if s_to - s >= 5:
-        cuts.append((f"{s:g}–{s_to:g} m", s, s_to, False))
-    return cuts
+    if s_to > s:
+        pieces.append((s, s_to, False, ""))
+    merged: list[tuple[float, float, bool, str]] = []
+    for a, z, nar, block in pieces:
+        if merged and z - a < 5:
+            merged[-1] = (merged[-1][0], z, merged[-1][2], merged[-1][3])
+        else:
+            merged.append((a, z, nar, block))
+    if len(merged) > 1 and merged[0][1] - merged[0][0] < 5:
+        merged[:2] = [(merged[0][0], merged[1][1], merged[1][2], merged[1][3])]
+    return [Part(f"{block} {a:g}–{z:g} m" if nar else f"{a:g}–{z:g} m", a, z, nar, block) for a, z, nar, block in merged]
 
 
 def binomial_tail(k: int, n: int, p: float) -> float:
@@ -530,7 +549,7 @@ def binomial_tail(k: int, n: int, p: float) -> float:
     return float(min(1.0, math.exp(top) * sum(math.exp(x - top) for x in log)))
 
 
-def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[tuple[str, float, float, bool]], cfg: Delay) -> pd.DataFrame:
+def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[Part], cfg: Delay) -> pd.DataFrame:
     """For buses seen on each part of the stretch on working days, at peak and off-peak: how often a bus in the other
     direction was on the street at the same snapshot, against how often one is there at any snapshot of the same
     period (chance), with the one-sided binomial p-value of seeing that many or more by chance.
@@ -558,8 +577,8 @@ def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[tuple[str, floa
         seen = on[(on.period == period) & on.t.isin(times)].drop_duplicates(["t", "heading"])
         seen_d = {h: seen[seen.heading == h].groupby("date").size().reindex(days, fill_value=0).to_numpy(float) for h in (1, -1)}
         pick = rng.integers(0, len(days), size=(cfg.bootstrap, len(days))) if days else np.zeros((0, 0), int)
-        for name, a, b, narrow in cuts:
-            g = on[(on.period == period) & on.s.between(a, b, inclusive="left")]
+        for name, a, b, narrow, block in cuts:
+            g = on[(on.period == period) & on.s.between(a, b, inclusive="left" if b < cuts[-1].end else "both")]
             p0 = float(np.mean([chance[-h] for h in g.heading])) if len(g) else np.nan
             k = int(g.opposing.sum())
             gd = g.assign(up=g.heading == 1, down=g.heading == -1).groupby("date")
@@ -580,6 +599,7 @@ def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[tuple[str, floa
             rows.append(
                 {
                     "part": name,
+                    "block": block,
                     "narrow": narrow,
                     "period": period,
                     "positions": len(g),
@@ -595,29 +615,39 @@ def copresence(on: pd.DataFrame, snaps: pd.DataFrame, cuts: list[tuple[str, floa
     return pd.DataFrame(rows)
 
 
-def by_part(
-    pos: pd.DataFrame,
-    snaps: pd.DataFrame,
-    cuts: list[tuple[str, float, float, bool]],
-    cfg: Delay,
-    feed: Feed,
-    names: list[str],
-    axis: LineString,
-    crs: int,
-) -> pd.DataFrame:
-    """The ratio and the excess (with their 90% intervals) on each part of the stretch, each measured as a stretch of its
-    own against the same controls; ``pos`` are the loaded positions (``load``) and ``snaps`` the prepared snapshots."""
+def part_routes(rts: list[Route], axis: LineString, a: float, b: float) -> list[Route]:
+    """The routes with their stretch cut down to the part of the axis from ``a`` to ``b``: the controls and the reach
+    stay those of the whole stretch, so every part is measured against the same controls and the same passages."""
+    pa, pb = axis.interpolate(a), axis.interpolate(b)
+    return [replace(r, stretch=(min(m0, m1), max(m0, m1))) for r in rts for m0, m1 in [(r.line.project(pa), r.line.project(pb))]]
+
+
+def by_part(placed: pd.DataFrame, snaps: pd.DataFrame, cuts: list[Part], cfg: Delay, rts: list[Route], axis: LineString) -> pd.DataFrame:
+    """The ratio and the excess (with their 90% intervals) on each part of the stretch, against the stretch's own
+    controls (``part_routes``); ``placed`` are the positions placed on ``rts`` (``place``).
+
+    Each part also gives the excess of the buses in each direction along the street (``excess_ascending_s``: those
+    running towards increasing s, which enter the part after it next; ``excess_descending_s``: the others) and the
+    share of the peak passages that run each way (``peak_share_ascending``): a bus held at a junction is held for
+    the section it is about to enter, so widening one section frees only the buses heading into it."""
+    pos = placed.copy()
+    prepare(pos, snaps, cfg)
+    up = {r.key for r in rts if heading(r, axis) == 1}
     rows = []
-    for name, a, b, narrow in cuts:
-        part = cfg.model_copy(update={"s_from": a, "s_to": b})
-        rts = routes(feed, names, axis, crs, part)
-        placed = place(pos, rts, crs, part.max_offset_m)
-        prepare(placed, snaps, part)
-        d, _ = daily(placed, snaps, rts, part)
-        e, bt = estimate(d, 2 * part.control_m), bootstrap(d, 2 * part.control_m, part.bootstrap, part.seed)
+    for name, a, b, narrow, block in cuts:
+        rp = part_routes(rts, axis, a, b)
+        d, _ = daily(pos, snaps, rp, cfg)
+        e, bt = estimate(d, 2 * cfg.control_m), bootstrap(d, 2 * cfg.control_m, cfg.bootstrap, cfg.seed)
+        label_up = {r.label for r in rp if r.key in up}
+        d_up, d_down = d[d.key.isin(label_up)], d[~d.key.isin(label_up)]
+        e_up = estimate(d_up, 2 * cfg.control_m) if len(d_up) else {"excess_s": np.nan}
+        e_down = estimate(d_down, 2 * cfg.control_m) if len(d_down) else {"excess_s": np.nan}
+        peak = d[d.period == PEAK]
+        expo = float(peak.exposure.sum())
         rows.append(
             {
                 "part": name,
+                "block": block,
                 "narrow": narrow,
                 "from_m": a,
                 "to_m": b,
@@ -628,6 +658,9 @@ def by_part(
                 "excess_s": round(e["excess_s"], 1),
                 "excess_ci90_low_s": round(float(bt.excess_s.quantile(0.05)), 1),
                 "excess_ci90_high_s": round(float(bt.excess_s.quantile(0.95)), 1),
+                "excess_ascending_s": round(e_up["excess_s"], 1),
+                "excess_descending_s": round(e_down["excess_s"], 1),
+                "peak_share_ascending": round(float(peak[peak.key.isin(label_up)].exposure.sum()) / expo, 3) if expo > 0 else np.nan,
             }
         )
     return pd.DataFrame(rows)

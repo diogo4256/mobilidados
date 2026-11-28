@@ -417,10 +417,10 @@ source = "A ocupação dos parques perto não é conhecida (NE). Em 2025 a Câma
 low = 65.0
 central = 130.0
 high = 260.0
-grade = "I"
+grade = "P"
 unit = "€/ano"
 label = "Custo anual, para quem estaciona perto, de procurar e andar mais"
-source = "Mais 2, 4 ou 8 minutos por dia, 365 dias, ao valor do tempo de lazer (5,34 €/h, como no mínimo do custo de estacionar noutro sítio)"
+source = "Mais 2, 4 ou 8 minutos por dia (pressuposto: o tempo a pé não foi medido), 365 dias, ao valor do tempo de lazer (5,34 €/h, como no mínimo do custo de estacionar noutro sítio)"
 
 [appraisal.parameters.calming_cost]
 low = 0.0
@@ -479,6 +479,7 @@ signs = 3
 id = "R"
 label = "um espaço de cruzamento: o estacionamento de um lado retirado em cerca de 20 m a meio do troço B2, onde um autocarro se desvia para o outro passar"
 parking_m = 20.0
+blocks = ["B2"]
 signs = 2
 works = 100.0
 

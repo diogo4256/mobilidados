@@ -82,7 +82,7 @@ def build(r: Run) -> str:
         row = parts[parts.part == name].iloc[0]
         span = f"{n(row.from_m, 1)}–{n(row.to_m, 1)} m"
         if row.narrow:
-            return f"{name.split()[0]} ({span})"
+            return f"{row.block} ({span})"
         cross = [b.label.split("→")[-1].strip() for b in cfg.street.blocks if b.label and "→" in b.label and row.from_m < b.end < row.to_m]
         return f"({cross[0]}, {span})" if cross else f"({span})"
 

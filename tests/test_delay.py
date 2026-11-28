@@ -221,3 +221,20 @@ def test_a_trip_seen_at_the_same_place_twice_counts_in_the_hour_it_was_first_see
     for rows in (pos, pos.iloc[::-1]):
         lam = delay.trips_per_hour(rows, [r]).set_index("slot").trips
         assert lam.to_dict() == {pd.Timestamp("2026-01-05 10:00", tz="UTC"): 2}
+
+
+def test_the_parts_of_the_stretch_add_up_to_it_against_the_same_controls(counted):
+    placed, snaps = counted
+    axis = LineString([(X0 + STRETCH[0], Y0), (X0 + STRETCH[1], Y0)])
+    cuts = delay.parts([(0.0, 60.0, "B1")], 0.0, STRETCH[1] - STRETCH[0])
+    parts = delay.by_part(placed, snaps, cuts, CFG, [route()], axis)
+    d, _ = delay.daily(placed, snaps, [route()], CFG)
+    whole = delay.estimate(d, 2 * CFG.control_m)["excess_s"]
+    assert list(parts.block) == ["B1", ""]
+    # measured against the same controls and passages, the parts' excesses add up to the stretch's (to the rounding)
+    assert parts.excess_s.sum() == pytest.approx(whole, abs=0.1 * len(parts))
+    assert parts.excess_s.sum() == pytest.approx(truth()["excess_s"], rel=0.12)
+    # every bus runs towards increasing s: all the passages head that way, and their excess is the part's
+    assert (parts.peak_share_ascending == 1.0).all()
+    assert (parts.excess_ascending_s == parts.excess_s).all()
+    assert parts.excess_descending_s.isna().all()
