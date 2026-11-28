@@ -428,13 +428,14 @@ def test_passengers_boarding_after_the_street_lose_unforeseen_lateness_or_uneven
     cfg = config(parameters=EXTENDED | extra)
     m = measured(passages={"A": (3600.0, 0.0)}, passages_year=3600.0, km_after=6.0, inv_headway=(1 / 900, 1 / 1200), meet_share=0.2)
     q = appraisal.layer(appraisal.central(cfg, m), "extended")
-    hours, value = appraisal.downstream(q, m, 0.5, 3600.0, 0.0, 1.0, 1.0)
+    hours, value, bunching = appraisal.downstream(q, m, 0.5, 3600.0, 0.0, 1.0, 1.0)
     boarders = 3600 * 10 * 6.0 / 4.0  # passages × 10 on board × 6 km after the street ÷ 4 km a trip
     late_s = 10.0 * 0.5 * 0.4  # the excess × the share removed × the share no one could foresee
     variance = (1 - 0.2) / 0.2 * 10.0**2 * (2 * 0.5 - 0.5**2)  # delays in a fifth of passages: (1 − q)/q × excess², removed
     h_timed, h_random = boarders * 0.75 * late_s / 3600, boarders * 0.25 * variance / 900 / 3600
     assert hours == pytest.approx(h_timed + h_random)
     assert value == pytest.approx((h_timed * 3.0 + h_random * 2.0) * 6.0)
+    assert bunching == pytest.approx(h_random * 2.0 * 6.0)  # the uneven gaps' part, reported apart
     # it enters the option's benefits in the extended layer only
     e = appraisal.evaluate(cfg.options[0], q, m, cfg)
     assert e["downstream_value"] == pytest.approx(appraisal.downstream(q, m, 1.0, 3600.0, 0.0, 1.0, 1.0)[1])

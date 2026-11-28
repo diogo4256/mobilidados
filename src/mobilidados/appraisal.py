@@ -391,10 +391,13 @@ def rate_column(r: float) -> str:
     return f"npv_at_{rate_pct(r):g}pct".replace(".", "p")
 
 
-def downstream(p: dict[str, Any], m: Measured, share: Any, peak_y: float, other_y: float, scale: float, comply: Any) -> tuple[Any, Any]:
+def downstream(
+    p: dict[str, Any], m: Measured, share: Any, peak_y: float, other_y: float, scale: float, comply: Any
+) -> tuple[Any, Any, Any]:
     """(extended) The passengers who board after the street, on ``m.km_after`` km of route: ``downstream_boarders`` ×
     the passengers on board × those km ÷ the average trip (``trip_km``) a passage. They are not on the bus in the
-    street, so they lose none of its time on board; they lose at the stop. Returns (passenger-hours a year, value).
+    street, so they lose none of its time on board; they lose at the stop. Returns (passenger-hours a year, value, the part of
+    the value that comes from uneven gaps).
 
     * Those who time their arrival to the timetable (``downstream_timed``; most, at gaps of a quarter of an hour or
       more) wait for a late bus: the share of the delay they could not foresee (``unexpected_share``), weighted as
@@ -407,10 +410,10 @@ def downstream(p: dict[str, Any], m: Measured, share: Any, peak_y: float, other_
     zero = 0.0 * share
     on = p.get("downstream_boarders", 0.0)
     if not m.km_after or (np.isscalar(on) and on == 0):  # switched off (the core) or not measured
-        return zero, zero
+        return zero, zero, zero
     per_rider = p["downstream_boarders"] * m.km_after / p["trip_km"]
     timed = p["downstream_timed"]
-    hours, value = zero, zero
+    hours, value, bunching = zero, zero, zero
     q_peak = m.meet_share
     q_off = m.meet_share * m.offpeak_ratio if m.meet_share and m.offpeak_ratio else None
     for passages, load, excess, q, inv_h, k in ((peak_y, p["load_peak"], p["excess_s"], q_peak, m.inv_headway[0], 1.0),
@@ -423,7 +426,8 @@ def downstream(p: dict[str, Any], m: Measured, share: Any, peak_y: float, other_
         h_random = boarders * (1 - timed) * extra_wait_s / 3600
         hours = hours + h_timed + h_random
         value = value + (h_timed * p["lateness_weight"] + h_random * p["wait_weight"]) * p["vot"]
-    return hours, value
+        bunching = bunching + h_random * p["wait_weight"] * p["vot"]
+    return hours, value, bunching
 
 
 def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: float | None = None) -> dict[str, Any]:
@@ -464,7 +468,9 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
     external_value = new_riders * p["diversion_car"] * p["trip_km"] * p["external_cost_pkm"]
     in_force = (peak_y + other_y) / m.passages_year if m.passages_year else 0.0
     damage_value = p["damage_year"] * share_removed * in_force * comply
-    downstream_h, downstream_value = downstream(p, m, share_removed, peak_y, other_y, m.offpeak_scale.get(o.id, 1.0), comply)
+    downstream_h, downstream_value, bunching_value = downstream(
+        p, m, share_removed, peak_y, other_y, m.offpeak_scale.get(o.id, 1.0), comply
+    )
     benefit = time_value + operator_value + traffic_value + new_rider_value + external_value + damage_value + downstream_value
     places = m.metres[o.id] / p["stall_m"]
     share = p[o.parking_share] if o.parking_share else 1.0
@@ -504,6 +510,7 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "time_value": time_value,
         "downstream_hours": downstream_h,
         "downstream_value": downstream_value,
+        "downstream_bunching_value": bunching_value,
         "operator_value": operator_value,
         "traffic_value": traffic_value,
         "new_rider_value": new_rider_value,
@@ -521,6 +528,7 @@ def evaluate(o: Option, p: dict[str, Any], m: Measured, cfg: Appraisal, rate: fl
         "pv_cost": pv_cost,
         "pv_time": pv_time,
         "pv_downstream": pv_downstream,
+        "pv_downstream_bunching": bunching_value * growing("time"),
         "pv_operator": pv_operator,
         "pv_traffic": pv_traffic,
         "pv_new_riders": pv_new,
@@ -999,7 +1007,7 @@ def reroutes(cfg: Appraisal, m: Measured, c: dict[str, float], attribution_all: 
             late = 1 - (1 - p["unexpected_share"]) * (1 - p["transfer_share"])
             weight = p["time_weight"] + (p["lateness_weight"] - p["time_weight"]) * late
             on_board = (peak_bh * p["load_peak"] + other_bh * p["load_offpeak"]) * p.get("downstream", 1.0)
-            _, after = downstream(p, m, attribution_all * removed, peak_all, other_all, m.offpeak_scale_all, 1.0)
+            _, after, _ = downstream(p, m, attribution_all * removed, peak_all, other_all, m.offpeak_scale_all, 1.0)
             saved_time = (
                 on_board * p["vot"] * weight
                 + (peak_bh + other_bh) * p["cars_behind"] * p["car_occupancy"] * p["vot"] * p["time_weight"]

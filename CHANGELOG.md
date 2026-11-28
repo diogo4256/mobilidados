@@ -52,12 +52,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
   late bus (the unforeseen share of the delay, as lateness); those who arrive at random wait longer because the gaps
   are uneven (bunching: the variance of the delay ÷ the gap). It replaces the unsourced `downstream` multiplier (1.0 at
   its central value, so not counted). Reroutes get the same. In Rua Ricardo Jorge the 744 runs 6.2–6.4 km after the
-  street and the 46B 3.6 km.
+  street and the 46B 3.6 km. The part that comes from uneven gaps is reported apart (`pv_downstream_bunching`).
 - **`mobilidados check-doc`** (`mobilidados.doccheck`, a case's `doc_check.toml`): checks a document exported as
   markdown against the case's results, without AI. Its key statements are pinned to the result cells they quote (or
   arithmetic on them) and compared at the precision and scale printed (a percentage to the unit; thousands by `k`,
   `mil` or the claim's `scale`); a wrong, vanished or unresolvable statement fails the command. It also lists the
   numbers no quoted table, input or configured value explains, and the numbers only one language version prints.
+  For Rua Ricardo Jorge, 146 statements of the decision paper and 289 of the appraisal are pinned.
 - Passing in practice (`passing_practice.csv`, `[envelope] practical_clearance_m`): two vehicles need their bodies plus
   the room design guidance leaves (CIHT, *Buses in Urban Developments*, 2018: 1.2 m). Vehicles: a large van, a large
   SUV and a truck at the legal maximum width. Design references: RT-SCIE's 6 m fire access road and CIHT's 6.2 m for
